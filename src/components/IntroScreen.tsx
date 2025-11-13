@@ -104,7 +104,16 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
           </button>
 
           <p className="text-sm text-gray-400 mt-4">
-            Based on the article by Rodrigo Mazorra Blanco & Raghavendra Datta PALLETI
+            Based on the{' '}
+            <a
+              href="https://www.linkedin.com/pulse/standing-under-machine-what-simple-task-revealed-how-rodrigo-1cmee/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 transition-colors underline"
+            >
+              article
+            </a>{' '}
+            by Rodrigo Mazorra Blanco & Raghavendra Datta PALLETI
           </p>
         </motion.div>
       </motion.div>

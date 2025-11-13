@@ -1,4 +1,4 @@
-import { Github, Linkedin, Heart } from 'lucide-react'
+import { Github, Linkedin, Sparkles } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -8,7 +8,16 @@ export default function Footer() {
           {/* Credits */}
           <div className="text-center md:text-left">
             <p className="text-gray-300 text-sm mb-2">
-              Based on the article by{' '}
+              Based on the{' '}
+              <a
+                href="https://www.linkedin.com/pulse/standing-under-machine-what-simple-task-revealed-how-rodrigo-1cmee/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 transition-colors underline"
+              >
+                article
+              </a>{' '}
+              by{' '}
               <span className="font-semibold text-white">
                 Rodrigo Mazorra Blanco, PhD, CQF, MBA
               </span>{' '}
@@ -18,7 +27,7 @@ export default function Footer() {
               </span>
             </p>
             <p className="text-gray-400 text-xs flex items-center justify-center md:justify-start gap-1">
-              Built with <Heart className="w-3 h-3 text-red-400 fill-red-400" /> by{' '}
+              Built with <Sparkles className="w-3 h-3 text-blue-400" /> by{' '}
               <a
                 href="https://www.linkedin.com/in/mondweepchakravorty/"
                 target="_blank"
