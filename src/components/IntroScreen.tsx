@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Sparkles, ArrowRight } from 'lucide-react'
+import Footer from './Footer'
 
 interface IntroScreenProps {
   onStart: () => void
@@ -7,7 +8,8 @@ interface IntroScreenProps {
 
 export default function IntroScreen({ onStart }: IntroScreenProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -106,6 +108,10 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
           </p>
         </motion.div>
       </motion.div>
+      </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }
