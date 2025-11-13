@@ -9,6 +9,7 @@ import AttentionVisualizer from './components/AttentionVisualizer'
 import ToolOrchestration from './components/ToolOrchestration'
 import ContextWindow from './components/ContextWindow'
 import AchievementsPanel from './components/AchievementsPanel'
+import Footer from './components/Footer'
 
 function App() {
   const { currentLevel, setCurrentLevel, score, achievements } = useGameStore()
@@ -118,6 +119,9 @@ function App() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Achievements Panel */}
       <AnimatePresence>
