@@ -1,0 +1,7 @@
+# Netlify Redirects and Rewrites
+
+# API routes to Netlify Functions
+/api/* /.netlify/functions/:splat 200
+
+# Fallback for SPA (if needed in future)
+/* /index.html 200

@@ -9,8 +9,12 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:web": "npm run build",
     "start": "npm run build && node dist/cli.js",
     "dev": "ts-node src/cli.ts",
+    "dev:server": "netlify dev",
+    "deploy": "netlify deploy --prod",
+    "deploy:preview": "netlify deploy",
     "clean": "rm -rf dist output",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -43,6 +47,7 @@
     "handlebars": "^4.7.8",
     "joi": "^18.0.1",
     "jszip": "^3.10.1",
+    "lambda-multipart-parser": "^1.0.1",
     "lodash": "^4.17.21",
     "mammoth": "^1.11.0",
     "natural": "^8.1.0",
@@ -58,6 +63,7 @@
   },
   "devDependencies": {
     "@types/archiver": "^7.0.0",
-    "@types/xml2js": "^0.4.14"
+    "@types/xml2js": "^0.4.14",
+    "netlify-cli": "^23.11.0"
   }
 }

@@ -1,0 +1,49 @@
+[build]
+  # Build command - compile TypeScript
+  command = "npm run build"
+
+  # Directory with the static files
+  publish = "public"
+
+  # Functions directory
+  functions = "netlify/functions"
+
+# Environment variables (set these in Netlify UI)
+# ANTHROPIC_API_KEY = "your-api-key-here"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type"
+
+# Increase function timeout for processing (requires Netlify Pro)
+[functions]
+  # Default timeout is 10 seconds
+  # Pro accounts can use up to 26 seconds
+  # For longer processing, use background functions or external services
+  node_bundler = "esbuild"
+
+# For development
+[dev]
+  command = "npm run dev:server"
+  publish = "public"
+  port = 8888
+  functions = "netlify/functions"
+
+# Headers for security
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Content-Type = "text/css; charset=utf-8"
