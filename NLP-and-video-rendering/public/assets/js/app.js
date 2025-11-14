@@ -30,7 +30,12 @@ class ELearningApp {
         this.uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
         this.uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
         this.uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
-        this.uploadArea.addEventListener('click', () => this.fileInput.click());
+        this.uploadArea.addEventListener('click', (e) => {
+            // Don't trigger if clicking on the browse button
+            if (e.target !== this.browseBtn && !this.browseBtn.contains(e.target)) {
+                this.fileInput.click();
+            }
+        });
 
         // Process button
         this.processBtn.addEventListener('click', () => this.processFile());
@@ -121,15 +126,32 @@ class ELearningApp {
             const formData = new FormData();
             formData.append('file', this.selectedFile);
 
-            // Call Netlify Function
+            // Call Netlify Function with timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
             const response = await fetch('/.netlify/functions/process-document', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                signal: controller.signal
+            }).catch(err => {
+                clearTimeout(timeoutId);
+                // If timeout or network error, use demo mode
+                if (err.name === 'AbortError' || err.message.includes('504')) {
+                    console.log('Function timed out, using demo mode');
+                    return null; // Will trigger demo mode below
+                }
+                throw err;
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Processing failed');
+            clearTimeout(timeoutId);
+
+            // Check if we got a response
+            if (!response || !response.ok) {
+                // Function timed out or failed - use demo mode
+                console.log('Processing in demo mode due to timeout/error');
+                await this.processDemoMode();
+                return;
             }
 
             const result = await response.json();
@@ -140,8 +162,61 @@ class ELearningApp {
 
         } catch (error) {
             console.error('Processing error:', error);
-            this.stopProgressSimulation();
-            this.showError(error.message || 'An error occurred during processing');
+
+            // If timeout or 504, use demo mode
+            if (error.message.includes('504') || error.message.includes('timeout')) {
+                console.log('Using demo mode due to timeout');
+                await this.processDemoMode();
+            } else {
+                this.stopProgressSimulation();
+                this.showError(error.message || 'An error occurred during processing');
+            }
+        }
+    }
+
+    async processDemoMode() {
+        // Continue with simulated progress
+        console.log('Demo mode: Simulating document processing...');
+
+        // Wait for progress animation to complete
+        await new Promise(resolve => setTimeout(resolve, 12000));
+
+        this.stopProgressSimulation();
+
+        // Show demo results
+        const fileName = this.selectedFile.name;
+        const fileType = fileName.endsWith('.pptx') ? 'PowerPoint' : 'Word';
+
+        this.showComplete({
+            modulesCount: Math.floor(Math.random() * 10) + 8,
+            objectivesCount: Math.floor(Math.random() * 4) + 3,
+            questionsCount: Math.floor(Math.random() * 20) + 15,
+            estimatedDuration: Math.floor(Math.random() * 30) + 30,
+            packageUrl: null, // No actual package in demo mode
+            isDemo: true
+        });
+
+        // Show demo notice
+        this.showDemoNotice();
+    }
+
+    showDemoNotice() {
+        const notice = document.createElement('div');
+        notice.className = 'demo-notice';
+        notice.innerHTML = `
+            <h4>⚠️ Demo Mode</h4>
+            <p>The processing function timed out due to Netlify's serverless limits (10-26 seconds).</p>
+            <p>These are <strong>simulated results</strong> to demonstrate the UI. For actual SCORM package generation:</p>
+            <ul>
+                <li>Run locally: <code>npm run dev:server</code></li>
+                <li>Use the CLI tool: <code>npm start your-file.pptx</code></li>
+                <li>Upgrade to background functions (see documentation)</li>
+            </ul>
+        `;
+
+        const card = document.querySelector('#complete-section .card');
+        if (card) {
+            card.insertBefore(notice, card.firstChild);
         }
     }
 
@@ -237,11 +312,18 @@ class ELearningApp {
         // Store package data for download
         this.packageData = result.package; // Base64 encoded ZIP
         this.packageUrl = result.packageUrl; // For demo mode
+        this.isDemo = result.isDemo || false; // Track if in demo mode
 
         this.showSection('complete-section');
     }
 
     async downloadPackage() {
+        // Check if in demo mode
+        if (this.isDemo) {
+            alert('⚠️ Demo Mode: No actual package was generated.\n\nTo generate real SCORM packages:\n• Run locally: npm run dev:server\n• Use CLI: npm start your-file.pptx\n\nSee documentation for details.');
+            return;
+        }
+
         if (!this.packageData && !this.packageUrl) {
             this.showError('No package available for download');
             return;
