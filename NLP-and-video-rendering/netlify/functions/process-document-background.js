@@ -38,10 +38,18 @@ exports.handler = async (event, context) => {
 
     console.log(`Background function started for job ${jobId}`);
 
-    // Try to get Netlify Blobs store
+    // Try to get Netlify Blobs store with manual configuration
     let store;
     try {
-        store = getStore('jobs');
+        const siteID = process.env.SITE_ID;
+        const token = process.env.NETLIFY_BLOBS_CONTEXT;
+
+        if (!siteID) {
+            throw new Error('SITE_ID environment variable not found');
+        }
+
+        const storeConfig = token ? { siteID, token } : { siteID };
+        store = getStore({ name: 'jobs', ...storeConfig });
         console.log('Netlify Blobs store initialized successfully');
     } catch (blobError) {
         console.error('Failed to initialize Netlify Blobs:', blobError);
@@ -52,7 +60,7 @@ exports.handler = async (event, context) => {
                 success: false,
                 jobId,
                 message: 'Blob storage not available',
-                error: blobError.toString()
+                error: blobError.message || blobError.toString()
             })
         };
     }
