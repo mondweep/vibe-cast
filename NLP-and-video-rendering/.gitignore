@@ -13,6 +13,8 @@ dist/
 # Output files
 output/
 *.zip
+!output/scorm-package.zip
+
 
 # IDE
 .vscode/
