@@ -26,19 +26,6 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        // Check if Netlify Blobs is available
-        if (!process.env.NETLIFY) {
-            console.error('Not running in Netlify environment - Blobs unavailable');
-            return {
-                statusCode: 500,
-                headers,
-                body: JSON.stringify({
-                    message: 'Blob storage not available',
-                    error: 'This function must run in Netlify environment'
-                })
-            };
-        }
-
         // Check if API key is configured
         if (!process.env.ANTHROPIC_API_KEY) {
             console.error('ANTHROPIC_API_KEY not configured');
@@ -56,7 +43,22 @@ exports.handler = async (event, context) => {
         const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         console.log(`Starting new processing job: ${jobId}`);
 
-        const store = getStore('jobs');
+        // Try to get Netlify Blobs store
+        let store;
+        try {
+            store = getStore('jobs');
+            console.log('Netlify Blobs store initialized successfully');
+        } catch (blobError) {
+            console.error('Failed to initialize Netlify Blobs:', blobError);
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({
+                    message: 'Blob storage not available',
+                    error: 'Failed to initialize storage. Ensure Netlify Blobs is enabled.'
+                })
+            };
+        }
 
         // Initialize job status
         await store.set(jobId, JSON.stringify({

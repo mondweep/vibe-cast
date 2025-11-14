@@ -36,23 +36,26 @@ exports.handler = async (event, context) => {
         console.log(`Received job ID from header: ${jobId}`);
     }
 
-    // Check if Netlify Blobs is available
-    if (!process.env.NETLIFY) {
-        console.error('Not running in Netlify environment - Blobs unavailable');
+    console.log(`Background function started for job ${jobId}`);
+
+    // Try to get Netlify Blobs store
+    let store;
+    try {
+        store = getStore('jobs');
+        console.log('Netlify Blobs store initialized successfully');
+    } catch (blobError) {
+        console.error('Failed to initialize Netlify Blobs:', blobError);
         return {
             statusCode: 500,
             headers,
             body: JSON.stringify({
                 success: false,
                 jobId,
-                message: 'Blob storage not available'
+                message: 'Blob storage not available',
+                error: blobError.toString()
             })
         };
     }
-
-    const store = getStore('jobs');
-
-    console.log(`Background function started for job ${jobId}`);
 
     try {
         // Initialize job status immediately
