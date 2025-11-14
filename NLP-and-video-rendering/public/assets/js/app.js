@@ -121,28 +121,29 @@ class ELearningApp {
         this.showSection('processing-section');
 
         try {
+            // Generate a job ID on the frontend
+            const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            console.log('Starting processing with job ID:', jobId);
+
             // Create form data
             const formData = new FormData();
             formData.append('file', this.selectedFile);
 
-            // Call the start-processing function to get a job ID
-            console.log('Starting processing request...');
-            const startResponse = await fetch('/.netlify/functions/start-processing', {
+            // Call the processing function directly (fire and forget - don't wait for response)
+            fetch('/.netlify/functions/process-document-background', {
                 method: 'POST',
+                headers: {
+                    'X-Job-ID': jobId
+                },
                 body: formData
+            }).catch(err => {
+                console.error('Background function invocation error:', err);
+                // Don't throw - we'll poll for status to detect errors
             });
 
-            if (!startResponse.ok) {
-                const errorData = await startResponse.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to start processing');
-            }
-
-            const { jobId, status, message } = await startResponse.json();
-            console.log('Processing started with job ID:', jobId);
-
-            // Start polling for job status
-            // Give the background function a moment to initialize
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Immediately start polling for job status
+            // Give the function a moment to initialize
+            await new Promise(resolve => setTimeout(resolve, 1000));
             await this.pollJobStatus(jobId);
 
         } catch (error) {
