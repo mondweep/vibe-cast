@@ -63,16 +63,31 @@ exports.handler = async (event, context) => {
             } catch (autoError) {
                 console.log('✗ Automatic initialization failed:', autoError.message);
 
-                // Manual fallback - try with siteID from environment
+                // Manual fallback - need both siteID and token
                 const siteID = process.env.SITE_ID;
                 if (!siteID) {
                     throw new Error(`Cannot initialize Blobs: SITE_ID environment variable not found. Auto-init error: ${autoError.message}`);
                 }
 
+                // Try to get token from multiple sources
+                let token = process.env.NETLIFY_BLOBS_CONTEXT;
+
+                // If NETLIFY_BLOBS_CONTEXT not available, try NETLIFY_TOKEN (user-provided)
+                if (!token && process.env.NETLIFY_TOKEN) {
+                    token = process.env.NETLIFY_TOKEN;
+                    console.log('Using NETLIFY_TOKEN for Blobs authentication');
+                }
+
+                if (!token) {
+                    throw new Error(
+                        'Cannot initialize Blobs: No auth token found. ' +
+                        'Please create a Netlify Personal Access Token and add it as NETLIFY_TOKEN environment variable. ' +
+                        'Get it from: Netlify Dashboard → User Settings → Applications → Personal access tokens → New access token'
+                    );
+                }
+
                 console.log('Attempting manual initialization with SITE_ID:', siteID);
-                const token = process.env.NETLIFY_BLOBS_CONTEXT;
-                const storeConfig = token ? { siteID, token } : { siteID };
-                store = getStore({ name: 'jobs', ...storeConfig });
+                store = getStore({ name: 'jobs', siteID, token });
                 console.log('✓ Netlify Blobs store initialized with manual configuration');
             }
         } catch (blobError) {
