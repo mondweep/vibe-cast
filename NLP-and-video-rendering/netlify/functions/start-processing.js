@@ -3,6 +3,8 @@
  * Initiates background processing and returns job ID
  */
 
+const { getStore } = require('@netlify/blobs');
+
 exports.handler = async (event, context) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
@@ -26,19 +28,37 @@ exports.handler = async (event, context) => {
         // Generate job ID
         const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-        // Invoke background function
+        const store = getStore('jobs');
+
+        // Initialize job status
+        await store.set(jobId, JSON.stringify({
+            status: 'queued',
+            progress: 0,
+            message: 'Job queued for processing...'
+        }));
+
+        // Invoke background function asynchronously
         const backgroundUrl = `${process.env.URL}/.netlify/functions/process-document-background`;
 
-        // Start background processing (fire and forget)
+        // Use context.callbackWaitsForEmptyEventLoop for true async
+        context.callbackWaitsForEmptyEventLoop = false;
+
+        // Start background processing
         fetch(backgroundUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': event.headers['content-type'],
+                'Content-Type': event.headers['content-type'] || 'multipart/form-data',
                 'X-Job-ID': jobId
             },
             body: event.body
         }).catch(err => {
             console.error('Background invocation error:', err);
+            store.set(jobId, JSON.stringify({
+                status: 'error',
+                progress: 0,
+                message: 'Failed to start background processing',
+                error: err.toString()
+            }));
         });
 
         // Return job ID immediately
@@ -47,8 +67,8 @@ exports.handler = async (event, context) => {
             headers,
             body: JSON.stringify({
                 jobId,
-                status: 'processing',
-                message: 'Processing started. Use job ID to check status.'
+                status: 'queued',
+                message: 'Processing started. Poll status endpoint for progress.'
             })
         };
 

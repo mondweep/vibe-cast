@@ -119,58 +119,120 @@ class ELearningApp {
         if (!this.selectedFile) return;
 
         this.showSection('processing-section');
-        this.startProgressSimulation();
 
         try {
             // Create form data
             const formData = new FormData();
             formData.append('file', this.selectedFile);
 
-            // Call Netlify Function with timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
-            const response = await fetch('/.netlify/functions/process-document', {
+            // Start background processing - this returns immediately with a job ID
+            const response = await fetch('/.netlify/functions/start-processing', {
                 method: 'POST',
-                body: formData,
-                signal: controller.signal
-            }).catch(err => {
-                clearTimeout(timeoutId);
-                // If timeout or network error, use demo mode
-                if (err.name === 'AbortError' || err.message.includes('504')) {
-                    console.log('Function timed out, using demo mode');
-                    return null; // Will trigger demo mode below
-                }
-                throw err;
+                body: formData
             });
 
-            clearTimeout(timeoutId);
-
-            // Check if we got a response
-            if (!response || !response.ok) {
-                // Function timed out or failed - use demo mode
-                console.log('Processing in demo mode due to timeout/error');
-                await this.processDemoMode();
-                return;
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to start processing');
             }
 
-            const result = await response.json();
+            const { jobId } = await response.json();
+            console.log('Processing started with job ID:', jobId);
 
-            // Stop simulation and show complete
-            this.stopProgressSimulation();
-            this.showComplete(result);
+            // Poll for job status
+            await this.pollJobStatus(jobId);
 
         } catch (error) {
             console.error('Processing error:', error);
+            this.stopProgressSimulation();
+            this.showError(error.message || 'An error occurred during processing');
+        }
+    }
 
-            // If timeout or 504, use demo mode
-            if (error.message.includes('504') || error.message.includes('timeout')) {
-                console.log('Using demo mode due to timeout');
-                await this.processDemoMode();
-            } else {
-                this.stopProgressSimulation();
-                this.showError(error.message || 'An error occurred during processing');
+    async pollJobStatus(jobId) {
+        const pollInterval = 2000; // Poll every 2 seconds
+        const maxAttempts = 450; // 15 minutes max (450 * 2 seconds)
+        let attempts = 0;
+
+        const poll = async () => {
+            if (attempts >= maxAttempts) {
+                throw new Error('Processing timed out after 15 minutes');
             }
+
+            attempts++;
+
+            try {
+                const response = await fetch(`/.netlify/functions/job-status?jobId=${jobId}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to get job status');
+                }
+
+                const status = await response.json();
+                console.log('Job status:', status);
+
+                // Update progress UI
+                this.updateProgress(status.progress, status.message);
+
+                if (status.status === 'complete') {
+                    // Processing complete - show results
+                    this.showComplete({
+                        modulesCount: status.result.modulesCount,
+                        objectivesCount: status.result.objectivesCount,
+                        questionsCount: status.result.questionsCount,
+                        estimatedDuration: status.result.estimatedDuration,
+                        package: status.result.package,
+                        fileName: status.result.fileName,
+                        isDemo: false
+                    });
+                    return;
+                } else if (status.status === 'error') {
+                    // Processing failed
+                    throw new Error(status.message || 'Processing failed');
+                } else {
+                    // Still processing - poll again
+                    setTimeout(poll, pollInterval);
+                }
+
+            } catch (error) {
+                console.error('Polling error:', error);
+                throw error;
+            }
+        };
+
+        // Start polling
+        await poll();
+    }
+
+    updateProgress(progress, message) {
+        // Update progress bar
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+
+        if (progressFill) {
+            progressFill.style.width = `${progress}%`;
+        }
+        if (progressText) {
+            progressText.textContent = `${Math.round(progress)}% Complete`;
+        }
+
+        // Update step status based on progress
+        document.querySelectorAll('.step').forEach((el, index) => {
+            const stepProgress = [25, 50, 75, 100];
+            if (progress >= stepProgress[index]) {
+                el.classList.add('completed');
+                el.classList.remove('active');
+            } else if (progress >= (stepProgress[index] - 25)) {
+                el.classList.add('active');
+                el.classList.remove('completed');
+            } else {
+                el.classList.remove('active', 'completed');
+            }
+        });
+
+        // Log message for debugging
+        if (message) {
+            console.log('Processing:', message);
         }
     }
 
@@ -311,6 +373,7 @@ class ELearningApp {
 
         // Store package data for download
         this.packageData = result.package; // Base64 encoded ZIP
+        this.packageFileName = result.fileName || 'scorm-package.zip'; // Custom filename
         this.packageUrl = result.packageUrl; // For demo mode
         this.isDemo = result.isDemo || false; // Track if in demo mode
 
@@ -350,7 +413,7 @@ class ELearningApp {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'scorm-package.zip';
+            a.download = this.packageFileName || 'scorm-package.zip';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

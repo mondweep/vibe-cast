@@ -36,6 +36,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
     "@google-cloud/text-to-speech": "^6.4.0",
+    "@netlify/blobs": "^10.3.3",
     "@types/node": "^24.10.1",
     "agentdb": "^1.6.1",
     "archiver": "^7.0.1",

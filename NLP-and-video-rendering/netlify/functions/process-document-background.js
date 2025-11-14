@@ -1,25 +1,34 @@
 /**
  * Netlify Background Function: Process Document
- * Handles long-running document processing (up to 15 minutes)
- *
- * Requires: Netlify Pro account
+ * Handles long-running document processing (up to 15 minutes with Netlify Pro)
  */
 
+const { getStore } = require('@netlify/blobs');
 const { parse: parseMultipart } = require('lambda-multipart-parser');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
 
 // Import our processing modules
-const { getParser } = require('../../src/parsers');
-const { NLPOrchestrator } = require('../../src/nlp/NLPOrchestrator');
-const { ActivityFactory } = require('../../src/interactive/ActivityFactory');
-const { SCORMPackageBuilder } = require('../../src/scorm/SCORMPackageBuilder');
+const { getParser } = require('../../dist/parsers');
+const { NLPOrchestrator } = require('../../dist/nlp/NLPOrchestrator');
+const { ActivityFactory } = require('../../dist/interactive/ActivityFactory');
+const { SCORMPackageBuilder } = require('../../dist/scorm/SCORMPackageBuilder');
 
 exports.handler = async (event, context) => {
-    console.log('Background function started');
+    const jobId = event.headers['x-job-id'];
+    const store = getStore('jobs');
+
+    console.log(`Background function started for job ${jobId}`);
 
     try {
+        // Update status to processing
+        await store.set(jobId, JSON.stringify({
+            status: 'processing',
+            progress: 0,
+            message: 'Starting document processing...'
+        }));
+
         // Parse multipart form data
         const result = await parseMultipart(event);
 
@@ -28,16 +37,20 @@ exports.handler = async (event, context) => {
         }
 
         const uploadedFile = result.files[0];
-        const jobId = event.headers['x-job-id'] || Date.now().toString();
-
-        console.log(`Processing job ${jobId}: ${uploadedFile.filename}`);
+        console.log(`Processing: ${uploadedFile.filename}`);
 
         // Validate file
         const validExtensions = ['.pptx', '.docx'];
         const fileExt = path.extname(uploadedFile.filename).toLowerCase();
 
         if (!validExtensions.includes(fileExt)) {
-            throw new Error('Invalid file type');
+            throw new Error('Invalid file type. Please upload .pptx or .docx files only.');
+        }
+
+        // Check file size
+        const maxSize = 50 * 1024 * 1024;
+        if (uploadedFile.content.length > maxSize) {
+            throw new Error('File size exceeds 50MB limit.');
         }
 
         // Check API key
@@ -51,25 +64,43 @@ exports.handler = async (event, context) => {
         const tempFilePath = path.join(tempDir, uploadedFile.filename);
         await fs.writeFile(tempFilePath, uploadedFile.content);
 
-        console.log('Starting document processing...');
+        // Step 1: Parse document (25%)
+        await store.set(jobId, JSON.stringify({
+            status: 'processing',
+            progress: 10,
+            message: 'Parsing document and extracting content...'
+        }));
 
-        // 1. Parse document
-        console.log('Step 1: Parsing document...');
         const parser = getParser(tempFilePath);
         const parsedContent = await parser.parse(tempFilePath);
 
-        // 2. NLP processing
-        console.log('Step 2: NLP processing...');
+        // Step 2: NLP processing (25-75%)
+        await store.set(jobId, JSON.stringify({
+            status: 'processing',
+            progress: 25,
+            message: 'Processing with AI - generating objectives and questions...'
+        }));
+
         const nlpOrchestrator = new NLPOrchestrator({ apiKey });
         const enrichedContent = await nlpOrchestrator.process(parsedContent);
 
-        // 3. Generate interactive content
-        console.log('Step 3: Generating interactive content...');
+        // Step 3: Generate interactive content (75-85%)
+        await store.set(jobId, JSON.stringify({
+            status: 'processing',
+            progress: 75,
+            message: 'Creating interactive activities and assessments...'
+        }));
+
         const activityFactory = new ActivityFactory();
         const interactiveContent = activityFactory.generate(enrichedContent);
 
-        // 4. Create SCORM package
-        console.log('Step 4: Creating SCORM package...');
+        // Step 4: Create SCORM package (85-100%)
+        await store.set(jobId, JSON.stringify({
+            status: 'processing',
+            progress: 85,
+            message: 'Building SCORM package...'
+        }));
+
         const scormBuilder = new SCORMPackageBuilder({
             version: '1.2',
             masteryScore: 80,
@@ -103,35 +134,56 @@ exports.handler = async (event, context) => {
             estimatedDuration: enrichedContent.metadata.estimatedDuration,
         };
 
+        // Store result
+        await store.set(jobId, JSON.stringify({
+            status: 'complete',
+            progress: 100,
+            message: 'SCORM package generated successfully!',
+            result: {
+                ...stats,
+                package: packageBase64,
+                packageSize: packageData.length,
+                fileName: `${path.basename(uploadedFile.filename, path.extname(uploadedFile.filename))}-scorm.zip`
+            }
+        }), {
+            metadata: { ttl: 3600 } // Keep result for 1 hour
+        });
+
         // Clean up temp files
-        await fs.unlink(tempFilePath);
-        await fs.unlink(outputPath);
+        await fs.unlink(tempFilePath).catch(() => {});
+        await fs.unlink(outputPath).catch(() => {});
+        await fs.rmdir(outputDir).catch(() => {});
 
         console.log(`Job ${jobId} completed successfully`);
 
-        // Return result
         return {
             statusCode: 200,
             body: JSON.stringify({
                 success: true,
                 jobId,
-                ...stats,
-                package: packageBase64,
-                packageSize: packageData.length,
-                message: 'SCORM package generated successfully'
+                message: 'Processing completed'
             })
         };
 
     } catch (error) {
-        console.error('Background function error:', error);
+        console.error(`Job ${jobId} failed:`, error);
+
+        // Store error
+        await store.set(jobId, JSON.stringify({
+            status: 'error',
+            progress: 0,
+            message: error.message || 'Processing failed',
+            error: error.toString()
+        })).catch(err => console.error('Failed to store error:', err));
 
         return {
             statusCode: 500,
             body: JSON.stringify({
                 success: false,
-                message: error.message,
-                error: error.toString()
+                jobId,
+                message: error.message
             })
         };
     }
 };
+
