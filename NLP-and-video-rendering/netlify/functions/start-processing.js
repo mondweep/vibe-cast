@@ -43,53 +43,49 @@ exports.handler = async (event, context) => {
         const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         console.log(`Starting new processing job: ${jobId}`);
 
-        // Try to get Netlify Blobs store with manual configuration
+        // Try to get Netlify Blobs store
         let store;
         try {
             // Log available environment variables for debugging
-            console.log('Available Netlify env vars:', {
-                SITE_ID: process.env.SITE_ID,
-                URL: process.env.URL,
-                DEPLOY_ID: process.env.DEPLOY_ID,
-                CONTEXT: process.env.CONTEXT,
-                NETLIFY: process.env.NETLIFY,
-                NETLIFY_DEV: process.env.NETLIFY_DEV
+            const envVars = Object.keys(process.env).filter(k =>
+                k.includes('NETLIFY') || k.includes('SITE') || k.includes('DEPLOY') ||
+                k === 'URL' || k === 'CONTEXT'
+            );
+            console.log('Netlify-related env vars found:', envVars);
+            envVars.forEach(key => {
+                console.log(`  ${key}:`, process.env[key] ? `"${process.env[key]}"` : 'undefined');
             });
 
-            // Try to get site ID from multiple sources
-            let siteID = process.env.SITE_ID;
+            // Try automatic initialization first (should work in Netlify environment)
+            try {
+                store = getStore('jobs');
+                console.log('✓ Netlify Blobs store initialized with automatic configuration');
+            } catch (autoError) {
+                console.log('✗ Automatic initialization failed:', autoError.message);
 
-            // If SITE_ID not available, try to extract from URL
-            // URL format: https://[site-name]--[deploy-id].netlify.app or https://[site-name].netlify.app
-            if (!siteID && process.env.URL) {
-                const urlMatch = process.env.URL.match(/https?:\/\/([^.]+)/);
-                if (urlMatch) {
-                    // Use the site name as identifier (not ideal but may work)
-                    siteID = urlMatch[1].split('--')[0]; // Remove deploy ID if present
-                    console.log('Extracted site identifier from URL:', siteID);
+                // Manual fallback - try with siteID from environment
+                const siteID = process.env.SITE_ID;
+                if (!siteID) {
+                    throw new Error(`Cannot initialize Blobs: SITE_ID environment variable not found. Auto-init error: ${autoError.message}`);
                 }
+
+                console.log('Attempting manual initialization with SITE_ID:', siteID);
+                const token = process.env.NETLIFY_BLOBS_CONTEXT;
+                const storeConfig = token ? { siteID, token } : { siteID };
+                store = getStore({ name: 'jobs', ...storeConfig });
+                console.log('✓ Netlify Blobs store initialized with manual configuration');
             }
-
-            if (!siteID) {
-                throw new Error('SITE_ID not available. Please add SITE_ID as an environment variable in Netlify UI. Get it from: Site Settings > General > Site details > Site ID');
-            }
-
-            const token = process.env.NETLIFY_BLOBS_CONTEXT;
-
-            // Create store with explicit configuration
-            const storeConfig = token ? { siteID, token } : { siteID };
-            store = getStore({ name: 'jobs', ...storeConfig });
-            console.log('Netlify Blobs store initialized successfully with site ID:', siteID);
         } catch (blobError) {
             console.error('Failed to initialize Netlify Blobs:', blobError);
-            console.error('Error details:', blobError.message, blobError.stack);
+            console.error('Error details:', blobError.message);
+            console.error('Stack:', blobError.stack);
             return {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({
                     message: 'Blob storage not available',
-                    error: blobError.message || 'Failed to initialize storage.',
-                    help: 'Add SITE_ID environment variable in Netlify UI: Site Settings > Environment Variables'
+                    error: blobError.message,
+                    help: 'Check Netlify function logs for environment variable details'
                 })
             };
         }
