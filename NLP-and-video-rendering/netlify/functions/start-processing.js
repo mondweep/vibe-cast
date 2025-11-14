@@ -46,13 +46,35 @@ exports.handler = async (event, context) => {
         // Try to get Netlify Blobs store with manual configuration
         let store;
         try {
-            // Netlify provides these environment variables in deployed functions
-            const siteID = process.env.SITE_ID;
-            const token = process.env.NETLIFY_BLOBS_CONTEXT;
+            // Log available environment variables for debugging
+            console.log('Available Netlify env vars:', {
+                SITE_ID: process.env.SITE_ID,
+                URL: process.env.URL,
+                DEPLOY_ID: process.env.DEPLOY_ID,
+                CONTEXT: process.env.CONTEXT,
+                NETLIFY: process.env.NETLIFY,
+                NETLIFY_DEV: process.env.NETLIFY_DEV
+            });
+
+            // Try to get site ID from multiple sources
+            let siteID = process.env.SITE_ID;
+
+            // If SITE_ID not available, try to extract from URL
+            // URL format: https://[site-name]--[deploy-id].netlify.app or https://[site-name].netlify.app
+            if (!siteID && process.env.URL) {
+                const urlMatch = process.env.URL.match(/https?:\/\/([^.]+)/);
+                if (urlMatch) {
+                    // Use the site name as identifier (not ideal but may work)
+                    siteID = urlMatch[1].split('--')[0]; // Remove deploy ID if present
+                    console.log('Extracted site identifier from URL:', siteID);
+                }
+            }
 
             if (!siteID) {
-                throw new Error('SITE_ID environment variable not found. Ensure function is deployed to Netlify.');
+                throw new Error('SITE_ID not available. Please add SITE_ID as an environment variable in Netlify UI. Get it from: Site Settings > General > Site details > Site ID');
             }
+
+            const token = process.env.NETLIFY_BLOBS_CONTEXT;
 
             // Create store with explicit configuration
             const storeConfig = token ? { siteID, token } : { siteID };
@@ -60,14 +82,14 @@ exports.handler = async (event, context) => {
             console.log('Netlify Blobs store initialized successfully with site ID:', siteID);
         } catch (blobError) {
             console.error('Failed to initialize Netlify Blobs:', blobError);
-            console.error('SITE_ID:', process.env.SITE_ID);
-            console.error('NETLIFY_BLOBS_CONTEXT available:', !!process.env.NETLIFY_BLOBS_CONTEXT);
+            console.error('Error details:', blobError.message, blobError.stack);
             return {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({
                     message: 'Blob storage not available',
-                    error: blobError.message || 'Failed to initialize storage.'
+                    error: blobError.message || 'Failed to initialize storage.',
+                    help: 'Add SITE_ID environment variable in Netlify UI: Site Settings > Environment Variables'
                 })
             };
         }
