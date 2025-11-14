@@ -16,20 +16,36 @@ const { ActivityFactory } = require('../../dist/interactive/ActivityFactory');
 const { SCORMPackageBuilder } = require('../../dist/scorm/SCORMPackageBuilder');
 
 exports.handler = async (event, context) => {
-    const jobId = event.headers['x-job-id'];
+    const headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Job-ID',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    };
+
+    // Handle CORS preflight
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 200, headers, body: '' };
+    }
+
+    // Get job ID from header or generate new one
+    let jobId = event.headers['x-job-id'];
+    if (!jobId) {
+        jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+
     const store = getStore('jobs');
 
     console.log(`Background function started for job ${jobId}`);
 
     try {
-        // Update status to processing
+        // Initialize job status immediately
         await store.set(jobId, JSON.stringify({
             status: 'processing',
             progress: 0,
             message: 'Starting document processing...'
         }));
 
-        // Parse multipart form data
+        // Parse multipart form data first
         const result = await parseMultipart(event);
 
         if (!result.files || result.files.length === 0) {
@@ -158,6 +174,7 @@ exports.handler = async (event, context) => {
 
         return {
             statusCode: 200,
+            headers,
             body: JSON.stringify({
                 success: true,
                 jobId,
@@ -178,6 +195,7 @@ exports.handler = async (event, context) => {
 
         return {
             statusCode: 500,
+            headers,
             body: JSON.stringify({
                 success: false,
                 jobId,

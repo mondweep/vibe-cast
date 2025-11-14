@@ -52,6 +52,7 @@
     "lodash": "^4.17.21",
     "mammoth": "^1.11.0",
     "natural": "^8.1.0",
+    "node-fetch": "^2.7.0",
     "node-webvtt": "^1.9.4",
     "pptxgenjs": "^4.0.1",
     "research-swarm": "^1.2.2",

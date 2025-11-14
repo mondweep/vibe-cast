@@ -121,25 +121,30 @@ class ELearningApp {
         this.showSection('processing-section');
 
         try {
+            // Generate a job ID on the frontend
+            const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            console.log('Starting processing with job ID:', jobId);
+
             // Create form data
             const formData = new FormData();
             formData.append('file', this.selectedFile);
 
-            // Start background processing - this returns immediately with a job ID
-            const response = await fetch('/.netlify/functions/start-processing', {
+            // Call background processing function (don't wait for completion)
+            // The function will process for up to 15 minutes and update job status in Blobs
+            fetch('/.netlify/functions/process-document-background', {
                 method: 'POST',
+                headers: {
+                    'X-Job-ID': jobId
+                },
                 body: formData
+            }).catch(err => {
+                console.error('Background function invocation error:', err);
+                // Don't throw - we'll poll for status to detect errors
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Failed to start processing');
-            }
-
-            const { jobId } = await response.json();
-            console.log('Processing started with job ID:', jobId);
-
-            // Poll for job status
+            // Immediately start polling for job status
+            // Give the function a moment to initialize
+            await new Promise(resolve => setTimeout(resolve, 1000));
             await this.pollJobStatus(jobId);
 
         } catch (error) {
@@ -153,6 +158,7 @@ class ELearningApp {
         const pollInterval = 2000; // Poll every 2 seconds
         const maxAttempts = 450; // 15 minutes max (450 * 2 seconds)
         let attempts = 0;
+        let consecutiveErrors = 0;
 
         const poll = async () => {
             if (attempts >= maxAttempts) {
@@ -164,15 +170,30 @@ class ELearningApp {
             try {
                 const response = await fetch(`/.netlify/functions/job-status?jobId=${jobId}`);
 
+                if (response.status === 404) {
+                    // Job not found yet - background function hasn't started
+                    console.log('Job not found yet, waiting for background function to start...');
+                    consecutiveErrors = 0;
+                    setTimeout(poll, pollInterval);
+                    return;
+                }
+
                 if (!response.ok) {
-                    throw new Error('Failed to get job status');
+                    consecutiveErrors++;
+                    if (consecutiveErrors > 5) {
+                        throw new Error('Failed to get job status after multiple attempts');
+                    }
+                    console.warn('Failed to get job status, retrying...');
+                    setTimeout(poll, pollInterval);
+                    return;
                 }
 
                 const status = await response.json();
                 console.log('Job status:', status);
+                consecutiveErrors = 0;
 
                 // Update progress UI
-                this.updateProgress(status.progress, status.message);
+                this.updateProgress(status.progress || 0, status.message);
 
                 if (status.status === 'complete') {
                     // Processing complete - show results
@@ -196,7 +217,12 @@ class ELearningApp {
 
             } catch (error) {
                 console.error('Polling error:', error);
-                throw error;
+                consecutiveErrors++;
+                if (consecutiveErrors > 5) {
+                    throw error;
+                }
+                // Retry on error
+                setTimeout(poll, pollInterval);
             }
         };
 

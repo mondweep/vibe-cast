@@ -4,6 +4,7 @@
  */
 
 const { getStore } = require('@netlify/blobs');
+const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
     const headers = {
