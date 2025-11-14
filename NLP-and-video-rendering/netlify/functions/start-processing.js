@@ -121,15 +121,29 @@ exports.handler = async (event, context) => {
         // Use context.callbackWaitsForEmptyEventLoop for true async
         context.callbackWaitsForEmptyEventLoop = false;
 
-        // Start background processing
+        // event.body is base64 encoded, need to decode it for the background function
+        const bodyBuffer = event.isBase64Encoded ?
+            Buffer.from(event.body, 'base64') :
+            event.body;
+
+        // Start background processing (don't await - fire and forget)
         fetch(backgroundUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': event.headers['content-type'] || 'multipart/form-data',
                 'X-Job-ID': jobId
             },
-            body: event.body
-        }).catch(err => {
+            body: bodyBuffer
+        })
+        .then(response => {
+            console.log(`Background function response status: ${response.status}`);
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.error('Background function error response:', text);
+                });
+            }
+        })
+        .catch(err => {
             console.error('Background invocation error:', err);
             console.error('Error stack:', err.stack);
             store.set(jobId, JSON.stringify({
