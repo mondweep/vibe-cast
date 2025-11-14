@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eLearning Automation Tool | Transform Documents to SCORM</title>
+    <meta name="description" content="AI-powered tool to transform PowerPoint and Word documents into SCORM-compliant eLearning modules">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="8" fill="url(#gradient)"/>
+                    <path d="M12 20L18 26L28 14" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#667eea"/>
+                            <stop offset="1" stop-color="#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>eLearning Automation</h1>
+            </div>
+            <p class="tagline">Transform PowerPoint & Word into Interactive SCORM Courses</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Upload Section -->
+            <section id="upload-section" class="section active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Upload Your Document</h2>
+                        <p>Upload a PowerPoint (.pptx) or Word (.docx) file with speaker notes</p>
+                    </div>
+
+                    <div class="info-banner">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p><strong>Note:</strong> Due to serverless function limits, full processing runs in demo mode. For actual SCORM generation, run locally or use the CLI tool.</p>
+                    </div>
+
+                    <div class="upload-area" id="upload-area">
+                        <svg class="upload-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <h3>Drag & drop your file here</h3>
+                        <p>or</p>
+                        <button class="btn btn-primary" id="browse-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/>
+                            </svg>
+                            Browse Files
+                        </button>
+                        <input type="file" id="file-input" accept=".pptx,.docx" hidden>
+                        <p class="file-types">Supported: .pptx, .docx (max 50MB)</p>
+                    </div>
+
+                    <div class="file-preview" id="file-preview" style="display: none;">
+                        <div class="file-info">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <div class="file-details">
+                                <h4 id="file-name">document.pptx</h4>
+                                <p id="file-size">2.5 MB</p>
+                            </div>
+                            <button class="btn-remove" id="remove-file" title="Remove file">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="btn btn-primary btn-large" id="process-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Generate SCORM Package
+                        </button>
+                    </div>
+
+                    <div class="features">
+                        <div class="feature">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                            <div>
+                                <h4>AI-Powered</h4>
+                                <p>Claude AI enhances your content</p>
+                            </div>
+                        </div>
+                        <div class="feature">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                            </svg>
+                            <div>
+                                <h4>Interactive Content</h4>
+                                <p>Quizzes, flashcards & activities</p>
+                            </div>
+                        </div>
+                        <div class="feature">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            <div>
+                                <h4>SCORM Compliant</h4>
+                                <p>Works with any LMS platform</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Processing Section -->
+            <section id="processing-section" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Processing Your Document</h2>
+                        <p>Please wait while we transform your content...</p>
+                    </div>
+
+                    <div class="progress-container">
+                        <div class="progress-steps">
+                            <div class="step" data-step="1">
+                                <div class="step-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Parsing Document</h4>
+                                    <p>Extracting content and speaker notes</p>
+                                </div>
+                            </div>
+
+                            <div class="step" data-step="2">
+                                <div class="step-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                    </svg>
+                                </div>
+                                <div class="step-content">
+                                    <h4>AI Processing</h4>
+                                    <p>Generating objectives and questions</p>
+                                </div>
+                            </div>
+
+                            <div class="step" data-step="3">
+                                <div class="step-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/>
+                                    </svg>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Building Activities</h4>
+                                    <p>Creating interactive components</p>
+                                </div>
+                            </div>
+
+                            <div class="step" data-step="4">
+                                <div class="step-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                    </svg>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Creating SCORM Package</h4>
+                                    <p>Packaging for LMS deployment</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <p class="progress-text" id="progress-text">0% Complete</p>
+                    </div>
+
+                    <div class="processing-info">
+                        <p>⚡ This usually takes 2-5 minutes depending on document size</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Complete Section -->
+            <section id="complete-section" class="section">
+                <div class="card">
+                    <div class="success-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+
+                    <div class="card-header">
+                        <h2>SCORM Package Ready!</h2>
+                        <p>Your eLearning module has been successfully created</p>
+                    </div>
+
+                    <div class="results-summary" id="results-summary">
+                        <div class="result-item">
+                            <span class="result-label">Modules Created:</span>
+                            <span class="result-value" id="modules-count">0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Learning Objectives:</span>
+                            <span class="result-value" id="objectives-count">0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Assessment Questions:</span>
+                            <span class="result-value" id="questions-count">0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Estimated Duration:</span>
+                            <span class="result-value" id="duration">0 min</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary btn-large" id="download-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            Download SCORM Package
+                        </button>
+                        <button class="btn btn-secondary" id="new-upload-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Create Another Course
+                        </button>
+                    </div>
+
+                    <div class="next-steps">
+                        <h3>Next Steps</h3>
+                        <ol>
+                            <li>Download the SCORM package (.zip file)</li>
+                            <li>Log in to your LMS (Moodle, Canvas, Blackboard, etc.)</li>
+                            <li>Upload the SCORM package to create a new course</li>
+                            <li>Test the course to ensure everything works correctly</li>
+                            <li>Publish to your learners!</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Error Section -->
+            <section id="error-section" class="section">
+                <div class="card card-error">
+                    <div class="error-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+
+                    <div class="card-header">
+                        <h2>Processing Failed</h2>
+                        <p id="error-message">An error occurred while processing your document</p>
+                    </div>
+
+                    <div class="error-details" id="error-details">
+                        <!-- Error details will be inserted here -->
+                    </div>
+
+                    <button class="btn btn-primary" id="retry-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Try Again
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by Claude AI • SCORM 1.2 & 2004 Compliant</p>
+            <p class="footer-links">
+                <a href="#" id="about-link">About</a>
+                <a href="#" id="docs-link">Documentation</a>
+                <a href="#" id="support-link">Support</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

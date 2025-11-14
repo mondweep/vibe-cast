@@ -1,0 +1,71 @@
+{
+  "name": "nlp-and-video-rendering",
+  "version": "1.0.0",
+  "description": "AI-powered tool to transform PowerPoint presentations and Word documents into SCORM-compliant eLearning modules for healthcare professionals",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "elearning-tool": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:web": "npm run build",
+    "start": "npm run build && node dist/cli.js",
+    "dev": "ts-node src/cli.ts",
+    "dev:server": "netlify dev",
+    "deploy": "netlify deploy --prod",
+    "deploy:preview": "netlify deploy",
+    "clean": "rm -rf dist output",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "elearning",
+    "scorm",
+    "nlp",
+    "healthcare",
+    "education",
+    "ai",
+    "claude",
+    "automation",
+    "powerpoint",
+    "word",
+    "video-rendering"
+  ],
+  "author": "VibeCast",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "@google-cloud/text-to-speech": "^6.4.0",
+    "@netlify/blobs": "^10.3.3",
+    "@types/node": "^24.10.1",
+    "agentdb": "^1.6.1",
+    "archiver": "^7.0.1",
+    "canvas": "^3.2.0",
+    "claude-flow": "^2.7.31",
+    "compromise": "^14.14.4",
+    "dotenv": "^17.2.3",
+    "fluent-ffmpeg": "^2.1.3",
+    "handlebars": "^4.7.8",
+    "joi": "^18.0.1",
+    "jszip": "^3.10.1",
+    "lambda-multipart-parser": "^1.0.1",
+    "lodash": "^4.17.21",
+    "mammoth": "^1.11.0",
+    "natural": "^8.1.0",
+    "node-fetch": "^2.7.0",
+    "node-webvtt": "^1.9.4",
+    "pptxgenjs": "^4.0.1",
+    "research-swarm": "^1.2.2",
+    "scorm-again": "^2.6.7",
+    "sharp": "^0.34.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "winston": "^3.18.3",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@types/archiver": "^7.0.0",
+    "@types/xml2js": "^0.4.14",
+    "netlify-cli": "^23.11.0"
+  }
+}
