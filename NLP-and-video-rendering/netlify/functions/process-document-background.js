@@ -3,19 +3,55 @@
  * Handles long-running document processing (up to 15 minutes with Netlify Pro)
  */
 
+// Log immediately to verify function is being invoked
+console.log('=== PROCESS DOCUMENT BACKGROUND FUNCTION LOADING ===');
+
 const { getStore } = require('@netlify/blobs');
 const { parse: parseMultipart } = require('lambda-multipart-parser');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
 
-// Import our processing modules
-const { getParser } = require('../../dist/parsers');
-const { NLPOrchestrator } = require('../../dist/nlp/NLPOrchestrator');
-const { ActivityFactory } = require('../../dist/interactive/ActivityFactory');
-const { SCORMPackageBuilder } = require('../../dist/scorm/SCORMPackageBuilder');
+console.log('=== BASIC MODULES LOADED ===');
+
+// Import our processing modules - these might fail
+let getParser, NLPOrchestrator, ActivityFactory, SCORMPackageBuilder;
+try {
+    const parsersModule = require('../../dist/parsers');
+    getParser = parsersModule.getParser;
+    console.log('✓ Parsers loaded');
+} catch (e) {
+    console.error('✗ Failed to load parsers:', e.message);
+}
+
+try {
+    const nlpModule = require('../../dist/nlp/NLPOrchestrator');
+    NLPOrchestrator = nlpModule.NLPOrchestrator;
+    console.log('✓ NLP Orchestrator loaded');
+} catch (e) {
+    console.error('✗ Failed to load NLP Orchestrator:', e.message);
+}
+
+try {
+    const activityModule = require('../../dist/interactive/ActivityFactory');
+    ActivityFactory = activityModule.ActivityFactory;
+    console.log('✓ Activity Factory loaded');
+} catch (e) {
+    console.error('✗ Failed to load Activity Factory:', e.message);
+}
+
+try {
+    const scormModule = require('../../dist/scorm/SCORMPackageBuilder');
+    SCORMPackageBuilder = scormModule.SCORMPackageBuilder;
+    console.log('✓ SCORM Package Builder loaded');
+} catch (e) {
+    console.error('✗ Failed to load SCORM Package Builder:', e.message);
+}
+
+console.log('=== ALL MODULES LOADED, HANDLER READY ===');
 
 exports.handler = async (event, context) => {
+    console.log('=== HANDLER INVOKED ===');
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type, X-Job-ID',
