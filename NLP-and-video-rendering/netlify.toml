@@ -32,9 +32,10 @@
   # External packages that should not be bundled (provided by Netlify)
   external_node_modules = ["@netlify/blobs", "@anthropic-ai/sdk", "sharp", "canvas"]
 
-# Background function for long-running processing (15 min timeout on Pro)
-[functions."process-document-background"]
+# Main processing function with maximum Pro timeout
+[functions."process-document"]
   included_files = ["dist/**", "node_modules/@netlify/blobs/**", "node_modules/lambda-multipart-parser/**"]
+  timeout = 26  # Maximum for synchronous functions on Netlify Pro
 
 [functions."start-processing"]
   included_files = ["node_modules/@netlify/blobs/**", "node_modules/node-fetch/**"]

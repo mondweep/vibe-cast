@@ -129,16 +129,16 @@ class ELearningApp {
             const formData = new FormData();
             formData.append('file', this.selectedFile);
 
-            // Call the background processing function directly
-            // With -background suffix on Pro, this gets 15-minute timeout
-            fetch('/.netlify/functions/process-document-background', {
+            // Call the processing function directly
+            // On Pro plan, this gets 26-second timeout
+            fetch('/.netlify/functions/process-document', {
                 method: 'POST',
                 headers: {
                     'X-Job-ID': jobId
                 },
                 body: formData
             }).catch(err => {
-                console.error('Background function invocation error:', err);
+                console.error('Processing function invocation error:', err);
                 // Don't throw - we'll poll for status to detect errors
             });
 
