@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Environment
+.env
+
+# Audio files
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.aac
+
+# Output directories
+output/
+separated/
+training_data/
+models/
+logs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# RVC specific
+checkpoints/
+weights/
+*.pth
+*.ckpt
+
+# Large files
+*.zip
+*.tar.gz
+
+# Keep structure
+!output/.gitkeep
+!separated/.gitkeep
+!training_data/.gitkeep
+!models/.gitkeep

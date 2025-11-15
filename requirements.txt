@@ -1,0 +1,54 @@
+# Core dependencies for Vibe-Cast: Assamese to English Song Translation
+# Python 3.9 or 3.10 required
+
+# Deep Learning
+torch>=2.0.0
+torchaudio>=2.0.0
+torchvision>=0.15.0
+
+# Audio Processing
+librosa>=0.10.0
+soundfile>=0.12.0
+audioread>=3.0.0
+pydub>=0.25.0
+resampy>=0.4.0
+scipy>=1.10.0
+
+# Audio Separation
+demucs>=4.0.0
+
+# YouTube Download
+yt-dlp>=2023.3.4
+
+# AI/ML Libraries
+numpy>=1.24.0
+scikit-learn>=1.2.0
+
+# Anthropic API for translation
+anthropic>=0.21.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Web Interface (optional)
+gradio>=3.35.0
+fastapi>=0.100.0
+uvicorn>=0.23.0
+
+# Utilities
+tqdm>=4.65.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Claude Flow and AgentDB (already installed)
+# claude-flow@alpha
+# agentdb
+
+# Optional: For advanced voice conversion
+# praat-parselmouth>=0.4.3
+# pyworld>=0.3.0
+
+# Development
+jupyter>=1.0.0
+ipython>=8.12.0
