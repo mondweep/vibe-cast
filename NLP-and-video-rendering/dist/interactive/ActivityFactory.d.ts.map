@@ -1,0 +1,1 @@
+{"version":3,"file":"ActivityFactory.d.ts","sourceRoot":"","sources":["../../src/interactive/ActivityFactory.ts"],"names":[],"mappings":"AAKA,OAAO,EAAE,eAAe,EAAe,MAAM,0BAA0B,CAAC;AACxE,OAAO,EAAE,kBAAkB,EAA2C,MAAM,6BAA6B,CAAC;AAE1G,qBAAa,eAAe;IAI1B,QAAQ,CAAC,eAAe,EAAE,eAAe,GAAG,kBAAkB;IAqB9D,OAAO,CAAC,oBAAoB;CAyE7B"}
