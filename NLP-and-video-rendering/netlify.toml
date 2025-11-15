@@ -33,7 +33,7 @@
   external_node_modules = ["@netlify/blobs", "@anthropic-ai/sdk", "sharp", "canvas"]
 
 # Long-running processing function (will run as long as allowed by plan)
-[functions."process-document-background"]
+[functions."process-document"]
   included_files = ["dist/**", "node_modules/@netlify/blobs/**", "node_modules/lambda-multipart-parser/**"]
   # On Free tier: 10s, On Pro: 26s (we'll handle timeouts gracefully)
 

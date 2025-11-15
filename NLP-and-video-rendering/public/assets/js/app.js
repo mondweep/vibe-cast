@@ -130,14 +130,14 @@ class ELearningApp {
             formData.append('file', this.selectedFile);
 
             // Call the processing function directly (fire and forget - don't wait for response)
-            fetch('/.netlify/functions/process-document-background', {
+            fetch('/.netlify/functions/process-document', {
                 method: 'POST',
                 headers: {
                     'X-Job-ID': jobId
                 },
                 body: formData
             }).catch(err => {
-                console.error('Background function invocation error:', err);
+                console.error('Processing function invocation error:', err);
                 // Don't throw - we'll poll for status to detect errors
             });
 
