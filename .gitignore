@@ -15,15 +15,49 @@ build/
 dist/
 *.egg-info/
 
-# Environment
+# Environment & Sensitive Data
 .env
+.env.local
+.env.*.local
+.env.prod
 
-# Audio files
+# Authentication & Credentials (CRITICAL - NEVER COMMIT)
+cookies.txt
+cookies.json
+*.cookies
+*.key
+*.pem
+*.pub
+*.private
+secrets.json
+tokens.json
+credentials.json
+service_account.json
+.aws/
+.gcp/
+passwords.txt
+.password
+
+# Audio files (LARGE)
 *.wav
 *.mp3
 *.flac
 *.m4a
 *.aac
+*.ogg
+*.wma
+audio/
+*.mp3
+*.m4a
+
+# Video files
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.flv
+*.wmv
+*.webm
 
 # Output directories
 output/
@@ -31,23 +65,98 @@ separated/
 training_data/
 models/
 logs/
+runs/
+checkpoints/
+weights/
+
+# Model files (LARGE)
+rvc/
+*.pth
+*.pt
+*.ckpt
+*.bin
+*.safetensors
+*.pb
+*.onnx
+model_*.tar.gz
 
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
 
-# IDE
+# IDE & Editor
 .vscode/
 .idea/
+*.sublime-*
 *.swp
 *.swo
+*~
+.project
+.pydevproject
+.settings/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# RVC specific
-checkpoints/
+# Temporary & Build
+temp/
+tmp/
+*.tmp
+build/
+dist/
+*.egg-info/
+*.tar.gz
+
+# Cache
+.pytest_cache/
+.mypy_cache/
+.tox/
+htmlcov/
+.coverage
+.coverage.*
+*.cover
+
+# CI/CD local configs
+.github/workflows/*.local
+.gitlab-ci.local.yml
+
+# Logs
+*.log
+*.log.*
+npm-debug.log*
+
+# Testing
+test_outputs/
+.pytest_cache/
+
+# Experimental
+experiments/
+scratch/
+notes/
+*.research
+
+# MacOS
+.AppleDouble
+.AppleDB
+._*
+
+# Windows
+$RECYCLE.BIN/
+ehthumbs.db
+
+# RVC specific (in addition to models/ above)
+rvc/checkpoints/
+rvc/models/
+rvc/logs/
+
+# Never commit large files that could contain PII or credentials
+# Files that SHOULD be committed:
+# - Python source code
+# - Documentation (*.md, *.txt)
+# - Configuration templates (.env.example)
+# - License, README
+# - This .gitignore file
 weights/
 *.pth
 *.ckpt
