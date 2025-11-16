@@ -49,6 +49,8 @@ passwords.txt
 audio/
 *.mp3
 *.m4a
+!no_vocals.wav
+!vocals.wav
 
 # Video files
 *.mp4
