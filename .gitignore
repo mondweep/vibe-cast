@@ -18,6 +18,9 @@ dist/
 # Environment
 .env
 
+# Cookies and sensitive data
+cookies.txt
+
 # Audio files
 *.wav
 *.mp3
