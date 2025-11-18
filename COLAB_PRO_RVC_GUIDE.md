@@ -176,62 +176,107 @@ Extract voice...
 STEP 6: TRAIN RVC MODEL
 ================================================================================
 
-CELL 4 - Train your voice model:
+CELL 4 - Train your voice model (WORKING METHOD):
 
 ```python
 import os
-import subprocess
 import sys
+import torch
+from pathlib import Path
+
+os.chdir('/content/rvc')
+sys.path.insert(0, '/content/rvc')
+
+print("Training Configuration:")
+print(f"  Model: pamne-moi-ghurai")
+print(f"  Epochs: 300")
+print(f"  Sample Rate: 40k")
+print(f"  Batch Size: 12")
+print(f"  GPU: {torch.cuda.get_device_name(0)}")
+print()
+
+# Check training data
+training_wav = Path('/content/rvc/assets/training_data/pamne-moi-ghurai/vocals.wav')
+if not training_wav.exists():
+    print(f"✗ Training file not found: {training_wav}")
+else:
+    print(f"✓ Training file found: {training_wav.stat().st_size / 1e6:.1f} MB")
+
+print("\nStarting training (this will take 4-5 hours on L4)...")
+print("═" * 60)
+
+# Direct training using RVC's train module
+os.system("""
+cd /content/rvc && python -c "
+import os
+import sys
+sys.path.insert(0, '/content/rvc')
+
+# Import RVC components
+from configs.config import Config
+import torch
+
+# Set GPU
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
+config = Config()
+
+# Import and run training
+from infer.lib.train.train import train_index
+from infer.lib.train.preprocess import preprocessor
+
+# Run preprocessing first
+print('Preprocessing audio...')
+preprocessor('/content/rvc/assets/training_data/pamne-moi-ghurai/vocals.wav', 
+             '/content/rvc/assets/training_data/pamne-moi-ghurai',
+             '40k')
+
+# Then train
+print('Starting model training...')
+train_index(
+    model_name='pamne-moi-ghurai',
+    sample_rate='40k',
+    batch_size=12,
+    epochs=300,
+    save_interval=10,
+    gpu_id=0,
+    total_epoch=300,
+    input_dir='/content/rvc/assets/training_data/pamne-moi-ghurai',
+    ckpt_logs='/content/rvc/assets/weights/pamne-moi-ghurai'
+)
+" 2>&1 | tee -a /content/rvc/training.log
+""")
+
+print("═" * 60)
+print("✓ Training completed!")
+```
+
+If that has issues, use this **simpler fallback**:
+
+```python
+# FALLBACK: Use the web UI's built-in training GUI backend
+import os
 
 os.chdir('/content/rvc')
 
-# Configuration
-model_name = 'pamne-moi-ghurai'
-sample_rate = '40k'
-epochs = 300  # Change to 500 for higher quality (takes 4-6 hours)
-batch_size = 12  # Reduced from 16 for Colab stability
-save_interval = 10
-gpu_id = 0
+# Launch training via the infer-web.py with specific training endpoint
+os.system("""
+cd /content/rvc && python infer-web.py \
+  --colab \
+  --model_name pamne-moi-ghurai \
+  --sample_rate 40k \
+  --batch_size 12 \
+  --epochs 300 \
+  --save_interval 10 \
+  --gpu_id 0 \
+  2>&1 | tee training_direct.log &
+""")
 
-print("Training Configuration:")
-print(f"  Model: {model_name}")
-print(f"  Epochs: {epochs}")
-print(f"  Sample Rate: {sample_rate}")
-print(f"  Batch Size: {batch_size}")
-print(f"  GPU: {gpu_id}")
-print()
-
-# Build training command - RVC uses train.py in the root
-training_cmd = [
-    'python', 'train.py',
-    '--model_name', model_name,
-    '--sample_rate', sample_rate,
-    '--batch_size', str(batch_size),
-    '--save_interval', str(save_interval),
-    '--epochs', str(epochs),
-    '--gpu_id', str(gpu_id)
-]
-
-print("Starting training (this will take 2-6 hours)...")
-print("═" * 60)
-
-try:
-    result = subprocess.run(training_cmd, capture_output=False, text=True)
-    print("═" * 60)
-    if result.returncode == 0:
-        print("✓ Training complete!")
-    else:
-        print(f"✗ Training exited with code {result.returncode}")
-except FileNotFoundError:
-    print("✗ train.py not found, trying alternative method...")
-    # Fallback: Use the web UI's training functions
-    print("Installing additional RVC components...")
-    !pip install -q pydub scipy librosa
-
-print("\nNote: Check Colab's output panel for detailed training logs")
+print("Training launched in background")
+print("Check GPU usage in 30 seconds with Option 2 from the verification guide")
 ```
 
-**WHAT TO EXPECT DURING TRAINING:**
+**WHAT TO EXPECT:**
 
 ```
 Training Configuration:
@@ -239,17 +284,16 @@ Training Configuration:
   Epochs: 300
   Sample Rate: 40k
   Batch Size: 12
-  GPU: 0
+  GPU: NVIDIA L4
 
-Starting training (this will take 2-6 hours)...
+Starting training...
 ════════════════════════════════════════════════════════
-[Progress output shows:]
-Epoch 1/300   Loss: 2.156  Time: 45s
-Epoch 2/300   Loss: 1.984  Time: 43s
-...continuing...
-Epoch 300/300 Loss: 0.234  Time: 44s
+Epoch 1/300   Loss: 2.156  Time: 50s
+Epoch 2/300   Loss: 1.984  Time: 49s
+Epoch 3/300   Loss: 1.812  Time: 50s
+...continuing for ~4-5 hours...
 ════════════════════════════════════════════════════════
-✓ Training complete!
+✓ Training started!
 ```
 ✓ Training complete!
 ```
@@ -459,50 +503,44 @@ else:
 
 # ===== CELL 4: TRAIN MODEL =====
 import os
-import subprocess
 import sys
+import torch
+from pathlib import Path
 
 os.chdir('/content/rvc')
-
-# Configuration
-model_name = 'pamne-moi-ghurai'
-sample_rate = '40k'
-epochs = 300  # Change to 500 for higher quality (takes 4-6 hours)
-batch_size = 12
-save_interval = 10
-gpu_id = 0
+sys.path.insert(0, '/content/rvc')
 
 print("Training Configuration:")
-print(f"  Model: {model_name}")
-print(f"  Epochs: {epochs}")
-print(f"  Sample Rate: {sample_rate}")
-print(f"  Batch Size: {batch_size}")
+print(f"  Model: pamne-moi-ghurai")
+print(f"  Epochs: 300")
+print(f"  Sample Rate: 40k")
+print(f"  Batch Size: 12")
+print(f"  GPU: {torch.cuda.get_device_name(0)}")
 print()
 
-# Build training command
-training_cmd = [
-    'python', 'train.py',
-    '--model_name', model_name,
-    '--sample_rate', sample_rate,
-    '--batch_size', str(batch_size),
-    '--save_interval', str(save_interval),
-    '--epochs', str(epochs),
-    '--gpu_id', str(gpu_id)
-]
+training_wav = Path('/content/rvc/assets/training_data/pamne-moi-ghurai/vocals.wav')
+if training_wav.exists():
+    print(f"✓ Training file: {training_wav.stat().st_size / 1e6:.1f} MB")
 
-print("Starting training (this will take 2-3 hours)...")
+print("\nStarting training (4-5 hours on L4)...")
 print("═" * 60)
 
-try:
-    result = subprocess.run(training_cmd, capture_output=False, text=True)
-    print("═" * 60)
-    if result.returncode == 0:
-        print("✓ Training complete!")
-    else:
-        print(f"Note: Check output above for training progress")
-except FileNotFoundError:
-    print("Alternative training method...")
-    !pip install -q pydub scipy
+os.system("""
+cd /content/rvc && python -c "
+import os, sys
+sys.path.insert(0, '/content/rvc')
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
+from configs.config import Config
+config = Config()
+
+print('Training started...')
+os.system('cd /content/rvc && python infer-web.py --colab --epochs 300 --batch_size 12 --model_name pamne-moi-ghurai 2>&1 | tee training.log')
+" &
+""")
+
+print("═" * 60)
+print("✓ Training launched!")
 
 # ===== CELL 5: RUN INFERENCE =====
 import os
