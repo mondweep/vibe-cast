@@ -70,7 +70,13 @@ vibe-cast/
 │       ├── README.txt                         # RVC training instructions
 │       └── NEXT_STEPS.txt                     # Quick start guide
 ├── rvc/                                        # RVC installation (gitignored, installed via setup_rvc.sh)
-└── models/                                     # Trained RVC models (gitignored)
+├── models/                                     # Trained RVC models (gitignored)
+└── training-output/                            # RVC training session outputs
+    ├── RVC_TRAINING_SESSION_20251119.md       # Training session documentation
+    ├── pamne-moi-ghurai.pth                   # Trained voice model (300 epochs)
+    ├── added_IVF190_Flat_nprobe_1_pamne-moi-ghurai_v2.index  # FAISS index
+    ├── total_fea.npy                          # Feature array (7442 x 768)
+    └── simple_infer.py                        # Custom inference script for Apple Silicon
 ```
 
 ## Quick Start
@@ -170,12 +176,16 @@ python infer-web.py
 - [x] End-to-end testing on real Assamese song
 
 ### In Development
-- [ ] RVC model training automation script
+- [x] RVC model training (completed with known issues - see below)
+- [ ] Resolve HuBERT implementation mismatch (fairseq vs transformers)
 - [ ] Singing voice synthesis integration (SO-VITS-SVC)
 - [ ] Real-time voice conversion interface
 - [ ] Web interface (Gradio)
 - [ ] Batch processing optimization
 - [ ] Voice quality metrics and analysis
+
+### Known Issues
+- **Robotic Background Noise**: Voice conversion output has metallic artifacts due to HuBERT implementation mismatch between training (transformers) and optimal inference (fairseq). See `training-output/RVC_TRAINING_SESSION_20251119.md` for detailed analysis and solutions.
 
 ### Documented Workarounds
 - [x] YouTube signature solver issue (6 comprehensive guides)
@@ -188,7 +198,9 @@ python infer-web.py
 ✓ Successfully isolated vocals: Clean vocal extraction
 ✓ Successfully translated: Assamese → English (with poetic preservation)
 ✓ Successfully prepared: Complete RVC training project folder
-✓ Ready for: Voice model training and synthesis
+✓ Successfully trained: RVC v2 voice model (300 epochs, 40kHz)
+✓ Generated: FAISS index with 7442 x 768 feature vectors
+✓ Documented: HuBERT implementation mismatch issue and solutions
 
 ## Documentation
 
@@ -255,6 +267,14 @@ python infer-web.py
   - What was installed
   - Verification steps
   - Environment variables
+
+### For RVC Training & Voice Cloning
+- **[training-output/RVC_TRAINING_SESSION_20251119.md](./training-output/RVC_TRAINING_SESSION_20251119.md)**: Complete training session documentation
+  - Model training details (300 epochs, v2, 40kHz)
+  - HuBERT implementation mismatch analysis
+  - Apple Silicon (M1/M2) workarounds
+  - Custom inference script usage
+  - Troubleshooting and next steps
 
 ### For Your Project
 - **[output/pamne-moi-ghurai_20251116/README.txt](./output/pamne-moi-ghurai_20251116/README.txt)**: RVC training guide
@@ -355,6 +375,37 @@ This project follows the **3Cs Framework**:
 - GPU: NVIDIA RTX 4090 (24GB VRAM)
 - Storage: 500GB NVMe SSD
 
+## Trained Model Files
+
+The `training-output/` directory contains the completed RVC voice model:
+
+### Model Files
+- **`pamne-moi-ghurai.pth`** - Trained RVC v2 model (300 epochs, 40kHz sample rate)
+- **`added_IVF190_Flat_nprobe_1_pamne-moi-ghurai_v2.index`** - FAISS index for voice retrieval
+- **`total_fea.npy`** - Feature array (7442 x 768 dimensions)
+- **`simple_infer.py`** - Custom inference script optimized for Apple Silicon
+
+### Usage (Requires Python 3.10 for fairseq)
+
+```bash
+# Set up Python 3.10 environment with fairseq
+python3.10 -m venv ~/rvc_py310_env
+source ~/rvc_py310_env/bin/activate
+pip install torch==2.2.2 torchaudio==2.2.2 fairseq==0.12.2
+pip install faiss-cpu numpy scipy soundfile torchcrepe
+
+# Run inference
+python training-output/simple_infer.py \
+  --model_path "training-output/pamne-moi-ghurai.pth" \
+  --input_path "YOUR_INPUT.wav" \
+  --output_path "OUTPUT.wav" \
+  --index_path "training-output/added_IVF190_Flat_nprobe_1_pamne-moi-ghurai_v2.index" \
+  --index_rate 0.75
+```
+
+### Current Limitation
+The model produces robotic background noise due to HuBERT implementation mismatch. See [RVC_TRAINING_SESSION_20251119.md](./training-output/RVC_TRAINING_SESSION_20251119.md) for detailed analysis and potential solutions.
+
 ## Troubleshooting
 
 ### Common Issues
@@ -454,9 +505,12 @@ Please include:
 - [x] Environment security (.gitignore)
 - [x] Project packaging and documentation
 
-### Phase 3: Voice Cloning (Ready for User)
-- [ ] RVC model training (user runs locally with GPU or cloud service)
-- [ ] Voice generation and synthesis
+### Phase 3: Voice Cloning (In Progress)
+- [x] RVC model training (300 epochs, v2 model)
+- [x] FAISS index generation (7442 features)
+- [x] Custom inference script for Apple Silicon
+- [ ] Resolve HuBERT mismatch (fairseq vs transformers)
+- [ ] Voice generation and synthesis (blocked by above)
 - [ ] Audio mixing and post-processing
 - [ ] Quality testing and validation
 
@@ -515,8 +569,8 @@ This software is provided for educational and research purposes only. The author
 
 ---
 
-**Last Updated**: November 15, 2025
-**Version**: 1.0.0
-**Status**: Research Phase Complete
+**Last Updated**: November 19, 2025
+**Version**: 1.1.0
+**Status**: Voice Model Trained (Quality Issues Under Investigation)
 
 For detailed technical implementation, see [TECHNICAL_IMPLEMENTATION_GUIDE.md](./TECHNICAL_IMPLEMENTATION_GUIDE.md)
