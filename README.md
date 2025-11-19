@@ -69,14 +69,21 @@ vibe-cast/
 │       ├── translation.txt                    # Full translation with context
 │       ├── README.txt                         # RVC training instructions
 │       └── NEXT_STEPS.txt                     # Quick start guide
-├── rvc/                                        # RVC installation (gitignored, installed via setup_rvc.sh)
+├── rvc/                                        # RVC installation (cloned repo)
+│   └── assets/
+│       ├── rmvpe/rmvpe.pt                     # RMVPE pitch extraction model (173MB)
+│       └── hubert/hubert_base.pt              # HuBERT feature extraction model (181MB)
 ├── models/                                     # Trained RVC models (gitignored)
 └── training-output/                            # RVC training session outputs
     ├── RVC_TRAINING_SESSION_20251119.md       # Training session documentation
-    ├── pamne-moi-ghurai.pth                   # Trained voice model (300 epochs)
-    ├── added_IVF190_Flat_nprobe_1_pamne-moi-ghurai_v2.index  # FAISS index
-    ├── total_fea.npy                          # Feature array (7442 x 768)
-    └── simple_infer.py                        # Custom inference script for Apple Silicon
+    ├── pamne-moi-ghurai.pth                   # Trained voice model (300 epochs, 52MB)
+    ├── added_IVF190_Flat_nprobe_1_pamne-moi-ghurai_v2.index  # FAISS index (22MB)
+    ├── total_fea.npy                          # Feature array (7442 x 768, 22MB)
+    ├── simple_infer.py                        # Custom inference script
+    ├── test_30sec.wav                         # Test input: 30sec vocal clip (2:00-2:30)
+    ├── output_30sec.wav                       # Voice-converted output of test_30sec
+    ├── test_10sec.wav                         # Test input: 10sec vocal clip
+    └── test_output.wav                        # Voice-converted output of test_10sec
 ```
 
 ## Quick Start
@@ -176,8 +183,11 @@ python infer-web.py
 - [x] End-to-end testing on real Assamese song
 
 ### In Development
-- [x] RVC model training (completed with known issues - see below)
-- [ ] Resolve HuBERT implementation mismatch (fairseq vs transformers)
+- [x] RVC model training (completed - 300 epochs, v2, 40kHz)
+- [x] Voice conversion inference (working - transformers HuBERT fallback)
+- [x] Test sample generation (10sec, 30sec clips successfully converted)
+- [ ] Resolve HuBERT implementation mismatch (fairseq vs transformers) for better quality
+- [ ] Full-length audio processing (currently limited by CPU/memory in Codespace)
 - [ ] Singing voice synthesis integration (SO-VITS-SVC)
 - [ ] Real-time voice conversion interface
 - [ ] Web interface (Gradio)
@@ -201,6 +211,9 @@ python infer-web.py
 ✓ Successfully trained: RVC v2 voice model (300 epochs, 40kHz)
 ✓ Generated: FAISS index with 7442 x 768 feature vectors
 ✓ Documented: HuBERT implementation mismatch issue and solutions
+✓ Successfully ran voice conversion: Test clips (10sec, 30sec) converted
+✓ Downloaded required models: RMVPE (173MB) and HuBERT (181MB)
+✓ Verified end-to-end inference pipeline working in Codespace
 
 ## Documentation
 
@@ -377,15 +390,41 @@ This project follows the **3Cs Framework**:
 
 ## Trained Model Files
 
-The `training-output/` directory contains the completed RVC voice model:
+The `training-output/` directory contains the completed RVC voice model and test samples:
 
 ### Model Files
-- **`pamne-moi-ghurai.pth`** - Trained RVC v2 model (300 epochs, 40kHz sample rate)
-- **`added_IVF190_Flat_nprobe_1_pamne-moi-ghurai_v2.index`** - FAISS index for voice retrieval
-- **`total_fea.npy`** - Feature array (7442 x 768 dimensions)
-- **`simple_infer.py`** - Custom inference script optimized for Apple Silicon
+- **`pamne-moi-ghurai.pth`** (52MB) - Trained RVC v2 model (300 epochs, 40kHz sample rate)
+- **`added_IVF190_Flat_nprobe_1_pamne-moi-ghurai_v2.index`** (22MB) - FAISS index for voice retrieval
+- **`total_fea.npy`** (22MB) - Feature array (7442 x 768 dimensions)
+- **`simple_infer.py`** - Custom inference script
 
-### Usage (Requires Python 3.10 for fairseq)
+### Test Samples (Voice Conversion Examples)
+- **`test_30sec.wav`** (5MB) - Original vocals clip from 2:00-2:30 mark
+- **`output_30sec.wav`** (2.4MB) - Voice-converted output using the trained model
+- **`test_10sec.wav`** - Original vocals clip (first 10 seconds)
+- **`test_output.wav`** - Voice-converted output (10 seconds)
+
+These test samples demonstrate the voice conversion pipeline working end-to-end.
+
+### Usage
+
+#### Option 1: Codespace/Standard Python (transformers HuBERT)
+
+```bash
+# Install dependencies
+pip install torch soundfile faiss-cpu librosa transformers scipy numpy
+
+# Run inference from the rvc directory
+cd rvc
+PYTHONPATH=/workspaces/vibe-cast/rvc:$PYTHONPATH python /workspaces/vibe-cast/training-output/simple_infer.py \
+  --model_path "/workspaces/vibe-cast/training-output/pamne-moi-ghurai.pth" \
+  --input_path "YOUR_INPUT.wav" \
+  --output_path "OUTPUT.wav" \
+  --index_path "/workspaces/vibe-cast/training-output/added_IVF190_Flat_nprobe_1_pamne-moi-ghurai_v2.index" \
+  --index_rate 0.75
+```
+
+#### Option 2: Python 3.10 with fairseq (Better Quality)
 
 ```bash
 # Set up Python 3.10 environment with fairseq
@@ -509,8 +548,11 @@ Please include:
 - [x] RVC model training (300 epochs, v2 model)
 - [x] FAISS index generation (7442 features)
 - [x] Custom inference script for Apple Silicon
-- [ ] Resolve HuBERT mismatch (fairseq vs transformers)
-- [ ] Voice generation and synthesis (blocked by above)
+- [x] Download required models (RMVPE 173MB, HuBERT 181MB)
+- [x] Voice conversion inference working (transformers HuBERT fallback)
+- [x] Test sample conversion (10sec, 30sec clips successfully converted)
+- [ ] Resolve HuBERT mismatch (fairseq vs transformers) for optimal quality
+- [ ] Full-length audio processing (requires GPU or chunked processing)
 - [ ] Audio mixing and post-processing
 - [ ] Quality testing and validation
 
@@ -570,7 +612,7 @@ This software is provided for educational and research purposes only. The author
 ---
 
 **Last Updated**: November 19, 2025
-**Version**: 1.1.0
-**Status**: Voice Model Trained (Quality Issues Under Investigation)
+**Version**: 1.2.0
+**Status**: Voice Conversion Working (Test samples successfully converted, quality improvements in progress)
 
 For detailed technical implementation, see [TECHNICAL_IMPLEMENTATION_GUIDE.md](./TECHNICAL_IMPLEMENTATION_GUIDE.md)
