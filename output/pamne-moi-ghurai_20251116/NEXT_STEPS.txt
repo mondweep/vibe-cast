@@ -1,0 +1,158 @@
+================================================================================
+QUICK START: VOICE CLONING WITH RVC
+================================================================================
+
+Your project is fully prepared and ready for voice model training!
+
+PROJECT LOCATION:
+  /workspaces/vibe-cast/output/pamne-moi-ghurai_20251116/
+
+KEY FILES:
+  • Original audio: audio/pamne-moi-ghurai.wav
+  • Isolated vocals: training_data/vocals_full.wav (↑ USE THIS FOR TRAINING)
+  • English lyrics: translation.txt
+  • Full guide: README.txt
+
+================================================================================
+OPTION 1: LOCAL RVC SETUP (Codespace - Requires GPU)
+================================================================================
+
+Step 1 - Install RVC:
+  bash scripts/setup_rvc.sh
+
+Step 2 - Launch RVC Web UI:
+  cd rvc
+  python infer-web.py
+
+Step 3 - In Web UI (http://localhost:7865):
+  → Training tab → Create model "pamne-moi-ghurai"
+  → Upload: /workspaces/vibe-cast/output/pamne-moi-ghurai_20251116/training_data/vocals_full.wav
+  → Epochs: 300-500
+  → Start Training (2-6 hours on GPU)
+
+Step 4 - After Training:
+  → Inference tab → Select your trained model
+  → Upload vocals → Generate English singing voice
+
+================================================================================
+OPTION 2: CLOUD RVC SERVICES (Recommended - No GPU needed)
+================================================================================
+
+Use online RVC services that provide free GPU training:
+
+1. HuggingFace Spaces (Free & Easy):
+   - Visit: https://huggingface.co/spaces
+   - Search: "RVC"
+   - Upload your training_data/vocals_full.wav
+   - Train for 300-500 epochs
+   - Download trained model
+
+2. Colab Notebooks (Free with Google Account):
+   - Search: "RVC Colab" or "Voice Cloning Colab"
+   - Upload training_data/vocals_full.wav
+   - Train model in Google's free GPU
+   - Download and use locally
+
+3. Replicate (Free tier available):
+   - Visit: https://replicate.com
+   - Deploy RVC model
+   - Upload training vocals
+   - Generate voice
+
+================================================================================
+WHAT EACH FILE DOES
+================================================================================
+
+1. training_data/vocals_full.wav (41 MB)
+   → This is what you upload to RVC for training
+   → Clean isolated vocals only
+   → The AI will learn to clone this voice
+
+2. audio/pamne-moi-ghurai.wav (41 MB)
+   → Original full audio (vocals + instruments)
+   → Used as reference in inference
+   → Optional: For post-processing/mixing
+
+3. translation.txt
+   → English lyrics for your generated voice
+   → Reference for pronunciation and pacing
+   → Read while training for context
+
+================================================================================
+AFTER GENERATING THE VOICE
+================================================================================
+
+Once RVC generates your English singing voice:
+
+1. Export the generated voice as WAV/MP3
+
+2. Mix with instrumental track:
+   Extract instrumental:
+     ffmpeg -i audio/pamne-moi-ghurai.wav separated/instrumental.wav
+
+   Mix vocals + instrumental:
+     ffmpeg -i generated_voice.wav -i separated/instrumental.wav \
+            -filter_complex "amix=inputs=2" final_mix.wav
+
+3. Polish with effects (optional):
+   - Use Audacity, GarageBand, or DAW
+   - Add reverb, EQ, compression
+   - Export as final MP3/WAV
+
+4. Final output:
+   Convert to MP3:
+     ffmpeg -i final_mix.wav -q:a 0 final_song.mp3
+
+================================================================================
+ESTIMATED TIMELINE
+================================================================================
+
+✓ Audio Download: 5 minutes ✓ DONE
+✓ Vocal Isolation: 4 minutes ✓ DONE
+✓ Translation: 1 minute ✓ DONE
+✓ Project Assembly: 1 minute ✓ DONE
+→ RVC Training: 2-6 hours (your next step)
+→ Voice Generation: 5-30 seconds
+→ Post-processing: 10-30 minutes
+→ Final Mix: 5 minutes
+
+TOTAL TIME: ~2.5-7 hours (mostly training)
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Q: RVC installation fails with CUDA error
+A: Try CPU-only mode:
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+Q: Training is too slow
+A: Check GPU is available:
+   python -c "import torch; print(torch.cuda.is_available())"
+   If False, RVC will use CPU (very slow)
+
+Q: Generated voice doesn't sound like original
+A: Train longer (increase epochs to 500+) or use more training data
+
+Q: "No module named 'fairseq'"
+A: Install fairseq:
+   pip install fairseq
+
+================================================================================
+ETHICAL REMINDER
+================================================================================
+
+✓ Obtain consent from original artist
+✓ Label clearly as "AI Cover" or "Voice Clone"
+✓ Use for personal/educational/research purposes only
+✓ Do NOT use commercially without permission
+✓ Do NOT impersonate or deceive
+
+================================================================================
+
+Ready to begin? Run:
+  bash scripts/setup_rvc.sh
+
+Questions? Check README.txt for detailed instructions.
+
+================================================================================

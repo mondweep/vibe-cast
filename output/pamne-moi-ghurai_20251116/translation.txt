@@ -1,0 +1,102 @@
+================================================================================
+ASSAMESE ORIGINAL & ENGLISH TRANSLATION
+================================================================================
+
+PROJECT: Paamone Moi Ghurai (Will I Get It Back?)
+SONG LANGUAGE: Assamese
+TRANSLATION DATE: 2025-11-16
+
+================================================================================
+ASSAMESE LYRICS & ENGLISH TRANSLATION
+================================================================================
+
+1. Paamone moi ghurai
+   [Will I get it back?]
+
+2. Akou ebaar jibonot
+   [Once again in life,]
+
+3. Deutaar chokute chai howa sei chobi
+   [That image (of me), reflected in my father's eyes.]
+
+4. Hiyar aamthu
+   [The treasure of my heart.]
+
+5. Bhabi than baan hole
+   [When (my mind) shatters from all the thinking,]
+
+6. Jironi lobole laage chage ekhoni buku
+   [Perhaps one needs a bosom (heart) to take rest.]
+
+7. Etiyao dehot laagi ase subas
+   [The fragrance still lingers on my body,]
+
+8. Dukhoni hator umal porosh
+   [The warm touch of those two hands.]
+
+9. Kiyo jano hothate dithok hol sopon
+   [I don't know why the dream suddenly became real,]
+
+10. Kakhote thakio nopuwar bedona
+    [The pain of not having, even while being so close.]
+
+11. Somukhot dekhio nedekhar jatona
+    [The agony of not seeing, even while looking right at it.]
+
+12. Koneno bujibo kaar buku eka dibo
+    [Who will understand whose heart is being torn apart?]
+
+13. Paamone moi ghurai (Repeat)
+    [Will I get it back?]
+
+14. Akou ebaar jibonot (Repeat)
+    [Once again in life,]
+
+15. Deutaar chokut chai howa sei chobi
+    [That picture (of me), seen in my father's eyes.]
+
+================================================================================
+TRANSLATION NOTES
+================================================================================
+
+Language: Assamese → English
+
+Key themes:
+- Nostalgia and longing for a father's love
+- Loss, memory, and the passage of time
+- Emotional yearning and the uncertainty of reconnection
+- Poetic language using metaphors of fragrance and touch
+
+Cultural context:
+- The song appears to be deeply personal, likely addressing loss of a parent
+- References to "father's eyes" suggest childhood memories
+- Themes of emotional vulnerability and questioning
+- Rich sensory imagery (fragrance, touch, visual memories)
+
+Singable form notes:
+- The English translation maintains the emotional weight of the original
+- Syllable counts vary but preserve the lyrical flow
+- Primary emotional beats align between Assamese and English
+- Suitable for voice cloning and adaptation
+
+================================================================================
+NEXT STEPS: VOICE CLONING WITH RVC
+================================================================================
+
+Files prepared for training:
+1. Original audio: audio/pamne-moi-ghurai.wav (full mix)
+2. Isolated vocals: separated/vocals.wav (isolated vocal track)
+3. Training data: training_data/vocals_full.wav (ready for RVC model training)
+
+RVC Model Training Process:
+1. Set up RVC (Retrieval-based Voice Conversion)
+2. Upload the training vocal file (training_data/vocals_full.wav)
+3. Train model for 300-500 epochs (or until satisfactory quality)
+4. Generate English singing voice using trained model
+5. Mix with instrumental track for final output
+
+Recommended RVC Implementation:
+- GitHub: https://github.com/IAHispano/Applio
+- Or: https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI
+
+================================================================================
