@@ -65,3 +65,25 @@ Sold 0.8 BTC at 45000
 ```
 
 The system correctly handles all accounting methods and demonstrates the impact of lot selection on realized gains.
+
+## Ruvector Exploration
+
+We successfully explored the `ruvector` project and integrated it into the workflow.
+
+### Achievements
+1.  **Build Fixes**:
+    *   Fixed missing exports in `ruvector-core` (`DbOptions`, `HnswConfig`, `QuantizationConfig`).
+    *   Downgraded `napi` to stable v2.14.1 to resolve macro issues.
+    *   Fixed type mismatches in `ruvector-node` bindings (`HashMap` vs `serde_json::Map`).
+    *   Enabled `serde-json` feature for `napi`.
+2.  **Semantic Transaction Search Demo**:
+    *   Created `examples/semantic-transaction-search.mjs`.
+    *   Implemented a mock "semantic" embedding function mapping financial keywords to vector dimensions.
+    *   Demonstrated indexing transactions and searching by category (e.g., "crypto investments" -> "Coinbase BTC").
+
+### Verification
+The demo script runs successfully and returns semantically relevant results:
+```bash
+node examples/semantic-transaction-search.mjs
+```
+Output confirms correct vector similarity calculations (Distance 0.0000 for perfect keyword matches).

@@ -16,7 +16,14 @@
     - [x] Implement `AccountingEngine` (FIFO/LIFO/HIFO) <!-- id: 13 -->
     - [x] Update demo to compare methods <!-- id: 14 -->
     - [x] Verify results <!-- id: 15 -->
-- [/] Finalize Documentation <!-- id: 16 -->
-    - [ ] Copy artifacts to `docs/` <!-- id: 17 -->
-    - [ ] Create `README.md` <!-- id: 18 -->
-    - [ ] Push to GitHub <!-- id: 19 -->
+- [x] Finalize Documentation <!-- id: 16 -->
+    - [x] Copy artifacts to `docs/` <!-- id: 17 -->
+    - [x] Create `README.md` <!-- id: 18 -->
+    - [x] Push to GitHub <!-- id: 19 -->
+
+- [/] Explore Ruvector <!-- id: 20 -->
+    - [x] Create branch `exploring-ruvector` <!-- id: 21 -->
+    - [x] Clone `https://github.com/ruvnet/ruvector` <!-- id: 22 -->
+    - [x] Analyze `ruvector` capabilities <!-- id: 23 -->
+    - [x] Fix build issues in `ruvector-node` <!-- id: 25 -->
+    - [x] Propose "useful" implementation (Semantic Transaction Search) <!-- id: 24 -->
