@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Data and cache
+data/
+*.db
+*.sqlite
+
+# Build outputs
+dist/
+build/
