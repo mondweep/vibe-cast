@@ -1,8 +1,29 @@
 {
-  "name": "my-trading-project",
-  "version": "1.0.0",
+  "name": "neural-trading-system",
+  "version": "2.0.0",
+  "description": "Enhanced Neural Trading System with multi-strategy support and risk management",
   "private": true,
+  "main": "src/enhanced-main.js",
+  "scripts": {
+    "start": "node src/enhanced-main.js",
+    "start:basic": "node src/main.js",
+    "test:connection": "node test-alpaca-connection.js"
+  },
   "dependencies": {
+    "@neural-trader/brokers": "^2.1.1",
+    "@neural-trader/e2b-strategies": "^1.1.1",
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3",
     "neural-trader": "^2.3.11"
-  }
+  },
+  "keywords": [
+    "trading",
+    "algorithmic-trading",
+    "neural-trader",
+    "alpaca",
+    "momentum-strategy",
+    "risk-management"
+  ],
+  "author": "Neural Trading System",
+  "license": "MIT"
 }
