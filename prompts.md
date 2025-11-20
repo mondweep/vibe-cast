@@ -1,18 +1,23 @@
 # User Prompts - Ruvector Exploration
 
-This document captures the user prompts that led to the exploration and integration of Ruvector on the `exploring-ruvector` branch.
+This document captures the exact user prompts that led to the exploration and integration of Ruvector on the `exploring-ruvector` branch.
 
 ## Session Date
 2025-11-20
 
-## Initial Request
-**Prompt:** "Agentic Accounting and Ruvector Exploration"
+## Branch
+https://github.com/mondweep/vibe-cast/tree/exploring-ruvector
 
-The user's objective was to explore the `ruvector` project, create a new branch (`exploring-ruvector`), clone the `ruvector` repository, analyze its capabilities, and propose a useful implementation or integration.
+## Original Prompt
+
+**Prompt 2:**
+```
+now create a new branch for work on ruvector - call it meaningfully. I want to explore https://github.com/ruvnet/ruvector and create something useful.
+```
 
 ## Follow-up Prompts
 
-### 1. Continue Work
+### Continue Work
 **Prompt:** "Continue the work"
 
 This led to:
@@ -20,18 +25,14 @@ This led to:
 - Identifying and fixing build issues in the Node.js bindings
 - Creating a practical demonstration of vector database capabilities
 
-### 2. Push Changes
+### Push Changes
 **Prompt:** "push the changes to the correct branch in the remote github repository"
 
-This resulted in:
-- Syncing updated documentation artifacts
-- Creating `research/` directory with the demo script
-- Committing and pushing all changes to the `exploring-ruvector` branch
+### Continue Remaining Work
+**Prompt:** "continue remaining work"
 
-### 3. Document Prompts
+### Document Prompts
 **Prompt:** "Capture the prompts I have used today into a prompt.md file. Check the prompts for the 'exploring-antigravity-from-google' and 'exploring-ruvector' seprately and push them to the respective branches"
-
-This led to creating this documentation file.
 
 ## Key Deliverables
 
@@ -40,6 +41,7 @@ This led to creating this documentation file.
    - Downgraded `napi` to stable v2.14.1 to resolve macro compatibility issues
    - Fixed type mismatches between `HashMap` and `serde_json::Map`
    - Enabled `serde-json` feature for proper JSON handling
+   - Added `parking_lot` dependency
 
 2. **Semantic Transaction Search Demo**:
    - Created `research/semantic-transaction-search.mjs`
@@ -65,7 +67,6 @@ This led to creating this documentation file.
 3. **Advanced Features**: Explore HNSW indexing, quantization, and metadata filtering
 4. **Production Deployment**: Build production-ready transaction search API
 
-## Repository
-- Branch: `exploring-ruvector`
-- Repository: https://github.com/mondweep/vibe-cast
-- Ruvector Source: https://github.com/ruvnet/ruvector
+## References
+- Ruvector Repository: https://github.com/ruvnet/ruvector
+- Vibe Cast Repository: https://github.com/mondweep/vibe-cast
