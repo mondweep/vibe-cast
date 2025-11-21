@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeCast - Real-time Chat Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ VibeCast</h1>
+            <p class="subtitle">Real-time Chat powered by PubNub</p>
+        </header>
+
+        <div class="join-screen" id="joinScreen">
+            <div class="join-card">
+                <h2>Join the Conversation</h2>
+                <input type="text" id="usernameInput" placeholder="Enter your name" maxlength="20">
+                <input type="text" id="channelInput" placeholder="Channel name (e.g., team-chat)" maxlength="30" value="demo-channel">
+                <button id="joinButton">Join Chat</button>
+            </div>
+        </div>
+
+        <div class="chat-screen hidden" id="chatScreen">
+            <div class="chat-container">
+                <aside class="sidebar">
+                    <div class="channel-info">
+                        <h3 id="channelName"></h3>
+                        <span class="status" id="connectionStatus">Connecting...</span>
+                    </div>
+                    <div class="presence-section">
+                        <h4>Online Users (<span id="userCount">0</span>)</h4>
+                        <ul id="userList"></ul>
+                    </div>
+                    <button id="leaveButton" class="leave-btn">Leave Channel</button>
+                </aside>
+
+                <main class="chat-main">
+                    <div class="messages" id="messages"></div>
+                    <div class="typing-indicator hidden" id="typingIndicator">
+                        <span></span>
+                    </div>
+                    <div class="message-input-container">
+                        <input type="text" id="messageInput" placeholder="Type your message..." maxlength="500">
+                        <button id="sendButton">Send</button>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.8.2.7.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
