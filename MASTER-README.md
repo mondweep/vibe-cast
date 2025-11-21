@@ -33,6 +33,7 @@ A production-ready real-time chat application powered by PubNub demonstrating:
 **Tech Stack**: HTML, CSS, JavaScript, PubNub SDK
 **Deployment**: Netlify-ready with `netlify.toml`
 **Demo Keys**: Uses PubNub demo keys for instant testing
+**🌐 Live Demo**: https://pubnub-tinkering.netlify.app/
 
 **Get Started**:
 ```bash
@@ -158,6 +159,7 @@ Research project for translating songs while preserving the original singer's vo
 
 **Tech Stack**: Python, yt-dlp, Demucs, RVC, SO-VITS-SVC
 **Documentation**: Extensive guides for setup and ethical use
+**🌐 Live Demo**: https://learn-assamese.netlify.app/
 
 **Get Started**:
 ```bash
