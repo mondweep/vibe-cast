@@ -159,7 +159,6 @@ Research project for translating songs while preserving the original singer's vo
 
 **Tech Stack**: Python, yt-dlp, Demucs, RVC, SO-VITS-SVC
 **Documentation**: Extensive guides for setup and ethical use
-**🌐 Live Demo**: https://learn-assamese.netlify.app/
 
 **Get Started**:
 ```bash
