@@ -3,6 +3,7 @@ import ForceGraph3D from 'react-force-graph-3d';
 import PubNub from 'pubnub';
 import * as THREE from 'three';
 import { v4 as uuidv4 } from 'uuid';
+import ChatOverlay from './components/ChatOverlay';
 
 // Initialize PubNub with Demo Keys
 const pubnub = new PubNub({
@@ -14,6 +15,7 @@ const pubnub = new PubNub({
 const CHANNEL = 'tribe-mind-global';
 
 function App() {
+  const [username, setUsername] = useState(''); // Current user's name
   const [graphData, setGraphData] = useState({
     nodes: [
       { id: 'tribe', group: 1, name: 'Tribe Mind', val: 20 },
@@ -331,7 +333,15 @@ function App() {
           </div>
         </div>
       </div>
-    </div>
+
+
+      {/* Chat & Presence Overlay */}
+      <ChatOverlay
+        pubnub={pubnub}
+        channel={CHANNEL}
+        onUsernameSet={setUsername}
+      />
+    </div >
   );
 }
 
