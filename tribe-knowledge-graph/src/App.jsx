@@ -332,15 +332,15 @@ function App() {
             Click a node to select/connect. <br /> Drag to rotate. Scroll to zoom.
           </div>
         </div>
-
-        {/* Chat & Presence Overlay */}
-        <ChatOverlay
-          pubnub={pubnub}
-          channel={CHANNEL}
-          onUsernameSet={setUsername}
-        />
       </div>
-    </div >
+
+      {/* Chat & Presence Overlay */}
+      <ChatOverlay
+        pubnub={pubnub}
+        channel={CHANNEL}
+        onUsernameSet={setUsername}
+      />
+    </div>
   );
 }
 
