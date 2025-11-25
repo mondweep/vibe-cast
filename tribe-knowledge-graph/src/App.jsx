@@ -92,6 +92,42 @@ function App() {
     setSelectedNode(null);
   };
 
+  const handleExport = () => {
+    const dataStr = JSON.stringify(graphData, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `tribe-mind-${new Date().toISOString().slice(0, 10)}.json`;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        if (importedData.nodes && importedData.links) {
+          socket.emit('import-graph', importedData);
+          alert('Graph imported successfully!');
+        } else {
+          alert('Invalid graph file format');
+        }
+      } catch (err) {
+        console.error('Error parsing file:', err);
+        alert('Error parsing JSON file');
+      }
+    };
+    reader.readAsText(file);
+    // Reset input
+    e.target.value = '';
+  };
+
   return (
     <div className="app-container">
       {/* 3D Graph Visualization */}
@@ -188,6 +224,16 @@ function App() {
               {selectedNode ? 'Connect Node' : 'Add Node'}
             </button>
           </form>
+
+          <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px', display: 'flex', gap: '10px' }}>
+            <button onClick={handleExport} className="action-btn" style={{ flex: 1, background: '#333', fontSize: '0.8rem' }}>
+              💾 Export
+            </button>
+            <label className="action-btn" style={{ flex: 1, background: '#333', fontSize: '0.8rem', textAlign: 'center', cursor: 'pointer' }}>
+              📂 Import
+              <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
+            </label>
+          </div>
 
           <div style={{ marginTop: '15px', fontSize: '0.8rem', color: '#666', textAlign: 'center' }}>
             Click a node to select/connect. <br /> Drag to rotate. Scroll to zoom.
