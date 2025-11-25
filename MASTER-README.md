@@ -119,6 +119,40 @@ npm install
 
 ---
 
+### 🧠 Collaboration & Knowledge
+
+#### **`tribe-knowledgeGraph`**
+**Tribe Mind - Collaborative Knowledge Graph**
+
+A real-time, 3D collaborative environment for visualizing collective intelligence:
+- **3D Visualization**: Interactive force-directed graph representing concepts and connections
+- **Real-time Collaboration**: Live updates across all connected users (Socket.io)
+- **Collective Intelligence**: Visualizing how team ideas connect and grow
+- **Premium Experience**: Futuristic dark UI with glassmorphism and neon accents
+
+**Tech Stack**: React, Vite, Three.js, react-force-graph-3d, Node.js, Socket.io
+**Location**: `tribe-knowledge-graph/` folder
+**Live Demo**: http://localhost:5173 (when running)
+
+**Get Started**:
+```bash
+git checkout tribe-knowledgeGraph
+cd tribe-knowledge-graph
+npm install
+npm start
+# Visit http://localhost:5173
+```
+
+**Key Features**:
+- 🌐 **Shared 3D Space**: Everyone sees the same graph state
+- ⚡ **Instant Updates**: Add nodes and links in real-time
+- 🎨 **Immersive UI**: Deep space theme for focused ideation
+- 🖱️ **Interactive**: Rotate, zoom, pan, and click to connect ideas
+
+**Perfect For**: Brainstorming sessions, team knowledge mapping, demonstrating collective intelligence, visual note-taking
+
+---
+
 ### 🤖 AI & Machine Learning
 
 #### **`claude/ai-architecture-analysis-01TJ3tNZF6g4Wpu3Ux8NpUCe`**
@@ -295,8 +329,9 @@ Simply connect the branch to Netlify for automatic deployment!
 
 ## 📁 Projects by Category
 
-### 💬 Communication
+### 💬 Communication & Collaboration
 - VibeCast Chat (Real-time PubNub chat)
+- Tribe Mind (3D Collaborative Knowledge Graph)
 
 ### 💰 Finance
 - Neural Trading System (Algorithmic trading)
@@ -372,6 +407,7 @@ For questions about specific projects, please refer to the documentation in each
 | `claude/create-nlp-video-*` | eLearning automation tools |
 | `claude/ai-architecture-*` | AI learning applications |
 | `aidms-tinkering` | AI security and defense demos |
+| `tribe-knowledgeGraph` | Collaborative knowledge graph |
 | `exploring-*` | Research and experimental features |
 | `*-working` | Stable working implementations |
 
