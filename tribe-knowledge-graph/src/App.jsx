@@ -1,89 +1,170 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import ForceGraph3D from 'react-force-graph-3d';
-import io from 'socket.io-client';
+import PubNub from 'pubnub';
 import * as THREE from 'three';
+import { v4 as uuidv4 } from 'uuid';
 
-// Connect to the backend server
-const socket = io('/', {
-  path: '/socket.io',
+// Initialize PubNub with Demo Keys
+const pubnub = new PubNub({
+  publishKey: 'pub-c-4100416f-706a-4952-8495-259275034606', // Standard Demo Key
+  subscribeKey: 'sub-c-52a9ab50-291b-11ed-8d15-6a2a03b00a4e',
+  uuid: uuidv4()
 });
 
+const CHANNEL = 'tribe-mind-global';
+
 function App() {
-  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  const [graphData, setGraphData] = useState({
+    nodes: [
+      { id: 'tribe', group: 1, name: 'Tribe Mind', val: 20 },
+      { id: 'knowledge', group: 2, name: 'Knowledge Base', val: 10 },
+      { id: 'collaboration', group: 2, name: 'Collaboration', val: 10 },
+      { id: 'innovation', group: 2, name: 'Innovation', val: 10 }
+    ],
+    links: [
+      { source: 'tribe', target: 'knowledge' },
+      { source: 'tribe', target: 'collaboration' },
+      { source: 'tribe', target: 'innovation' },
+      { source: 'knowledge', target: 'innovation' }
+    ]
+  });
+
   const [isConnected, setIsConnected] = useState(false);
   const [newNodeName, setNewNodeName] = useState('');
   const [selectedNode, setSelectedNode] = useState(null);
   const fgRef = useRef();
 
+  // Helper to merge new data into graph
+  const mergeGraphData = useCallback((newData) => {
+    setGraphData(prevData => {
+      const nodesMap = new Map(prevData.nodes.map(n => [n.id, n]));
+      const linksSet = new Set(prevData.links.map(l => `${l.source.id || l.source}-${l.target.id || l.target}`));
+
+      // Add new nodes
+      if (newData.nodes) {
+        newData.nodes.forEach(n => {
+          if (!nodesMap.has(n.id)) nodesMap.set(n.id, n);
+        });
+      }
+
+      // Add new links
+      const newLinks = [...prevData.links];
+      if (newData.links) {
+        newData.links.forEach(l => {
+          const linkId = `${l.source}-${l.target}`;
+          if (!linksSet.has(linkId)) {
+            newLinks.push(l);
+            linksSet.add(linkId);
+          }
+        });
+      }
+
+      return {
+        nodes: Array.from(nodesMap.values()),
+        links: newLinks
+      };
+    });
+  }, []);
+
   useEffect(() => {
-    // Socket event listeners
-    socket.on('connect', () => {
-      setIsConnected(true);
-      console.log('Connected to server');
-    });
+    // 1. Subscribe to Channel
+    pubnub.subscribe({ channels: [CHANNEL] });
+    setIsConnected(true);
 
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-    });
+    // 2. Listen for Events
+    const listener = {
+      message: (event) => {
+        const msg = event.message;
 
-    socket.on('init-graph', (data) => {
-      setGraphData(data);
-    });
+        if (msg.type === 'add-node') {
+          mergeGraphData({ nodes: [msg.data.node], links: msg.data.link ? [msg.data.link] : [] });
+        } else if (msg.type === 'import-graph') {
+          // For full import, we replace state (or merge heavily)
+          // For simplicity in this demo, we'll just merge
+          mergeGraphData(msg.data);
+        }
+      },
+      presence: (event) => {
+        // Could handle user join/leave here
+      }
+    };
 
-    socket.on('graph-update', (data) => {
-      // Preserve the current camera position/interaction state if possible
-      // For ForceGraph, updating data usually triggers a re-render/re-simulation
-      // We want to merge smoothly
-      setGraphData(data);
-    });
+    pubnub.addListener(listener);
 
-    socket.on('node-added', (node) => {
-      // Optional: Camera focus on new node?
-      // if (fgRef.current) {
-      //   const distance = 40;
-      //   const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
-      //   fgRef.current.cameraPosition(
-      //     { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
-      //     node,
-      //     3000
-      //   );
-      // }
+    // 3. Fetch History (Restore State)
+    pubnub.fetchMessages({
+      channels: [CHANNEL],
+      count: 100 // Get last 100 actions
+    }).then((response) => {
+      if (response.channels[CHANNEL]) {
+        console.log(`Replaying ${response.channels[CHANNEL].length} events from history...`);
+        response.channels[CHANNEL].forEach((msg) => {
+          if (msg.message.type === 'add-node') {
+            mergeGraphData({
+              nodes: [msg.message.data.node],
+              links: msg.message.data.link ? [msg.message.data.link] : []
+            });
+          } else if (msg.message.type === 'import-graph') {
+            mergeGraphData(msg.message.data);
+          }
+        });
+      }
     });
 
     return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('init-graph');
-      socket.off('graph-update');
-      socket.off('node-added');
+      pubnub.unsubscribeAll();
+      pubnub.removeListener(listener);
     };
-  }, []);
+  }, [mergeGraphData]);
 
   const handleAddNode = (e) => {
     e.preventDefault();
     if (!newNodeName.trim()) return;
 
-    const nodeData = {
+    const newNode = {
+      id: uuidv4(),
+      group: Math.floor(Math.random() * 5) + 2,
       name: newNodeName,
-      parentId: selectedNode ? selectedNode.id : null
+      val: 5 + Math.random() * 5
     };
 
-    socket.emit('add-node', nodeData);
+    const payload = {
+      type: 'add-node',
+      data: {
+        node: newNode,
+        link: null
+      }
+    };
+
+    if (selectedNode) {
+      payload.data.link = {
+        source: selectedNode.id,
+        target: newNode.id
+      };
+    }
+
+    // Optimistic Update
+    mergeGraphData({ nodes: [newNode], links: payload.data.link ? [payload.data.link] : [] });
+
+    // Publish to Network
+    pubnub.publish({
+      channel: CHANNEL,
+      message: payload
+    });
+
     setNewNodeName('');
-    // Deselect after adding if you want, or keep selected to chain add
   };
 
   const handleNodeClick = useCallback((node) => {
     setSelectedNode(node);
-    // Aim at node from outside it
     const distance = 40;
     const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
 
     if (fgRef.current) {
       fgRef.current.cameraPosition(
-        { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }, // new position
-        node, // lookAt ({ x, y, z })
-        3000  // ms transition duration
+        { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+        node,
+        3000
       );
     }
   }, [fgRef]);
@@ -113,8 +194,18 @@ function App() {
       try {
         const importedData = JSON.parse(event.target.result);
         if (importedData.nodes && importedData.links) {
-          socket.emit('import-graph', importedData);
-          alert('Graph imported successfully!');
+          // Publish import event
+          pubnub.publish({
+            channel: CHANNEL,
+            message: {
+              type: 'import-graph',
+              data: importedData
+            }
+          });
+
+          // Also update locally immediately
+          mergeGraphData(importedData);
+          alert('Graph imported successfully! Broadcasting to tribe...');
         } else {
           alert('Invalid graph file format');
         }

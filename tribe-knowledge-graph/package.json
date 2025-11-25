@@ -6,18 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "server": "node server/index.js",
-    "start": "concurrently \"npm run server\" \"npm run dev\""
+    "preview": "vite preview"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
+    "pubnub": "^7.4.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-force-graph-3d": "^1.24.2",
-    "socket.io": "^4.7.2",
-    "socket.io-client": "^4.7.2",
     "three": "^0.160.0",
     "uuid": "^9.0.1"
   },
