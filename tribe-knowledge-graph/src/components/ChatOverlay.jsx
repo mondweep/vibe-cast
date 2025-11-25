@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import './ChatOverlay.css';
 
 const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
@@ -110,7 +110,7 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
     };
 
     if (!hasJoined) {
-        return (
+        return ReactDOM.createPortal(
             <div className="chat-login-overlay">
                 <div className="chat-login-box">
                     <h2>Join the Tribe</h2>
@@ -127,12 +127,13 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
                         <button type="submit" className="chat-action-btn">Join Session</button>
                     </form>
                 </div>
-            </div>
+            </div>,
+            document.body
         );
     }
 
-    return (
-        <div className={`chat - container ${isOpen ? 'open' : 'closed'} `}>
+    return ReactDOM.createPortal(
+        <div className={`chat-container ${isOpen ? 'open' : 'closed'}`}>
             <div className="chat-header">
                 <div className="chat-title" onClick={() => setIsOpen(!isOpen)}>
                     <span className="status-dot"></span>
@@ -140,13 +141,13 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
                 </div>
                 <div className="chat-controls">
                     <button
-                        className={`tab - btn ${activeTab === 'chat' ? 'active' : ''} `}
+                        className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
                         onClick={() => { setActiveTab('chat'); setIsOpen(true); }}
                     >
                         Chat
                     </button>
                     <button
-                        className={`tab - btn ${activeTab === 'people' ? 'active' : ''} `}
+                        className={`tab-btn ${activeTab === 'people' ? 'active' : ''}`}
                         onClick={() => { setActiveTab('people'); setIsOpen(true); }}
                     >
                         People
@@ -164,7 +165,7 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
                             <div className="empty-chat">No messages yet. Start the discussion!</div>
                         )}
                         {messages.map((msg) => (
-                            <div key={msg.id} className={`message ${msg.sender === username ? 'own' : ''} `}>
+                            <div key={msg.id} className={`message ${msg.sender === username ? 'own' : ''}`}>
                                 <div className="message-header">
                                     <span className="sender">{msg.sender}</span>
                                     <span className="time">{msg.time}</span>
@@ -202,9 +203,9 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
                     </ul>
                 </div>
             )}
-        </div>
+        </div>,
+        document.body
     );
 };
 
 export default ChatOverlay;
-

@@ -1,19 +1,23 @@
 .chat-container {
-    position: absolute;
+    position: fixed;
     top: 20px;
     right: 20px;
     width: 320px;
-    background: rgba(20, 20, 30, 0.85);
+    background: rgba(20, 20, 30, 0.95);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: height 0.3s ease;
-    z-index: 2000;
+    transition: height 0.3s ease, border-color 0.2s;
+    z-index: 9999;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     pointer-events: auto;
+}
+
+.chat-container:hover {
+    border-color: rgba(0, 255, 136, 0.3);
 }
 
 .chat-container.open {
@@ -153,6 +157,7 @@
     font-family: inherit;
     outline: none;
     width: 100%;
+    pointer-events: auto;
 }
 
 .chat-input-field.small {
