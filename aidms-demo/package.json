@@ -1,0 +1,24 @@
+{
+  "name": "aidms-demo",
+  "version": "1.0.0",
+  "description": "Interactive demo of AI Defence (AIMDS) - AI Manipulation Defense System",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "ai",
+    "security",
+    "defense",
+    "adversarial",
+    "aimds"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aidefence": "^2.1.1",
+    "express": "^4.18.2"
+  }
+}
