@@ -146,6 +146,48 @@ npm run dev
 
 ---
 
+#### **`aidms-tinkering`**
+**AIDMS - AI Manipulation Defense System Demo**
+
+An interactive demonstration of production-ready adversarial defense for AI applications:
+- **Multi-layered Security**: Detection, analysis, and response layers
+- **Threat Detection**: Prompt injection, jailbreak attempts, data exfiltration
+- **Real-time Monitoring**: Live metrics dashboard and threat logging
+- **Pattern Recognition**: Fast path and deep path analysis
+- **Interactive Testing**: Quick-test buttons for common attack patterns
+- **Premium UI**: Dark-themed interface with glassmorphism and animations
+
+**Tech Stack**: Node.js, Express, aidefence v2.1.1, Vanilla JavaScript
+**Location**: `aidms-demo/` folder
+**Live Demo**: http://localhost:3000 (when running)
+
+**Get Started**:
+```bash
+git checkout aidms-tinkering
+cd aidms-demo
+npm install
+npm start
+# Visit http://localhost:3000
+```
+
+**Key Features**:
+- 🛡️ **Adversarial Attack Detection**: Identifies malicious input patterns
+- 🚨 **Real-time Threat Log**: Track and analyze security events
+- 📊 **Performance Metrics**: Monitor detection rates and response times
+- 🧪 **Interactive Testing**: Pre-loaded examples of common threats
+- 📝 **Comprehensive Documentation**: Perfect for team presentations
+
+**Threat Categories Detected**:
+- Prompt Injection & Role Manipulation
+- Jailbreak Attempts (DAN, Developer Mode)
+- System Impersonation & Privilege Escalation
+- Data Exfiltration & Information Disclosure
+- Adversarial Noise & Unicode Attacks
+
+**Perfect For**: AI security demos, team training on adversarial attacks, stakeholder presentations, understanding AI defense mechanisms
+
+---
+
 ### 🎵 Multimedia & Translation
 
 #### **`song-translation-working`**
@@ -265,6 +307,9 @@ Simply connect the branch to Netlify for automatic deployment!
 - AI Architecture Learning (Interactive visualizations)
 - eLearning Automation (SCORM package generation)
 
+### 🛡️ AI Security
+- AIDMS Demo (AI Manipulation Defense System)
+
 ### 🎨 Multimedia
 - Song Translation (Voice cloning & translation)
 
@@ -326,6 +371,7 @@ For questions about specific projects, please refer to the documentation in each
 | `claude/song-translation-*` | Song translation experiments |
 | `claude/create-nlp-video-*` | eLearning automation tools |
 | `claude/ai-architecture-*` | AI learning applications |
+| `aidms-tinkering` | AI security and defense demos |
 | `exploring-*` | Research and experimental features |
 | `*-working` | Stable working implementations |
 
