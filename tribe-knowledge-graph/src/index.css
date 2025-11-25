@@ -40,7 +40,7 @@ body {
   height: 100%;
   pointer-events: none;
   /* Let clicks pass through to the canvas */
-  z-index: 10;
+  z-index: 1000;
 }
 
 .header {
