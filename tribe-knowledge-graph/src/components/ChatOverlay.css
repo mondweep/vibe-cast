@@ -2,7 +2,7 @@
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 300px;
+    width: 320px;
     background: rgba(20, 20, 30, 0.85);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -13,14 +13,15 @@
     transition: height 0.3s ease;
     z-index: 100;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
 }
 
 .chat-container.open {
-    height: 400px;
+    height: 450px;
 }
 
 .chat-container.closed {
-    height: 48px;
+    height: 52px;
 }
 
 .chat-header {
@@ -30,7 +31,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
     user-select: none;
 }
 
@@ -40,6 +40,40 @@
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.chat-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn.active {
+    color: #00ff88;
+    background: rgba(0, 255, 136, 0.1);
+}
+
+.chat-toggle {
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
 }
 
 .status-dot {
@@ -144,6 +178,71 @@
     transform: scale(1.1);
 }
 
+/* People List */
+.people-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.people-list h3 {
+    font-size: 0.8rem;
+    color: #888;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.people-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.people-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.people-list li:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.people-list li.me {
+    background: rgba(0, 255, 136, 0.05);
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.people-list li.me .avatar {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.name {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.status {
+    font-size: 0.7rem;
+    color: #00ff88;
+}
+
 /* Login Overlay */
 .chat-login-overlay {
     position: fixed;
@@ -157,6 +256,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    pointer-events: auto;
 }
 
 .chat-login-box {

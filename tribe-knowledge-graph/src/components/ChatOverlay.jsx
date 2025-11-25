@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import './ChatOverlay.css';
 
@@ -8,6 +9,7 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
     const [inputText, setInputText] = useState('');
     const [onlineUsers, setOnlineUsers] = useState(new Set());
     const [isOpen, setIsOpen] = useState(true);
+    const [activeTab, setActiveTab] = useState('chat'); // 'chat' or 'people'
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -17,7 +19,12 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
         const listener = {
             message: (event) => {
                 if (event.message.type === 'chat') {
-                    setMessages(prev => [...prev, event.message.data]);
+                    const newMsg = event.message.data;
+                    setMessages(prev => {
+                        // Prevent duplicates
+                        if (prev.some(m => m.id === newMsg.id)) return prev;
+                        return [...prev, newMsg];
+                    });
                 }
             },
             presence: (event) => {
@@ -54,18 +61,15 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
     // Auto-scroll to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+    }, [messages, activeTab]);
 
     const handleJoin = (e) => {
         e.preventDefault();
         if (!username.trim()) return;
 
-        // Set UUID to username for easy identification in this demo
         pubnub.setUUID(username);
         setHasJoined(true);
         onUsernameSet(username);
-
-        // Announce join (optional, presence handles it technically)
     };
 
     const handleSend = (e) => {
@@ -73,11 +77,14 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
         if (!inputText.trim()) return;
 
         const message = {
-            id: Date.now(),
+            id: Date.now().toString(), // Ensure string ID
             text: inputText,
             sender: username,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
+
+        // Optimistic Update: Show immediately
+        setMessages(prev => [...prev, message]);
 
         pubnub.publish({
             channel: channel,
@@ -113,23 +120,39 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
     }
 
     return (
-        <div className={`chat-container ${isOpen ? 'open' : 'closed'}`}>
-            <div className="chat-header" onClick={() => setIsOpen(!isOpen)}>
-                <div className="chat-title">
+        <div className={`chat - container ${isOpen ? 'open' : 'closed'} `}>
+            <div className="chat-header">
+                <div className="chat-title" onClick={() => setIsOpen(!isOpen)}>
                     <span className="status-dot"></span>
                     Team Chat ({onlineUsers.size})
                 </div>
-                <div className="chat-toggle">{isOpen ? '▼' : '▲'}</div>
+                <div className="chat-controls">
+                    <button
+                        className={`tab - btn ${activeTab === 'chat' ? 'active' : ''} `}
+                        onClick={() => { setActiveTab('chat'); setIsOpen(true); }}
+                    >
+                        Chat
+                    </button>
+                    <button
+                        className={`tab - btn ${activeTab === 'people' ? 'active' : ''} `}
+                        onClick={() => { setActiveTab('people'); setIsOpen(true); }}
+                    >
+                        People
+                    </button>
+                    <div className="chat-toggle" onClick={() => setIsOpen(!isOpen)}>
+                        {isOpen ? '▼' : '▲'}
+                    </div>
+                </div>
             </div>
 
-            {isOpen && (
+            {isOpen && activeTab === 'chat' && (
                 <>
                     <div className="chat-messages">
                         {messages.length === 0 && (
                             <div className="empty-chat">No messages yet. Start the discussion!</div>
                         )}
                         {messages.map((msg) => (
-                            <div key={msg.id} className={`message ${msg.sender === username ? 'own' : ''}`}>
+                            <div key={msg.id} className={`message ${msg.sender === username ? 'own' : ''} `}>
                                 <div className="message-header">
                                     <span className="sender">{msg.sender}</span>
                                     <span className="time">{msg.time}</span>
@@ -152,8 +175,24 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
                     </form>
                 </>
             )}
+
+            {isOpen && activeTab === 'people' && (
+                <div className="people-list">
+                    <h3>Active Participants</h3>
+                    <ul>
+                        {Array.from(onlineUsers).map(user => (
+                            <li key={user} className={user === username ? 'me' : ''}>
+                                <div className="avatar">{user.charAt(0).toUpperCase()}</div>
+                                <span className="name">{user} {user === username && '(You)'}</span>
+                                <span className="status">Online</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };
 
 export default ChatOverlay;
+
