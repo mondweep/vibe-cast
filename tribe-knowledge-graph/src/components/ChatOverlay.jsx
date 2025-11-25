@@ -44,14 +44,23 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
         pubnub.addListener(listener);
 
         // 2. Get Current Online Users (Here Now)
-        pubnub.hereNow({
-            channels: [channel],
-            includeUUIDs: true
-        }).then((response) => {
-            const occupants = response.channels[channel]?.occupants || [];
-            const users = new Set(occupants.map(o => o.uuid));
-            setOnlineUsers(users);
-        });
+        const fetchParticipants = async () => {
+            try {
+                const response = await pubnub.hereNow({
+                    channels: [channel],
+                    includeUUIDs: true
+                });
+                const occupants = response.channels[channel]?.occupants || [];
+                const users = new Set(occupants.map(o => o.uuid));
+                setOnlineUsers(users);
+            } catch (err) {
+                console.warn("Presence check failed (feature might be disabled on keys):", err);
+                // Fallback: Add self to list at least
+                setOnlineUsers(prev => new Set(prev).add(pubnub.getUUID()));
+            }
+        };
+
+        fetchParticipants();
 
         return () => {
             pubnub.removeListener(listener);
@@ -92,6 +101,9 @@ const ChatOverlay = ({ pubnub, channel, onUsernameSet }) => {
                 type: 'chat',
                 data: message
             }
+        }).catch(err => {
+            console.error("Failed to publish message:", err);
+            // Optional: Mark message as failed in UI
         });
 
         setInputText('');

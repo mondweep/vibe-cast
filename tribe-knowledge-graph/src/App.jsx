@@ -7,8 +7,8 @@ import ChatOverlay from './components/ChatOverlay';
 
 // Initialize PubNub with Demo Keys
 const pubnub = new PubNub({
-  publishKey: 'pub-c-4100416f-706a-4952-8495-259275034606', // Standard Demo Key
-  subscribeKey: 'sub-c-52a9ab50-291b-11ed-8d15-6a2a03b00a4e',
+  publishKey: 'demo',
+  subscribeKey: 'demo',
   uuid: uuidv4()
 });
 
