@@ -8,6 +8,8 @@ A real-time, 3D collaborative knowledge graph for visualizing collective intelli
 - **3D Visualization**: Interactive force-directed graph using `react-force-graph-3d`.
 - **Serverless Architecture**: Fully client-side application, deployable to Netlify.
 - **History Playback**: New users automatically fetch recent graph history to sync up.
+- **In-App Chat**: Real-time team chat with optimistic UI updates.
+- **User Presence**: See active participants in the "People" tab.
 - **Premium UI**: Dark-themed, futuristic aesthetic ("Tribe" theme).
 
 ## 🚀 Getting Started
