@@ -1,0 +1,79 @@
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--status-colour, #e5e7eb);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card.green {
+  --status-colour: #22c55e;
+}
+
+.card.amber {
+  --status-colour: #f59e0b;
+}
+
+.card.red {
+  --status-colour: #ef4444;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.message {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timestamp {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.actionButton {
+  padding: 8px 16px;
+  background: var(--status-colour, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.actionButton:hover {
+  opacity: 0.9;
+}

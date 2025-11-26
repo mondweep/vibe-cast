@@ -1,0 +1,218 @@
+.container {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+  border-radius: 20px;
+  padding: 24px;
+  color: white;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.flightInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.airline {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 4px;
+}
+
+.flightNumber {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.route {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.airport {
+  text-align: center;
+  min-width: 80px;
+}
+
+.airportCode {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.airportCity {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+}
+
+.time {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 8px;
+  color: #60a5fa;
+}
+
+.flightPath {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.pathLine {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.pathDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.pathTrail {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.4));
+}
+
+.planeIcon {
+  font-size: 24px;
+  animation: fly 2s ease-in-out infinite;
+}
+
+@keyframes fly {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.duration {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 8px;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detailIcon {
+  font-size: 20px;
+}
+
+.detailContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.detailLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.detailValue {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.incomingAircraft {
+  padding: 16px;
+  background: rgba(96, 165, 250, 0.15);
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+.incomingHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.incomingIcon {
+  font-size: 16px;
+}
+
+.incomingTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #60a5fa;
+}
+
+.incomingStatus {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 12px 0;
+}
+
+.mapPlaceholder {
+  height: 100px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mapContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+}
+
+.mapIcon {
+  font-size: 24px;
+}
+
+@media (max-width: 640px) {
+  .details {
+    grid-template-columns: 1fr;
+  }
+
+  .airportCode {
+    font-size: 24px;
+  }
+
+  .route {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .flightPath {
+    width: 100%;
+    transform: rotate(90deg);
+    padding: 20px 0;
+  }
+}

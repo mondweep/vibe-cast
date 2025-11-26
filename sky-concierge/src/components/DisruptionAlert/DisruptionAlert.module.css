@@ -1,0 +1,291 @@
+.container {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.15);
+}
+
+.alertBanner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.alertIcon {
+  font-size: 32px;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+}
+
+.alertContent {
+  flex: 1;
+}
+
+.alertTitle {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.alertMessage {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+.originalFlight {
+  padding: 16px 24px;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+}
+
+.originalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.originalLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #991b1b;
+}
+
+.cancelledBadge {
+  padding: 4px 10px;
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.originalDetails {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  font-size: 15px;
+  color: #7f1d1d;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.alternativesHeader {
+  padding: 20px 24px 12px;
+}
+
+.alternativesTitle {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.alternativesSubtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.alternatives {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alternativeCard {
+  padding: 16px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.alternativeCard:hover {
+  border-color: #3b82f6;
+  background: #f0f9ff;
+}
+
+.alternativeCard.selected {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.altHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.altAirline {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.altFlight {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.altTimes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.altTime {
+  text-align: center;
+}
+
+.altTimeValue {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.altTimeLabel {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+}
+
+.altArrow {
+  font-size: 18px;
+  color: #9ca3af;
+}
+
+.altFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.altSeats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.seatsIcon {
+  font-size: 14px;
+}
+
+.altPrice {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.freeLabel {
+  color: #22c55e;
+}
+
+.priceValue {
+  color: #1f2937;
+}
+
+.rebookButton {
+  width: 100%;
+  padding: 12px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.rebookButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.rebookButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.helpSection {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.helpButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.helpButton:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.helpIcon {
+  font-size: 16px;
+}
+
+@media (max-width: 640px) {
+  .altTimes {
+    gap: 12px;
+  }
+
+  .helpSection {
+    flex-direction: column;
+  }
+}
