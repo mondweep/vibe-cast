@@ -152,6 +152,33 @@ The architecture relies on a **Local Light Node** pattern to ensure security and
 
 ---
 
-## 6. Conclusion
+## 6. Current Status & Limitations (v0.1.0)
+
+This project is currently in **MVP / Demonstration** state.
+
+### ✅ What Works
+*   **Hackathon Agent Logic:** The Node.js agent (`hackathon-agent/src/agent.js`) correctly simulates the workflow of detecting work, signing it, and broadcasting it.
+*   **CLI Wrapper Architecture:** The `qudag_wrapper.js` is implemented to seamlessly switch between the real `qudag` CLI and a mock implementation based on availability.
+*   **Prompt Logging:** The `PROMPTS-USED.md` system is fully functional, automatically logging all agent actions and user prompts for auditability.
+
+### ⚠️ What is Simulated / Not Working
+*   **QuDAG CLI Installation:** The real `qudag-cli` failed to compile on the current environment due to `avx2` instruction set incompatibility (common on some non-x86 or older architectures).
+    *   *Impact:* The agent is currently running in **Fallback Mode**, using mock signatures and mock DAG transaction IDs.
+*   **AgentDB:** The integration with `agentdb` is currently mocked (`[Simulated]` log output) as we focused on the CLI wrapper first.
+*   **Network Connectivity:** No real P2P connection is established; all "broadcasts" are local logs.
+
+### 👷‍♂️ Guide for Next Developer
+To take this from Demo to Production:
+1.  **Fix QuDAG Compilation:** Ensure you are building on a machine that supports AVX2 (modern x86_64) or cross-compile `qudag-cli` for your target architecture.
+    *   *Command:* `cargo install qudag-cli`
+2.  **Enable AgentDB:** Uncomment the `require('agentdb')` line in `agent.js` and implement the actual schema/insert logic.
+3.  **Verify Keys:** Run `qudag vault init` locally to generate real ML-DSA-87 keys before running the agent.
+
+---
+
+## 7. Development Logs
+- [Prompts Used](./PROMPTS-USED.md): A record of all prompts used to build this system.
+
+## 8. Conclusion
 
 By using QuDAG, the **tv5-monde-hackathon** can move beyond simple "points" systems and establish a **cryptographically secure, agent-driven economy**. This "DAO-DAG" model ensures that every GHA token represents verified, immutable proof of value created, laying the foundation for a fair and autonomous future for open-source AI.
