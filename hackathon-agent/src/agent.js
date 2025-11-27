@@ -1,5 +1,5 @@
 // const { AgentDB } = require('agentdb'); // Commented out until we verify API
-const qudag = require('./qudag_mock');
+const qudag = require('./qudag_wrapper');
 const { logPrompt } = require('./utils');
 
 async function main() {
