@@ -40,3 +40,23 @@ Run the following to check if the agent can see your bucket or resources:
 # Verify auth
 gcloud auth activate-service-account --key-file=gcp-key.json
 ```
+
+## Option B: User Credentials (ADC)
+*Use this if you do not have permission to create Service Accounts.*
+
+1.  **Install gcloud CLI**: Ensure the Google Cloud SDK is installed.
+2.  **Login**: Run the following command in your terminal:
+    ```bash
+    gcloud auth application-default login
+    ```
+3.  **Authenticate**: A browser window will open. Log in with `devstar1899@gcplab.me` and allow access.
+4.  **Configure Project**:
+    ```bash
+    gcloud config set project <your-project-id>
+    ```
+5.  **Update .env**:
+    You only need to set the Project ID. The libraries will automatically find your user credentials.
+    ```env
+    GOOGLE_PROJECT_ID=your-project-id-here
+    # GOOGLE_APPLICATION_CREDENTIALS is NOT needed for ADC
+    ```
