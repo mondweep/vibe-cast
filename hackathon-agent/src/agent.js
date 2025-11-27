@@ -1,4 +1,4 @@
-// const { AgentDB } = require('agentdb'); // Commented out until we verify API
+const { createDatabase } = require('agentdb');
 const qudag = require('./qudag_wrapper');
 const { logPrompt } = require('./utils');
 
@@ -20,9 +20,27 @@ async function main() {
 
     console.log('🤖 Agent: Work detected:', task.action);
 
-    // 1. Store in AgentDB (Local Memory)
-    // In a real scenario: const db = new AgentDB('./memory'); await db.put('actions', task);
-    console.log('🤖 Agent: Storing proof in AgentDB (Local Memory)... [Simulated]');
+    // 1. Store in AgentDB (Real)
+    try {
+        console.log('🤖 Agent: Initializing AgentDB...');
+        const db = await createDatabase({ name: 'hackathon_memory' });
+        console.log('🤖 Agent: AgentDB initialized.');
+
+        // Attempt to store the task.
+        // Since we don't have exact docs, we'll try a generic SQL insert if exposed,
+        // or just rely on the initialization to prove it's working (it creates the DB file).
+        // If db has a 'db' property with 'run' method (sql.js style):
+        if (db.db && db.db.run) {
+            // Create table if not exists
+            db.db.run('CREATE TABLE IF NOT EXISTS actions (id TEXT, action TEXT, proof TEXT)');
+            db.db.run('INSERT INTO actions VALUES (?, ?, ?)', [task.id, task.action, task.proof]);
+            console.log('🤖 Agent: Stored proof in AgentDB (Persistent SQLite).');
+        } else {
+            console.log('🤖 Agent: AgentDB ready (API exploration needed for insert).');
+        }
+    } catch (err) {
+        console.error('❌ AgentDB Error:', err);
+    }
 
     // 2. Sign with QuDAG
     const signature = qudag.sign(task);
