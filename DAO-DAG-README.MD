@@ -176,9 +176,39 @@ To take this from Demo to Production:
 
 ---
 
-## 7. Development Logs
+## 7. 🎬 How to Run the Demo
+
+To showcase the **Proof of Action** agent in action:
+
+1.  **Navigate to the Agent Directory:**
+    ```bash
+    cd hackathon-agent
+    ```
+
+2.  **Install Dependencies (First Time Only):**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the Agent:**
+    ```bash
+    npm start
+    ```
+
+4.  **Observe the Output:**
+    *   You will see the agent **detect** the work.
+    *   It will attempt to use the **QuDAG CLI** (and fallback to mock if missing).
+    *   It will **broadcast** the transaction.
+
+5.  **Verify the Audit Log:**
+    *   Open `PROMPTS-USED.md` in the root directory.
+    *   You will see the new entries logged automatically by the agent.
+
+---
+
+## 8. Development Logs
 - [Prompts Used](./PROMPTS-USED.md): A record of all prompts used to build this system.
 
-## 8. Conclusion
+## 9. Conclusion
 
 By using QuDAG, the **tv5-monde-hackathon** can move beyond simple "points" systems and establish a **cryptographically secure, agent-driven economy**. This "DAO-DAG" model ensures that every GHA token represents verified, immutable proof of value created, laying the foundation for a fair and autonomous future for open-source AI.
