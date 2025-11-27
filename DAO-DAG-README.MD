@@ -158,21 +158,20 @@ This project is currently in **MVP / Demonstration** state.
 
 ### ✅ What Works
 *   **Hackathon Agent Logic:** The Node.js agent (`hackathon-agent/src/agent.js`) correctly simulates the workflow of detecting work, signing it, and broadcasting it.
+*   **AgentDB Persistence:** The agent now integrates with the real `agentdb` package, initializing a persistent SQLite database (via WASM) to store "Proof of Action" records locally.
 *   **CLI Wrapper Architecture:** The `qudag_wrapper.js` is implemented to seamlessly switch between the real `qudag` CLI and a mock implementation based on availability.
 *   **Prompt Logging:** The `PROMPTS-USED.md` system is fully functional, automatically logging all agent actions and user prompts for auditability.
 
 ### ⚠️ What is Simulated / Not Working
 *   **QuDAG CLI Installation:** The real `qudag-cli` failed to compile on the current environment due to `avx2` instruction set incompatibility (common on some non-x86 or older architectures).
     *   *Impact:* The agent is currently running in **Fallback Mode**, using mock signatures and mock DAG transaction IDs.
-*   **AgentDB:** The integration with `agentdb` is currently mocked (`[Simulated]` log output) as we focused on the CLI wrapper first.
 *   **Network Connectivity:** No real P2P connection is established; all "broadcasts" are local logs.
 
 ### 👷‍♂️ Guide for Next Developer
 To take this from Demo to Production:
 1.  **Fix QuDAG Compilation:** Ensure you are building on a machine that supports AVX2 (modern x86_64) or cross-compile `qudag-cli` for your target architecture.
     *   *Command:* `cargo install qudag-cli`
-2.  **Enable AgentDB:** Uncomment the `require('agentdb')` line in `agent.js` and implement the actual schema/insert logic.
-3.  **Verify Keys:** Run `qudag vault init` locally to generate real ML-DSA-87 keys before running the agent.
+2.  **Verify Keys:** Run `qudag vault init` locally to generate real ML-DSA-87 keys before running the agent.
 
 ---
 
