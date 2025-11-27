@@ -12,7 +12,7 @@ const SmartAlarm = ({ leaveTime, trafficStatus }) => {
                 </div>
             </div>
             <div className="alarm-action">
-                <button>Map</button>
+                <button onClick={() => alert('Opening Maps...')}>Map</button>
             </div>
         </div>
     );
