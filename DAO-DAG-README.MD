@@ -97,7 +97,7 @@ The AI Agent executes the following logic after completing a task:
   "arguments": {
     "data": {
       "type": "PROOF_OF_ACTION",
-      "project": "TribeMind",
+      "project": "tv5-monde-hackathon",
       "action": "feat: added chat overlay",
       "proof": "git_commit_hash_xyz"
     },
@@ -123,6 +123,35 @@ dag.subscribe(|message| {
 
 ---
 
-## 5. Conclusion
+## 5. Frequently Asked Questions (FAQ)
 
-By using QuDAG, the Agentics Hackathon can move beyond simple "points" systems and establish a **cryptographically secure, agent-driven economy**. This "DAO-DAG" model ensures that every GHA token represents verified, immutable proof of value created, laying the foundation for a fair and autonomous future for open-source AI.
+### Can I demonstrate this on a local machine (Single Node)?
+**Yes.** QuDAG is designed to run as a standalone node for development and testing.
+1.  **Start Local Node:** Run `qudag node start --dev`. This creates a private, single-node DAG network on your machine.
+2.  **Connect MCP:** Start the MCP server pointing to this local node: `qudag mcp start`.
+3.  **Test:** Your AI agent can now sign and broadcast transactions to this local ledger. The "Proof of Action" will be recorded locally, perfect for demos before deploying to a wider network.
+
+### How do participants connect to the DAG from Codespaces or Local IDEs?
+The architecture relies on a **Local Light Node** pattern to ensure security and connectivity.
+
+**The Flow:**
+1.  **The Network:** A set of stable "Bootstrap Nodes" (hosted by the hackathon organizers) maintains the global DAG state.
+2.  **The Participant's Environment:**
+    *   Whether in **GitHub Codespaces** or a **Local Laptop**, the participant installs the `qudag` CLI.
+    *   They run `qudag node start --peer <bootstrap_node_ip>`. This starts a lightweight node that syncs with the external network.
+    *   They run `qudag mcp start`.
+3.  **The Agent:**
+    *   The participant's AI Agent (e.g., in VS Code/Cursor) connects to the *local* MCP server (localhost).
+    *   When the agent "signs" a transaction, it uses keys stored securely in the *local* vault.
+    *   The *local node* then broadcasts this signed message to the *external* bootstrap nodes via P2P.
+
+**Why this approach?**
+*   **Security:** Private keys never leave the participant's environment.
+*   **Reliability:** The local node handles network resilience (reconnecting to the DAG if internet fluctuates).
+*   **Simplicity:** The AI Agent only needs to talk to "localhost", ignoring complex network logic.
+
+---
+
+## 6. Conclusion
+
+By using QuDAG, the **tv5-monde-hackathon** can move beyond simple "points" systems and establish a **cryptographically secure, agent-driven economy**. This "DAO-DAG" model ensures that every GHA token represents verified, immutable proof of value created, laying the foundation for a fair and autonomous future for open-source AI.
