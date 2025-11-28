@@ -2,6 +2,11 @@
 
 This document details the infrastructure set up to automate the training of RVC (Retrieval-based Voice Conversion) models using **Google Cloud Run with GPU support**.
 
+## 🟢 Current Status (Deployed)
+*   **Service URL**: `https://rvc-trainer-181630922804.us-central1.run.app`
+*   **Last Deployment**: 2025-11-28
+*   **Configuration**: NVIDIA L4 GPU, 16GB RAM, No CPU Throttling
+
 ## 🏗️ Architecture
 
 We use a **Headless Training Service** approach:
@@ -46,6 +51,7 @@ This deploys with:
 *   GPU: 1 x NVIDIA L4
 *   CPU: 4 vCPU
 *   Memory: 16 GiB
+*   No GPU Zonal Redundancy (via `--no-gpu-zonal-redundancy`)
 *   No CPU Throttling (essential for background training)
 
 ## 🔌 API Usage
