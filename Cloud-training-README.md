@@ -91,3 +91,11 @@ curl -X POST $URL/train \
 *   **Cold Starts**: The container is large (~5GB+). Cold starts might take 30-60s.
 *   **Training Time**: Training 100 epochs might take 10-30 minutes depending on dataset size. Ensure your Cloud Run timeout is set appropriately (default in script is 1h).
 *   **Cost**: You are billed for the GPU instance only while it is processing requests (if min-instances=0).
+
+## 📅 Recent Updates (2025-11-29)
+
+### Infrastructure & Code Improvements
+*   **Dockerfile**: Added steps to pre-download critical RVC assets (`hubert`, `pretrained_v2`) during the build process. This prevents runtime failures due to missing base models.
+*   **Server Logic (`server.py`)**: Enhanced the training pipeline to automatically zip the resulting `.pth` model and `.index` file and upload them back to the specified GCS `output_url`.
+*   **Deployment (`deploy.sh`)**: Refined the Cloud Run deployment command to explicitly request `nvidia-l4` GPUs, set memory to 16Gi, and enable 4 vCPUs with no throttling.
+*   **Version Control**: Updated `.gitignore` to exclude temporary directories (`temp_dataset/`, `temp_rvc/`) and pushed all latest changes to the `song-translation-working` branch.
