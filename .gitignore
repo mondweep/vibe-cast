@@ -172,3 +172,7 @@ weights/
 !separated/.gitkeep
 !training_data/.gitkeep
 !models/.gitkeep
+
+# Temporary training data
+temp_dataset/
+temp_rvc/

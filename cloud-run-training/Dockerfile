@@ -27,6 +27,16 @@ COPY server.py .
 # Environment variables for RVC
 ENV RVC_ROOT=/app
 
+# Download Pretrained Models (Required for RVC)
+RUN mkdir -p assets/hubert assets/pretrained_v2
+
+# Hubert
+RUN curl -L -o assets/hubert/hubert_base.pt https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt
+
+# RVC v2 Pretrained
+RUN curl -L -o assets/pretrained_v2/f0G40k.pth https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/pretrained_v2/f0G40k.pth
+RUN curl -L -o assets/pretrained_v2/f0D40k.pth https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/pretrained_v2/f0D40k.pth
+
 # Expose port
 ENV PORT 8080
 

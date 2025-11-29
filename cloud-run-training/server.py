@@ -72,19 +72,25 @@ def train_endpoint():
         # 2. Run RVC Pipeline
         # We assume the RVC scripts are in the current working directory (/app)
         
+        # Create logs directory explicitly (required by preprocess.py)
+        logs_dir = f"logs/{model_name}"
+        os.makedirs(logs_dir, exist_ok=True)
+
         # Step A: Preprocess
         print("Step A: Preprocessing...")
+        # Args: inp_root, sr, n_p, exp_dir, noparallel, per
         cmd_preprocess = [
-            "python3", "trainset_preprocess_pipeline_print.py",
-            dataset_dir, "40000", "1", f"logs/{model_name}", "True"
+            "python3", "infer/modules/train/preprocess.py",
+            dataset_dir, "40000", "1", f"logs/{model_name}", "True", "3.0"
         ]
         subprocess.check_call(cmd_preprocess)
         
         # Step B: Extract Features
         print("Step B: Extracting Features...")
+        # Args: device, n_part, i_part, exp_dir, version, is_half
         cmd_extract = [
-            "python3", "extract_feature_print.py",
-            "cuda:0", "1", "0", "0", f"logs/{model_name}", "v2"
+            "python3", "infer/modules/train/extract_feature_print.py",
+            "cuda:0", "1", "0", f"logs/{model_name}", "v2", "True"
         ]
         subprocess.check_call(cmd_extract)
         
@@ -92,7 +98,7 @@ def train_endpoint():
         print("Step C: Training...")
         # Note: Arguments might vary based on RVC version. This is for v2.
         cmd_train = [
-            "python3", "train_nsf_sim_cache_sid_load_pretrain.py",
+            "python3", "infer/modules/train/train.py",
             "-e", model_name,
             "-sr", "40k",
             "-f0", "1",

@@ -7,13 +7,14 @@ echo "Deploying $SERVICE_NAME to Cloud Run (GPU)..."
 
 # Note: nvidia-l4 is recommended for inference/light training. 
 # If unavailable, try nvidia-t4 or check quotas.
-gcloud run deploy $SERVICE_NAME \
+gcloud beta run deploy $SERVICE_NAME \
   --image $IMAGE_NAME \
   --platform managed \
   --region $REGION \
   --no-allow-unauthenticated \
   --gpu 1 \
   --gpu-type nvidia-l4 \
+  --no-gpu-zonal-redundancy \
   --memory 16Gi \
   --cpu 4 \
   --no-cpu-throttling \
