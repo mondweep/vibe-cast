@@ -1,0 +1,46 @@
+{
+  "name": "ruvector-engine",
+  "version": "1.0.0",
+  "description": "GPU-less Serverless Media Recommendation Engine - CloudRun-Native Hypergraph Architecture",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "NODE_ENV=development node src/index.js",
+    "test": "node --test",
+    "docker:build": "docker build -t ruvector-engine .",
+    "docker:run": "docker run -p 8080:8080 ruvector-engine",
+    "gcloud:deploy": "gcloud run deploy ruvector-engine --source . --region us-central1 --allow-unauthenticated",
+    "demo": "node examples/demo.js"
+  },
+  "keywords": [
+    "recommendation-engine",
+    "hypergraph",
+    "embeddings",
+    "cloudrun",
+    "serverless",
+    "gpu-less",
+    "machine-learning",
+    "node2vec",
+    "fastrp",
+    "spsa",
+    "federated-learning",
+    "agentics-hackathon"
+  ],
+  "author": "Agentics Hackathon",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^8.0.0",
+    "@google-cloud/storage": "^7.18.0",
+    "agentics-hackathon": "^1.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "heap-js": "^2.7.1",
+    "mathjs": "^15.1.0",
+    "ml-matrix": "^6.12.1",
+    "uuid": "^13.0.0"
+  }
+}
