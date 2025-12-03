@@ -31,6 +31,68 @@ router.get('/health', (req, res) => {
 });
 
 /**
+ * GPU status and test endpoint
+ */
+router.get('/gpu-test', async (req, res) => {
+  const { execSync, spawn } = require('child_process');
+
+  const results = {
+    timestamp: Date.now(),
+    environment: {
+      NVIDIA_VISIBLE_DEVICES: process.env.NVIDIA_VISIBLE_DEVICES || 'not set',
+      CUDA_VISIBLE_DEVICES: process.env.CUDA_VISIBLE_DEVICES || 'not set'
+    },
+    nvidia_smi: null,
+    gpu_detected: false,
+    gpus: []
+  };
+
+  try {
+    // Try nvidia-smi
+    const smiOutput = execSync('nvidia-smi --query-gpu=name,memory.total,memory.free,utilization.gpu --format=csv,noheader,nounits', {
+      timeout: 10000,
+      encoding: 'utf-8'
+    });
+
+    results.nvidia_smi = 'available';
+    results.gpu_detected = true;
+
+    const lines = smiOutput.trim().split('\n');
+    for (const line of lines) {
+      const parts = line.split(',').map(p => p.trim());
+      if (parts.length >= 4) {
+        results.gpus.push({
+          name: parts[0],
+          memory_total_mb: parseInt(parts[1]),
+          memory_free_mb: parseInt(parts[2]),
+          utilization_percent: parseInt(parts[3])
+        });
+      }
+    }
+  } catch (err) {
+    results.nvidia_smi = 'not available';
+    results.error = err.message;
+  }
+
+  // Run Python GPU test if available
+  try {
+    const pythonTest = execSync('python3 /app/gpu-test/gpu_test.py 2>&1', {
+      timeout: 30000,
+      encoding: 'utf-8'
+    });
+    results.python_test = JSON.parse(pythonTest);
+  } catch (err) {
+    results.python_test = { error: err.message };
+  }
+
+  results.summary = results.gpu_detected
+    ? `GPU operational: ${results.gpus.length} GPU(s) detected`
+    : 'No GPU detected - running in CPU mode';
+
+  res.json(results);
+});
+
+/**
  * Initialize recommendation engine with sample data or provided graph
  */
 router.post('/initialize', async (req, res) => {
