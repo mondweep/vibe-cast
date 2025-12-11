@@ -1,20 +1,8 @@
 {
   "name": "rag-pipeline-demo",
   "version": "1.0.0",
-  "description": "RAG Pipeline Demo using LangChain.js - Knowledge Sharing Session",
+  "description": "RAG Pipeline Demo - Netlify Deployment",
   "author": "Mondweep Chakravorty",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@langchain/community": "^0.3.0",
-    "@langchain/openai": "^0.3.0",
-    "langchain": "^0.3.0",
-    "openai": "^4.0.0"
-  },
-  "devDependencies": {
-    "vite": "^5.0.0"
-  }
+  "private": true,
+  "type": "module"
 }

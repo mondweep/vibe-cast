@@ -1,6 +1,6 @@
 # RAG Pipeline Web Demo
 
-Interactive demonstration of Retrieval-Augmented Generation (RAG) using LangChain concepts.
+Interactive demonstration of Retrieval-Augmented Generation (RAG).
 
 **Author:** Mondweep Chakravorty
 **Session:** Knowledge Sharing - December 2025
@@ -8,50 +8,59 @@ Interactive demonstration of Retrieval-Augmented Generation (RAG) using LangChai
 ## Features
 
 - Live RAG pipeline demonstration
+- Server-side API calls via Netlify Functions
 - Uses OpenAI embeddings and GPT-3.5
 - Shows retrieved context chunks with similarity scores
 - Beautiful, responsive UI
-- No backend required (runs entirely in browser)
-
-## How It Works
-
-1. **Document Chunking** - Company policies are split into smaller chunks
-2. **Query Embedding** - Your question is converted to a vector
-3. **Similarity Search** - Top 3 most relevant chunks are retrieved
-4. **Answer Generation** - GPT generates an answer using only the retrieved context
 
 ## Deploy to Netlify
 
-### Option 1: One-Click Deploy
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/mondweep/vibe-cast)
+### Step 1: Import Project
 
-### Option 2: Manual Deploy
+1. Go to [app.netlify.com](https://app.netlify.com)
+2. Click **"Add new site"** > **"Import an existing project"**
+3. Connect your GitHub repo
+4. Configure build settings:
+   - **Base directory:** `rag-session/web-demo`
+   - **Publish directory:** `.`
 
-1. Fork or clone this repository
-2. Connect to Netlify:
-   - Go to [Netlify](https://app.netlify.com)
-   - Click "Add new site" > "Import an existing project"
-   - Connect your GitHub repository
-   - Set the base directory to: `rag-session/web-demo`
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-3. Deploy!
+### Step 2: Set Environment Variable
 
-## Local Development
+1. Go to **Site settings** > **Environment variables**
+2. Add:
+   - **Key:** `OPENAI_API_KEY`
+   - **Value:** Your OpenAI API key (sk-...)
 
-```bash
-cd rag-session/web-demo
-npm install
-npm run dev
+### Step 3: Deploy
+
+Click **Deploy** and you're done!
+
+## How It Works
+
+1. User submits a question
+2. Frontend calls `/api/ask` (Netlify Function)
+3. Function retrieves `OPENAI_API_KEY` from environment
+4. Chunks are embedded and similarity search finds top 3 matches
+5. GPT generates answer using retrieved context
+6. Response returned to user
+
+## Project Structure
+
+```
+web-demo/
+├── index.html              # Frontend UI
+├── netlify.toml            # Netlify configuration
+├── package.json            # Project metadata
+└── netlify/
+    └── functions/
+        └── ask.mjs         # Serverless RAG function
 ```
 
-Open http://localhost:5173 in your browser.
+## Environment Variables
 
-## Usage
-
-1. Enter your OpenAI API key (never stored, used client-side only)
-2. Ask questions about company policies
-3. See the RAG pipeline in action!
+| Variable | Description |
+|----------|-------------|
+| `OPENAI_API_KEY` | Your OpenAI API key (required) |
 
 ## Example Questions
 
@@ -59,12 +68,3 @@ Open http://localhost:5173 in your browser.
 - "How do I claim business expenses?"
 - "What are the core working hours?"
 - "What is the training budget?"
-
-## Security Note
-
-Your OpenAI API key is:
-- Only used in your browser
-- Never sent to any server except OpenAI
-- Never stored or logged
-
-For production use, consider implementing a backend proxy to protect your API key.

@@ -1,10 +1,6 @@
-/**
- * RAG Pipeline Demo - Frontend
- * Knowledge Sharing Session
- * Author: Mondweep Chakravorty
- */
+// Netlify Function: RAG Pipeline
+// Environment variable: OPENAI_API_KEY (set in Netlify dashboard)
 
-// Company policies document (embedded for demo)
 const COMPANY_POLICIES = `COMPANY POLICIES AND PROCEDURES
 
 ANNUAL LEAVE POLICY
@@ -22,7 +18,7 @@ Business expenses must be submitted within 30 days of being incurred. All claims
 PROFESSIONAL DEVELOPMENT
 The company is committed to supporting employee development. Each employee has access to a training budget of £1,500 per year for relevant professional development activities. Training requests should be discussed with your line manager during regular one-to-one meetings. Approved training must be relevant to your current role or agreed career development path. Study leave of up to five days per year may be granted for employees undertaking approved professional qualifications.`;
 
-// Simple text chunking function
+// Chunk text into smaller pieces
 function chunkText(text, chunkSize = 500, overlap = 50) {
     const chunks = [];
     let start = 0;
@@ -37,7 +33,7 @@ function chunkText(text, chunkSize = 500, overlap = 50) {
     return chunks;
 }
 
-// Simple cosine similarity
+// Calculate cosine similarity
 function cosineSimilarity(a, b) {
     let dotProduct = 0;
     let normA = 0;
@@ -99,113 +95,105 @@ async function getCompletion(prompt, apiKey) {
     return data.choices[0].message.content;
 }
 
-// Main RAG function
-async function performRAG(question, apiKey) {
-    // Step 1: Chunk the document
-    const chunks = chunkText(COMPANY_POLICIES);
+// Main handler
+export default async (req, context) => {
+    // Handle CORS preflight
+    if (req.method === 'OPTIONS') {
+        return new Response(null, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            }
+        });
+    }
 
-    // Step 2: Get embedding for the question
-    const questionEmbedding = await getEmbedding(question, apiKey);
+    if (req.method !== 'POST') {
+        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+            status: 405,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
 
-    // Step 3: Get embeddings for all chunks and find most similar
-    const chunkEmbeddings = await Promise.all(
-        chunks.map(chunk => getEmbedding(chunk, apiKey))
-    );
+    const apiKey = process.env.OPENAI_API_KEY;
 
-    // Step 4: Calculate similarities and get top 3 chunks
-    const similarities = chunkEmbeddings.map((embedding, index) => ({
-        index,
-        chunk: chunks[index],
-        similarity: cosineSimilarity(questionEmbedding, embedding)
-    }));
+    if (!apiKey) {
+        return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
 
-    similarities.sort((a, b) => b.similarity - a.similarity);
-    const topChunks = similarities.slice(0, 3);
+    try {
+        const { question } = await req.json();
 
-    // Step 5: Create context from top chunks
-    const context = topChunks.map(c => c.chunk).join('\n\n');
+        if (!question) {
+            return new Response(JSON.stringify({ error: 'Question is required' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
 
-    // Step 6: Generate answer using context
-    const prompt = `Answer the question based only on the following context:
+        // Step 1: Chunk the document
+        const chunks = chunkText(COMPANY_POLICIES);
 
-${context}
+        // Step 2: Get embedding for the question
+        const questionEmbedding = await getEmbedding(question, apiKey);
+
+        // Step 3: Get embeddings for all chunks
+        const chunkEmbeddings = await Promise.all(
+            chunks.map(chunk => getEmbedding(chunk, apiKey))
+        );
+
+        // Step 4: Calculate similarities and get top 3 chunks
+        const similarities = chunkEmbeddings.map((embedding, index) => ({
+            index,
+            chunk: chunks[index],
+            similarity: cosineSimilarity(questionEmbedding, embedding)
+        }));
+
+        similarities.sort((a, b) => b.similarity - a.similarity);
+        const topChunks = similarities.slice(0, 3);
+
+        // Step 5: Create context from top chunks
+        const retrievedContext = topChunks.map(c => c.chunk).join('\n\n');
+
+        // Step 6: Generate answer using context
+        const prompt = `Answer the question based only on the following context:
+
+${retrievedContext}
 
 Question: ${question}
 
 Answer:`;
 
-    const answer = await getCompletion(prompt, apiKey);
+        const answer = await getCompletion(prompt, apiKey);
 
-    return {
-        answer,
-        sources: topChunks.map(c => ({
-            text: c.chunk.substring(0, 100) + '...',
-            similarity: (c.similarity * 100).toFixed(1) + '%'
-        }))
-    };
-}
+        return new Response(JSON.stringify({
+            answer,
+            sources: topChunks.map(c => ({
+                text: c.chunk.substring(0, 100) + '...',
+                similarity: (c.similarity * 100).toFixed(1) + '%'
+            }))
+        }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
+        });
 
-// UI Functions
-window.setQuestion = function(question) {
-    document.getElementById('question').value = question;
-};
-
-window.askQuestion = async function() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    const question = document.getElementById('question').value.trim();
-    const responseBox = document.getElementById('responseBox');
-    const answerEl = document.getElementById('answer');
-    const askBtn = document.getElementById('askBtn');
-
-    if (!apiKey) {
-        alert('Please enter your OpenAI API key');
-        return;
-    }
-
-    if (!question) {
-        alert('Please enter a question');
-        return;
-    }
-
-    // Show loading state
-    askBtn.disabled = true;
-    askBtn.textContent = 'Processing...';
-    responseBox.classList.add('loading');
-    answerEl.innerHTML = '<div class="spinner"></div>';
-
-    try {
-        const result = await performRAG(question, apiKey);
-
-        let sourcesHtml = '';
-        if (result.sources && result.sources.length > 0) {
-            sourcesHtml = `
-                <div class="sources">
-                    <h4>Retrieved Context (${result.sources.length} chunks)</h4>
-                    ${result.sources.map((s, i) => `
-                        <p><strong>Chunk ${i + 1}</strong> (${s.similarity} match): ${s.text}</p>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        answerEl.innerHTML = `
-            <p class="answer">${result.answer}</p>
-            ${sourcesHtml}
-        `;
     } catch (error) {
-        answerEl.innerHTML = `<p class="answer" style="color: #ef4444;">Error: ${error.message}</p>`;
-    } finally {
-        askBtn.disabled = false;
-        askBtn.textContent = 'Ask';
-        responseBox.classList.remove('loading');
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
+        });
     }
 };
 
-// Allow Enter key to submit
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('question').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            window.askQuestion();
-        }
-    });
-});
+export const config = {
+    path: "/api/ask"
+};

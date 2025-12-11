@@ -104,7 +104,7 @@
             gap: 1rem;
         }
 
-        input[type="text"], input[type="password"] {
+        input[type="text"] {
             flex: 1;
             padding: 1rem;
             border: 2px solid rgba(255, 255, 255, 0.1);
@@ -115,7 +115,7 @@
             transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus, input[type="password"]:focus {
+        input[type="text"]:focus {
             outline: none;
             border-color: #00d4ff;
         }
@@ -228,20 +228,6 @@
             box-shadow: none;
         }
 
-        .api-key-section {
-            background: rgba(255, 193, 7, 0.1);
-            border: 1px solid rgba(255, 193, 7, 0.3);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .api-key-section small {
-            color: #fbbf24;
-            display: block;
-            margin-top: 0.5rem;
-        }
-
         .pipeline-steps {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -324,15 +310,9 @@
                     - Annual Leave: 25 days per year for full-time employees<br>
                     - Working Hours: 9:00 AM - 5:30 PM, Core hours 10:00 AM - 4:00 PM<br>
                     - Expenses: Submit within 30 days with receipts<br>
-                    - Training Budget: GBP1,500 per year<br>
+                    - Training Budget: £1,500 per year<br>
                     - And more...
                 </div>
-            </div>
-
-            <div class="api-key-section">
-                <label for="apiKey">OpenAI API Key</label>
-                <input type="password" id="apiKey" placeholder="sk-...">
-                <small>Your key is only used client-side and never stored.</small>
             </div>
 
             <div class="input-section">
@@ -362,6 +342,74 @@
         <p>Built for Knowledge Sharing Session | <a href="https://github.com/mondweep/vibe-cast" target="_blank">View on GitHub</a></p>
     </footer>
 
-    <script type="module" src="/src/main.js"></script>
+    <script>
+        function setQuestion(question) {
+            document.getElementById('question').value = question;
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('question').value.trim();
+            const responseBox = document.getElementById('responseBox');
+            const answerEl = document.getElementById('answer');
+            const askBtn = document.getElementById('askBtn');
+
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+
+            // Show loading state
+            askBtn.disabled = true;
+            askBtn.textContent = 'Processing...';
+            responseBox.classList.add('loading');
+            answerEl.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const response = await fetch('/api/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to get answer');
+                }
+
+                let sourcesHtml = '';
+                if (result.sources && result.sources.length > 0) {
+                    sourcesHtml = `
+                        <div class="sources">
+                            <h4>Retrieved Context (${result.sources.length} chunks)</h4>
+                            ${result.sources.map((s, i) => `
+                                <p><strong>Chunk ${i + 1}</strong> (${s.similarity} match): ${s.text}</p>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                answerEl.innerHTML = `
+                    <p class="answer">${result.answer}</p>
+                    ${sourcesHtml}
+                `;
+            } catch (error) {
+                answerEl.innerHTML = `<p class="answer" style="color: #ef4444;">Error: ${error.message}</p>`;
+            } finally {
+                askBtn.disabled = false;
+                askBtn.textContent = 'Ask';
+                responseBox.classList.remove('loading');
+            }
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('question').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                askQuestion();
+            }
+        });
+    </script>
 </body>
 </html>
