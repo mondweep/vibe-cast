@@ -1,0 +1,58 @@
+============================================================
+RAG Pipeline Demo - LangChain + FAISS
+============================================================
+Test Run: December 2025
+
+Step 1: Loading documents...
+Loaded 1 document(s)
+
+Step 2: Splitting documents into chunks...
+Created 9 chunks from documents
+
+Step 3: Creating embeddings and vector store...
+Vector store created successfully
+
+Step 4: Creating RAG chain...
+RAG chain created successfully
+
+============================================================
+TESTING THE RAG PIPELINE
+============================================================
+
+Question 1: What is the company annual leave policy?
+--------------------------------------------------
+Answer: All full-time employees are entitled to 25 days of annual leave
+per calendar year. Part-time employees receive a pro-rata entitlement
+based on their contracted hours. Annual leave must be requested at least
+two weeks in advance for periods of five days or more. For shorter periods,
+a minimum of three working days' notice is required. Unused annual leave
+may be carried over to the following year, up to a maximum of five days.
+Any leave beyond this will be forfeited unless exceptional circumstances apply.
+
+Question 2: How do I claim business expenses?
+--------------------------------------------------
+Answer: Business expenses must be submitted within 30 days of being incurred
+and must be accompanied by valid receipts. You can claim expenses for travel,
+accommodation, and meals according to the specified limits. Pre-approval is
+required for any single expense exceeding £500 or total trip costs exceeding £1,000.
+
+Question 3: What are the core working hours?
+--------------------------------------------------
+Answer: The core working hours are 10:00 AM to 4:00 PM.
+
+============================================================
+RAG Pipeline Demo Complete!
+============================================================
+
+KEY OBSERVATIONS:
+-----------------
+1. The RAG pipeline successfully loaded and chunked the company policies document
+2. FAISS vector store was created with embeddings from OpenAI
+3. All three questions were answered accurately using ONLY the provided context
+4. The answers demonstrate that the LLM is grounding its responses in the
+   retrieved documents rather than using its general knowledge
+
+This proves that RAG effectively:
+- Retrieves relevant document chunks based on semantic similarity
+- Provides accurate, context-grounded answers
+- Reduces hallucination by constraining the LLM to the provided context

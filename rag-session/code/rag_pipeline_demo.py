@@ -14,12 +14,13 @@ Date: December 2025
 # STEP 1: Import Required Libraries
 # =============================================================================
 
-from langchain.document_loaders import TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain.llms import OpenAI
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_community.vectorstores import FAISS
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 import os
 
 # =============================================================================
@@ -52,7 +53,7 @@ def load_documents(file_path: str):
     """
     loader = TextLoader(file_path, encoding='utf-8')
     documents = loader.load()
-    print(f"✅ Loaded {len(documents)} document(s)")
+    print(f"Loaded {len(documents)} document(s)")
     return documents
 
 
@@ -85,7 +86,7 @@ def split_documents(documents, chunk_size: int = 500, chunk_overlap: int = 50):
     )
 
     chunks = text_splitter.split_documents(documents)
-    print(f"✅ Created {len(chunks)} chunks from documents")
+    print(f"Created {len(chunks)} chunks from documents")
     return chunks
 
 
@@ -122,7 +123,7 @@ def create_vector_store(chunks):
         embedding=embeddings
     )
 
-    print("✅ Vector store created successfully")
+    print("Vector store created successfully")
     return vector_store
 
 
@@ -144,26 +145,39 @@ def create_rag_chain(vector_store):
         vector_store: FAISS vector store with embedded documents
 
     Returns:
-        RetrievalQA chain
+        RAG chain (LCEL)
     """
-    # Initialise the LLM
-    llm = OpenAI(temperature=0)  # temperature=0 for deterministic responses
-
     # Create retriever from vector store
     retriever = vector_store.as_retriever(
         search_type="similarity",
         search_kwargs={"k": 3}  # Retrieve top 3 most relevant chunks
     )
 
-    # Create the RAG chain
-    rag_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",  # "stuff" = combine all retrieved docs into prompt
-        retriever=retriever,
-        return_source_documents=True  # Return the source documents used
+    # Define the prompt template
+    template = """Answer the question based only on the following context:
+{context}
+
+Question: {question}
+
+Answer:"""
+    prompt = ChatPromptTemplate.from_template(template)
+
+    # Initialise the LLM
+    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+
+    # Helper function to format retrieved documents
+    def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
+
+    # Create the RAG chain using LangChain Expression Language (LCEL)
+    rag_chain = (
+        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
     )
 
-    print("✅ RAG chain created successfully")
+    print("RAG chain created successfully")
     return rag_chain
 
 
@@ -180,22 +194,17 @@ def ask_question(rag_chain, question: str):
         question: User's question
 
     Returns:
-        Answer and source documents
+        Answer string
     """
-    print(f"\n📝 Question: {question}")
+    print(f"\nQuestion: {question}")
     print("-" * 50)
 
     # Get response from RAG chain
-    response = rag_chain({"query": question})
+    answer = rag_chain.invoke(question)
 
-    # Extract answer and sources
-    answer = response["result"]
-    sources = response["source_documents"]
+    print(f"Answer: {answer.strip()}")
 
-    print(f"\n💡 Answer: {answer}")
-    print(f"\n📚 Sources used: {len(sources)} document(s)")
-
-    return answer, sources
+    return answer
 
 
 # =============================================================================
@@ -211,20 +220,24 @@ def main():
     print("=" * 60)
 
     # Step 1: Load documents
+    print("\nStep 1: Loading documents...")
     documents = load_documents("sample_data/company_policies.txt")
 
     # Step 2: Split into chunks
+    print("\nStep 2: Splitting documents into chunks...")
     chunks = split_documents(documents)
 
     # Step 3: Create vector store
+    print("\nStep 3: Creating embeddings and vector store...")
     vector_store = create_vector_store(chunks)
 
     # Step 4: Create RAG chain
+    print("\nStep 4: Creating RAG chain...")
     rag_chain = create_rag_chain(vector_store)
 
     # Step 5: Ask questions
     print("\n" + "=" * 60)
-    print("Ready to answer questions!")
+    print("TESTING THE RAG PIPELINE")
     print("=" * 60)
 
     # Example questions
@@ -236,7 +249,11 @@ def main():
 
     for question in questions:
         ask_question(rag_chain, question)
-        print("\n")
+        print()
+
+    print("=" * 60)
+    print("RAG Pipeline Demo Complete!")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
