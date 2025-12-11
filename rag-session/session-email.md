@@ -6,9 +6,9 @@
 
 **To:** Team Distribution List
 
-**From:** [Your Name]
+**From:** Mondweep Chakravorty
 
-**Date:** 10th December 2025
+**Date:** 25th December 2025
 
 ---
 
@@ -67,7 +67,7 @@ I look forward to seeing you at the session.
 
 Kind regards,
 
-[Your Name]
+Mondweep Chakravorty
 
 ---
 

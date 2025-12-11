@@ -8,7 +8,7 @@
 *Using LangChain and FAISS*
 
 Knowledge Sharing Session
-[Your Name] | 10th December 2025
+Mondweep Chakravorty | 25th December 2025
 
 ---
 

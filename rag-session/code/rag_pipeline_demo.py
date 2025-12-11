@@ -6,8 +6,8 @@ Knowledge Sharing Session - Beginner Level
 This script demonstrates how to build a simple Retrieval-Augmented
 Generation (RAG) pipeline using LangChain and FAISS vector store.
 
-Author: [Your Name]
-Date: 10th December 2025
+Author: Mondweep Chakravorty
+Date: 25th December 2025
 """
 
 # =============================================================================
