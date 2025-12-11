@@ -7,7 +7,7 @@ This script demonstrates how to build a simple Retrieval-Augmented
 Generation (RAG) pipeline using LangChain and FAISS vector store.
 
 Author: Mondweep Chakravorty
-Date: 25th December 2025
+Date: December 2025
 """
 
 # =============================================================================
