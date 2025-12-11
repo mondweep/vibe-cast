@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+
+# Add more chapter members as you progress through the book
+members = [
+    "chapters/ch01_getting_started/hello_cargo",
+    "chapters/ch02_guessing_game",
+    "chapters/ch03_common_concepts",
+    "chapters/ch04_ownership",
+    "chapters/ch05_structs",
+    "chapters/ch06_enums",
+    "chapters/ch12_minigrep",
+]
+
+# Default members to build
+default-members = [
+    "chapters/ch01_getting_started/hello_cargo",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Rust Learner"]
+
+[workspace.dependencies]
+rand = "0.8"

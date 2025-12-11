@@ -1,0 +1,7 @@
+[package]
+name = "ch06_enums"
+version = "0.1.0"
+edition = "2021"
+description = "Chapter 6 - Enums and Pattern Matching"
+
+[dependencies]
