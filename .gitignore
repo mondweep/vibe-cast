@@ -1,0 +1,12 @@
+# Environment variables (keep API keys safe!)
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
