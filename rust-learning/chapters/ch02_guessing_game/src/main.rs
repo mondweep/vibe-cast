@@ -20,6 +20,9 @@ fn main() {
     // Generate a random number between 1 and 100
     let secret_number = rand::thread_rng().gen_range(1..=100);
 
+    // Track the number of guesses
+    let mut guess_count: u32 = 0;
+
     // Uncomment for debugging:
     // println!("(Debug: The secret number is: {})", secret_number);
 
@@ -43,6 +46,9 @@ fn main() {
             }
         };
 
+        // Increment guess count (only for valid guesses)
+        guess_count += 1;
+
         println!("You guessed: {}", guess);
 
         // Compare the guess to the secret number
@@ -50,7 +56,7 @@ fn main() {
             Ordering::Less => println!("Too small!"),
             Ordering::Greater => println!("Too big!"),
             Ordering::Equal => {
-                println!("You win!");
+                println!("You win! It took you {} guesses.", guess_count);
                 break;
             }
         }
