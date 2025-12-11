@@ -1,0 +1,16 @@
+# Rust build artifacts
+/target/
+**/target/
+
+# Compiled binaries (from rustc without Cargo)
+chapters/ch01_getting_started/hello_world/main
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
