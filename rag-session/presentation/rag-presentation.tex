@@ -15,7 +15,6 @@
 \usepackage{tikz}
 \usepackage{listings}
 \usepackage{xcolor}
-\usepackage{fontawesome5}
 \usepackage{tcolorbox}
 
 % Custom colours
@@ -23,7 +22,6 @@
 \definecolor{ragpurple}{RGB}{124,58,237}
 \definecolor{codebg}{RGB}{40,44,52}
 \definecolor{codegreen}{RGB}{152,195,121}
-\definecolor{codeyellow}{RGB}{229,192,123}
 
 % Code listing style
 \lstdefinestyle{pythonstyle}{
@@ -59,10 +57,10 @@
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{itemize}
-                \item[\faIcon{clock}] \textbf{2 mins} - Introduction
-                \item[\faIcon{chalkboard-teacher}] \textbf{5 mins} - Presentation
-                \item[\faIcon{code}] \textbf{3 mins} - Code Demo
-                \item[\faIcon{comments}] \textbf{30 mins} - Q\&A
+                \item \textbf{2 mins} - Introduction
+                \item \textbf{5 mins} - Presentation
+                \item \textbf{3 mins} - Code Demo
+                \item \textbf{30 mins} - Q\&A
             \end{itemize}
         \end{column}
         \begin{column}{0.5\textwidth}
@@ -89,9 +87,9 @@
 
     \textbf{The Problem RAG Solves:}
     \begin{itemize}
-        \item[\faIcon{calendar-times}] LLMs have knowledge cutoff dates
-        \item[\faIcon{ghost}] They can ``hallucinate'' (make things up)
-        \item[\faIcon{lock}] They don't know your private/company data
+        \item LLMs have knowledge cutoff dates
+        \item They can ``hallucinate'' (make things up)
+        \item They don't know your private/company data
     \end{itemize}
 \end{frame}
 
@@ -99,7 +97,7 @@
 \begin{frame}{RAG vs Standard LLM}
     \begin{columns}
         \begin{column}{0.48\textwidth}
-            \begin{tcolorbox}[colback=red!10, colframe=red!70, title=\faIcon{times-circle} Without RAG]
+            \begin{tcolorbox}[colback=red!10, colframe=red!70, title=Without RAG]
                 \textbf{User:} ``What is our company's leave policy?''
 
                 \vspace{0.5em}
@@ -108,7 +106,7 @@
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.48\textwidth}
-            \begin{tcolorbox}[colback=green!10, colframe=green!70, title=\faIcon{check-circle} With RAG]
+            \begin{tcolorbox}[colback=green!10, colframe=green!70, title=With RAG]
                 \textbf{User:} ``What is our company's leave policy?''
 
                 \vspace{0.5em}
@@ -123,17 +121,17 @@
 \begin{frame}{How RAG Works}
     \begin{center}
         \begin{tikzpicture}[
-            node distance=1.5cm,
-            box/.style={rectangle, draw=ragblue, fill=ragblue!20, rounded corners, minimum width=2.5cm, minimum height=1cm, align=center, font=\small},
+            node distance=1.8cm,
+            box/.style={rectangle, draw=ragblue, fill=ragblue!20, rounded corners, minimum width=2cm, minimum height=0.8cm, align=center, font=\small},
             arrow/.style={->, thick, ragpurple}
         ]
             % Nodes
-            \node[box] (question) {\faIcon{question-circle} Question};
-            \node[box, right of=question, xshift=2cm] (embed) {\faIcon{vector-square} Embed Query};
-            \node[box, right of=embed, xshift=2cm] (search) {\faIcon{search} Search Docs};
-            \node[box, right of=search, xshift=2cm] (generate) {\faIcon{robot} Generate};
-            \node[box, below of=search, yshift=-0.5cm] (vectordb) {\faIcon{database} Vector DB\\(FAISS)};
-            \node[box, below of=vectordb, yshift=-0.5cm] (docs) {\faIcon{file-alt} Your\\Documents};
+            \node[box] (question) {Question};
+            \node[box, right of=question, xshift=1.5cm] (embed) {Embed Query};
+            \node[box, right of=embed, xshift=1.5cm] (search) {Search Docs};
+            \node[box, right of=search, xshift=1.5cm] (generate) {Generate};
+            \node[box, below of=search, yshift=-0.3cm] (vectordb) {Vector DB (FAISS)};
+            \node[box, below of=vectordb, yshift=-0.3cm] (docs) {Your Documents};
 
             % Arrows
             \draw[arrow] (question) -- (embed);
@@ -143,7 +141,7 @@
             \draw[arrow] (vectordb) -- (search);
 
             % Answer
-            \node[box, fill=green!20, draw=green!70, right of=generate, xshift=2cm] (answer) {\faIcon{check} Answer};
+            \node[box, fill=green!20, draw=green!70, right of=generate, xshift=1.5cm] (answer) {Answer};
             \draw[arrow, green!70] (generate) -- (answer);
         \end{tikzpicture}
     \end{center}
@@ -161,7 +159,7 @@
             \hline
             Text Splitter & Break into chunks & LangChain \\
             \hline
-            Embeddings & Convert text $\rightarrow$ vectors & OpenAI \\
+            Embeddings & Convert text to vectors & OpenAI \\
             \hline
             Vector Store & Store \& search vectors & FAISS \\
             \hline
@@ -174,13 +172,13 @@
 \end{frame}
 
 % What are Embeddings?
-\begin{frame}{What are Embeddings?}
+\begin{frame}[fragile]{What are Embeddings?}
     \begin{tcolorbox}[colback=ragblue!10, colframe=ragblue, title=Embeddings = Numbers that capture meaning]
-        \begin{verbatim}
-"King"  → [0.2, 0.8, 0.1, ...]
-"Queen" → [0.3, 0.7, 0.1, ...]  ← Similar vectors!
-"Car"   → [0.9, 0.1, 0.5, ...]  ← Different vector
-        \end{verbatim}
+\begin{verbatim}
+"King"  -> [0.2, 0.8, 0.1, ...]
+"Queen" -> [0.3, 0.7, 0.1, ...]  <- Similar vectors!
+"Car"   -> [0.9, 0.1, 0.5, ...]  <- Different vector
+\end{verbatim}
     \end{tcolorbox}
 
     \vspace{1em}
@@ -201,21 +199,21 @@
     \vspace{1em}
 
     \begin{itemize}
-        \item[\faIcon{facebook}] Open-source library from Meta
-        \item[\faIcon{database}] Efficiently stores millions of vectors
-        \item[\faIcon{bolt}] Finds similar vectors incredibly fast
-        \item[\faIcon{pound-sign}] Free to use (no API costs!)
+        \item Open-source library from Meta
+        \item Efficiently stores millions of vectors
+        \item Finds similar vectors incredibly fast
+        \item Free to use (no API costs!)
     \end{itemize}
 \end{frame}
 
 % RAG Pipeline Steps
 \begin{frame}{The RAG Pipeline in 5 Steps}
     \begin{enumerate}
-        \item[\textcolor{ragblue}{\textbf{1}}] \textbf{LOAD} $\rightarrow$ Get your documents
-        \item[\textcolor{ragblue}{\textbf{2}}] \textbf{SPLIT} $\rightarrow$ Break into chunks
-        \item[\textcolor{ragblue}{\textbf{3}}] \textbf{EMBED} $\rightarrow$ Convert to vectors
-        \item[\textcolor{ragblue}{\textbf{4}}] \textbf{STORE} $\rightarrow$ Save in FAISS
-        \item[\textcolor{ragblue}{\textbf{5}}] \textbf{QUERY} $\rightarrow$ Retrieve + Generate
+        \item[\textcolor{ragblue}{\textbf{1}}] \textbf{LOAD} --- Get your documents
+        \item[\textcolor{ragblue}{\textbf{2}}] \textbf{SPLIT} --- Break into chunks
+        \item[\textcolor{ragblue}{\textbf{3}}] \textbf{EMBED} --- Convert to vectors
+        \item[\textcolor{ragblue}{\textbf{4}}] \textbf{STORE} --- Save in FAISS
+        \item[\textcolor{ragblue}{\textbf{5}}] \textbf{QUERY} --- Retrieve + Generate
     \end{enumerate}
 \end{frame}
 
@@ -269,16 +267,16 @@ docs = retriever.get_relevant_documents("annual leave?")
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{itemize}
-                \item[\faIcon{headset}] \textbf{Customer Support}\\Answer questions from knowledge base
-                \item[\faIcon{balance-scale}] \textbf{Legal}\\Search through contracts
-                \item[\faIcon{users}] \textbf{HR}\\Query company procedures
+                \item \textbf{Customer Support}\\Answer questions from knowledge base
+                \item \textbf{Legal}\\Search through contracts
+                \item \textbf{HR}\\Query company procedures
             \end{itemize}
         \end{column}
         \begin{column}{0.5\textwidth}
             \begin{itemize}
-                \item[\faIcon{flask}] \textbf{Research}\\Explore academic papers
-                \item[\faIcon{book}] \textbf{Documentation}\\Chat with your codebase
-                \item[\faIcon{hospital}] \textbf{Healthcare}\\Medical knowledge retrieval
+                \item \textbf{Research}\\Explore academic papers
+                \item \textbf{Documentation}\\Chat with your codebase
+                \item \textbf{Healthcare}\\Medical knowledge retrieval
             \end{itemize}
         \end{column}
     \end{columns}
@@ -287,11 +285,11 @@ docs = retriever.get_relevant_documents("annual leave?")
 % Key Takeaways
 \begin{frame}{Key Takeaways}
     \begin{itemize}
-        \item[\textcolor{green}{\faIcon{check}}] \textbf{RAG} = Retrieval + Generation
-        \item[\textcolor{green}{\faIcon{check}}] Solves LLM limitations (hallucination, knowledge cutoff)
-        \item[\textcolor{green}{\faIcon{check}}] \textbf{LangChain} makes it easy to build
-        \item[\textcolor{green}{\faIcon{check}}] \textbf{FAISS} provides free, fast vector search
-        \item[\textcolor{green}{\faIcon{check}}] You can build one in \textasciitilde15 lines of code!
+        \item[\textcolor{green}{$\checkmark$}] \textbf{RAG} = Retrieval + Generation
+        \item[\textcolor{green}{$\checkmark$}] Solves LLM limitations (hallucination, knowledge cutoff)
+        \item[\textcolor{green}{$\checkmark$}] \textbf{LangChain} makes it easy to build
+        \item[\textcolor{green}{$\checkmark$}] \textbf{FAISS} provides free, fast vector search
+        \item[\textcolor{green}{$\checkmark$}] You can build one in about 15 lines of code!
     \end{itemize}
 
     \vspace{1em}
@@ -305,20 +303,20 @@ docs = retriever.get_relevant_documents("annual leave?")
 % Questions
 \begin{frame}{Questions?}
     \begin{center}
-        \Huge\faIcon{comments}
+        \Huge Q\&A
 
         \vspace{1em}
 
-        \Large\textbf{Q\&A Time: 30 minutes}
+        \Large\textbf{30 minutes}
     \end{center}
 
     \vspace{2em}
 
     \textbf{Resources:}
     \begin{itemize}
-        \item[\faIcon{globe}] LangChain: \texttt{langchain.com}
-        \item[\faIcon{github}] FAISS: \texttt{github.com/facebookresearch/faiss}
-        \item[\faIcon{robot}] OpenAI: \texttt{platform.openai.com}
+        \item LangChain: \texttt{langchain.com}
+        \item FAISS: \texttt{github.com/facebookresearch/faiss}
+        \item OpenAI: \texttt{platform.openai.com}
     \end{itemize}
 \end{frame}
 
@@ -334,7 +332,7 @@ docs = retriever.get_relevant_documents("annual leave?")
         \vspace{2em}
 
         \normalsize
-        \faIcon{github} github.com/mondweep/vibe-cast
+        github.com/mondweep/vibe-cast
     \end{center}
 \end{frame}
 
