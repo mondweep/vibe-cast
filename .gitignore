@@ -10,3 +10,12 @@ dist/
 build/
 venv/
 .venv/
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
