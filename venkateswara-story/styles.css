@@ -1,0 +1,1427 @@
+/* ===================================
+   The Divine Story of Lord Venkateswara
+   Sacred Visual Storytelling Styles
+   =================================== */
+
+/* CSS Variables - Sacred Color Palette */
+:root {
+    /* Primary Colors - Temple Gold */
+    --gold-light: #f5d742;
+    --gold-primary: #d4a012;
+    --gold-dark: #8b6914;
+    --gold-accent: #ffd700;
+
+    /* Sacred Reds */
+    --vermillion: #e23d28;
+    --kumkum: #c62828;
+    --deep-red: #8b0000;
+
+    /* Divine Blues */
+    --vishnu-blue: #1a237e;
+    --sky-blue: #3f51b5;
+    --light-blue: #7986cb;
+
+    /* Earthy Tones */
+    --sandalwood: #d2b48c;
+    --cream: #faf0e6;
+    --ivory: #fffff0;
+    --parchment: #f5f5dc;
+
+    /* Dark Tones */
+    --temple-black: #1a1a1a;
+    --deep-brown: #3e2723;
+    --charcoal: #333333;
+
+    /* Accent Colors */
+    --lotus-pink: #e91e63;
+    --leaf-green: #2e7d32;
+    --saffron: #ff9800;
+
+    /* Typography */
+    --font-display: 'Cinzel', serif;
+    --font-body: 'Cormorant Garamond', serif;
+
+    /* Spacing */
+    --section-padding: 6rem 2rem;
+    --content-max-width: 1200px;
+}
+
+/* Reset and Base */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 18px;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--cream);
+    color: var(--temple-black);
+    line-height: 1.8;
+    overflow-x: hidden;
+}
+
+/* Typography */
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+h1 { font-size: 3.5rem; }
+h2 { font-size: 2.5rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.25rem; }
+
+p {
+    margin-bottom: 1.5rem;
+}
+
+.dropcap::first-letter {
+    float: left;
+    font-family: var(--font-display);
+    font-size: 4.5rem;
+    line-height: 0.8;
+    padding-right: 0.5rem;
+    color: var(--gold-dark);
+}
+
+.small-caps {
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+}
+
+/* ===================================
+   Hero Section
+   =================================== */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--vishnu-blue) 0%, var(--deep-brown) 100%);
+    position: relative;
+    text-align: center;
+    color: var(--ivory);
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a012' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    padding: 2rem;
+}
+
+.om-symbol {
+    font-size: 5rem;
+    color: var(--gold-primary);
+    text-shadow: 0 0 30px rgba(212, 160, 18, 0.5);
+    margin-bottom: 1rem;
+    animation: glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 20px rgba(212, 160, 18, 0.3); }
+    to { text-shadow: 0 0 40px rgba(212, 160, 18, 0.8); }
+}
+
+.main-title {
+    font-size: 4rem;
+    color: var(--gold-primary);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 2rem;
+    font-weight: 400;
+    margin-bottom: 1.5rem;
+    color: var(--ivory);
+}
+
+.invocation {
+    font-size: 1.5rem;
+    font-style: italic;
+    color: var(--sandalwood);
+    margin-bottom: 2rem;
+}
+
+.offering-note {
+    background: rgba(212, 160, 18, 0.2);
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    border: 1px solid var(--gold-primary);
+    margin-bottom: 3rem;
+}
+
+.offering-note .date {
+    font-size: 1.25rem;
+    color: var(--gold-light);
+}
+
+.scroll-indicator {
+    margin-top: 2rem;
+    animation: bounce 2s infinite;
+}
+
+.scroll-indicator span {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.arrow {
+    font-size: 2rem;
+    color: var(--gold-primary);
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+/* ===================================
+   Chapter Sections
+   =================================== */
+.chapter {
+    padding: var(--section-padding);
+    background-color: var(--cream);
+}
+
+.chapter-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--gold-primary);
+}
+
+.chapter-number {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--gold-dark);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.chapter-header h2 {
+    color: var(--deep-brown);
+}
+
+.chapter-content {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+}
+
+/* Scene Layout */
+.scene {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+}
+
+.scene.reverse {
+    direction: rtl;
+}
+
+.scene.reverse > * {
+    direction: ltr;
+}
+
+/* Image Frames */
+.image-frame {
+    background: var(--ivory);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.image-frame.golden-border {
+    border: 3px solid var(--gold-primary);
+    box-shadow: 0 10px 30px rgba(212, 160, 18, 0.2);
+}
+
+.image-placeholder {
+    background: linear-gradient(135deg, var(--parchment) 0%, var(--sandalwood) 100%);
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    border: 2px dashed var(--gold-dark);
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.placeholder-text {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--deep-brown);
+    text-align: center;
+    padding: 0 1rem;
+}
+
+.image-caption {
+    text-align: center;
+    font-style: italic;
+    color: var(--charcoal);
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Narrative Blocks */
+.narrative {
+    font-size: 1.1rem;
+}
+
+blockquote.sacred-text {
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+    color: var(--deep-brown);
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    font-style: italic;
+    font-size: 1.2rem;
+    margin: 2rem 0;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(212, 160, 18, 0.3);
+}
+
+blockquote.sacred-text.large {
+    font-size: 1.4rem;
+    padding: 2rem 3rem;
+}
+
+/* ===================================
+   Characters Section
+   =================================== */
+.characters-intro {
+    background: linear-gradient(135deg, var(--vishnu-blue) 0%, var(--sky-blue) 100%);
+    padding: var(--section-padding);
+    color: var(--ivory);
+}
+
+.section-title {
+    text-align: center;
+    color: var(--gold-primary);
+    margin-bottom: 3rem;
+}
+
+.characters-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+}
+
+.character-card {
+    background: rgba(255,255,255,0.1);
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(212, 160, 18, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.character-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.character-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.character-card h3 {
+    color: var(--gold-light);
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.character-role {
+    color: var(--saffron);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-bottom: 0.5rem;
+}
+
+.character-card p:last-child {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 0;
+}
+
+/* ===================================
+   Dark Theme Chapters
+   =================================== */
+.chapter.dark-theme {
+    background: linear-gradient(180deg, var(--deep-brown) 0%, var(--temple-black) 100%);
+    color: var(--ivory);
+}
+
+.chapter.dark-theme .chapter-header {
+    border-bottom-color: var(--gold-dark);
+}
+
+.chapter.dark-theme .chapter-header h2 {
+    color: var(--gold-light);
+}
+
+/* Journey Steps */
+.journey-steps {
+    margin: 2rem 0;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    border-left: 4px solid var(--gold-primary);
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--gold-primary);
+    color: var(--deep-brown);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.step-content h4 {
+    color: var(--gold-light);
+    margin-bottom: 0.5rem;
+}
+
+/* ===================================
+   Highlight Chapter
+   =================================== */
+.chapter.highlight-chapter {
+    background: linear-gradient(180deg, var(--kumkum) 0%, var(--deep-red) 100%);
+    color: var(--ivory);
+}
+
+.chapter.highlight-chapter .chapter-header {
+    border-bottom-color: var(--gold-light);
+}
+
+.chapter.highlight-chapter .chapter-header h2 {
+    color: var(--gold-light);
+}
+
+.dramatic-scene {
+    margin-bottom: 3rem;
+}
+
+.image-frame.large {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.image-frame.large .image-placeholder {
+    min-height: 400px;
+}
+
+.narrative-center {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.two-reactions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.reaction {
+    background: rgba(0,0,0,0.2);
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: left;
+}
+
+.reaction h4 {
+    color: var(--gold-light);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.reaction .result {
+    font-weight: 600;
+    color: var(--gold-light);
+    margin-bottom: 0;
+}
+
+/* ===================================
+   Dual Narrative (Parallel Stories)
+   =================================== */
+.dual-narrative .chapter-content {
+    max-width: 100%;
+}
+
+.parallel-stories {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 2rem;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+}
+
+.story-panel {
+    background: var(--ivory);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.padmavathi-panel {
+    border-top: 4px solid var(--lotus-pink);
+}
+
+.srinivasa-panel {
+    border-top: 4px solid var(--vishnu-blue);
+}
+
+.story-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.story-header h3 {
+    color: var(--deep-brown);
+}
+
+.story-panel .image-frame {
+    margin-bottom: 1.5rem;
+}
+
+.story-panel .image-placeholder {
+    min-height: 200px;
+}
+
+.divider-vertical {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.divider-symbol {
+    font-size: 2rem;
+    color: var(--gold-primary);
+}
+
+.story-panel blockquote {
+    background: rgba(212, 160, 18, 0.1);
+    border-left: 4px solid var(--gold-primary);
+    padding: 1rem;
+    font-style: italic;
+    margin: 1rem 0 0 0;
+}
+
+/* ===================================
+   Romantic Chapter
+   =================================== */
+.romantic-chapter {
+    background: linear-gradient(180deg, var(--cream) 0%, #fff5f5 50%, var(--cream) 100%);
+}
+
+.quote-highlight {
+    background: linear-gradient(135deg, var(--lotus-pink) 0%, var(--vermillion) 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-style: italic;
+    margin: 2rem 0;
+    box-shadow: 0 10px 30px rgba(233, 30, 99, 0.3);
+}
+
+/* ===================================
+   Messenger Sequence
+   =================================== */
+.messenger-sequence {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+}
+
+.messenger-step {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--ivory);
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.messenger-step .image-frame.small {
+    width: 100px;
+    flex-shrink: 0;
+    margin-right: 1.5rem;
+}
+
+.messenger-step .image-frame.small .image-placeholder {
+    min-height: 80px;
+}
+
+.messenger-content h4 {
+    color: var(--vishnu-blue);
+    margin-bottom: 0.5rem;
+}
+
+.approval-box {
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.approval-box .highlight {
+    font-weight: 700;
+    color: var(--deep-red);
+    margin-bottom: 0;
+}
+
+/* ===================================
+   Golden Chapter (Kubera)
+   =================================== */
+.golden-chapter {
+    background: linear-gradient(180deg, #f5e6c8 0%, var(--gold-light) 50%, #f5e6c8 100%);
+}
+
+.kubera-profile {
+    background: rgba(139, 105, 20, 0.1);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.kubera-profile h4 {
+    color: var(--gold-dark);
+    margin-bottom: 1rem;
+}
+
+.kubera-profile ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.kubera-profile li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.kubera-profile li::before {
+    content: "•";
+    color: var(--gold-dark);
+    position: absolute;
+    left: 0;
+}
+
+.eternal-debt-box {
+    background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+    color: var(--ivory);
+    padding: 2rem;
+    border-radius: 12px;
+    margin-top: 2rem;
+}
+
+.eternal-debt-box h4 {
+    color: var(--gold-light);
+    margin-bottom: 1rem;
+}
+
+.eternal-debt-box .highlight {
+    background: rgba(255,255,255,0.2);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0;
+}
+
+/* ===================================
+   Wedding Chapter
+   =================================== */
+.wedding-chapter {
+    background: linear-gradient(180deg, var(--saffron) 0%, #ff7043 100%);
+    color: var(--ivory);
+}
+
+.wedding-chapter .chapter-header {
+    border-bottom-color: var(--gold-light);
+}
+
+.wedding-chapter .chapter-header h2 {
+    color: var(--ivory);
+}
+
+.wedding-banner {
+    margin-bottom: 3rem;
+}
+
+.image-frame.extra-large {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.image-frame.extra-large .image-placeholder {
+    min-height: 450px;
+}
+
+.wedding-narrative {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.wedding-procession {
+    margin-bottom: 3rem;
+}
+
+.wedding-procession h3 {
+    text-align: center;
+    color: var(--gold-light);
+    margin-bottom: 2rem;
+}
+
+.procession-elements {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.procession-item {
+    background: rgba(0,0,0,0.2);
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.item-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.procession-item p {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.wedding-events {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.event {
+    background: rgba(255,255,255,0.1);
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+.event h4 {
+    color: var(--gold-light);
+    margin-bottom: 0.75rem;
+}
+
+.event p {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+/* ===================================
+   Temple Chapter
+   =================================== */
+.temple-chapter {
+    background: var(--ivory);
+}
+
+.temple-showcase {
+    margin-bottom: 3rem;
+}
+
+.fact-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.fact-card {
+    background: linear-gradient(135deg, var(--vishnu-blue) 0%, var(--sky-blue) 100%);
+    color: var(--ivory);
+    padding: 2rem 1rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.fact-number {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-bottom: 0.5rem;
+}
+
+.fact-card p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.architecture-highlights h3 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--deep-brown);
+}
+
+.architecture-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.arch-item {
+    background: var(--parchment);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border-left: 4px solid var(--gold-primary);
+}
+
+.arch-item h4 {
+    color: var(--gold-dark);
+    margin-bottom: 0.75rem;
+}
+
+.arch-item p {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+/* ===================================
+   Patrons Section
+   =================================== */
+.patrons-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.patron-card {
+    display: flex;
+    background: var(--ivory);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.patron-card.featured {
+    border: 2px solid var(--gold-primary);
+}
+
+.patron-card .image-frame {
+    flex-shrink: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.patron-card .image-frame.small {
+    width: 150px;
+}
+
+.patron-card .image-frame .image-placeholder {
+    min-height: 150px;
+    border-radius: 0;
+    border: none;
+}
+
+.patron-card.featured .image-frame {
+    width: 250px;
+}
+
+.patron-card.featured .image-frame .image-placeholder {
+    min-height: 250px;
+}
+
+.patron-info {
+    padding: 1.5rem;
+    flex: 1;
+}
+
+.patron-info h3 {
+    color: var(--vishnu-blue);
+    margin-bottom: 0.25rem;
+}
+
+.patron-title {
+    color: var(--gold-dark);
+    font-style: italic;
+    margin-bottom: 1rem;
+}
+
+.patron-info ul {
+    margin-bottom: 0;
+    padding-left: 1.25rem;
+}
+
+.patron-info li {
+    margin-bottom: 0.5rem;
+}
+
+/* ===================================
+   Rituals Chapter
+   =================================== */
+.rituals-chapter {
+    background: linear-gradient(180deg, var(--cream) 0%, var(--sandalwood) 100%);
+}
+
+.rituals-intro {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+}
+
+.daily-rituals {
+    margin-bottom: 4rem;
+}
+
+.daily-rituals h3 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--deep-brown);
+}
+
+.ritual-timeline {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.ritual-item {
+    display: flex;
+    margin-bottom: 1rem;
+    background: var(--ivory);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.ritual-time {
+    background: var(--vishnu-blue);
+    color: var(--ivory);
+    padding: 1rem;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+}
+
+.ritual-content {
+    padding: 1rem 1.5rem;
+    flex: 1;
+}
+
+.ritual-content h4 {
+    color: var(--gold-dark);
+    margin-bottom: 0.25rem;
+}
+
+.ritual-content p {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+.unique-traditions h3 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--deep-brown);
+}
+
+.tradition-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.tradition-card {
+    background: var(--ivory);
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.tradition-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.tradition-card h4 {
+    color: var(--gold-dark);
+    margin-bottom: 0.75rem;
+}
+
+.tradition-card p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+/* ===================================
+   Festivals Chapter
+   =================================== */
+.festivals-chapter {
+    background: linear-gradient(180deg, var(--saffron) 0%, var(--vermillion) 100%);
+    color: var(--ivory);
+}
+
+.festivals-chapter .chapter-header h2 {
+    color: var(--ivory);
+}
+
+.festivals-intro {
+    text-align: center;
+    font-size: 1.3rem;
+    margin-bottom: 3rem;
+}
+
+.major-festivals {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.festival-card {
+    background: rgba(255,255,255,0.15);
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(5px);
+}
+
+.festival-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.festival-header h3 {
+    color: var(--gold-light);
+    margin: 0;
+}
+
+.festival-time {
+    background: var(--gold-primary);
+    color: var(--deep-brown);
+    padding: 0.25rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.festival-card p {
+    margin-bottom: 0;
+}
+
+.other-festivals {
+    background: rgba(0,0,0,0.2);
+    padding: 2rem;
+    border-radius: 12px;
+    margin-top: 2rem;
+}
+
+.other-festivals h4 {
+    color: var(--gold-light);
+    margin-bottom: 1rem;
+}
+
+.festival-list {
+    list-style: none;
+    padding-left: 0;
+    column-count: 2;
+    column-gap: 2rem;
+}
+
+.festival-list li {
+    padding: 0.5rem 0;
+}
+
+/* ===================================
+   Closing Chapter
+   =================================== */
+.closing-chapter {
+    background: linear-gradient(180deg, var(--vishnu-blue) 0%, var(--temple-black) 100%);
+    color: var(--ivory);
+}
+
+.closing-chapter .chapter-header h2 {
+    color: var(--gold-light);
+}
+
+.closing-message {
+    text-align: center;
+}
+
+.closing-message .image-frame {
+    margin-bottom: 3rem;
+}
+
+.final-quote {
+    background: transparent;
+    border: 2px solid var(--gold-primary);
+    color: var(--gold-light);
+    font-size: 1.4rem;
+    max-width: 800px;
+    margin: 0 auto 2rem;
+}
+
+.message-content {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.teachings {
+    list-style: none;
+    padding-left: 0;
+    margin: 2rem 0;
+}
+
+.teachings li {
+    padding: 0.75rem 0;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.teachings li::before {
+    content: "✦";
+    color: var(--gold-primary);
+    position: absolute;
+    left: 0;
+}
+
+.final-blessing {
+    background: rgba(212, 160, 18, 0.2);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--gold-primary);
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+/* ===================================
+   Prayer Section
+   =================================== */
+.prayer-section {
+    background: var(--temple-black);
+    color: var(--ivory);
+    padding: var(--section-padding);
+    text-align: center;
+}
+
+.prayer-content h2 {
+    color: var(--gold-primary);
+    margin-bottom: 2rem;
+}
+
+.prayer-text {
+    background: rgba(212, 160, 18, 0.1);
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sanskrit {
+    font-size: 1.3rem;
+    color: var(--gold-light);
+    line-height: 2;
+    margin-bottom: 1.5rem;
+}
+
+.translation {
+    font-style: italic;
+    color: var(--sandalwood);
+    font-size: 1.1rem;
+}
+
+.mantra {
+    font-size: 2rem;
+    color: var(--gold-primary);
+}
+
+.mantra-translation {
+    font-size: 1.2rem;
+    color: var(--sandalwood);
+    margin-top: 0.5rem;
+}
+
+/* ===================================
+   Footer / Dedication
+   =================================== */
+.dedication {
+    background: var(--deep-brown);
+    color: var(--ivory);
+    padding: var(--section-padding);
+    text-align: center;
+}
+
+.lotus-divider {
+    font-size: 2rem;
+    margin: 1rem 0;
+}
+
+.dedication h3 {
+    color: var(--gold-primary);
+    margin-bottom: 1rem;
+}
+
+.dedication .date {
+    color: var(--gold-light);
+    font-size: 1.2rem;
+    margin-bottom: 0;
+}
+
+.sources {
+    margin-top: 3rem;
+    text-align: left;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    background: rgba(0,0,0,0.3);
+    padding: 2rem;
+    border-radius: 12px;
+}
+
+.sources h4 {
+    color: var(--gold-light);
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+}
+
+.sources h4:first-child {
+    margin-top: 0;
+}
+
+.sources ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.sources li {
+    margin-bottom: 0.5rem;
+}
+
+.sources a {
+    color: var(--sandalwood);
+    text-decoration: none;
+}
+
+.sources a:hover {
+    color: var(--gold-light);
+    text-decoration: underline;
+}
+
+/* ===================================
+   Sacred Location Box
+   =================================== */
+.sacred-location {
+    background: rgba(212, 160, 18, 0.1);
+    border: 2px solid var(--gold-primary);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 2rem 0;
+}
+
+.sacred-location h4 {
+    color: var(--gold-dark);
+    margin-bottom: 1rem;
+}
+
+.hills-list {
+    list-style: none;
+    padding-left: 0;
+    column-count: 2;
+    column-gap: 2rem;
+}
+
+.hills-list li {
+    padding: 0.5rem 0;
+}
+
+/* ===================================
+   Responsive Design
+   =================================== */
+@media (max-width: 1024px) {
+    .characters-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .parallel-stories {
+        grid-template-columns: 1fr;
+    }
+
+    .divider-vertical {
+        display: none;
+    }
+
+    .procession-elements,
+    .wedding-events {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .fact-grid,
+    .tradition-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+
+    .main-title {
+        font-size: 2.5rem;
+    }
+
+    .subtitle {
+        font-size: 1.5rem;
+    }
+
+    .scene,
+    .two-reactions {
+        grid-template-columns: 1fr;
+    }
+
+    .scene.reverse {
+        direction: ltr;
+    }
+
+    .characters-grid,
+    .procession-elements,
+    .wedding-events,
+    .architecture-grid,
+    .tradition-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .patron-card {
+        flex-direction: column;
+    }
+
+    .patron-card .image-frame,
+    .patron-card.featured .image-frame {
+        width: 100%;
+    }
+
+    .festival-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .festival-list {
+        column-count: 1;
+    }
+
+    .hills-list {
+        column-count: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --section-padding: 3rem 1rem;
+    }
+
+    .main-title {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+    }
+
+    .messenger-step {
+        flex-direction: column;
+    }
+
+    .messenger-step .image-frame.small {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+
+    .fact-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .ritual-item {
+        flex-direction: column;
+    }
+
+    .ritual-time {
+        width: 100%;
+    }
+}
+
+/* ===================================
+   Print Styles
+   =================================== */
+@media print {
+    .scroll-indicator,
+    .arrow {
+        display: none;
+    }
+
+    .chapter {
+        page-break-inside: avoid;
+    }
+
+    body {
+        color: black;
+        background: white;
+    }
+}
