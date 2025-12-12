@@ -12,7 +12,97 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Image placeholder interactions
     initImagePlaceholders();
+
+    // Initialize tab navigation
+    initTabNavigation();
 });
+
+/**
+ * Tab Navigation - Switch between Sacred Story and Alternative Perspectives
+ */
+function initTabNavigation() {
+    // Ensure tab content visibility is correct on load
+    const sacredTab = document.getElementById('sacred-story');
+    const altTab = document.getElementById('alternative-perspectives');
+
+    if (sacredTab && altTab) {
+        sacredTab.classList.add('active');
+        altTab.classList.remove('active');
+    }
+}
+
+/**
+ * Switch between tabs
+ * @param {string} tabName - 'sacred' or 'alternative'
+ */
+function switchTab(tabName) {
+    const sacredTab = document.getElementById('sacred-story');
+    const altTab = document.getElementById('alternative-perspectives');
+    const buttons = document.querySelectorAll('.tab-button');
+
+    if (!sacredTab || !altTab) return;
+
+    // Update button states
+    buttons.forEach(btn => {
+        if (btn.dataset.tab === tabName) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // Switch tab content
+    if (tabName === 'sacred') {
+        sacredTab.classList.add('active');
+        altTab.classList.remove('active');
+    } else if (tabName === 'alternative') {
+        altTab.classList.add('active');
+        sacredTab.classList.remove('active');
+
+        // Re-trigger scroll animations for alternative content
+        setTimeout(() => {
+            initAlternativeAnimations();
+        }, 100);
+    }
+
+    // Scroll to tab navigation
+    const tabNav = document.getElementById('tab-nav');
+    if (tabNav) {
+        const navTop = tabNav.offsetTop;
+        window.scrollTo({
+            top: navTop,
+            behavior: 'smooth'
+        });
+    }
+}
+
+/**
+ * Initialize animations for alternative perspective tab elements
+ */
+function initAlternativeAnimations() {
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    // Observe alternative tab elements
+    document.querySelectorAll('.alt-chapter, .phenomenon-card, .lens-card, .reinterpretation-card, .synthesis-card').forEach(el => {
+        if (!el.classList.contains('animate-in')) {
+            el.classList.add('animate-ready');
+            observer.observe(el);
+        }
+    });
+}
 
 /**
  * Smooth scrolling for anchor links
