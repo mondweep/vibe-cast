@@ -22,13 +22,21 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initTabNavigation() {
     // Ensure tab content visibility is correct on load
-    const sacredTab = document.getElementById('sacred-story');
-    const altTab = document.getElementById('alternative-perspectives');
+    const sacredTab = document.getElementById('sacred-tab');
+    const altTab = document.getElementById('alternative-tab');
 
     if (sacredTab && altTab) {
         sacredTab.classList.add('active');
         altTab.classList.remove('active');
     }
+
+    // Add attention-grabbing animation to tabs after a short delay
+    setTimeout(() => {
+        const tabNav = document.getElementById('tab-nav');
+        if (tabNav) {
+            tabNav.classList.add('attention');
+        }
+    }, 2000);
 }
 
 /**
@@ -36,8 +44,8 @@ function initTabNavigation() {
  * @param {string} tabName - 'sacred' or 'alternative'
  */
 function switchTab(tabName) {
-    const sacredTab = document.getElementById('sacred-story');
-    const altTab = document.getElementById('alternative-perspectives');
+    const sacredTab = document.getElementById('sacred-tab');
+    const altTab = document.getElementById('alternative-tab');
     const buttons = document.querySelectorAll('.tab-button');
 
     if (!sacredTab || !altTab) return;

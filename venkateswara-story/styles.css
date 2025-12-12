@@ -1461,8 +1461,39 @@ blockquote.sacred-text.large {
     top: 0;
     z-index: 1000;
     background: linear-gradient(135deg, var(--deep-brown) 0%, var(--temple-black) 100%);
-    padding: 0.75rem 1rem;
+    padding: 1.25rem 1rem;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border-bottom: 3px solid var(--gold-primary);
+}
+
+/* Tab intro message */
+.tab-navigation::before {
+    content: "✨ Choose Your Journey ✨";
+    display: block;
+    text-align: center;
+    color: var(--gold-light);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; text-shadow: 0 0 10px var(--gold-primary); }
+}
+
+/* Attention-grabbing animation */
+.tab-navigation.attention {
+    animation: tab-attention 1s ease-in-out 3;
+}
+
+@keyframes tab-attention {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-3px); }
+    75% { transform: translateY(3px); }
 }
 
 .tab-container {
@@ -1476,27 +1507,32 @@ blockquote.sacred-text.large {
 .tab-button {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border: 2px solid transparent;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    border: 3px solid rgba(255,255,255,0.3);
     border-radius: 50px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.15);
     color: var(--ivory);
     font-family: var(--font-display);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .tab-button:hover {
-    background: rgba(255,255,255,0.2);
-    transform: translateY(-2px);
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
 .tab-button.active {
-    background: var(--gold-primary);
+    background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
     color: var(--deep-brown);
     border-color: var(--gold-light);
+    box-shadow: 0 4px 20px rgba(212, 160, 18, 0.5);
+    transform: scale(1.05);
 }
 
 .tab-button[data-tab="alternative"].active {
