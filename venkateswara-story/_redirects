@@ -1,0 +1,18 @@
+# Netlify Redirects
+# https://docs.netlify.com/routing/redirects/
+
+# Clean URLs - alternative paths to main page
+/story              /index.html     200
+/venkateswara       /index.html     200
+/balaji             /index.html     200
+/tirumala           /index.html     200
+
+# Language redirects (if multi-language support added later)
+# /te/*             /index.html     200
+# /hi/*             /index.html     200
+
+# Social sharing - ensure proper meta tags work
+/share              /index.html     200
+
+# Fallback - SPA-style routing (if needed)
+/*                  /index.html     404

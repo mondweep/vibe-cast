@@ -1,0 +1,101 @@
+# Netlify Configuration for Lord Venkateswara Visual Story
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Directory to publish (root of the story site)
+  publish = "."
+
+  # No build command needed - static HTML/CSS/JS
+  command = "echo 'Static site - no build required'"
+
+# Production context
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+# Headers for all pages
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Cache control for HTML
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Cache static assets aggressively
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Font caching (if web fonts are used)
+[[headers]]
+  for = "/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/*.woff"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+# Redirects
+[[redirects]]
+  from = "/story"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/venkateswara"
+  to = "/index.html"
+  status = 200
+
+# Pretty URLs - serve index.html for clean paths
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["visitor"]}
+
+# 404 handling
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
+
+# Plugin for image optimization (optional - Netlify will handle automatically)
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+
+# Asset optimization
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true

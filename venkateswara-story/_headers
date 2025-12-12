@@ -1,0 +1,47 @@
+# Netlify Headers Configuration
+# https://docs.netlify.com/routing/headers/
+
+# Default headers for all paths
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-XSS-Protection: 1; mode=block
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# HTML files - don't cache (always fresh)
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# CSS files - cache for 1 year
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+# JavaScript files - cache for 1 year
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images - cache for 1 year
+/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts - cache for 1 year with CORS
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# Favicon and icons
+/favicon.ico
+  Cache-Control: public, max-age=86400
+
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
