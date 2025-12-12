@@ -260,6 +260,20 @@ p {
     box-shadow: 0 10px 30px rgba(212, 160, 18, 0.2);
 }
 
+/* Scene Images */
+.scene-image {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    display: block;
+    object-fit: cover;
+}
+
+.image-frame.large .scene-image {
+    max-height: 600px;
+    object-fit: contain;
+}
+
 .image-placeholder {
     background: linear-gradient(135deg, var(--parchment) 0%, var(--sandalwood) 100%);
     min-height: 300px;
