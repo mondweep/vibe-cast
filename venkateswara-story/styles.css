@@ -1555,13 +1555,13 @@ blockquote.sacred-text.large {
     text-transform: uppercase;
 }
 
-/* Tab Content */
+/* Tab Content - Controls visibility of each tab */
 .tab-content {
-    display: none;
+    display: none !important;
 }
 
 .tab-content.active {
-    display: block;
+    display: block !important;
 }
 
 /* ===================================

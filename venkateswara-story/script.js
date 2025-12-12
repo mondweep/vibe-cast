@@ -62,10 +62,14 @@ function switchTab(tabName) {
     // Switch tab content
     if (tabName === 'sacred') {
         sacredTab.classList.add('active');
+        sacredTab.style.display = 'block';
         altTab.classList.remove('active');
+        altTab.style.display = 'none';
     } else if (tabName === 'alternative') {
         altTab.classList.add('active');
+        altTab.style.display = 'block';
         sacredTab.classList.remove('active');
+        sacredTab.style.display = 'none';
 
         // Re-trigger scroll animations for alternative content
         setTimeout(() => {
