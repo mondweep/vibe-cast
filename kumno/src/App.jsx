@@ -4,6 +4,7 @@ import { TabNavigation } from './components/TabNavigation';
 import { Phrasebook } from './components/Phrasebook';
 import { LiveTranslate } from './components/LiveTranslate';
 import { RecentTranslations } from './components/RecentTranslations';
+import { Footer } from './components/Footer';
 
 function App() {
   const [activeTab, setActiveTab] = useState('vault');
@@ -21,6 +22,8 @@ function App() {
           </div>
         )}
       </main>
+
+      <Footer />
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>

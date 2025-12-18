@@ -122,6 +122,12 @@ The app includes cultural context for the Khasi language:
 - **Kong**: Respectful address for females (like "Ma'am")
 - **Khublei**: Universal greeting (hello/goodbye/thank you)
 
+## Author
+
+Created by [Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty/) for a trip to Meghalaya in December 2025.
+
+Feel free to use this app responsibly and build upon it!
+
 ## License
 
-MIT
+Licensed under the [Apache License 2.0](LICENSE)
