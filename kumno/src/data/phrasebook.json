@@ -1,0 +1,628 @@
+{
+  "categories": [
+    {
+      "id": "greetings",
+      "name": "Greetings & Basics",
+      "icon": "👋",
+      "phrases": [
+        {
+          "id": "g1",
+          "english": "Hello / Good day",
+          "khasi": "Khublei",
+          "phonetic": "Koob-lay",
+          "respectMale": "Khublei Bah",
+          "respectFemale": "Khublei Kong",
+          "phoneticMale": "Koob-lay Bah",
+          "phoneticFemale": "Koob-lay Kong",
+          "context": "Universal greeting, use anytime"
+        },
+        {
+          "id": "g2",
+          "english": "How are you?",
+          "khasi": "Phi long kumno?",
+          "phonetic": "Pee long koom-no?",
+          "respectMale": "Phi long kumno, Bah?",
+          "respectFemale": "Phi long kumno, Kong?",
+          "phoneticMale": "Pee long koom-no, Bah?",
+          "phoneticFemale": "Pee long koom-no, Kong?",
+          "context": "Casual inquiry about wellbeing"
+        },
+        {
+          "id": "g3",
+          "english": "I am fine",
+          "khasi": "Nga biang",
+          "phonetic": "Nga bee-ang",
+          "context": "Response to how are you"
+        },
+        {
+          "id": "g4",
+          "english": "Thank you",
+          "khasi": "Khublei shibun",
+          "phonetic": "Koob-lay shee-boon",
+          "context": "Express gratitude"
+        },
+        {
+          "id": "g5",
+          "english": "You're welcome",
+          "khasi": "Ym dei aiu",
+          "phonetic": "Um day eye-oo",
+          "context": "Response to thanks"
+        },
+        {
+          "id": "g6",
+          "english": "Excuse me / Sorry",
+          "khasi": "Shong ioh",
+          "phonetic": "Shong ee-oh",
+          "context": "Apology or getting attention"
+        },
+        {
+          "id": "g7",
+          "english": "Yes",
+          "khasi": "Hooid",
+          "phonetic": "Hoo-eed",
+          "context": "Affirmation"
+        },
+        {
+          "id": "g8",
+          "english": "No",
+          "khasi": "Ym",
+          "phonetic": "Um",
+          "context": "Negation"
+        },
+        {
+          "id": "g9",
+          "english": "Goodbye",
+          "khasi": "Khublei",
+          "phonetic": "Koob-lay",
+          "context": "Also used for farewell"
+        },
+        {
+          "id": "g10",
+          "english": "Good morning",
+          "khasi": "Phi sngi bha",
+          "phonetic": "Pee snee bah",
+          "context": "Morning greeting"
+        }
+      ]
+    },
+    {
+      "id": "transport",
+      "name": "Taxis & Transport",
+      "icon": "🚕",
+      "phrases": [
+        {
+          "id": "t1",
+          "english": "I need a taxi",
+          "khasi": "Nga kwah ka taxi",
+          "phonetic": "Nga kwah ka taxi",
+          "context": "Requesting a taxi"
+        },
+        {
+          "id": "t2",
+          "english": "How much to Police Bazaar?",
+          "khasi": "Katno haduh Police Bazaar?",
+          "phonetic": "Kaht-no hah-duh Police Bazaar?",
+          "context": "Asking fare to main market"
+        },
+        {
+          "id": "t3",
+          "english": "Please take me to...",
+          "khasi": "Sngewbha leit ia nga sha...",
+          "phonetic": "Snew-bah late ee-ah nga sha...",
+          "context": "Requesting destination"
+        },
+        {
+          "id": "t4",
+          "english": "Stop here please",
+          "khasi": "Jop hangne sngewbha",
+          "phonetic": "Jop hang-nay snew-bah",
+          "context": "Asking driver to stop"
+        },
+        {
+          "id": "t5",
+          "english": "Is this a shared taxi?",
+          "khasi": "Kane ka taxi share?",
+          "phonetic": "Kah-nay ka taxi share?",
+          "context": "Clarifying taxi type"
+        },
+        {
+          "id": "t6",
+          "english": "Reserved taxi please",
+          "khasi": "Kwah reserved sngewbha",
+          "phonetic": "Kwah reserved snew-bah",
+          "context": "Requesting private taxi"
+        },
+        {
+          "id": "t7",
+          "english": "How far is it?",
+          "khasi": "Jingstad katno?",
+          "phonetic": "Jing-stad kaht-no?",
+          "context": "Asking about distance"
+        },
+        {
+          "id": "t8",
+          "english": "Where is the taxi stand?",
+          "khasi": "Hano ka taxi stand?",
+          "phonetic": "Hah-no ka taxi stand?",
+          "context": "Finding taxi location"
+        },
+        {
+          "id": "t9",
+          "english": "Can you wait for me?",
+          "khasi": "Lah ban kham ia nga?",
+          "phonetic": "Lah bahn kahm ee-ah nga?",
+          "context": "Requesting driver to wait"
+        },
+        {
+          "id": "t10",
+          "english": "That's too expensive",
+          "khasi": "Ka man sngew katno bha",
+          "phonetic": "Ka mahn snew kaht-no bah",
+          "context": "Price negotiation"
+        }
+      ]
+    },
+    {
+      "id": "markets",
+      "name": "Markets & Shopping",
+      "icon": "🛒",
+      "phrases": [
+        {
+          "id": "m1",
+          "english": "How much is this?",
+          "khasi": "Kane katno?",
+          "phonetic": "Kah-nay kaht-no?",
+          "context": "Asking price"
+        },
+        {
+          "id": "m2",
+          "english": "Can you reduce the price?",
+          "khasi": "Lah ban pynkut?",
+          "phonetic": "Lah bahn pyn-koot?",
+          "context": "Bargaining"
+        },
+        {
+          "id": "m3",
+          "english": "I want to buy this",
+          "khasi": "Nga kwah ban thoh kane",
+          "phonetic": "Nga kwah bahn toh kah-nay",
+          "context": "Expressing purchase intent"
+        },
+        {
+          "id": "m4",
+          "english": "Where is Lewduh Market?",
+          "khasi": "Hano ka Lewduh?",
+          "phonetic": "Hah-no ka Lew-duh?",
+          "context": "Finding famous Bara Bazaar"
+        },
+        {
+          "id": "m5",
+          "english": "Do you have change?",
+          "khasi": "Don ka change?",
+          "phonetic": "Dohn ka change?",
+          "context": "Asking for smaller notes"
+        },
+        {
+          "id": "m6",
+          "english": "This is beautiful",
+          "khasi": "Kane ka bha eh",
+          "phonetic": "Kah-nay ka bah eh",
+          "context": "Complimenting items"
+        },
+        {
+          "id": "m7",
+          "english": "I'm just looking",
+          "khasi": "Nga iaid kynmaw",
+          "phonetic": "Nga ee-aid kyn-mow",
+          "context": "Browsing without buying"
+        },
+        {
+          "id": "m8",
+          "english": "Fresh vegetables",
+          "khasi": "Jingbuh thymmai",
+          "phonetic": "Jing-buh thym-my",
+          "context": "Asking for fresh produce"
+        },
+        {
+          "id": "m9",
+          "english": "Local honey",
+          "khasi": "Shynrai langbrot",
+          "phonetic": "Shyn-rye lahng-brot",
+          "context": "Famous local product"
+        },
+        {
+          "id": "m10",
+          "english": "Give me a bag please",
+          "khasi": "Ai ia nga ka bag sngewbha",
+          "phonetic": "Eye ee-ah nga ka bag snew-bah",
+          "context": "Requesting a bag"
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "name": "Food & Dining",
+      "icon": "🍲",
+      "phrases": [
+        {
+          "id": "f1",
+          "english": "I am hungry",
+          "khasi": "Nga lah thoh",
+          "phonetic": "Nga lah toh",
+          "context": "Expressing hunger"
+        },
+        {
+          "id": "f2",
+          "english": "I am thirsty",
+          "khasi": "Nga um",
+          "phonetic": "Nga oom",
+          "context": "Expressing thirst"
+        },
+        {
+          "id": "f3",
+          "english": "The food is delicious",
+          "khasi": "Ka jingbuh ka bha shibun",
+          "phonetic": "Ka jing-buh ka bah shee-boon",
+          "context": "Complimenting food"
+        },
+        {
+          "id": "f4",
+          "english": "I want tea please",
+          "khasi": "Kwah sha sngewbha",
+          "phonetic": "Kwah sha snew-bah",
+          "context": "Ordering tea"
+        },
+        {
+          "id": "f5",
+          "english": "No sugar please",
+          "khasi": "Ym dei jingsyiem",
+          "phonetic": "Um day jing-see-em",
+          "context": "Sugar preference"
+        },
+        {
+          "id": "f6",
+          "english": "Is this spicy?",
+          "khasi": "Kane ka myrsiang?",
+          "phonetic": "Kah-nay ka myr-see-ang?",
+          "context": "Asking about spice level"
+        },
+        {
+          "id": "f7",
+          "english": "I am vegetarian",
+          "khasi": "Nga ym buh doh",
+          "phonetic": "Nga um buh doh",
+          "context": "Dietary preference"
+        },
+        {
+          "id": "f8",
+          "english": "Water please",
+          "khasi": "Um sngewbha",
+          "phonetic": "Oom snew-bah",
+          "context": "Ordering water"
+        },
+        {
+          "id": "f9",
+          "english": "The bill please",
+          "khasi": "Ka bill sngewbha",
+          "phonetic": "Ka bill snew-bah",
+          "context": "Asking for check"
+        },
+        {
+          "id": "f10",
+          "english": "Traditional Khasi food",
+          "khasi": "Jingbuh Khasi",
+          "phonetic": "Jing-buh Khasi",
+          "context": "Local cuisine"
+        }
+      ]
+    },
+    {
+      "id": "directions",
+      "name": "Directions & Places",
+      "icon": "🗺️",
+      "phrases": [
+        {
+          "id": "d1",
+          "english": "Where is...?",
+          "khasi": "Hano...?",
+          "phonetic": "Hah-no...?",
+          "context": "Asking location"
+        },
+        {
+          "id": "d2",
+          "english": "Turn left",
+          "khasi": "Phet shong",
+          "phonetic": "Pet shong",
+          "context": "Direction"
+        },
+        {
+          "id": "d3",
+          "english": "Turn right",
+          "khasi": "Phet niang",
+          "phonetic": "Pet nee-ang",
+          "context": "Direction"
+        },
+        {
+          "id": "d4",
+          "english": "Go straight",
+          "khasi": "Leit smat",
+          "phonetic": "Late smaht",
+          "context": "Direction"
+        },
+        {
+          "id": "d5",
+          "english": "It's near here",
+          "khasi": "Ka don sngap hangne",
+          "phonetic": "Ka dohn sngap hang-nay",
+          "context": "Proximity"
+        },
+        {
+          "id": "d6",
+          "english": "It's far from here",
+          "khasi": "Ka don jingstad",
+          "phonetic": "Ka dohn jing-stad",
+          "context": "Distance"
+        },
+        {
+          "id": "d7",
+          "english": "I am lost",
+          "khasi": "Nga lah mih",
+          "phonetic": "Nga lah mee",
+          "context": "Being lost"
+        },
+        {
+          "id": "d8",
+          "english": "Can you show me the way?",
+          "khasi": "Lah ban kynjah ka jingkynmaw?",
+          "phonetic": "Lah bahn kyn-jah ka jing-kyn-mow?",
+          "context": "Asking for directions"
+        },
+        {
+          "id": "d9",
+          "english": "Where is the hospital?",
+          "khasi": "Hano ka hospital?",
+          "phonetic": "Hah-no ka hospital?",
+          "context": "Emergency location"
+        },
+        {
+          "id": "d10",
+          "english": "Where is the police station?",
+          "khasi": "Hano ka police station?",
+          "phonetic": "Hah-no ka police station?",
+          "context": "Emergency location"
+        }
+      ]
+    },
+    {
+      "id": "tourism",
+      "name": "Tourist Spots",
+      "icon": "📸",
+      "phrases": [
+        {
+          "id": "ts1",
+          "english": "How do I get to Elephant Falls?",
+          "khasi": "Kumno ban leit sha Elephant Falls?",
+          "phonetic": "Koom-no bahn late sha Elephant Falls?",
+          "context": "Popular waterfall"
+        },
+        {
+          "id": "ts2",
+          "english": "I want to visit Laitlum Canyon",
+          "khasi": "Nga kwah leit sha Laitlum",
+          "phonetic": "Nga kwah late sha Lait-lum",
+          "context": "Scenic viewpoint"
+        },
+        {
+          "id": "ts3",
+          "english": "Is the Living Root Bridge far?",
+          "khasi": "Ka Living Root Bridge jingstad?",
+          "phonetic": "Ka Living Root Bridge jing-stad?",
+          "context": "Famous attraction"
+        },
+        {
+          "id": "ts4",
+          "english": "Can I take a photo?",
+          "khasi": "Lah ban pep photo?",
+          "phonetic": "Lah bahn pep photo?",
+          "context": "Asking permission"
+        },
+        {
+          "id": "ts5",
+          "english": "This place is beautiful",
+          "khasi": "Kane ka jaka ka bha shibun",
+          "phonetic": "Kah-nay ka jah-ka ka bah shee-boon",
+          "context": "Complimenting scenery"
+        },
+        {
+          "id": "ts6",
+          "english": "Where can I see the sunrise?",
+          "khasi": "Hano ban iaid ka sngi jingthoh?",
+          "phonetic": "Hah-no bahn ee-aid ka snee jing-toh?",
+          "context": "Sunrise viewing"
+        },
+        {
+          "id": "ts7",
+          "english": "Is there a guide available?",
+          "khasi": "Don ka guide?",
+          "phonetic": "Dohn ka guide?",
+          "context": "Hiring a guide"
+        },
+        {
+          "id": "ts8",
+          "english": "What time does it close?",
+          "khasi": "Katno baje ban thep?",
+          "phonetic": "Kaht-no bah-jay bahn thep?",
+          "context": "Opening hours"
+        },
+        {
+          "id": "ts9",
+          "english": "How much is the entry fee?",
+          "khasi": "Ka entry fee katno?",
+          "phonetic": "Ka entry fee kaht-no?",
+          "context": "Ticket price"
+        },
+        {
+          "id": "ts10",
+          "english": "Is it safe to swim here?",
+          "khasi": "Lah ban ioh um hangne?",
+          "phonetic": "Lah bahn ee-oh oom hang-nay?",
+          "context": "Swimming safety"
+        }
+      ]
+    },
+    {
+      "id": "emergency",
+      "name": "Emergency & Help",
+      "icon": "🆘",
+      "phrases": [
+        {
+          "id": "e1",
+          "english": "Help!",
+          "khasi": "Pyniaid!",
+          "phonetic": "Pyn-ee-aid!",
+          "context": "Emergency call"
+        },
+        {
+          "id": "e2",
+          "english": "I need a doctor",
+          "khasi": "Nga kwah ka doctor",
+          "phonetic": "Nga kwah ka doctor",
+          "context": "Medical help"
+        },
+        {
+          "id": "e3",
+          "english": "I am not feeling well",
+          "khasi": "Nga ym biang",
+          "phonetic": "Nga um bee-ang",
+          "context": "Feeling sick"
+        },
+        {
+          "id": "e4",
+          "english": "Call the police",
+          "khasi": "Khot ia ka police",
+          "phonetic": "Koht ee-ah ka police",
+          "context": "Police emergency"
+        },
+        {
+          "id": "e5",
+          "english": "I lost my phone",
+          "khasi": "Ka phone nga ka lah mih",
+          "phonetic": "Ka phone nga ka lah mee",
+          "context": "Lost item"
+        },
+        {
+          "id": "e6",
+          "english": "I lost my wallet",
+          "khasi": "Ka wallet nga ka lah mih",
+          "phonetic": "Ka wallet nga ka lah mee",
+          "context": "Lost item"
+        },
+        {
+          "id": "e7",
+          "english": "Please help me",
+          "khasi": "Sngewbha pyniaid ia nga",
+          "phonetic": "Snew-bah pyn-ee-aid ee-ah nga",
+          "context": "Requesting help"
+        },
+        {
+          "id": "e8",
+          "english": "I need medicine",
+          "khasi": "Nga kwah ka dawai",
+          "phonetic": "Nga kwah ka dah-wye",
+          "context": "Medical need"
+        },
+        {
+          "id": "e9",
+          "english": "Where is the pharmacy?",
+          "khasi": "Hano ka chemist?",
+          "phonetic": "Hah-no ka chemist?",
+          "context": "Finding pharmacy"
+        },
+        {
+          "id": "e10",
+          "english": "It's an emergency",
+          "khasi": "Ka don jingkynmaw sngew",
+          "phonetic": "Ka dohn jing-kyn-mow snew",
+          "context": "Emergency situation"
+        }
+      ]
+    },
+    {
+      "id": "numbers",
+      "name": "Numbers & Time",
+      "icon": "🔢",
+      "phrases": [
+        {
+          "id": "n1",
+          "english": "One",
+          "khasi": "Wei",
+          "phonetic": "Way",
+          "context": "Number"
+        },
+        {
+          "id": "n2",
+          "english": "Two",
+          "khasi": "Ar",
+          "phonetic": "Ahr",
+          "context": "Number"
+        },
+        {
+          "id": "n3",
+          "english": "Three",
+          "khasi": "Lai",
+          "phonetic": "Lye",
+          "context": "Number"
+        },
+        {
+          "id": "n4",
+          "english": "Four",
+          "khasi": "Saw",
+          "phonetic": "Saw",
+          "context": "Number"
+        },
+        {
+          "id": "n5",
+          "english": "Five",
+          "khasi": "San",
+          "phonetic": "Sahn",
+          "context": "Number"
+        },
+        {
+          "id": "n6",
+          "english": "Ten",
+          "khasi": "Shiphew",
+          "phonetic": "Shee-few",
+          "context": "Number"
+        },
+        {
+          "id": "n7",
+          "english": "One hundred",
+          "khasi": "Shispah",
+          "phonetic": "Shee-spah",
+          "context": "Number"
+        },
+        {
+          "id": "n8",
+          "english": "What time is it?",
+          "khasi": "Katno baje?",
+          "phonetic": "Kaht-no bah-jay?",
+          "context": "Asking time"
+        },
+        {
+          "id": "n9",
+          "english": "Today",
+          "khasi": "Mynta",
+          "phonetic": "Myn-tah",
+          "context": "Time reference"
+        },
+        {
+          "id": "n10",
+          "english": "Tomorrow",
+          "khasi": "Lashai",
+          "phonetic": "Lah-shy",
+          "context": "Time reference"
+        }
+      ]
+    }
+  ]
+}

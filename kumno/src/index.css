@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  --color-khasi-dark: #0f172a;
+  --color-khasi-primary: #1e3a5f;
+  --color-khasi-secondary: #2d5a87;
+  --color-khasi-accent: #4a9eff;
+  --color-khasi-gold: #f59e0b;
+  --color-khasi-green: #10b981;
+  --color-khasi-amber: #f59e0b;
+  --color-khasi-red: #ef4444;
+  --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-khasi-dark text-white min-h-screen font-sans antialiased;
+  }
+
+  * {
+    @apply box-border;
+  }
+}
+
+@layer components {
+  .skeleton {
+    @apply animate-pulse bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 rounded;
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  .btn-primary {
+    @apply bg-khasi-accent hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4;
+  }
+
+  .input-field {
+    @apply w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-khasi-accent focus:border-transparent transition-all;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-500;
+}
