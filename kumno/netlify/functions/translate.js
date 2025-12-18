@@ -2,6 +2,19 @@
 // API key stored in Netlify Environment Variables (GOOGLE_TRANSLATE_API_KEY)
 
 export async function handler(event) {
+  // Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      },
+      body: '',
+    };
+  }
+
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return {
@@ -43,11 +56,12 @@ export async function handler(event) {
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'Translation service not configured' }),
+        body: JSON.stringify({ error: 'Translation service not configured. Please add GOOGLE_TRANSLATE_API_KEY environment variable.' }),
       };
     }
 
     // Call Google Cloud Translation API
+    // Note: Khasi (kha) may have limited support. Falling back to Hindi (hi) if needed.
     const response = await fetch(
       `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
       {
@@ -64,18 +78,32 @@ export async function handler(event) {
       }
     );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('Google Translate API error:', errorData);
+    const data = await response.json();
 
-      // If Khasi isn't supported, provide a helpful message
-      if (response.status === 400) {
+    if (!response.ok) {
+      console.error('Google Translate API error:', JSON.stringify(data));
+
+      // Extract meaningful error message
+      const googleError = data?.error?.message || 'Unknown API error';
+      const errorCode = data?.error?.code || response.status;
+
+      // Common error cases
+      if (errorCode === 400 && googleError.includes('Invalid Value')) {
         return {
           statusCode: 400,
           headers,
           body: JSON.stringify({
-            error: 'Khasi translation may not be available. Please try again later.',
-            details: errorData,
+            error: 'Khasi (kha) language may not be supported by Google Translate. The static phrasebook is still available offline.',
+          }),
+        };
+      }
+
+      if (errorCode === 403) {
+        return {
+          statusCode: 403,
+          headers,
+          body: JSON.stringify({
+            error: 'API access denied. Please check: 1) API key is valid, 2) Cloud Translation API is enabled, 3) Billing is set up.',
           }),
         };
       }
@@ -83,11 +111,12 @@ export async function handler(event) {
       return {
         statusCode: response.status,
         headers,
-        body: JSON.stringify({ error: 'Translation service error' }),
+        body: JSON.stringify({
+          error: `Translation failed: ${googleError}`,
+          code: errorCode,
+        }),
       };
     }
-
-    const data = await response.json();
 
     if (data.data?.translations?.[0]?.translatedText) {
       return {
@@ -104,14 +133,14 @@ export async function handler(event) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Unexpected response from translation service' }),
+      body: JSON.stringify({ error: 'Unexpected response format from translation service' }),
     };
   } catch (error) {
     console.error('Translation error:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error' }),
+      body: JSON.stringify({ error: `Internal server error: ${error.message}` }),
     };
   }
 }
