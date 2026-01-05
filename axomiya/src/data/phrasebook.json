@@ -1,0 +1,628 @@
+{
+  "categories": [
+    {
+      "id": "greetings",
+      "name": "Greetings & Basics",
+      "icon": "🙏",
+      "phrases": [
+        {
+          "id": "g1",
+          "english": "Hello / Greetings",
+          "assamese": "নমস্কাৰ",
+          "phonetic": "Nomoskar",
+          "respectMale": "নমস্কাৰ দেউতা",
+          "respectFemale": "নমস্কাৰ মা",
+          "phoneticMale": "Nomoskar Deuta",
+          "phoneticFemale": "Nomoskar Maa",
+          "context": "Universal greeting, use anytime"
+        },
+        {
+          "id": "g2",
+          "english": "How are you?",
+          "assamese": "আপুনি কেনে আছে?",
+          "phonetic": "Apuni kene aase?",
+          "respectMale": "দেউতা, আপুনি কেনে আছে?",
+          "respectFemale": "মা, আপুনি কেনে আছে?",
+          "phoneticMale": "Deuta, apuni kene aase?",
+          "phoneticFemale": "Maa, apuni kene aase?",
+          "context": "Polite inquiry about wellbeing"
+        },
+        {
+          "id": "g3",
+          "english": "I am fine",
+          "assamese": "মই ভালে আছো",
+          "phonetic": "Moi bhale aaso",
+          "context": "Response to how are you"
+        },
+        {
+          "id": "g4",
+          "english": "Thank you",
+          "assamese": "ধন্যবাদ",
+          "phonetic": "Dhonyobad",
+          "context": "Express gratitude"
+        },
+        {
+          "id": "g5",
+          "english": "You're welcome",
+          "assamese": "আপোনাক স্বাগতম",
+          "phonetic": "Aponok swagotom",
+          "context": "Response to thanks"
+        },
+        {
+          "id": "g6",
+          "english": "Excuse me / Sorry",
+          "assamese": "মাফ কৰিব",
+          "phonetic": "Maaf korib",
+          "context": "Apology or getting attention"
+        },
+        {
+          "id": "g7",
+          "english": "Yes",
+          "assamese": "হয়",
+          "phonetic": "Hoi",
+          "context": "Affirmation"
+        },
+        {
+          "id": "g8",
+          "english": "No",
+          "assamese": "নহয়",
+          "phonetic": "Nohoi",
+          "context": "Negation"
+        },
+        {
+          "id": "g9",
+          "english": "Goodbye",
+          "assamese": "বিদায়",
+          "phonetic": "Bidaay",
+          "context": "Farewell"
+        },
+        {
+          "id": "g10",
+          "english": "Good morning",
+          "assamese": "শুভ ৰাতিপুৱা",
+          "phonetic": "Subho ratipuwa",
+          "context": "Morning greeting"
+        }
+      ]
+    },
+    {
+      "id": "transport",
+      "name": "Taxis & Transport",
+      "icon": "🚕",
+      "phrases": [
+        {
+          "id": "t1",
+          "english": "I need a taxi",
+          "assamese": "মোক এখন টেক্সি লাগে",
+          "phonetic": "Mok ekhon taxi laage",
+          "context": "Requesting a taxi"
+        },
+        {
+          "id": "t2",
+          "english": "How much to Fancy Bazaar?",
+          "assamese": "ফেন্সি বজাৰলৈ কিমান?",
+          "phonetic": "Fancy Bazaar-loi kimaan?",
+          "context": "Asking fare to main market in Guwahati"
+        },
+        {
+          "id": "t3",
+          "english": "Please take me to...",
+          "assamese": "অনুগ্ৰহ কৰি মোক ... লৈ লৈ যাওক",
+          "phonetic": "Onugroho kori mok ... loi loi jaok",
+          "context": "Requesting destination"
+        },
+        {
+          "id": "t4",
+          "english": "Stop here please",
+          "assamese": "ইয়াতে ৰখাওক",
+          "phonetic": "Iyate rokhaok",
+          "context": "Asking driver to stop"
+        },
+        {
+          "id": "t5",
+          "english": "Is this a shared taxi?",
+          "assamese": "এইখন শ্বেয়াৰ টেক্সি নে?",
+          "phonetic": "Eikhon share taxi ne?",
+          "context": "Clarifying taxi type"
+        },
+        {
+          "id": "t6",
+          "english": "Reserved taxi please",
+          "assamese": "ৰিজাৰ্ভ টেক্সি লাগে",
+          "phonetic": "Reserve taxi laage",
+          "context": "Requesting private taxi"
+        },
+        {
+          "id": "t7",
+          "english": "How far is it?",
+          "assamese": "কিমান দূৰ?",
+          "phonetic": "Kimaan dur?",
+          "context": "Asking about distance"
+        },
+        {
+          "id": "t8",
+          "english": "Where is the bus stand?",
+          "assamese": "বাছ ষ্টেণ্ড ক'ত?",
+          "phonetic": "Bus stand kot?",
+          "context": "Finding bus location"
+        },
+        {
+          "id": "t9",
+          "english": "Can you wait for me?",
+          "assamese": "মোৰ বাবে অপেক্ষা কৰিব পাৰিবনে?",
+          "phonetic": "Mor baabe opeksha korib paribne?",
+          "context": "Requesting driver to wait"
+        },
+        {
+          "id": "t10",
+          "english": "That's too expensive",
+          "assamese": "এইটো বহুত দামী",
+          "phonetic": "Eito bohut daami",
+          "context": "Price negotiation"
+        }
+      ]
+    },
+    {
+      "id": "markets",
+      "name": "Markets & Shopping",
+      "icon": "🛒",
+      "phrases": [
+        {
+          "id": "m1",
+          "english": "How much is this?",
+          "assamese": "এইটোৰ দাম কিমান?",
+          "phonetic": "Eitor daam kimaan?",
+          "context": "Asking price"
+        },
+        {
+          "id": "m2",
+          "english": "Can you reduce the price?",
+          "assamese": "দাম কমাব পাৰিবনে?",
+          "phonetic": "Daam komaab paribne?",
+          "context": "Bargaining"
+        },
+        {
+          "id": "m3",
+          "english": "I want to buy this",
+          "assamese": "মই এইটো কিনিব বিচাৰো",
+          "phonetic": "Moi eito kinib bisaaro",
+          "context": "Expressing purchase intent"
+        },
+        {
+          "id": "m4",
+          "english": "Where is Pan Bazaar?",
+          "assamese": "পান বজাৰ ক'ত?",
+          "phonetic": "Pan Bazaar kot?",
+          "context": "Finding famous market in Guwahati"
+        },
+        {
+          "id": "m5",
+          "english": "Do you have change?",
+          "assamese": "খুচুৰা আছে নে?",
+          "phonetic": "Khusura aase ne?",
+          "context": "Asking for smaller notes"
+        },
+        {
+          "id": "m6",
+          "english": "This is beautiful",
+          "assamese": "এইটো বৰ ধুনীয়া",
+          "phonetic": "Eito bor dhuniya",
+          "context": "Complimenting items"
+        },
+        {
+          "id": "m7",
+          "english": "I'm just looking",
+          "assamese": "মই চাই আছো মাথোন",
+          "phonetic": "Moi saai aaso maathon",
+          "context": "Browsing without buying"
+        },
+        {
+          "id": "m8",
+          "english": "Assamese silk (Muga)",
+          "assamese": "মুগা পাট",
+          "phonetic": "Muga paat",
+          "context": "Famous golden Assamese silk"
+        },
+        {
+          "id": "m9",
+          "english": "Assam tea",
+          "assamese": "অসম চাহ",
+          "phonetic": "Asom saah",
+          "context": "World famous Assam tea"
+        },
+        {
+          "id": "m10",
+          "english": "Give me a bag please",
+          "assamese": "এটা বেগ দিয়ক",
+          "phonetic": "Eta bag diyok",
+          "context": "Requesting a bag"
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "name": "Food & Dining",
+      "icon": "🍲",
+      "phrases": [
+        {
+          "id": "f1",
+          "english": "I am hungry",
+          "assamese": "মোৰ ভোক লাগিছে",
+          "phonetic": "Mor bhok laagise",
+          "context": "Expressing hunger"
+        },
+        {
+          "id": "f2",
+          "english": "I am thirsty",
+          "assamese": "মোৰ পিয়াহ লাগিছে",
+          "phonetic": "Mor piyaah laagise",
+          "context": "Expressing thirst"
+        },
+        {
+          "id": "f3",
+          "english": "The food is delicious",
+          "assamese": "খানাখন বৰ সোৱাদ",
+          "phonetic": "Khaanakhon bor sowaad",
+          "context": "Complimenting food"
+        },
+        {
+          "id": "f4",
+          "english": "I want tea please",
+          "assamese": "মোক চাহ লাগে",
+          "phonetic": "Mok saah laage",
+          "context": "Ordering tea"
+        },
+        {
+          "id": "f5",
+          "english": "No sugar please",
+          "assamese": "চেনি নালাগে",
+          "phonetic": "Seni nalaage",
+          "context": "Sugar preference"
+        },
+        {
+          "id": "f6",
+          "english": "Is this spicy?",
+          "assamese": "এইটো জলা নে?",
+          "phonetic": "Eito jola ne?",
+          "context": "Asking about spice level"
+        },
+        {
+          "id": "f7",
+          "english": "I am vegetarian",
+          "assamese": "মই নিৰামিষভোজী",
+          "phonetic": "Moi niraamish-bhoji",
+          "context": "Dietary preference"
+        },
+        {
+          "id": "f8",
+          "english": "Water please",
+          "assamese": "পানী দিয়ক",
+          "phonetic": "Paani diyok",
+          "context": "Ordering water"
+        },
+        {
+          "id": "f9",
+          "english": "The bill please",
+          "assamese": "বিল দিয়ক",
+          "phonetic": "Bill diyok",
+          "context": "Asking for check"
+        },
+        {
+          "id": "f10",
+          "english": "Traditional Assamese food",
+          "assamese": "পৰম্পৰাগত অসমীয়া খাদ্য",
+          "phonetic": "Poromporaagot Asomiya khaadyo",
+          "context": "Local cuisine"
+        }
+      ]
+    },
+    {
+      "id": "directions",
+      "name": "Directions & Places",
+      "icon": "🗺️",
+      "phrases": [
+        {
+          "id": "d1",
+          "english": "Where is...?",
+          "assamese": "...ক'ত?",
+          "phonetic": "...kot?",
+          "context": "Asking location"
+        },
+        {
+          "id": "d2",
+          "english": "Turn left",
+          "assamese": "বাওঁফালে ঘূৰক",
+          "phonetic": "Baaon-faale ghurok",
+          "context": "Direction"
+        },
+        {
+          "id": "d3",
+          "english": "Turn right",
+          "assamese": "সোঁফালে ঘূৰক",
+          "phonetic": "Shon-faale ghurok",
+          "context": "Direction"
+        },
+        {
+          "id": "d4",
+          "english": "Go straight",
+          "assamese": "পোনে পোনে যাওক",
+          "phonetic": "Pone pone jaok",
+          "context": "Direction"
+        },
+        {
+          "id": "d5",
+          "english": "It's near here",
+          "assamese": "ইয়াত ওচৰতে",
+          "phonetic": "Iyaat oshorote",
+          "context": "Proximity"
+        },
+        {
+          "id": "d6",
+          "english": "It's far from here",
+          "assamese": "ইয়াৰ পৰা দূৰ",
+          "phonetic": "Iyaar pora dur",
+          "context": "Distance"
+        },
+        {
+          "id": "d7",
+          "english": "I am lost",
+          "assamese": "মই বাট হেৰুৱাইছো",
+          "phonetic": "Moi baat heruwaiso",
+          "context": "Being lost"
+        },
+        {
+          "id": "d8",
+          "english": "Can you show me the way?",
+          "assamese": "বাট দেখুৱাব পাৰিবনে?",
+          "phonetic": "Baat dekhuwaab paribne?",
+          "context": "Asking for directions"
+        },
+        {
+          "id": "d9",
+          "english": "Where is the hospital?",
+          "assamese": "চিকিৎসালয় ক'ত?",
+          "phonetic": "Sikitsaaloy kot?",
+          "context": "Emergency location"
+        },
+        {
+          "id": "d10",
+          "english": "Where is the police station?",
+          "assamese": "থানা ক'ত?",
+          "phonetic": "Thaana kot?",
+          "context": "Emergency location"
+        }
+      ]
+    },
+    {
+      "id": "tourism",
+      "name": "Tourist Spots",
+      "icon": "📸",
+      "phrases": [
+        {
+          "id": "ts1",
+          "english": "How do I get to Kaziranga?",
+          "assamese": "কাজিৰঙালৈ কেনেকৈ যাম?",
+          "phonetic": "Kaziranga-loi kenekoi jaam?",
+          "context": "Famous national park with rhinos"
+        },
+        {
+          "id": "ts2",
+          "english": "I want to visit Majuli Island",
+          "assamese": "মই মাজুলী দ্বীপ চাব বিচাৰো",
+          "phonetic": "Moi Majuli dwip saab bisaaro",
+          "context": "World's largest river island"
+        },
+        {
+          "id": "ts3",
+          "english": "Where is Kamakhya Temple?",
+          "assamese": "কামাখ্যা মন্দিৰ ক'ত?",
+          "phonetic": "Kamakhya mondir kot?",
+          "context": "Famous temple in Guwahati"
+        },
+        {
+          "id": "ts4",
+          "english": "Can I take a photo?",
+          "assamese": "ফটো তুলিব পাৰিমনে?",
+          "phonetic": "Photo tulib paarimne?",
+          "context": "Asking permission"
+        },
+        {
+          "id": "ts5",
+          "english": "This place is beautiful",
+          "assamese": "এই ঠাইখন বৰ ধুনীয়া",
+          "phonetic": "Ei thaai-khon bor dhuniya",
+          "context": "Complimenting scenery"
+        },
+        {
+          "id": "ts6",
+          "english": "I want to see the one-horned rhino",
+          "assamese": "মই এশিঙীয়া গঁড় চাব বিচাৰো",
+          "phonetic": "Moi eshingiya gonr saab bisaaro",
+          "context": "Iconic Assam wildlife"
+        },
+        {
+          "id": "ts7",
+          "english": "Is there a guide available?",
+          "assamese": "গাইড আছে নেকি?",
+          "phonetic": "Guide aase neki?",
+          "context": "Hiring a guide"
+        },
+        {
+          "id": "ts8",
+          "english": "What time does it close?",
+          "assamese": "কিমান বজাত বন্ধ হয়?",
+          "phonetic": "Kimaan bojaat bondho hoi?",
+          "context": "Opening hours"
+        },
+        {
+          "id": "ts9",
+          "english": "How much is the entry fee?",
+          "assamese": "প্ৰৱেশ মাচুল কিমান?",
+          "phonetic": "Probesh maasul kimaan?",
+          "context": "Ticket price"
+        },
+        {
+          "id": "ts10",
+          "english": "I want to visit a tea garden",
+          "assamese": "মই চাহ বাগিচা চাব বিচাৰো",
+          "phonetic": "Moi saah baagisa saab bisaaro",
+          "context": "Famous Assam tea gardens"
+        }
+      ]
+    },
+    {
+      "id": "emergency",
+      "name": "Emergency & Help",
+      "icon": "🆘",
+      "phrases": [
+        {
+          "id": "e1",
+          "english": "Help!",
+          "assamese": "সহায় কৰক!",
+          "phonetic": "Sohaay korok!",
+          "context": "Emergency call"
+        },
+        {
+          "id": "e2",
+          "english": "I need a doctor",
+          "assamese": "মোক ডাক্তৰ লাগে",
+          "phonetic": "Mok doctor laage",
+          "context": "Medical help"
+        },
+        {
+          "id": "e3",
+          "english": "I am not feeling well",
+          "assamese": "মোৰ শৰীৰটো ভাল নাই",
+          "phonetic": "Mor shorir-to bhaal naai",
+          "context": "Feeling sick"
+        },
+        {
+          "id": "e4",
+          "english": "Call the police",
+          "assamese": "পুলিচক মাতক",
+          "phonetic": "Police-ok maatok",
+          "context": "Police emergency"
+        },
+        {
+          "id": "e5",
+          "english": "I lost my phone",
+          "assamese": "মোৰ ফোনটো হেৰাইছে",
+          "phonetic": "Mor phone-to heraaise",
+          "context": "Lost item"
+        },
+        {
+          "id": "e6",
+          "english": "I lost my wallet",
+          "assamese": "মোৰ পকেটটো হেৰাইছে",
+          "phonetic": "Mor pocket-to heraaise",
+          "context": "Lost item"
+        },
+        {
+          "id": "e7",
+          "english": "Please help me",
+          "assamese": "অনুগ্ৰহ কৰি মোক সহায় কৰক",
+          "phonetic": "Onugroho kori mok sohaay korok",
+          "context": "Requesting help"
+        },
+        {
+          "id": "e8",
+          "english": "I need medicine",
+          "assamese": "মোক দৰব লাগে",
+          "phonetic": "Mok dorob laage",
+          "context": "Medical need"
+        },
+        {
+          "id": "e9",
+          "english": "Where is the pharmacy?",
+          "assamese": "ঔষধ দোকান ক'ত?",
+          "phonetic": "Oushod dokaan kot?",
+          "context": "Finding pharmacy"
+        },
+        {
+          "id": "e10",
+          "english": "It's an emergency",
+          "assamese": "এইটো জৰুৰী",
+          "phonetic": "Eito joruri",
+          "context": "Emergency situation"
+        }
+      ]
+    },
+    {
+      "id": "numbers",
+      "name": "Numbers & Time",
+      "icon": "🔢",
+      "phrases": [
+        {
+          "id": "n1",
+          "english": "One",
+          "assamese": "এক",
+          "phonetic": "Ek",
+          "context": "Number"
+        },
+        {
+          "id": "n2",
+          "english": "Two",
+          "assamese": "দুই",
+          "phonetic": "Dui",
+          "context": "Number"
+        },
+        {
+          "id": "n3",
+          "english": "Three",
+          "assamese": "তিনি",
+          "phonetic": "Tini",
+          "context": "Number"
+        },
+        {
+          "id": "n4",
+          "english": "Four",
+          "assamese": "চাৰি",
+          "phonetic": "Saari",
+          "context": "Number"
+        },
+        {
+          "id": "n5",
+          "english": "Five",
+          "assamese": "পাঁচ",
+          "phonetic": "Paas",
+          "context": "Number"
+        },
+        {
+          "id": "n6",
+          "english": "Ten",
+          "assamese": "দহ",
+          "phonetic": "Doh",
+          "context": "Number"
+        },
+        {
+          "id": "n7",
+          "english": "One hundred",
+          "assamese": "এশ",
+          "phonetic": "Eso",
+          "context": "Number"
+        },
+        {
+          "id": "n8",
+          "english": "What time is it?",
+          "assamese": "কিমান বাজিছে?",
+          "phonetic": "Kimaan baajise?",
+          "context": "Asking time"
+        },
+        {
+          "id": "n9",
+          "english": "Today",
+          "assamese": "আজি",
+          "phonetic": "Aaji",
+          "context": "Time reference"
+        },
+        {
+          "id": "n10",
+          "english": "Tomorrow",
+          "assamese": "কাইলৈ",
+          "phonetic": "Kaailoi",
+          "context": "Time reference"
+        }
+      ]
+    }
+  ]
+}
