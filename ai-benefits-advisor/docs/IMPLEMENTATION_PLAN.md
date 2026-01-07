@@ -2,14 +2,14 @@
 
 ## Executive Summary
 
-This document outlines a phased implementation plan for the AI Benefits Advisor, leveraging modern agentic AI frameworks to deliver an advisor copilot that helps Independent Age staff assist UK pensioners in accessing £10.5 billion in unclaimed benefits.
+This document outlines a phased implementation plan for the AI Benefits Advisor, an advisor copilot that helps Independent Age staff assist UK pensioners in accessing £10.5 billion in unclaimed benefits.
 
-**Recommended Technology Stack:**
-- **SPARC Methodology** - Structured development approach
-- **Claude-Flow** - Multi-agent orchestration for complex workflows
-- **Agentic-Flow** - Cost-optimized model switching
-- **RuVector** - High-performance vector database for knowledge base
-- **AgentDB** - Fast semantic search integration
+**Development Approach:**
+- **SPARC Methodology** - Structured development (Specification, Pseudocode, Architecture, Refinement, Completion)
+- **Multi-Agent Architecture** - Specialized agents for transcription, benefits advice, safeguarding, documentation
+- **Technology-Neutral** - Evaluate options based on requirements, not predetermined vendors
+
+**See Also:** [USER_STORIES.md](USER_STORIES.md) for detailed user stories and technology evaluation criteria
 
 ---
 
@@ -130,12 +130,12 @@ Given the PRD's concern about cost overrun (~£0.15/min for voice AI), Agentic-F
 
 ## 2. System Architecture
 
-### 2.1 High-Level Architecture
+### 2.1 High-Level Architecture (Technology-Neutral)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                           ADVISOR DASHBOARD                              │
-│                    (React + TypeScript + Tailwind)                       │
+│                         (Web Application)                                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
 │  │ Live Call   │  │  Reasoning  │  │   Case      │  │    KPI      │    │
@@ -145,20 +145,23 @@ Given the PRD's concern about cost overrun (~£0.15/min for voice AI), Agentic-F
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                          API GATEWAY (Azure)                             │
+│                            API GATEWAY                                   │
 │                     Authentication / Rate Limiting                       │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
             ┌───────────────────────┼───────────────────────┐
             ▼                       ▼                       ▼
 ┌───────────────────┐   ┌───────────────────┐   ┌───────────────────┐
-│   TELEPHONY       │   │   CLAUDE-FLOW     │   │    RUVECTOR       │
-│   LAYER           │   │   ORCHESTRATOR    │   │    CLUSTER        │
+│   TELEPHONY &     │   │     AGENT         │   │   KNOWLEDGE       │
+│   REAL-TIME       │   │   ORCHESTRATOR    │   │     BASE          │
 │                   │   │                   │   │                   │
-│ - Twilio SIP      │   │ - Agent Swarm     │   │ - DWP Guidance    │
-│ - Vapi.ai         │   │ - Workflow Engine │   │ - GOV.UK Content  │
-│ - Deepgram STT    │   │ - AgentDB Memory  │   │ - IA Factsheets   │
-│ - Azure TTS       │   │ - Agentic-Flow    │   │ - Rate Tables     │
+│ Options:          │   │ - Agent Swarm     │   │ Options:          │
+│ - Twilio/Vonage   │   │ - Workflow Engine │   │ - Pinecone        │
+│ - Deepgram/       │   │ - Memory Layer    │   │ - Weaviate        │
+│   AssemblyAI      │   │                   │   │ - RuVector        │
+│ - PubNub/Ably/    │   │ Options:          │   │ - Qdrant          │
+│   WebSockets      │   │ - Claude-Flow     │   │ - pgvector        │
+│                   │   │ - Custom          │   │                   │
 └───────────────────┘   └───────────────────┘   └───────────────────┘
             │                       │                       │
             └───────────────────────┼───────────────────────┘
@@ -167,11 +170,24 @@ Given the PRD's concern about cost overrun (~£0.15/min for voice AI), Agentic-F
 │                        EXTERNAL INTEGRATIONS                             │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
-│  │ Salesforce  │  │ EntitledTo  │  │   Azure     │  │   Form      │    │
-│  │    CRM      │  │    API      │  │   OpenAI    │  │  Templates  │    │
+│  │    CRM      │  │  Benefits   │  │     LLM     │  │   Form      │    │
+│  │  (TBD)      │  │ Calculator  │  │   Provider  │  │  Templates  │    │
 │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘    │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
+
+### 2.2 Technology Options to Evaluate
+
+| Capability | Options | Evaluation Criteria |
+|------------|---------|---------------------|
+| **Telephony** | Twilio, Vonage, Bandwidth, Telnyx | UK numbers, nonprofit pricing, API quality |
+| **Speech-to-Text** | Deepgram, AssemblyAI, Whisper, Azure Speech | Multilingual, UK accents, latency, cost |
+| **Real-Time Messaging** | PubNub, Ably, Pusher, WebSockets, SSE | Latency, reliability, presence features |
+| **LLM** | Claude, GPT-4, Gemini, Llama, Mistral | Accuracy, cost, UK data residency |
+| **Vector DB** | Pinecone, Weaviate, RuVector, Qdrant, pgvector | Performance, cost, managed vs self-hosted |
+| **Calculator API** | EntitledTo, Turn2Us, Policy in Practice | Coverage, accuracy, API availability |
+| **CRM** | Salesforce, HubSpot, Dynamics, custom | Nonprofit pricing, existing usage |
+| **Cloud** | Azure UK, AWS London, GCP London | GDPR, nonprofit credits, ecosystem |
 
 ### 2.2 Data Flow for Live Call
 
