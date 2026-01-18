@@ -47,6 +47,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .control-row label {
             min-width: 100px;
@@ -76,6 +77,11 @@
             background: #444;
             color: #eee;
         }
+        button.benchmark {
+            background: #ff6b6b;
+            color: #fff;
+        }
+        button.benchmark:hover { background: #ee5a5a; }
 
         .stats {
             margin-top: 10px;
@@ -97,14 +103,45 @@
             background: rgba(0, 217, 255, 0.1);
         }
         #fileInput { display: none; }
+
+        /* Benchmark results table */
+        .benchmark-results {
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+        .benchmark-results table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .benchmark-results th, .benchmark-results td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        .benchmark-results th {
+            color: #888;
+            font-weight: normal;
+        }
+        .benchmark-results .faster {
+            color: #4ade80;
+            font-weight: bold;
+        }
+        .benchmark-results .slower {
+            color: #888;
+        }
+        .speedup {
+            color: #00d9ff;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h1>WASM Image Filters</h1>
-    <p>Learning WebAssembly through image processing</p>
+    <p>Browser-based image processing — no cloud, no AI, 100% local</p>
 
     <div id="dropzone" onclick="document.getElementById('fileInput').click()">
-        📁 Drop an image here or click to upload
+        Drop an image here or click to upload
     </div>
     <input type="file" id="fileInput" accept="image/*">
 
@@ -120,11 +157,12 @@
     </div>
 
     <div class="controls">
-        <h2>Level 1-2 Filters</h2>
+        <h2>Level 1-2: Basic Filters</h2>
 
         <div class="control-row">
             <button onclick="applyFilter('grayscale')">Grayscale</button>
             <button onclick="applyFilter('invert')">Invert</button>
+            <button onclick="applyFilter('sepia')">Sepia</button>
         </div>
 
         <div class="control-row">
@@ -141,11 +179,7 @@
             <button onclick="applyFilter('contrast')">Apply</button>
         </div>
 
-        <div class="control-row">
-            <button class="secondary" onclick="resetImage()">Reset to Original</button>
-        </div>
-
-        <h2>Level 3-4 Filters (Convolution)</h2>
+        <h2>Level 3-4: Convolution Filters</h2>
 
         <div class="control-row">
             <label>Box Blur:</label>
@@ -155,17 +189,45 @@
         </div>
 
         <div class="control-row">
-            <button onclick="applyFilter('gaussian_blur')">Gaussian Blur (3x3)</button>
-            <button onclick="applyFilter('sharpen')">Sharpen</button>
+            <label>Gaussian Blur:</label>
+            <input type="range" id="gaussianRadius" min="1" max="5" value="1">
+            <span class="value" id="gaussianRadiusVal">1</span>
+            <button onclick="applyFilter('gaussian_blur_radius')">Apply</button>
         </div>
 
         <div class="control-row">
-            <button onclick="applyFilter('sobel')">Edge Detection (Sobel)</button>
+            <button onclick="applyFilter('sharpen')">Sharpen</button>
+            <button onclick="applyFilter('emboss')">Emboss</button>
+            <button onclick="applyFilter('sobel')">Edge Detection</button>
+        </div>
+
+        <h2>Level 5: Special Effects</h2>
+
+        <div class="control-row">
+            <label>Pixelate:</label>
+            <input type="range" id="pixelSize" min="2" max="20" value="8">
+            <span class="value" id="pixelSizeVal">8</span>
+            <button onclick="applyFilter('pixelate')">Apply</button>
+        </div>
+
+        <div class="control-row">
+            <button class="secondary" onclick="resetImage()">Reset to Original</button>
         </div>
 
         <div class="stats">
             Last operation: <span id="stats">-</span>
         </div>
+    </div>
+
+    <div class="controls">
+        <h2>JS vs WASM Performance Comparison</h2>
+        <p style="color: #888; font-size: 0.9rem;">Run the same algorithm in pure JavaScript and WebAssembly to compare speed.</p>
+
+        <div class="control-row">
+            <button class="benchmark" onclick="runBenchmark()">Run Benchmark</button>
+        </div>
+
+        <div class="benchmark-results" id="benchmarkResults"></div>
     </div>
 
     <script type="module">
@@ -191,10 +253,14 @@
                     brightness: module.brightness,
                     contrast: module.contrast,
                     invert: module.invert,
+                    sepia: module.sepia,
                     box_blur: module.box_blur,
                     gaussian_blur: module.gaussian_blur,
+                    gaussian_blur_radius: module.gaussian_blur_radius,
                     sobel_edge_detection: module.sobel_edge_detection,
-                    sharpen: module.sharpen
+                    sharpen: module.sharpen,
+                    pixelate: module.pixelate,
+                    emboss: module.emboss
                 };
 
                 // Check which functions are available
@@ -203,7 +269,7 @@
                     .map(([k]) => k);
 
                 wasmReady = true;
-                document.getElementById('stats').textContent = `WASM ready! Functions: ${available.join(', ')}`;
+                document.getElementById('stats').textContent = `WASM ready! ${available.length} filters available`;
             } catch (err) {
                 document.getElementById('stats').textContent = `WASM load error: ${err.message}`;
                 document.getElementById('stats').style.color = '#ff4444';
@@ -214,8 +280,208 @@
         // Expose functions to global scope for onclick handlers
         window.applyFilter = applyFilter;
         window.resetImage = resetImage;
+        window.runBenchmark = runBenchmark;
 
+        // ==========================================
+        // Pure JavaScript implementations for comparison
+        // ==========================================
+
+        const jsFunctions = {
+            grayscale: (pixels) => {
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const gray = 0.299 * pixels[i] + 0.587 * pixels[i+1] + 0.114 * pixels[i+2];
+                    pixels[i] = pixels[i+1] = pixels[i+2] = gray;
+                }
+            },
+
+            invert: (pixels) => {
+                for (let i = 0; i < pixels.length; i += 4) {
+                    pixels[i] = 255 - pixels[i];
+                    pixels[i+1] = 255 - pixels[i+1];
+                    pixels[i+2] = 255 - pixels[i+2];
+                }
+            },
+
+            sepia: (pixels) => {
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
+                    pixels[i] = Math.min(255, 0.393*r + 0.769*g + 0.189*b);
+                    pixels[i+1] = Math.min(255, 0.349*r + 0.686*g + 0.168*b);
+                    pixels[i+2] = Math.min(255, 0.272*r + 0.534*g + 0.131*b);
+                }
+            },
+
+            box_blur: (pixels, width, height, radius) => {
+                const original = new Uint8ClampedArray(pixels);
+                const r = radius;
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        let sumR = 0, sumG = 0, sumB = 0, count = 0;
+
+                        for (let dy = -r; dy <= r; dy++) {
+                            for (let dx = -r; dx <= r; dx++) {
+                                const nx = x + dx, ny = y + dy;
+                                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                    const idx = (ny * width + nx) * 4;
+                                    sumR += original[idx];
+                                    sumG += original[idx + 1];
+                                    sumB += original[idx + 2];
+                                    count++;
+                                }
+                            }
+                        }
+
+                        const idx = (y * width + x) * 4;
+                        pixels[idx] = sumR / count;
+                        pixels[idx + 1] = sumG / count;
+                        pixels[idx + 2] = sumB / count;
+                    }
+                }
+            },
+
+            sobel: (pixels, width, height) => {
+                // Convert to grayscale first
+                const gray = new Uint8Array(width * height);
+                for (let i = 0; i < width * height; i++) {
+                    const idx = i * 4;
+                    gray[i] = 0.299 * pixels[idx] + 0.587 * pixels[idx+1] + 0.114 * pixels[idx+2];
+                }
+
+                const gx = [[-1,0,1], [-2,0,2], [-1,0,1]];
+                const gy = [[-1,-2,-1], [0,0,0], [1,2,1]];
+
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        let sumX = 0, sumY = 0;
+
+                        for (let ky = 0; ky < 3; ky++) {
+                            for (let kx = 0; kx < 3; kx++) {
+                                const val = gray[(y + ky - 1) * width + (x + kx - 1)];
+                                sumX += val * gx[ky][kx];
+                                sumY += val * gy[ky][kx];
+                            }
+                        }
+
+                        const magnitude = Math.min(255, (Math.abs(sumX) + Math.abs(sumY)) / 2);
+                        const idx = (y * width + x) * 4;
+                        pixels[idx] = pixels[idx+1] = pixels[idx+2] = magnitude;
+                    }
+                }
+            }
+        };
+
+        // ==========================================
+        // Benchmark function
+        // ==========================================
+
+        function runBenchmark() {
+            const resultsDiv = document.getElementById('benchmarkResults');
+
+            if (!wasmReady) {
+                resultsDiv.innerHTML = '<p style="color: #ff4444;">WASM not loaded yet</p>';
+                return;
+            }
+
+            if (!originalImageData) {
+                resultsDiv.innerHTML = '<p style="color: #ff4444;">Please load an image first</p>';
+                return;
+            }
+
+            resultsDiv.innerHTML = '<p>Running benchmarks...</p>';
+
+            // Run benchmarks after a short delay to allow UI update
+            setTimeout(() => {
+                const width = originalImageData.width;
+                const height = originalImageData.height;
+                const pixelCount = width * height;
+
+                const benchmarks = [
+                    {
+                        name: 'Grayscale',
+                        js: (p) => jsFunctions.grayscale(p),
+                        wasm: (p) => wasmFunctions.grayscale(p)
+                    },
+                    {
+                        name: 'Invert',
+                        js: (p) => jsFunctions.invert(p),
+                        wasm: (p) => wasmFunctions.invert(p)
+                    },
+                    {
+                        name: 'Sepia',
+                        js: (p) => jsFunctions.sepia(p),
+                        wasm: (p) => wasmFunctions.sepia(p)
+                    },
+                    {
+                        name: 'Box Blur (r=3)',
+                        js: (p) => jsFunctions.box_blur(p, width, height, 3),
+                        wasm: (p) => wasmFunctions.box_blur(p, width, height, 3)
+                    },
+                    {
+                        name: 'Sobel Edge',
+                        js: (p) => jsFunctions.sobel(p, width, height),
+                        wasm: (p) => wasmFunctions.sobel_edge_detection(p, width, height)
+                    }
+                ];
+
+                const results = benchmarks.map(bench => {
+                    // Create fresh copies of pixel data for each test
+                    const jsPixels = new Uint8ClampedArray(originalImageData.data);
+                    const wasmPixels = new Uint8ClampedArray(originalImageData.data);
+
+                    // Warm up (optional, helps with JIT)
+                    bench.js(new Uint8ClampedArray(originalImageData.data));
+                    bench.wasm(new Uint8ClampedArray(originalImageData.data));
+
+                    // Benchmark JS
+                    const jsStart = performance.now();
+                    bench.js(jsPixels);
+                    const jsTime = performance.now() - jsStart;
+
+                    // Benchmark WASM
+                    const wasmStart = performance.now();
+                    bench.wasm(wasmPixels);
+                    const wasmTime = performance.now() - wasmStart;
+
+                    const speedup = jsTime / wasmTime;
+
+                    return {
+                        name: bench.name,
+                        jsTime: jsTime.toFixed(2),
+                        wasmTime: wasmTime.toFixed(2),
+                        speedup: speedup.toFixed(1)
+                    };
+                });
+
+                // Render results table
+                resultsDiv.innerHTML = `
+                    <table>
+                        <tr>
+                            <th>Filter</th>
+                            <th>JavaScript</th>
+                            <th>WASM</th>
+                            <th>Speedup</th>
+                        </tr>
+                        ${results.map(r => `
+                            <tr>
+                                <td>${r.name}</td>
+                                <td class="${parseFloat(r.jsTime) > parseFloat(r.wasmTime) ? 'slower' : 'faster'}">${r.jsTime}ms</td>
+                                <td class="${parseFloat(r.wasmTime) < parseFloat(r.jsTime) ? 'faster' : 'slower'}">${r.wasmTime}ms</td>
+                                <td class="speedup">${r.speedup}x</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                    <p style="color: #888; font-size: 0.8rem; margin-top: 10px;">
+                        Tested on ${pixelCount.toLocaleString()} pixels (${width}x${height})
+                    </p>
+                `;
+            }, 50);
+        }
+
+        // ==========================================
         // File handling
+        // ==========================================
+
         const dropzone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
 
@@ -267,10 +533,14 @@
                 // Store original for reset
                 originalImageData = origCtx.getImageData(0, 0, w, h);
 
-                dropzone.textContent = `✓ Loaded: ${img.width}×${img.height} → ${w}×${h}`;
+                dropzone.textContent = `Loaded: ${img.width}x${img.height} -> ${w}x${h}`;
             };
             img.src = URL.createObjectURL(file);
         }
+
+        // ==========================================
+        // Filter application
+        // ==========================================
 
         function applyFilter(filterName) {
             const statsEl = document.getElementById('stats');
@@ -305,25 +575,21 @@
                 const filterMap = {
                     'grayscale': () => wasmFunctions.grayscale(pixels),
                     'invert': () => wasmFunctions.invert(pixels),
+                    'sepia': () => wasmFunctions.sepia(pixels),
                     'brightness': () => wasmFunctions.brightness(pixels, parseInt(document.getElementById('brightness').value)),
                     'contrast': () => wasmFunctions.contrast(pixels, parseFloat(document.getElementById('contrast').value)),
                     'box_blur': () => wasmFunctions.box_blur(pixels, width, height, parseInt(document.getElementById('blurRadius').value)),
                     'gaussian_blur': () => wasmFunctions.gaussian_blur(pixels, width, height),
+                    'gaussian_blur_radius': () => wasmFunctions.gaussian_blur_radius(pixels, width, height, parseInt(document.getElementById('gaussianRadius').value)),
                     'sharpen': () => wasmFunctions.sharpen(pixels, width, height),
-                    'sobel': () => wasmFunctions.sobel_edge_detection(pixels, width, height)
+                    'emboss': () => wasmFunctions.emboss(pixels, width, height),
+                    'sobel': () => wasmFunctions.sobel_edge_detection(pixels, width, height),
+                    'pixelate': () => wasmFunctions.pixelate(pixels, width, height, parseInt(document.getElementById('pixelSize').value))
                 };
 
                 const fn = filterMap[filterName];
                 if (!fn) {
                     statsEl.textContent = `ERROR: Unknown filter "${filterName}"`;
-                    statsEl.style.color = '#ff4444';
-                    return;
-                }
-
-                // Check if function exists
-                const funcName = filterName === 'sobel' ? 'sobel_edge_detection' : filterName;
-                if (typeof wasmFunctions[funcName] !== 'function') {
-                    statsEl.textContent = `ERROR: "${funcName}" not available in WASM module`;
                     statsEl.style.color = '#ff4444';
                     return;
                 }
@@ -348,7 +614,10 @@
             document.getElementById('stats').textContent = 'Reset to original';
         }
 
-        // Update slider displays
+        // ==========================================
+        // Slider event listeners
+        // ==========================================
+
         document.getElementById('brightness').addEventListener('input', (e) => {
             document.getElementById('brightnessVal').textContent = e.target.value;
         });
@@ -357,6 +626,12 @@
         });
         document.getElementById('blurRadius').addEventListener('input', (e) => {
             document.getElementById('blurRadiusVal').textContent = e.target.value;
+        });
+        document.getElementById('gaussianRadius').addEventListener('input', (e) => {
+            document.getElementById('gaussianRadiusVal').textContent = e.target.value;
+        });
+        document.getElementById('pixelSize').addEventListener('input', (e) => {
+            document.getElementById('pixelSizeVal').textContent = e.target.value;
         });
     </script>
 </body>
