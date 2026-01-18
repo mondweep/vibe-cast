@@ -169,18 +169,45 @@
     </div>
 
     <script type="module">
-        import init, {
-            grayscale, brightness, contrast, invert,
-            box_blur, gaussian_blur, sobel_edge_detection, sharpen
-        } from './pkg/wasm_image_filters.js';
+        // Show errors on page for mobile debugging
+        window.onerror = (msg, url, line) => {
+            document.getElementById('stats').textContent = `ERROR: ${msg}`;
+            document.getElementById('stats').style.color = '#ff4444';
+        };
 
-        let wasm;
+        let wasmReady = false;
+        let wasmFunctions = {};
         let originalImageData = null;
 
-        // Initialize WASM
+        // Initialize WASM with error handling
         async function initWasm() {
-            wasm = await init();
-            console.log('WASM loaded!');
+            try {
+                const module = await import('./pkg/wasm_image_filters.js');
+                await module.default();
+
+                // Store available functions
+                wasmFunctions = {
+                    grayscale: module.grayscale,
+                    brightness: module.brightness,
+                    contrast: module.contrast,
+                    invert: module.invert,
+                    box_blur: module.box_blur,
+                    gaussian_blur: module.gaussian_blur,
+                    sobel_edge_detection: module.sobel_edge_detection,
+                    sharpen: module.sharpen
+                };
+
+                // Check which functions are available
+                const available = Object.entries(wasmFunctions)
+                    .filter(([k, v]) => typeof v === 'function')
+                    .map(([k]) => k);
+
+                wasmReady = true;
+                document.getElementById('stats').textContent = `WASM ready! Functions: ${available.join(', ')}`;
+            } catch (err) {
+                document.getElementById('stats').textContent = `WASM load error: ${err.message}`;
+                document.getElementById('stats').style.color = '#ff4444';
+            }
         }
         initWasm();
 
@@ -246,53 +273,71 @@
         }
 
         function applyFilter(filterName) {
-            const canvas = document.getElementById('filtered');
-            const ctx = canvas.getContext('2d');
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const statsEl = document.getElementById('stats');
+            statsEl.style.color = '#00d9ff';
 
-            const pixels = imageData.data;
-            const pixelCount = pixels.length / 4;
-
-            const start = performance.now();
-
-            const width = canvas.width;
-            const height = canvas.height;
-
-            switch (filterName) {
-                case 'grayscale':
-                    grayscale(pixels);
-                    break;
-                case 'invert':
-                    invert(pixels);
-                    break;
-                case 'brightness':
-                    const bVal = parseInt(document.getElementById('brightness').value);
-                    brightness(pixels, bVal);
-                    break;
-                case 'contrast':
-                    const cVal = parseFloat(document.getElementById('contrast').value);
-                    contrast(pixels, cVal);
-                    break;
-                case 'box_blur':
-                    const radius = parseInt(document.getElementById('blurRadius').value);
-                    box_blur(pixels, width, height, radius);
-                    break;
-                case 'gaussian_blur':
-                    gaussian_blur(pixels, width, height);
-                    break;
-                case 'sharpen':
-                    sharpen(pixels, width, height);
-                    break;
-                case 'sobel':
-                    sobel_edge_detection(pixels, width, height);
-                    break;
+            if (!wasmReady) {
+                statsEl.textContent = 'ERROR: WASM not loaded yet';
+                statsEl.style.color = '#ff4444';
+                return;
             }
 
-            const elapsed = performance.now() - start;
-            ctx.putImageData(imageData, 0, 0);
+            try {
+                const canvas = document.getElementById('filtered');
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-            document.getElementById('stats').textContent =
-                `${filterName} on ${pixelCount.toLocaleString()} pixels in ${elapsed.toFixed(2)}ms`;
+                const pixels = imageData.data;
+                const pixelCount = pixels.length / 4;
+
+                if (pixelCount === 0) {
+                    statsEl.textContent = 'ERROR: No image loaded';
+                    statsEl.style.color = '#ff4444';
+                    return;
+                }
+
+                const width = canvas.width;
+                const height = canvas.height;
+
+                const start = performance.now();
+
+                // Map filter names to functions and arguments
+                const filterMap = {
+                    'grayscale': () => wasmFunctions.grayscale(pixels),
+                    'invert': () => wasmFunctions.invert(pixels),
+                    'brightness': () => wasmFunctions.brightness(pixels, parseInt(document.getElementById('brightness').value)),
+                    'contrast': () => wasmFunctions.contrast(pixels, parseFloat(document.getElementById('contrast').value)),
+                    'box_blur': () => wasmFunctions.box_blur(pixels, width, height, parseInt(document.getElementById('blurRadius').value)),
+                    'gaussian_blur': () => wasmFunctions.gaussian_blur(pixels, width, height),
+                    'sharpen': () => wasmFunctions.sharpen(pixels, width, height),
+                    'sobel': () => wasmFunctions.sobel_edge_detection(pixels, width, height)
+                };
+
+                const fn = filterMap[filterName];
+                if (!fn) {
+                    statsEl.textContent = `ERROR: Unknown filter "${filterName}"`;
+                    statsEl.style.color = '#ff4444';
+                    return;
+                }
+
+                // Check if function exists
+                const funcName = filterName === 'sobel' ? 'sobel_edge_detection' : filterName;
+                if (typeof wasmFunctions[funcName] !== 'function') {
+                    statsEl.textContent = `ERROR: "${funcName}" not available in WASM module`;
+                    statsEl.style.color = '#ff4444';
+                    return;
+                }
+
+                fn();
+
+                const elapsed = performance.now() - start;
+                ctx.putImageData(imageData, 0, 0);
+
+                statsEl.textContent = `${filterName} on ${pixelCount.toLocaleString()} pixels in ${elapsed.toFixed(2)}ms`;
+            } catch (err) {
+                statsEl.textContent = `ERROR: ${err.message}`;
+                statsEl.style.color = '#ff4444';
+            }
         }
 
         function resetImage() {
