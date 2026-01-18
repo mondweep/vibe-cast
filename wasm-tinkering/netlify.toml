@@ -1,0 +1,25 @@
+# Netlify configuration for WASM Image Filters
+
+[build]
+  command = "./netlify-build.sh"
+  publish = "www"
+
+# Headers for WASM files - proper MIME type
+[[headers]]
+  for = "/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/pkg/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Enable SharedArrayBuffer if needed for threading (optional)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
