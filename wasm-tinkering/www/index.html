@@ -145,13 +145,34 @@
             <button class="secondary" onclick="resetImage()">Reset to Original</button>
         </div>
 
+        <h2>Level 3-4 Filters (Convolution)</h2>
+
+        <div class="control-row">
+            <label>Box Blur:</label>
+            <input type="range" id="blurRadius" min="1" max="10" value="3">
+            <span class="value" id="blurRadiusVal">3</span>
+            <button onclick="applyFilter('box_blur')">Apply</button>
+        </div>
+
+        <div class="control-row">
+            <button onclick="applyFilter('gaussian_blur')">Gaussian Blur (3x3)</button>
+            <button onclick="applyFilter('sharpen')">Sharpen</button>
+        </div>
+
+        <div class="control-row">
+            <button onclick="applyFilter('sobel')">Edge Detection (Sobel)</button>
+        </div>
+
         <div class="stats">
             Last operation: <span id="stats">-</span>
         </div>
     </div>
 
     <script type="module">
-        import init, { grayscale, brightness, contrast, invert } from './pkg/wasm_image_filters.js';
+        import init, {
+            grayscale, brightness, contrast, invert,
+            box_blur, gaussian_blur, sobel_edge_detection, sharpen
+        } from './pkg/wasm_image_filters.js';
 
         let wasm;
         let originalImageData = null;
@@ -234,6 +255,9 @@
 
             const start = performance.now();
 
+            const width = canvas.width;
+            const height = canvas.height;
+
             switch (filterName) {
                 case 'grayscale':
                     grayscale(pixels);
@@ -248,6 +272,19 @@
                 case 'contrast':
                     const cVal = parseFloat(document.getElementById('contrast').value);
                     contrast(pixels, cVal);
+                    break;
+                case 'box_blur':
+                    const radius = parseInt(document.getElementById('blurRadius').value);
+                    box_blur(pixels, width, height, radius);
+                    break;
+                case 'gaussian_blur':
+                    gaussian_blur(pixels, width, height);
+                    break;
+                case 'sharpen':
+                    sharpen(pixels, width, height);
+                    break;
+                case 'sobel':
+                    sobel_edge_detection(pixels, width, height);
                     break;
             }
 
@@ -272,6 +309,9 @@
         });
         document.getElementById('contrast').addEventListener('input', (e) => {
             document.getElementById('contrastVal').textContent = parseFloat(e.target.value).toFixed(1);
+        });
+        document.getElementById('blurRadius').addEventListener('input', (e) => {
+            document.getElementById('blurRadiusVal').textContent = e.target.value;
         });
     </script>
 </body>

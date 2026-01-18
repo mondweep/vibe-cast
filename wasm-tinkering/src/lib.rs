@@ -92,3 +92,241 @@ pub fn invert(pixels: &mut [u8]) {
 fn clamp_u8(value: i32) -> u8 {
     value.clamp(0, 255) as u8
 }
+
+// ============================================
+// LEVEL 3: CONVOLUTION FILTERS
+// ============================================
+//
+// Convolution: Apply a "kernel" (small matrix) to each pixel
+// The kernel defines weights for the pixel and its neighbors
+//
+// Example 3x3 kernel for blur:
+//   [1/9] [1/9] [1/9]
+//   [1/9] [1/9] [1/9]
+//   [1/9] [1/9] [1/9]
+//
+// For each pixel, multiply neighbors by kernel weights and sum
+
+// --------------------------------------------
+// Level 3a: Box Blur
+// --------------------------------------------
+// Concept: Average all pixels in a square region
+// Simple but effective blur, good for learning
+
+#[wasm_bindgen]
+pub fn box_blur(pixels: &mut [u8], width: u32, height: u32, radius: u32) {
+    let w = width as usize;
+    let h = height as usize;
+    let r = radius as i32;
+
+    // We need a copy because we read neighbors while writing
+    let original = pixels.to_vec();
+
+    for y in 0..h {
+        for x in 0..w {
+            let mut sum_r: u32 = 0;
+            let mut sum_g: u32 = 0;
+            let mut sum_b: u32 = 0;
+            let mut count: u32 = 0;
+
+            // Sample all pixels in the (2*radius+1) x (2*radius+1) box
+            for dy in -r..=r {
+                for dx in -r..=r {
+                    let nx = x as i32 + dx;
+                    let ny = y as i32 + dy;
+
+                    // Bounds check (skip pixels outside image)
+                    if nx >= 0 && nx < w as i32 && ny >= 0 && ny < h as i32 {
+                        let idx = ((ny as usize) * w + (nx as usize)) * 4;
+                        sum_r += original[idx] as u32;
+                        sum_g += original[idx + 1] as u32;
+                        sum_b += original[idx + 2] as u32;
+                        count += 1;
+                    }
+                }
+            }
+
+            // Write averaged value
+            let idx = (y * w + x) * 4;
+            pixels[idx] = (sum_r / count) as u8;
+            pixels[idx + 1] = (sum_g / count) as u8;
+            pixels[idx + 2] = (sum_b / count) as u8;
+            // Alpha unchanged
+        }
+    }
+}
+
+// --------------------------------------------
+// Level 3b: Gaussian Blur
+// --------------------------------------------
+// Concept: Weighted average - center pixels matter more
+// Creates smoother, more natural blur than box blur
+//
+// 3x3 Gaussian kernel (approximation):
+//   [1] [2] [1]
+//   [2] [4] [2]  / 16
+//   [1] [2] [1]
+
+#[wasm_bindgen]
+pub fn gaussian_blur(pixels: &mut [u8], width: u32, height: u32) {
+    let w = width as usize;
+    let h = height as usize;
+
+    // 3x3 Gaussian kernel weights (sum = 16)
+    let kernel: [[u32; 3]; 3] = [
+        [1, 2, 1],
+        [2, 4, 2],
+        [1, 2, 1],
+    ];
+    let kernel_sum: u32 = 16;
+
+    let original = pixels.to_vec();
+
+    for y in 1..(h - 1) {
+        for x in 1..(w - 1) {
+            let mut sum_r: u32 = 0;
+            let mut sum_g: u32 = 0;
+            let mut sum_b: u32 = 0;
+
+            // Apply 3x3 kernel
+            for ky in 0..3 {
+                for kx in 0..3 {
+                    let px = x + kx - 1;
+                    let py = y + ky - 1;
+                    let idx = (py * w + px) * 4;
+                    let weight = kernel[ky][kx];
+
+                    sum_r += original[idx] as u32 * weight;
+                    sum_g += original[idx + 1] as u32 * weight;
+                    sum_b += original[idx + 2] as u32 * weight;
+                }
+            }
+
+            let idx = (y * w + x) * 4;
+            pixels[idx] = (sum_r / kernel_sum) as u8;
+            pixels[idx + 1] = (sum_g / kernel_sum) as u8;
+            pixels[idx + 2] = (sum_b / kernel_sum) as u8;
+        }
+    }
+}
+
+// ============================================
+// LEVEL 4: EDGE DETECTION
+// ============================================
+//
+// Sobel operator: Detect edges by finding gradients
+// Uses two kernels - one for horizontal, one for vertical edges
+//
+// Gx (horizontal):     Gy (vertical):
+//   [-1] [0] [+1]        [-1] [-2] [-1]
+//   [-2] [0] [+2]        [ 0] [ 0] [ 0]
+//   [-1] [0] [+1]        [+1] [+2] [+1]
+//
+// Final magnitude: sqrt(Gx² + Gy²)
+
+#[wasm_bindgen]
+pub fn sobel_edge_detection(pixels: &mut [u8], width: u32, height: u32) {
+    let w = width as usize;
+    let h = height as usize;
+
+    // First convert to grayscale for edge detection
+    let mut gray = vec![0u8; w * h];
+    for y in 0..h {
+        for x in 0..w {
+            let idx = (y * w + x) * 4;
+            let r = pixels[idx] as f32;
+            let g = pixels[idx + 1] as f32;
+            let b = pixels[idx + 2] as f32;
+            gray[y * w + x] = (0.299 * r + 0.587 * g + 0.114 * b) as u8;
+        }
+    }
+
+    // Sobel kernels
+    let gx: [[i32; 3]; 3] = [
+        [-1, 0, 1],
+        [-2, 0, 2],
+        [-1, 0, 1],
+    ];
+    let gy: [[i32; 3]; 3] = [
+        [-1, -2, -1],
+        [ 0,  0,  0],
+        [ 1,  2,  1],
+    ];
+
+    for y in 1..(h - 1) {
+        for x in 1..(w - 1) {
+            let mut sum_x: i32 = 0;
+            let mut sum_y: i32 = 0;
+
+            // Apply both kernels
+            for ky in 0..3 {
+                for kx in 0..3 {
+                    let px = x + kx - 1;
+                    let py = y + ky - 1;
+                    let val = gray[py * w + px] as i32;
+
+                    sum_x += val * gx[ky][kx];
+                    sum_y += val * gy[ky][kx];
+                }
+            }
+
+            // Magnitude (using fast approximation instead of sqrt)
+            let magnitude = ((sum_x.abs() + sum_y.abs()) / 2).min(255) as u8;
+
+            let idx = (y * w + x) * 4;
+            pixels[idx] = magnitude;
+            pixels[idx + 1] = magnitude;
+            pixels[idx + 2] = magnitude;
+        }
+    }
+}
+
+// --------------------------------------------
+// Level 4b: Sharpen
+// --------------------------------------------
+// Concept: Enhance edges by subtracting blur and adding back
+//
+// Sharpen kernel:
+//   [ 0] [-1] [ 0]
+//   [-1] [ 5] [-1]
+//   [ 0] [-1] [ 0]
+
+#[wasm_bindgen]
+pub fn sharpen(pixels: &mut [u8], width: u32, height: u32) {
+    let w = width as usize;
+    let h = height as usize;
+
+    let kernel: [[i32; 3]; 3] = [
+        [ 0, -1,  0],
+        [-1,  5, -1],
+        [ 0, -1,  0],
+    ];
+
+    let original = pixels.to_vec();
+
+    for y in 1..(h - 1) {
+        for x in 1..(w - 1) {
+            let mut sum_r: i32 = 0;
+            let mut sum_g: i32 = 0;
+            let mut sum_b: i32 = 0;
+
+            for ky in 0..3 {
+                for kx in 0..3 {
+                    let px = x + kx - 1;
+                    let py = y + ky - 1;
+                    let idx = (py * w + px) * 4;
+                    let weight = kernel[ky][kx];
+
+                    sum_r += original[idx] as i32 * weight;
+                    sum_g += original[idx + 1] as i32 * weight;
+                    sum_b += original[idx + 2] as i32 * weight;
+                }
+            }
+
+            let idx = (y * w + x) * 4;
+            pixels[idx] = clamp_u8(sum_r);
+            pixels[idx + 1] = clamp_u8(sum_g);
+            pixels[idx + 2] = clamp_u8(sum_b);
+        }
+    }
+}
