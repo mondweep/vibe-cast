@@ -3,11 +3,18 @@
 
 set -e
 
-echo "=== Installing Rust (if needed) ==="
-if ! command -v rustc &> /dev/null; then
+echo "=== Setting up Rust ==="
+# Install Rust if not present
+if ! command -v rustup &> /dev/null; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 fi
+
+# Source cargo environment
+export PATH="$HOME/.cargo/bin:$PATH"
 source "$HOME/.cargo/env" 2>/dev/null || true
+
+# Ensure a default toolchain is set
+rustup default stable
 
 echo "=== Installing wasm-pack (if needed) ==="
 if ! command -v wasm-pack &> /dev/null; then
