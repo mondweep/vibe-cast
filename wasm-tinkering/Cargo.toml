@@ -1,0 +1,15 @@
+[package]
+name = "wasm-image-filters"
+version = "0.1.0"
+edition = "2021"
+description = "Learn WASM through progressive image processing filters"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+
+[profile.release]
+opt-level = 3
+lto = true

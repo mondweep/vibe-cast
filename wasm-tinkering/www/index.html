@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WASM Image Filters</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 { color: #00d9ff; }
+        h2 { color: #888; font-size: 1rem; margin-top: 2rem; }
+
+        .canvas-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .canvas-box {
+            text-align: center;
+        }
+        .canvas-box label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+        }
+        canvas {
+            border: 2px solid #333;
+            border-radius: 4px;
+            max-width: 400px;
+        }
+
+        .controls {
+            margin: 20px 0;
+            padding: 20px;
+            background: #252542;
+            border-radius: 8px;
+        }
+        .control-row {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .control-row label {
+            min-width: 100px;
+        }
+        input[type="range"] {
+            flex: 1;
+            max-width: 200px;
+        }
+        .value {
+            min-width: 50px;
+            color: #00d9ff;
+        }
+
+        button {
+            background: #00d9ff;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { background: #00b8d9; }
+        button.secondary {
+            background: #444;
+            color: #eee;
+        }
+
+        .stats {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+        .stats span { color: #00d9ff; }
+
+        #dropzone {
+            border: 2px dashed #444;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #dropzone:hover, #dropzone.dragover {
+            border-color: #00d9ff;
+            background: rgba(0, 217, 255, 0.1);
+        }
+        #fileInput { display: none; }
+    </style>
+</head>
+<body>
+    <h1>WASM Image Filters</h1>
+    <p>Learning WebAssembly through image processing</p>
+
+    <div id="dropzone" onclick="document.getElementById('fileInput').click()">
+        📁 Drop an image here or click to upload
+    </div>
+    <input type="file" id="fileInput" accept="image/*">
+
+    <div class="canvas-container">
+        <div class="canvas-box">
+            <label>Original</label>
+            <canvas id="original"></canvas>
+        </div>
+        <div class="canvas-box">
+            <label>Filtered</label>
+            <canvas id="filtered"></canvas>
+        </div>
+    </div>
+
+    <div class="controls">
+        <h2>Level 1-2 Filters</h2>
+
+        <div class="control-row">
+            <button onclick="applyFilter('grayscale')">Grayscale</button>
+            <button onclick="applyFilter('invert')">Invert</button>
+        </div>
+
+        <div class="control-row">
+            <label>Brightness:</label>
+            <input type="range" id="brightness" min="-100" max="100" value="0">
+            <span class="value" id="brightnessVal">0</span>
+            <button onclick="applyFilter('brightness')">Apply</button>
+        </div>
+
+        <div class="control-row">
+            <label>Contrast:</label>
+            <input type="range" id="contrast" min="0" max="3" step="0.1" value="1">
+            <span class="value" id="contrastVal">1.0</span>
+            <button onclick="applyFilter('contrast')">Apply</button>
+        </div>
+
+        <div class="control-row">
+            <button class="secondary" onclick="resetImage()">Reset to Original</button>
+        </div>
+
+        <div class="stats">
+            Last operation: <span id="stats">-</span>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, { grayscale, brightness, contrast, invert } from './pkg/wasm_image_filters.js';
+
+        let wasm;
+        let originalImageData = null;
+
+        // Initialize WASM
+        async function initWasm() {
+            wasm = await init();
+            console.log('WASM loaded!');
+        }
+        initWasm();
+
+        // Expose functions to global scope for onclick handlers
+        window.applyFilter = applyFilter;
+        window.resetImage = resetImage;
+
+        // File handling
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) loadImage(file);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadImage(file);
+        });
+
+        function loadImage(file) {
+            const img = new Image();
+            img.onload = () => {
+                const origCanvas = document.getElementById('original');
+                const filtCanvas = document.getElementById('filtered');
+
+                // Scale down large images
+                let w = img.width, h = img.height;
+                const maxSize = 400;
+                if (w > maxSize || h > maxSize) {
+                    const ratio = Math.min(maxSize / w, maxSize / h);
+                    w = Math.floor(w * ratio);
+                    h = Math.floor(h * ratio);
+                }
+
+                origCanvas.width = filtCanvas.width = w;
+                origCanvas.height = filtCanvas.height = h;
+
+                const origCtx = origCanvas.getContext('2d');
+                const filtCtx = filtCanvas.getContext('2d');
+
+                origCtx.drawImage(img, 0, 0, w, h);
+                filtCtx.drawImage(img, 0, 0, w, h);
+
+                // Store original for reset
+                originalImageData = origCtx.getImageData(0, 0, w, h);
+
+                dropzone.textContent = `✓ Loaded: ${img.width}×${img.height} → ${w}×${h}`;
+            };
+            img.src = URL.createObjectURL(file);
+        }
+
+        function applyFilter(filterName) {
+            const canvas = document.getElementById('filtered');
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            const pixels = imageData.data;
+            const pixelCount = pixels.length / 4;
+
+            const start = performance.now();
+
+            switch (filterName) {
+                case 'grayscale':
+                    grayscale(pixels);
+                    break;
+                case 'invert':
+                    invert(pixels);
+                    break;
+                case 'brightness':
+                    const bVal = parseInt(document.getElementById('brightness').value);
+                    brightness(pixels, bVal);
+                    break;
+                case 'contrast':
+                    const cVal = parseFloat(document.getElementById('contrast').value);
+                    contrast(pixels, cVal);
+                    break;
+            }
+
+            const elapsed = performance.now() - start;
+            ctx.putImageData(imageData, 0, 0);
+
+            document.getElementById('stats').textContent =
+                `${filterName} on ${pixelCount.toLocaleString()} pixels in ${elapsed.toFixed(2)}ms`;
+        }
+
+        function resetImage() {
+            if (!originalImageData) return;
+            const canvas = document.getElementById('filtered');
+            const ctx = canvas.getContext('2d');
+            ctx.putImageData(originalImageData, 0, 0);
+            document.getElementById('stats').textContent = 'Reset to original';
+        }
+
+        // Update slider displays
+        document.getElementById('brightness').addEventListener('input', (e) => {
+            document.getElementById('brightnessVal').textContent = e.target.value;
+        });
+        document.getElementById('contrast').addEventListener('input', (e) => {
+            document.getElementById('contrastVal').textContent = parseFloat(e.target.value).toFixed(1);
+        });
+    </script>
+</body>
+</html>
