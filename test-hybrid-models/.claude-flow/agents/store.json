@@ -1,0 +1,50 @@
+{
+  "agents": {
+    "agent-1768689135959-ueeeqx": {
+      "agentId": "agent-1768689135959-ueeeqx",
+      "agentType": "architect",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "model": "anthropic_thinking",
+        "task": "Design a simple calculator structure"
+      },
+      "createdAt": "2026-01-17T22:32:15.964Z",
+      "model": "sonnet",
+      "modelRoutedBy": "router"
+    },
+    "agent-1768689136870-w6d1zi": {
+      "agentId": "agent-1768689136870-w6d1zi",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "model": "gemini_high",
+        "task": "Implement the calculator in Python"
+      },
+      "createdAt": "2026-01-17T22:32:16.874Z",
+      "model": "sonnet",
+      "modelRoutedBy": "router"
+    },
+    "agent-1768689137810-fzipr7": {
+      "agentId": "agent-1768689137810-fzipr7",
+      "agentType": "tester",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "model": "gemini_flash",
+        "task": "Write unit tests for the calculator"
+      },
+      "createdAt": "2026-01-17T22:32:17.815Z",
+      "model": "haiku",
+      "modelRoutedBy": "router"
+    }
+  },
+  "version": "3.0.0"
+}

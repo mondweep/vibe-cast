@@ -1,0 +1,47 @@
+{
+  "agents": {
+    "agent-1768656450052-eh691d": {
+      "agentId": "agent-1768656450052-eh691d",
+      "agentType": "architect",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "task": "Plan and implement a modern task list application using React/Vite. The app must have a beautiful UI (dark mode, glassmorphism), allow add/edit/delete/toggle tasks, and persist to localStorage."
+      },
+      "createdAt": "2026-01-17T13:27:30.057Z",
+      "model": "sonnet",
+      "modelRoutedBy": "router"
+    },
+    "agent-1768656455153-z7n5yt": {
+      "agentId": "agent-1768656455153-z7n5yt",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "task": "Implement the React/Vite task list application based on the architecture plan. Focus on: 1. Setup Vite project. 2. Create Task component. 3. implement main App logic with localStorage. 4. Style with CSS (Glassmorphism)."
+      },
+      "createdAt": "2026-01-17T13:27:35.159Z",
+      "model": "opus",
+      "modelRoutedBy": "router"
+    },
+    "agent-1768656460098-i6brai": {
+      "agentId": "agent-1768656460098-i6brai",
+      "agentType": "reviewer",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "task": "Review the code for the task list application. Ensure: 1. It meets the aesthetic requirements (glassmorphism). 2. Code is clean and modular. 3. No obvious bugs."
+      },
+      "createdAt": "2026-01-17T13:27:40.105Z",
+      "model": "sonnet",
+      "modelRoutedBy": "router"
+    }
+  },
+  "version": "3.0.0"
+}

@@ -1,0 +1,43 @@
+# Claude Flow V3 Runtime Configuration
+# Generated: 2026-01-17T22:22:27.613Z
+
+version: "3.0.0"
+
+swarm:
+  topology: hierarchical-mesh
+  maxAgents: 15
+  autoScale: true
+  coordinationStrategy: consensus
+
+memory:
+  backend: hybrid
+  enableHNSW: true
+  persistPath: .claude-flow/data
+  cacheSize: 100
+
+neural:
+  enabled: true
+  modelPath: .claude-flow/neural
+
+hooks:
+  enabled: true
+  autoExecute: true
+
+mcp:
+  autoStart: false
+  port: 3000
+
+providers:
+  gemini:
+    enabled: true
+    model: gemini-2.0-flash
+    priority: 1
+    apiKey: "${GEMINI_API_KEY}"
+  anthropic:
+    enabled: true
+    model: claude-3-5-sonnet-20241022
+    priority: 2
+  ollama:
+    enabled: true
+    model: llama3
+    priority: 3

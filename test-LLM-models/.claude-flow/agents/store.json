@@ -1,0 +1,19 @@
+{
+  "agents": {
+    "agent-1768688579491-t2vzcp": {
+      "agentId": "agent-1768688579491-t2vzcp",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "task": "Create a simple index.html with a Hello World message in a blue box."
+      },
+      "createdAt": "2026-01-17T22:22:59.497Z",
+      "model": "haiku",
+      "modelRoutedBy": "router"
+    }
+  },
+  "version": "3.0.0"
+}
