@@ -12,6 +12,18 @@ export default function EsimFactory() {
     const [activeProfiles, setActiveProfiles] = useState<string[]>([]);
     const [logs, setLogs] = useState<string[]>([]);
 
+    // Modal State
+    const [selectedProfile, setSelectedProfile] = useState<EsimProfile | null>(null);
+    const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+
+    // Mock Target Devices
+    const targetDevices = [
+        { id: 'dev_01', name: 'BMW 5-Series #001', region: 'Germany', status: 'Offline' },
+        { id: 'dev_02', name: 'Logistics Truck #88', region: 'Brazil', status: 'Active (Low Data)' },
+        { id: 'dev_03', name: 'Smart Meter Cluster A', region: 'India', status: 'Active' },
+        { id: 'dev_04', name: 'Test Device X1', region: 'Lab', status: 'Offline' },
+    ];
+
     useEffect(() => {
         fetch('/api/move/esim/inventory')
             .then(res => res.json())
@@ -20,21 +32,35 @@ export default function EsimFactory() {
 
     const addLog = (msg: string) => setLogs(prev => [msg, ...prev].slice(0, 5));
 
-    const handleDownload = async (profileId: string) => {
+    const initiateDownload = (profile: EsimProfile) => {
+        setSelectedProfile(profile);
+        setSelectedDevice(null); // Reset selection
+    };
+
+    const confirmDownload = async () => {
+        if (!selectedProfile || !selectedDevice) return;
+
+        const profileId = selectedProfile.id;
+        const deviceName = targetDevices.find(d => d.id === selectedDevice)?.name;
+
+        // Close modal
+        setSelectedProfile(null);
+
+        // Start Process
         setDownloading(profileId);
-        addLog(`Initiating download for profile: ${profileId}...`);
+        addLog(`Initiating download for ${selectedProfile.name} to ${deviceName}...`);
 
         try {
             const res = await fetch('/api/move/esim/download', {
                 method: 'POST',
-                body: JSON.stringify({ profileId }),
+                body: JSON.stringify({ profileId, deviceId: selectedDevice }),
                 headers: { 'Content-Type': 'application/json' }
             });
             const data = await res.json();
 
             if (data.success) {
                 setActiveProfiles(prev => [...prev, profileId]);
-                addLog(`SUCCESS: ${data.message} (ICCID: ${data.iccid})`);
+                addLog(`SUCCESS: Profile active on ${deviceName} (ICCID: ${data.iccid})`);
             }
         } catch (e) {
             addLog("ERROR: Download failed.");
@@ -45,7 +71,7 @@ export default function EsimFactory() {
 
     return (
         <Shell>
-            <div className="p-8 h-full overflow-y-auto">
+            <div className="p-8 h-full overflow-y-auto relative">
                 <header className="mb-8">
                     <h1 className="text-4xl font-bold text-white mb-2">eSIM <span className="text-cyan-400">Factory</span></h1>
                     <p className="text-slate-400">Provision and manage global connectivity profiles instantly.</p>
@@ -70,7 +96,7 @@ export default function EsimFactory() {
                                 <p className="text-slate-400 text-sm mb-4">{profile.provider} • {profile.country} • {profile.dataLimit}</p>
 
                                 <button
-                                    onClick={() => handleDownload(profile.id)}
+                                    onClick={() => initiateDownload(profile)}
                                     disabled={downloading !== null || activeProfiles.includes(profile.id)}
                                     className="w-full py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold flex items-center justify-center gap-2 transition-all"
                                 >
@@ -117,6 +143,58 @@ export default function EsimFactory() {
                         </div>
                     </div>
                 </div>
+
+                {/* Device Selector Modal */}
+                <AnimatePresence>
+                    {selectedProfile && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl"
+                            >
+                                <h2 className="text-2xl font-bold text-white mb-2">Select Target Device</h2>
+                                <p className="text-slate-400 mb-6">Choose a device to provision with <strong>{selectedProfile.name}</strong>.</p>
+
+                                <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
+                                    {targetDevices.map(dev => (
+                                        <button
+                                            key={dev.id}
+                                            onClick={() => setSelectedDevice(dev.id)}
+                                            className={`w-full text-left p-4 rounded-xl border transition-all ${selectedDevice === dev.id
+                                                    ? 'border-cyan-500 bg-cyan-500/10 text-white'
+                                                    : 'border-slate-800 bg-slate-800/50 text-slate-300 hover:bg-slate-800'
+                                                }`}
+                                        >
+                                            <div className="font-bold">{dev.name}</div>
+                                            <div className="text-xs opacity-70 flex justify-between">
+                                                <span>{dev.region}</span>
+                                                <span>{dev.status}</span>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setSelectedProfile(null)}
+                                        className="flex-1 py-3 px-4 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={confirmDownload}
+                                        disabled={!selectedDevice}
+                                        className="flex-1 py-3 px-4 rounded-xl bg-cyan-500 text-black font-bold hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Start Download
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
         </Shell>
     );
