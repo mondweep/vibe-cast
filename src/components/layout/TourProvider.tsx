@@ -21,9 +21,11 @@ export const useTour = () => {
     return context;
 };
 
+
 export function TourProvider({ children }: { children: React.ReactNode }) {
     const [isActive, setIsActive] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
+    const [mounted, setMounted] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -51,10 +53,33 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
         }
     ];
 
+    // Initialize from sessionStorage on mount
+    useEffect(() => {
+        setMounted(true);
+        const storedActive = sessionStorage.getItem('tour_active');
+        const storedStep = sessionStorage.getItem('tour_step');
+
+        if (storedActive === 'true') {
+            setIsActive(true);
+            if (storedStep) setCurrentStep(parseInt(storedStep));
+        }
+    }, []);
+
+    // Sync state to sessionStorage
+    useEffect(() => {
+        if (!mounted) return;
+        sessionStorage.setItem('tour_active', String(isActive));
+        sessionStorage.setItem('tour_step', String(currentStep));
+    }, [isActive, currentStep, mounted]);
+
     const startTour = () => {
         console.log("Start Tour triggered!");
         setIsActive(true);
         setCurrentStep(0);
+        // Force state update immediately before nav
+        sessionStorage.setItem('tour_active', 'true');
+        sessionStorage.setItem('tour_step', '0');
+
         if (pathname !== '/') {
             router.push('/');
         }
@@ -73,9 +98,14 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     const endTour = () => {
         setIsActive(false);
         setCurrentStep(0);
+        sessionStorage.removeItem('tour_active');
+        sessionStorage.removeItem('tour_step');
     };
 
     const currentStepData = tourSteps[currentStep];
+
+    // Don't render overlay until mounted to avoid hydration mismatch
+    if (!mounted) return <TourContext.Provider value={{ startTour, nextStep, endTour, currentStep, isActive }}>{children}</TourContext.Provider>;
 
     return (
         <TourContext.Provider value={{ startTour, nextStep, endTour, currentStep, isActive }}>
@@ -91,7 +121,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
                         </button>
 
                         <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-2">
-                            Debug Mode • Step {currentStep + 1}/{tourSteps.length}
+                            Guided Tour • Step {currentStep + 1}/{tourSteps.length}
                         </div>
                         <h2 className="text-2xl font-bold text-white mb-4">{currentStepData.title}</h2>
                         <p className="text-slate-300 mb-8 leading-relaxed">
