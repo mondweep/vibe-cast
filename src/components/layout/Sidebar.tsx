@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Globe, Smartphone, Truck, Menu, X, Activity } from 'lucide-react';
+import { Globe, Smartphone, Truck, Menu, X, Activity, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTour } from './TourProvider';
 
 interface SidebarProps {
   currentInfo?: string;
@@ -20,6 +21,7 @@ const navItems = [
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const pathname = usePathname();
+  const { startTour } = useTour();
 
   return (
     <>
@@ -93,7 +95,17 @@ export function Sidebar() {
         </nav>
 
         {/* Footer / User */}
-        <div className="p-4 border-t border-slate-700/50">
+        <div className="p-4 border-t border-slate-700/50 space-y-2">
+          {isOpen && (
+            <button
+              onClick={startTour}
+              className="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all hover:scale-[1.02]"
+            >
+              <Play className="w-4 h-4 fill-white" />
+              <span>Start Demo</span>
+            </button>
+          )}
+
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="w-full flex items-center justify-center p-2 rounded-lg hover:bg-white/5 text-slate-400 transition-colors"
