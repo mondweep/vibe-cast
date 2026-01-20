@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Globe, Smartphone, Truck, Menu, X, Activity, Play } from 'lucide-react';
+import { Globe, Smartphone, Truck, Menu, X, Activity, Play, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ const navItems = [
   { id: 'global-pulse', label: 'Global Pulse', icon: Globe, path: '/' },
   { id: 'esim-factory', label: 'eSIM Factory', icon: Smartphone, path: '/esim-factory' },
   { id: 'fleet-health', label: 'Fleet Health', icon: Truck, path: '/fleet-health' },
+  { id: 'about', label: 'Project Context', icon: Info, path: '/about' },
 ];
 
 export function Sidebar() {
