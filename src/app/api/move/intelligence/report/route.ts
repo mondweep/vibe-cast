@@ -2,20 +2,26 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// Force dynamic to prevent static optimization of this route
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
-        const { fleetStats, alerts } = await request.json();
+        const apiKey = process.env.GEMINI_API_KEY;
 
-        if (!process.env.GEMINI_API_KEY) {
+        if (!apiKey) {
+            console.error("GEMINI_API_KEY is missing in environment variables");
             return NextResponse.json(
-                { success: false, error: 'API Key not configured' },
+                { success: false, error: 'Server configuration error: API Key missing' },
                 { status: 500 }
             );
         }
+
+        // Initialize inside handler to ensure env vars are loaded
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const { fleetStats, alerts } = await request.json();
 
         const prompt = `
         Act as a Senior Connectivity Analyst for a global IoT fleet.
@@ -38,10 +44,10 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, report: text });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Gemini API Error:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to generate report' },
+            { success: false, error: error.message || 'Failed to generate report' },
             { status: 500 }
         );
     }
