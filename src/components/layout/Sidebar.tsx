@@ -65,7 +65,7 @@ export function Sidebar() {
                   "block w-full flex items-center p-3 rounded-xl transition-all duration-200 group relative overflow-hidden mb-1",
                   isActive
                     ? "bg-cyan-500/10 text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.2)] border border-cyan-500/20"
-                    : "text-slate-300 hover:text-white hover:bg-white/10" // Lighter text
+                    : "text-white hover:bg-white/10" // High contrast for readability
                 )}
               >
                 {isActive && (
