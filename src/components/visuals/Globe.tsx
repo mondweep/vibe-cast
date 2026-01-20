@@ -71,12 +71,12 @@ function Earth({ children }: { children?: React.ReactNode }) {
             <mesh>
                 <sphereGeometry args={[2.5, 64, 64]} />
                 <meshStandardMaterial
-                    color="#0f172a"
+                    color="#38bdf8" // Cyan-400 (Brighter)
                     wireframe={true}
                     emissive="#0ea5e9"
-                    emissiveIntensity={0.1}
+                    emissiveIntensity={0.6} // Higher intensity
                     transparent
-                    opacity={0.2}
+                    opacity={0.5} // Higher opacity
                 />
             </mesh>
             {/* Data Markers */}

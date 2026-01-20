@@ -56,37 +56,37 @@ export function Sidebar() {
             const isActive = pathname === item.path;
 
             return (
-              <Link key={item.id} href={item.path} passHref className="block w-full">
-                <div
-                  className={clsx(
-                    "w-full flex items-center p-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
-                    isActive
-                      ? "bg-cyan-500/10 text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.2)] border border-cyan-500/20"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-white/5"
-                  )}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="active-pill"
-                      className="absolute inset-0 bg-cyan-400/5 rounded-xl"
-                      transition={{ type: "spring", duration: 0.6 }}
-                    />
-                  )}
-                  <item.icon className={clsx("w-6 h-6 flex-shrink-0", isOpen ? "mr-3" : "mx-auto")} />
+              <Link
+                key={item.id}
+                href={item.path}
+                className={clsx(
+                  "block w-full flex items-center p-3 rounded-xl transition-all duration-200 group relative overflow-hidden mb-1",
+                  isActive
+                    ? "bg-cyan-500/10 text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.2)] border border-cyan-500/20"
+                    : "text-slate-300 hover:text-white hover:bg-white/10" // Lighter text
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-cyan-400/5 rounded-xl"
+                    transition={{ type: "spring", duration: 0.6 }}
+                  />
+                )}
+                <item.icon className={clsx("w-6 h-6 flex-shrink-0", isOpen ? "mr-3" : "mx-auto")} />
 
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="font-medium whitespace-nowrap"
-                      >
-                        {item.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </div>
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium whitespace-nowrap"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </Link>
             );
           })}
@@ -102,7 +102,7 @@ export function Sidebar() {
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
-      </motion.div>
+      </motion.div >
     </>
   );
 }
