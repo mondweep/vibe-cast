@@ -60,12 +60,9 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
         )}
       </AnimatePresence>
 
-      <motion.div
-        // Apply different animations based on screen size (handled via className + Framer variants not mixing well with simple media queries in JS, so we use conditionals)
-        // Going with the safe fix: Remove the empty 'animate' object and ensure className logic is sound.
-        // Also boosting z-index.
+      <aside
         className={clsx(
-          "fixed inset-y-0 left-0 z-[100] bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 flex flex-col text-slate-100 transition-transform duration-300 ease-in-out",
+          "fixed inset-y-0 left-0 z-[200] bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 flex flex-col text-slate-100 transition-transform duration-300 ease-in-out",
           // Mobile Positioning: Fixed and toggled via translate
           "md:translate-x-0 md:relative",
           isMobileOpen ? "translate-x-0" : "-translate-x-full",
@@ -166,7 +163,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
             {/* Using Rotate instead of X for collapse to distinguish from Close */}
           </button>
         </div>
-      </motion.div >
+      </aside >
     </>
   );
 }
