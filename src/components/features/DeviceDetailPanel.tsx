@@ -33,7 +33,8 @@ export function DeviceDetailPanel({ sim, onClose }: DeviceDetailPanelProps) {
                     animate={{ x: 0 }}
                     exit={{ x: '100%' }}
                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                    className="fixed top-0 right-0 h-full w-96 bg-slate-900 border-l border-slate-700 shadow-2xl z-50 overflow-y-auto"
+                    className="fixed top-0 right-0 h-full w-96 border-l border-slate-700 shadow-2xl z-50 overflow-y-auto"
+                    style={{ backgroundColor: 'rgba(15, 23, 42, 0.98)' }} // Force opaque slate-900
                 >
                     {/* Header */}
                     <div className="p-6 border-b border-slate-700 flex justify-between items-start bg-slate-800/50">
