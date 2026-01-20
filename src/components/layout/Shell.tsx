@@ -31,7 +31,7 @@ export function Shell({ children }: ShellProps) {
             {/* Sidebar - Pass mobile state */}
             <Sidebar
                 isMobileOpen={isMobileMenuOpen}
-                onMobileClose={() => setIsMobileMenuOpen(false)}
+                onMobileClose={handleMobileClose}
             />
 
             {/* Main Content Area */}
