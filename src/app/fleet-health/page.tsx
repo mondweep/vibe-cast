@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Shell } from '@/components/layout/Shell';
-import { FleetStats } from '../lib/mock-data';
+import { FleetStats } from '@/lib/mock-data';
 import { AlertTriangle, Activity, BarChart3, Database } from 'lucide-react';
 
 export default function FleetHealth() {

@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Stars, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { SimCard } from '../../app/lib/mock-data';
+import { SimCard } from '@/lib/mock-data';
 
 function SimMarkers({ sims }: { sims: SimCard[] }) {
     const meshRef = useRef<THREE.InstancedMesh>(null);

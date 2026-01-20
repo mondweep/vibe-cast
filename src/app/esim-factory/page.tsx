@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Shell } from '@/components/layout/Shell';
-import { EsimProfile } from '../lib/mock-data';
+import { EsimProfile } from '@/lib/mock-data';
 import { Download, CheckCircle, Wifi, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

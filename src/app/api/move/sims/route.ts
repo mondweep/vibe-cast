@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateMockSims } from '../../../lib/mock-data';
+import { generateMockSims } from '@/lib/mock-data';
 
 export async function GET() {
     // Simulate network latency
