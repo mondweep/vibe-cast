@@ -6,10 +6,15 @@ import { OrbitControls, Stars, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { SimCard } from '@/lib/mock-data';
 
-function SimMarkers({ sims }: { sims: SimCard[] }) {
+interface GlobeProps {
+    onSelectSim?: (sim: SimCard) => void;
+}
+
+function SimMarkers({ sims, onSelect }: { sims: SimCard[], onSelect?: (sim: SimCard) => void }) {
     const meshRef = useRef<THREE.InstancedMesh>(null);
     const tempObject = new THREE.Object3D();
     const earthRadius = 2.5;
+    const [hoveredId, setHovered] = useState<number | null>(null);
 
     useEffect(() => {
         if (!meshRef.current) return;
@@ -30,14 +35,19 @@ function SimMarkers({ sims }: { sims: SimCard[] }) {
 
             // Scale based on usage (just for visual variety)
             const scale = 0.05 + (sim.dataUsage / 5000) * 0.05;
-            tempObject.scale.set(scale, scale, scale * 5); // Elongate cylinders
+            // Highlight hovered instance
+            const isHovered = hoveredId === i;
+            const finalScale = isHovered ? scale * 1.5 : scale;
+
+            tempObject.scale.set(finalScale, finalScale, finalScale * 5);
 
             tempObject.updateMatrix();
             meshRef.current!.setMatrixAt(i, tempObject.matrix);
 
             // Basic color coding
             const color = new THREE.Color();
-            if (sim.status === 'active') color.setHex(0x22d3ee); // Cyan
+            if (isHovered) color.setHex(0xffffff); // White on hover
+            else if (sim.status === 'active') color.setHex(0x22d3ee); // Cyan
             else if (sim.status === 'warning') color.setHex(0xfacc15); // Yellow
             else color.setHex(0xef4444); // Red
 
@@ -46,10 +56,30 @@ function SimMarkers({ sims }: { sims: SimCard[] }) {
 
         meshRef.current.instanceMatrix.needsUpdate = true;
         if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
-    }, [sims]);
+    }, [sims, hoveredId]);
 
     return (
-        <instancedMesh ref={meshRef} args={[undefined, undefined, sims.length]}>
+        <instancedMesh
+            ref={meshRef}
+            args={[undefined, undefined, sims.length]}
+            onClick={(e) => {
+                e.stopPropagation();
+                if (e.instanceId !== undefined && onSelect) {
+                    onSelect(sims[e.instanceId]);
+                }
+            }}
+            onPointerOver={(e) => {
+                e.stopPropagation();
+                if (e.instanceId !== undefined) {
+                    document.body.style.cursor = 'pointer';
+                    setHovered(e.instanceId);
+                }
+            }}
+            onPointerOut={() => {
+                document.body.style.cursor = 'default';
+                setHovered(null);
+            }}
+        >
             <cylinderGeometry args={[0.5, 0.5, 1, 8]} />
             <meshBasicMaterial />
         </instancedMesh>
@@ -61,7 +91,7 @@ function Earth({ children }: { children?: React.ReactNode }) {
 
     useFrame((state, delta) => {
         if (meshRef.current) {
-            meshRef.current.rotation.y += delta * 0.05; // Slower rotation
+            meshRef.current.rotation.y += delta * 0.02; // Very slow rotation
         }
     });
 
@@ -99,7 +129,7 @@ function Atmosphere() {
     )
 }
 
-export function Globe() {
+export function Globe({ onSelectSim }: GlobeProps) {
     const [sims, setSims] = useState<SimCard[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -128,13 +158,13 @@ export function Globe() {
                 <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
 
                 <Earth>
-                    {!loading && <SimMarkers sims={sims} />}
+                    {!loading && <SimMarkers sims={sims} onSelect={onSelectSim} />}
                 </Earth>
                 <Atmosphere />
             </Canvas>
 
             {/* Stats Overlay */}
-            <div className="absolute bottom-10 left-10 p-4 bg-black/40 backdrop-blur-md rounded-xl border border-cyan-500/30 text-cyan-400">
+            <div className="absolute bottom-10 left-10 p-4 bg-black/40 backdrop-blur-md rounded-xl border border-cyan-500/30 text-cyan-400 pointer-events-none select-none">
                 <h3 className="text-xs font-bold uppercase tracking-widest mb-1">System Status</h3>
                 <div className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-500' : 'bg-green-500'} animate-pulse`} />
