@@ -11,6 +11,8 @@ export default function EsimFactory() {
     const [downloading, setDownloading] = useState<string | null>(null);
     const [activeProfiles, setActiveProfiles] = useState<string[]>([]);
     const [logs, setLogs] = useState<string[]>([]);
+    const [showInfo, setShowInfo] = useState(true); // Default to open for demo
+
 
     // Modal State
     const [selectedProfile, setSelectedProfile] = useState<EsimProfile | null>(null);
@@ -73,8 +75,46 @@ export default function EsimFactory() {
         <Shell>
             <div className="p-8 h-full overflow-y-auto relative">
                 <header className="mb-8">
-                    <h1 className="text-4xl font-bold text-white mb-2">eSIM <span className="text-cyan-400">Factory</span></h1>
-                    <p className="text-slate-400">Provision and manage global connectivity profiles instantly.</p>
+                    <div className="flex items-center justify-between mb-2">
+                        <h1 className="text-4xl font-bold text-white">eSIM <span className="text-cyan-400">Factory</span></h1>
+                        <button
+                            onClick={() => setShowInfo(!showInfo)}
+                            className="text-cyan-400 text-sm font-bold hover:text-cyan-300 underline underline-offset-4"
+                        >
+                            {showInfo ? 'Hide Context' : 'How it works?'}
+                        </button>
+                    </div>
+                    <p className="text-slate-400 mb-6">Provision and manage global connectivity profiles instantly.</p>
+
+                    <AnimatePresence>
+                        {showInfo && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="bg-cyan-950/30 border border-cyan-500/20 rounded-xl p-4 overflow-hidden"
+                            >
+                                <h3 className="text-cyan-300 font-bold mb-2 flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                    Digital Supply Chain Demo
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-300">
+                                    <div>
+                                        <strong className="text-white block mb-1">Software, Not Plastic</strong>
+                                        Instead of physically swapping SIM cards, we "manufacture" connectivity by pushing digital profiles over-the-air.
+                                    </div>
+                                    <div>
+                                        <strong className="text-white block mb-1">Just-in-Time Logic</strong>
+                                        A vehicle lands in Brazil, detects its location, and instantly downloads a local Brazilian profile to avoid roaming charges.
+                                    </div>
+                                    <div>
+                                        <strong className="text-white block mb-1">The Simulation</strong>
+                                        Clicking "Download" simulates the secure cryptographic handshake between the Cloud and the chip (eUICC) in the device.
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -163,8 +203,8 @@ export default function EsimFactory() {
                                             key={dev.id}
                                             onClick={() => setSelectedDevice(dev.id)}
                                             className={`w-full text-left p-4 rounded-xl border transition-all ${selectedDevice === dev.id
-                                                    ? 'border-cyan-500 bg-cyan-500/10 text-white'
-                                                    : 'border-slate-800 bg-slate-800/50 text-slate-300 hover:bg-slate-800'
+                                                ? 'border-cyan-500 bg-cyan-500/10 text-white'
+                                                : 'border-slate-800 bg-slate-800/50 text-slate-300 hover:bg-slate-800'
                                                 }`}
                                         >
                                             <div className="font-bold">{dev.name}</div>
