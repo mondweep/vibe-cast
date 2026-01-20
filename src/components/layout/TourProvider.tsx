@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, ArrowRight, X } from 'lucide-react';
@@ -110,38 +111,51 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     return (
         <TourContext.Provider value={{ startTour, nextStep, endTour, currentStep, isActive }}>
             {children}
-            {isActive && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-                    <div className="bg-slate-900 border-2 border-cyan-500 p-8 rounded-2xl shadow-2xl max-w-lg relative">
-                        <button
-                            onClick={endTour}
-                            className="absolute top-4 right-4 text-white hover:text-cyan-400"
+            {isActive && createPortal(
+                <AnimatePresence>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            className="bg-slate-900 border border-cyan-500/50 p-8 rounded-2xl shadow-[0_0_50px_rgba(34,211,238,0.2)] max-w-lg relative"
                         >
-                            <X className="w-6 h-6" />
-                        </button>
-
-                        <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-2">
-                            Guided Tour • Step {currentStep + 1}/{tourSteps.length}
-                        </div>
-                        <h2 className="text-2xl font-bold text-white mb-4">{currentStepData.title}</h2>
-                        <p className="text-slate-300 mb-8 leading-relaxed">
-                            {currentStepData.content}
-                        </p>
-
-                        <div className="flex justify-between items-center">
-                            <span className="text-xs text-slate-500 italic">
-                                Navigating to: {currentStepData.path}
-                            </span>
                             <button
-                                onClick={nextStep}
-                                className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-colors"
+                                onClick={endTour}
+                                className="absolute top-4 right-4 text-slate-500 hover:text-white"
                             >
-                                {currentStep === tourSteps.length - 1 ? 'Finish Tour' : 'Next Step'}
-                                <ArrowRight className="w-4 h-4" />
+                                <X className="w-5 h-5" />
                             </button>
-                        </div>
-                    </div>
-                </div>
+
+                            <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-2">
+                                Guided Tour • Step {currentStep + 1}/{tourSteps.length}
+                            </div>
+                            <h2 className="text-2xl font-bold text-white mb-4">{currentStepData.title}</h2>
+                            <p className="text-slate-300 mb-8 leading-relaxed">
+                                {currentStepData.content}
+                            </p>
+
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs text-slate-500 italic">
+                                    Navigating to: {currentStepData.path}
+                                </span>
+                                <button
+                                    onClick={nextStep}
+                                    className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-colors"
+                                >
+                                    {currentStep === tourSteps.length - 1 ? 'Finish Tour' : 'Next Step'}
+                                    <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                </AnimatePresence>,
+                document.body
             )}
         </TourContext.Provider>
     );
