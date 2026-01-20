@@ -52,9 +52,12 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     ];
 
     const startTour = () => {
+        console.log("Start Tour triggered!");
         setIsActive(true);
         setCurrentStep(0);
-        router.push('/');
+        if (pathname !== '/') {
+            router.push('/');
+        }
     };
 
     const nextStep = () => {
