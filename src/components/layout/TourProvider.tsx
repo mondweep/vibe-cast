@@ -117,7 +117,8 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/90 backdrop-blur-md"
+                        className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-md"
+                        style={{ backgroundColor: 'rgba(0, 0, 0, 0.95)' }}
                     >
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
