@@ -62,19 +62,13 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
 
       <motion.div
         // Apply different animations based on screen size (handled via className + Framer variants not mixing well with simple media queries in JS, so we use conditionals)
-        initial={false}
-        animate={
-          // We can't easily detect 'mobile' in JS without listeners, so we rely on CSS classes for structure
-          // and separate motion logic or just use simple logic if we accept a small hydration mismatch or use a hook.
-          // For simplicity/robustness, we'll use a mixed approach:
-          // Mobile: fixed & transform. Desktop: relative & width.
-          {}
-        }
+        // Going with the safe fix: Remove the empty 'animate' object and ensure className logic is sound.
+        // Also boosting z-index.
         className={clsx(
-          "fixed inset-y-0 left-0 z-50 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 flex flex-col text-slate-100 transition-all duration-300",
-          // Mobile Positioning
-          "md:relative md:translate-x-0",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          "fixed inset-y-0 left-0 z-[100] bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 flex flex-col text-slate-100 transition-transform duration-300 ease-in-out",
+          // Mobile Positioning: Fixed and toggled via translate
+          "md:translate-x-0 md:relative",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
           // Desktop Width
           isDesktopOpen ? "md:w-60" : "md:w-20",
           "w-64" // Fixed width on mobile
