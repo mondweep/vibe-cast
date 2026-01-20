@@ -10,6 +10,7 @@ interface ShellProps {
 
 export function Shell({ children }: ShellProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    console.log('DEBUG: Shell render. isMobileMenuOpen:', isMobileMenuOpen);
 
     return (
         <div className="flex flex-col md:flex-row h-screen w-full bg-slate-950 text-white overflow-hidden font-sans selection:bg-cyan-500/30">
@@ -17,7 +18,10 @@ export function Shell({ children }: ShellProps) {
             <div className="md:hidden flex items-center justify-between p-4 bg-slate-900 border-b border-slate-800 z-50">
                 <div className="font-bold text-lg text-cyan-400 tracking-tighter">MOVE<span className="text-white">CMD</span></div>
                 <button
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    onClick={() => {
+                        console.log('DEBUG: Mobile toggle clicked. Current:', isMobileMenuOpen, 'Next:', !isMobileMenuOpen);
+                        setIsMobileMenuOpen(!isMobileMenuOpen);
+                    }}
                     className="p-2 text-slate-400 hover:text-white"
                 >
                     <Menu className="w-6 h-6" />

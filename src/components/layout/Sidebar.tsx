@@ -22,6 +22,7 @@ const navItems = [
 ];
 
 export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
+  console.log('DEBUG: Sidebar render. isMobileOpen prop:', isMobileOpen);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
   const { startTour } = useTour();
