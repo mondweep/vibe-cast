@@ -5,9 +5,13 @@
 A high-impact, visual demonstration of the Tata Communications MOVE™ platform. This application acts as a "Mission Control" for global IoT connectivity, visualizing API capabilities in a premium interface.
 
 ## Features
-- **Global Pulse**: Real-time 3D visualization of active connections.
-- **eSIM Factory**: Visual lifecycle management for eSIM profiling.
-- **Fleet Health**: Smart monitoring and alerting system.
+- **Global Pulse**: Real-time 3D visualization of active connections (`move-sim-connect-api`).
+- **Control Room**: Live Device Inspector with **Real-Time Actions** like "Stop Session" and "Throttle QoS" (`move-sim-connect-rt-api`).
+- **eSIM Factory**: Visual lifecycle management for eSIM profiling (`move-esim-hub-api`).
+- **Fleet Health**: Smart monitoring and alerting system with "Crisis Mode" (`move-iot-connect-api`).
+- **Co-Pilot**: AI-powered insights summarizing fleet status using Google Gemini.
+- **Story Mode**: A guided, automated tour for seamless sales demonstrations.
+- **Project Context**: Deep-dive into technical architecture and API mapping.
 
 ## Getting Started
 
