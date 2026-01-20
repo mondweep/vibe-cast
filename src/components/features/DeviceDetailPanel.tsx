@@ -13,6 +13,16 @@ interface DeviceDetailPanelProps {
 export function DeviceDetailPanel({ sim, onClose }: DeviceDetailPanelProps) {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [sessionStatus, setSessionStatus] = useState<'active' | 'term'>('active');
+    const [toast, setToast] = useState<{ msg: string, type: 'success' | 'info' } | null>(null);
+
+    // Reset state when opening a new SIM
+    React.useEffect(() => {
+        if (sim?.id) {
+            setSessionStatus('active');
+            setActionLoading(null);
+            setToast(null);
+        }
+    }, [sim?.id]);
 
     if (!sim) return null;
 
@@ -21,7 +31,16 @@ export function DeviceDetailPanel({ sim, onClose }: DeviceDetailPanelProps) {
         // Simulate API latency
         setTimeout(() => {
             setActionLoading(null);
-            if (action === 'kill') setSessionStatus('term');
+            if (action === 'kill') {
+                setSessionStatus('term');
+                setToast({ msg: 'Session Terminated: PDP Context Detached', type: 'success' });
+            }
+            if (action === 'throttle') {
+                setToast({ msg: 'QoS Profile Updated: GOLD → SILVER', type: 'info' });
+            }
+
+            // Clear toast
+            setTimeout(() => setToast(null), 3000);
         }, 1500);
     };
 
@@ -37,7 +56,24 @@ export function DeviceDetailPanel({ sim, onClose }: DeviceDetailPanelProps) {
                     style={{ backgroundColor: 'rgba(15, 23, 42, 0.98)' }} // Force opaque slate-900
                 >
                     {/* Header */}
-                    <div className="p-6 border-b border-slate-700 flex justify-between items-start bg-slate-800/50">
+                    <div className="p-6 border-b border-slate-700 flex justify-between items-start bg-slate-800/50 relative">
+                        {/* Toast Overlay */}
+                        <AnimatePresence>
+                            {toast && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    className={`absolute inset-0 flex items-center justify-center ${toast.type === 'success' ? 'bg-red-500/90' : 'bg-cyan-500/90'} backdrop-blur-sm z-10`}
+                                >
+                                    <span className="text-white font-bold text-sm tracking-wide flex items-center gap-2">
+                                        {toast.type === 'success' ? <Ban className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
+                                        {toast.msg}
+                                    </span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
                         <div>
                             <div className="flex items-center gap-2 mb-1">
                                 <div className={`w-2 h-2 rounded-full ${sim.status === 'active' ? 'bg-cyan-400' : 'bg-red-500'} animate-pulse`} />
