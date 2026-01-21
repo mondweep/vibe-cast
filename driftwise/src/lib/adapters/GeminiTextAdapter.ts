@@ -3,7 +3,7 @@
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const MODEL_ID = 'gemini-2.5-flash';
-const REQUEST_TIMEOUT_MS = 10000;
+const REQUEST_TIMEOUT_MS = 30000; // 30 seconds - gemini-2.5 can be slow
 const MIN_REQUEST_GAP_MS = 15000; // 15 seconds between requests (rate limiting)
 
 interface GenerationConfig {

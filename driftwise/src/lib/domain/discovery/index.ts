@@ -101,9 +101,9 @@ export function assessFactQuality(text: string): QualityAssessment {
 		score += 30;
 	}
 
-	// Length check (should be 50-500 chars)
-	if (text.length < 50) {
-		score -= 20;
+	// Length check (should be 30-500 chars)
+	if (text.length < 30) {
+		score -= 30; // Too short to be useful
 	} else if (text.length > 500) {
 		score -= 10;
 	}

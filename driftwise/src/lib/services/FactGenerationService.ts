@@ -51,7 +51,7 @@ export class FactGenerationService {
 			systemInstruction: SYSTEM_PROMPT,
 			enableSearch: false, // Disabled - search grounding may not be available for all API keys
 			temperature: 0.7,
-			maxTokens: 150
+			maxTokens: 300 // Increased to avoid truncation
 		});
 
 		const researchDurationMs = Date.now() - startTime;
