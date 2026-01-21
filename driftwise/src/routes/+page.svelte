@@ -23,6 +23,8 @@
 	// Local state
 	let permissionGranted = false;
 	let pollingTimer: ReturnType<typeof setTimeout> | null = null;
+	let countdownTimer: ReturnType<typeof setInterval> | null = null;
+	let secondsUntilNext = 0;
 
 	// Status messages
 	const statusMessages: Record<string, string> = {
@@ -104,6 +106,11 @@
 			clearTimeout(pollingTimer);
 			pollingTimer = null;
 		}
+		if (countdownTimer) {
+			clearInterval(countdownTimer);
+			countdownTimer = null;
+		}
+		secondsUntilNext = 0;
 		appState.stop();
 	}
 
@@ -184,11 +191,33 @@
 	}
 
 	function scheduleNextCycle() {
-		if (!$isRunning) return;
+		if (!$isRunning) {
+			console.log('[Driftwise] Not scheduling - session stopped');
+			return;
+		}
 
 		appState.setStatus('idle');
 
+		// Start countdown
+		secondsUntilNext = Math.round($pollingInterval / 1000);
+		console.log(`[Driftwise] Next discovery in ${secondsUntilNext} seconds...`);
+
+		// Clear any existing countdown
+		if (countdownTimer) {
+			clearInterval(countdownTimer);
+		}
+
+		// Update countdown every second
+		countdownTimer = setInterval(() => {
+			secondsUntilNext = Math.max(0, secondsUntilNext - 1);
+		}, 1000);
+
 		pollingTimer = setTimeout(() => {
+			if (countdownTimer) {
+				clearInterval(countdownTimer);
+				countdownTimer = null;
+			}
+			console.log('[Driftwise] Timer fired - starting new cycle');
 			runDeliveryCycle();
 		}, $pollingInterval);
 	}
@@ -217,6 +246,10 @@
 
 		{#if sessionStats.facts > 0}
 			<p class="stats">{sessionStats.facts} fact{sessionStats.facts !== 1 ? 's' : ''} discovered</p>
+		{/if}
+
+		{#if $isRunning && $currentStatus === 'idle' && secondsUntilNext > 0}
+			<p class="countdown">Next discovery in {secondsUntilNext}s</p>
 		{/if}
 	</section>
 
@@ -343,6 +376,13 @@
 		font-size: 0.8rem;
 		opacity: 0.7;
 		margin-top: 0.5rem;
+	}
+
+	.countdown {
+		font-size: 0.75rem;
+		opacity: 0.6;
+		margin-top: 0.25rem;
+		font-family: monospace;
 	}
 
 	.fact-section {

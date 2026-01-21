@@ -38,7 +38,7 @@ describe('App State Store', () => {
 		});
 
 		it('should have default polling interval of 5 minutes', () => {
-			expect(get(pollingInterval)).toBe(120000);
+			expect(get(pollingInterval)).toBe(60000);
 		});
 
 		it('should have zero stats initially', () => {
@@ -181,10 +181,10 @@ describe('App State Store', () => {
 			expect(get(pollingInterval)).toBe(180000);
 		});
 
-		it('should clamp to minimum of 2 minutes', () => {
-			appState.setPollingInterval(60000); // 1 minute
+		it('should clamp to minimum of 30 seconds', () => {
+			appState.setPollingInterval(10000); // 10 seconds - too low
 
-			expect(get(pollingInterval)).toBe(120000);
+			expect(get(pollingInterval)).toBe(30000); // Clamped to 30s
 		});
 
 		it('should clamp to maximum of 15 minutes', () => {
@@ -193,11 +193,11 @@ describe('App State Store', () => {
 			expect(get(pollingInterval)).toBe(900000);
 		});
 
-		it('should increase polling interval', () => {
-			appState.setPollingInterval(300000); // 5 min
+		it('should increase polling interval by 30 seconds', () => {
+			appState.setPollingInterval(60000); // 1 min
 			appState.increasePollingInterval();
 
-			expect(get(pollingInterval)).toBe(360000); // 6 min
+			expect(get(pollingInterval)).toBe(90000); // 1.5 min
 		});
 
 		it('should not increase beyond maximum', () => {
@@ -207,18 +207,18 @@ describe('App State Store', () => {
 			expect(get(pollingInterval)).toBe(900000);
 		});
 
-		it('should decrease polling interval', () => {
-			appState.setPollingInterval(300000); // 5 min
-			appState.decreasePollingInterval();
-
-			expect(get(pollingInterval)).toBe(240000); // 4 min
-		});
-
-		it('should not decrease below minimum', () => {
+		it('should decrease polling interval by 30 seconds', () => {
 			appState.setPollingInterval(120000); // 2 min
 			appState.decreasePollingInterval();
 
-			expect(get(pollingInterval)).toBe(120000);
+			expect(get(pollingInterval)).toBe(90000); // 1.5 min
+		});
+
+		it('should not decrease below minimum', () => {
+			appState.setPollingInterval(30000); // 30 seconds (minimum)
+			appState.decreasePollingInterval();
+
+			expect(get(pollingInterval)).toBe(30000); // Stays at minimum
 		});
 	});
 
@@ -232,7 +232,7 @@ describe('App State Store', () => {
 
 			expect(get(isRunning)).toBe(false);
 			expect(get(currentStatus)).toBe('idle');
-			expect(get(pollingInterval)).toBe(120000);
+			expect(get(pollingInterval)).toBe(60000);
 			expect(get(stats).sessions).toBe(0);
 		});
 	});

@@ -45,7 +45,7 @@ const defaultState: AppState = {
 	currentLocation: null,
 	currentFact: null,
 	lastError: null,
-	pollingIntervalMs: 120000, // 2 minutes between successful discoveries
+	pollingIntervalMs: 60000, // 1 minute between discoveries for better UX
 	sessionCount: 0,
 	factsDelivered: 0
 };
@@ -104,21 +104,21 @@ function createAppStore() {
 
 		// Polling interval
 		setPollingInterval(ms: number) {
-			const clamped = Math.max(120000, Math.min(900000, ms));
+			const clamped = Math.max(30000, Math.min(900000, ms)); // Min 30 seconds
 			update((state) => ({ ...state, pollingIntervalMs: clamped }));
 		},
 
 		increasePollingInterval() {
 			update((state) => ({
 				...state,
-				pollingIntervalMs: Math.min(state.pollingIntervalMs + 60000, 900000)
+				pollingIntervalMs: Math.min(state.pollingIntervalMs + 30000, 900000)
 			}));
 		},
 
 		decreasePollingInterval() {
 			update((state) => ({
 				...state,
-				pollingIntervalMs: Math.max(state.pollingIntervalMs - 60000, 120000)
+				pollingIntervalMs: Math.max(state.pollingIntervalMs - 30000, 30000)
 			}));
 		},
 
