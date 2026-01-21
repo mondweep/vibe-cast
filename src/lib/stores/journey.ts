@@ -5,66 +5,75 @@ import type { FactService } from '$lib/domain/discovery/FactService';
 import type { VoiceService } from '$lib/domain/voice/VoiceService';
 import type { AudioService } from '$lib/domain/audio/AudioService';
 
+export interface FactItem {
+    id: string;
+    location: string;
+    text: string;
+    timestamp: number;
+}
+
 interface JourneyState {
     status: 'idle' | 'driving' | 'speaking';
     currentLocation: string | null;
     currentFact: string | null;
-    lastFactCoordinates: { lat: number; lon: number } | null;
+    history: FactItem[]; // NEW: Scrollable history
+    lastUpdateTimestamp: number; // NEW: For timer
 }
 
-export type JourneyServices = {
-    location: typeof LocationService;
-    geocoding: typeof GeocodingService;
-    fact: typeof FactService;
-    voice: typeof VoiceService;
-    audio: typeof AudioService;
-}; // Using 'typeof Class' for static methods where applicable in V1
+// ... Services Type ...
 
-export function createJourneyStore(services: any) { // services typed loosely for V1 speed, ideally generic
+export function createJourneyStore(services: any) {
     const { subscribe, update, set } = writable<JourneyState>({
         status: 'idle',
         currentLocation: null,
         currentFact: null,
-        lastFactCoordinates: null
+        history: [],
+        lastUpdateTimestamp: 0
     });
 
     return {
         subscribe,
         startDrive: async () => {
-            // 1. Audio Focus
             await services.audio.requestFocus();
-
-            // 2. Connect Voice
             try {
-                // Instantiate if assumed not static (VoiceService is instance based in previous code)
-                // For this implementation, we assume 'services.voice' is the instance or we handled it in DI
-                // Let's assume passed services are INSTANCES or Static Wrappers suitable for usage.
                 if (services.voice.connect) await services.voice.connect();
             } catch (e) {
                 console.error('Voice connect failed', e);
             }
-
-            update(s => ({ ...s, status: 'driving' }));
+            update(s => ({ ...s, status: 'driving', lastUpdateTimestamp: Date.now() }));
         },
 
         checkLocation: async () => {
-            // Workflow:
             // 1. Get GPS
             const coords = await services.location.getCurrentLocation();
 
             // 2. Reverse Geocode
             const entity = await services.geocoding.reverseGeocode(coords.latitude, coords.longitude);
 
-            // 3. Update State
+            const now = Date.now();
             update(s => ({ ...s, currentLocation: entity.name }));
 
-            // 4. Generate Fact
-            const fact = await services.fact.generateFact(entity.name);
-            update(s => ({ ...s, currentFact: fact }));
+            // 3. Generate Fact
+            const factText = await services.fact.generateFact(entity.name);
+
+            // 4. Update History
+            const newFact: FactItem = {
+                id: crypto.randomUUID(),
+                location: entity.name,
+                text: factText,
+                timestamp: now
+            };
+
+            update(s => ({
+                ...s,
+                currentFact: factText,
+                lastUpdateTimestamp: now,
+                history: [newFact, ...s.history].slice(0, 50) // Keep last 50
+            }));
 
             // 5. Speak
             if (services.voice.speak) {
-                await services.voice.speak(fact);
+                await services.voice.speak(factText);
             }
         },
 
@@ -75,7 +84,8 @@ export function createJourneyStore(services: any) { // services typed loosely fo
                 status: 'idle',
                 currentLocation: null,
                 currentFact: null,
-                lastFactCoordinates: null
+                history: [],
+                lastUpdateTimestamp: 0
             });
         }
     };

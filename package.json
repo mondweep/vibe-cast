@@ -13,6 +13,7 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-netlify": "^5.2.4",
 		"@sveltejs/kit": "^2.49.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"autoprefixer": "^10.4.23",
@@ -25,10 +26,12 @@
 		"vitest": "^4.0.17"
 	},
 	"dependencies": {
+		"@capacitor-community/native-audio": "^8.0.0",
 		"@capacitor/android": "^8.0.1",
 		"@capacitor/cli": "^7.4.5",
 		"@capacitor/core": "^8.0.1",
 		"@capacitor/geolocation": "^8.0.0",
-		"@google/generative-ai": "^0.24.1"
+		"@google/generative-ai": "^0.24.1",
+		"@tailwindcss/postcss": "^4.1.18"
 	}
 }

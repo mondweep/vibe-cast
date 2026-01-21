@@ -1,4 +1,5 @@
-import { NativeAudio } from '@capacitor-community/native-audio';
+// import { NativeAudio } from '@capacitor-community/native-audio'; // CAUSES SSR CRASH
+import { browser } from '$app/environment';
 
 export class AudioService {
     /**
@@ -12,7 +13,9 @@ export class AudioService {
             // but often assumes focus.
             // For a robust implementation, we would write a custom Capacitor Plugin here (Phase 5b).
             // For this phase, we wrap the available logic.
-            return this.requestNativeFocus();
+            if (browser) {
+                return this.requestNativeFocus();
+            }
         } catch (error) {
             console.warn('Audio Focus request failed', error);
         }
@@ -20,7 +23,9 @@ export class AudioService {
 
     async abandonFocus(): Promise<void> {
         try {
-            return this.abandonNativeFocus();
+            if (browser) {
+                return this.abandonNativeFocus();
+            }
         } catch (error) {
             console.warn('Audio Focus abandon failed', error);
         }

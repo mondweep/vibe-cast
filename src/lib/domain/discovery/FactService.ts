@@ -5,8 +5,12 @@ export class FactService {
     private static readonly API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'TEST_KEY';
 
     static async generateFact(locationName: string): Promise<string> {
+        const modelName = 'gemini-2.5-flash-lite';
+        console.log('[Driftwise] Generating fact with:', modelName);
+        console.log('[Driftwise] Using API Key:', this.API_KEY.substring(0, 8) + '...');
+
         const genAI = new GoogleGenerativeAI(this.API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: modelName });
 
         const prompt = `
             You are Driftwise, a serendipitous local historian and raconteur.
