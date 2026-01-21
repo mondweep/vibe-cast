@@ -2,7 +2,7 @@
 // Handles fact generation with web search grounding
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-const MODEL_ID = 'gemini-2.5-flash-preview';
+const MODEL_ID = 'gemini-2.5-flash';
 const REQUEST_TIMEOUT_MS = 10000;
 const MIN_REQUEST_GAP_MS = 15000; // 15 seconds between requests (rate limiting)
 
