@@ -45,7 +45,7 @@ const defaultState: AppState = {
 	currentLocation: null,
 	currentFact: null,
 	lastError: null,
-	pollingIntervalMs: 300000, // 5 minutes
+	pollingIntervalMs: 120000, // 2 minutes between successful discoveries
 	sessionCount: 0,
 	factsDelivered: 0
 };

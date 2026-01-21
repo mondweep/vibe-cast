@@ -38,7 +38,7 @@ describe('App State Store', () => {
 		});
 
 		it('should have default polling interval of 5 minutes', () => {
-			expect(get(pollingInterval)).toBe(300000);
+			expect(get(pollingInterval)).toBe(120000);
 		});
 
 		it('should have zero stats initially', () => {
@@ -232,7 +232,7 @@ describe('App State Store', () => {
 
 			expect(get(isRunning)).toBe(false);
 			expect(get(currentStatus)).toBe('idle');
-			expect(get(pollingInterval)).toBe(300000);
+			expect(get(pollingInterval)).toBe(120000);
 			expect(get(stats).sessions).toBe(0);
 		});
 	});

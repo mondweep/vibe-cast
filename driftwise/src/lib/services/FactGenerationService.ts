@@ -60,12 +60,18 @@ export class FactGenerationService {
 		const researchDurationMs = Date.now() - startTime;
 
 		if (!text) {
+			console.log('[FactGeneration] API returned no text');
 			return null;
 		}
 
+		console.log(`[FactGeneration] Raw response: "${text}"`);
+
 		// Check quality
 		const quality = assessFactQuality(text);
+		console.log(`[FactGeneration] Quality: score=${quality.score}, verdict=${quality.verdict}, specifics=${quality.containsSpecifics}, exclusions=${quality.containsExclusions}`);
+
 		if (quality.verdict !== 'acceptable') {
+			console.log(`[FactGeneration] Rejected: ${quality.verdict}`);
 			return null;
 		}
 

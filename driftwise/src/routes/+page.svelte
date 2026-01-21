@@ -105,7 +105,10 @@
 		appState.stop();
 	}
 
-	async function runDeliveryCycle() {
+	const MAX_RETRIES = 3;
+	const RETRY_DELAY_MS = 20000; // 20 seconds between retries
+
+	async function runDeliveryCycle(retryCount = 0) {
 		if (!$isRunning || !factService) return;
 
 		try {
@@ -114,18 +117,24 @@
 			const coords = await locationService.requestLocation();
 
 			if (!coords) {
+				console.log('[Driftwise] Could not get location, scheduling next cycle');
 				scheduleNextCycle();
 				return;
 			}
+
+			console.log(`[Driftwise] Location: ${coords.latitude}, ${coords.longitude}`);
 
 			// 2. Geocode
 			appState.setStatus('geocoding');
 			const places = await nominatimAdapter.reverseGeocode(coords.latitude, coords.longitude);
 
 			if (!places) {
+				console.log('[Driftwise] Could not geocode location, scheduling next cycle');
 				scheduleNextCycle();
 				return;
 			}
+
+			console.log(`[Driftwise] Place: ${places.displayName}`);
 
 			// 3. Generate fact
 			appState.setStatus('researching');
@@ -133,25 +142,37 @@
 			appState.setLocation(location);
 
 			const context = getCurrentSeasonalContext();
+			console.log(`[Driftwise] Generating fact for ${places.displayName}... (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
+
 			const fact = await factService.generateFact(places, context);
 
 			if (!fact) {
-				// No suitable fact found - skip cycle
+				console.log('[Driftwise] No suitable fact returned (incomplete or filtered)');
+
+				// Retry immediately if we haven't exhausted retries
+				if (retryCount < MAX_RETRIES) {
+					console.log(`[Driftwise] Retrying in ${RETRY_DELAY_MS / 1000}s...`);
+					appState.setStatus('idle');
+					pollingTimer = setTimeout(() => {
+						runDeliveryCycle(retryCount + 1);
+					}, RETRY_DELAY_MS);
+					return;
+				}
+
+				console.log('[Driftwise] Max retries reached, scheduling next full cycle');
 				scheduleNextCycle();
 				return;
 			}
 
 			// 4. Deliver fact
+			console.log(`[Driftwise] Fact delivered: "${fact.text.substring(0, 50)}..."`);
 			appState.setStatus('speaking');
 			appState.setFact(fact);
 
-			// In full implementation, this would use voice delivery
-			// For now, just display and schedule next cycle
-
-			// 5. Schedule next cycle
+			// 5. Schedule next cycle after successful delivery
 			scheduleNextCycle();
 		} catch (error) {
-			console.error('Delivery cycle error:', error);
+			console.error('[Driftwise] Delivery cycle error:', error);
 			scheduleNextCycle();
 		}
 	}
