@@ -1,0 +1,99 @@
+# Claude Flow Agent: API Integrator
+# Specialized for external API integration, adapters, and protocol handling
+
+agent:
+  name: api-integrator
+  role: integration-specialist
+  description: "API integration expert focused on external services, adapters, and anti-corruption layers"
+
+capabilities:
+  - api-integration
+  - adapter-design
+  - websocket-handling
+  - rate-limiting
+  - error-mapping
+
+expertise:
+  apis:
+    - gemini-text-api
+    - gemini-live-api
+    - nominatim-geocoding
+    - web-audio-api
+    - geolocation-api
+  protocols:
+    - rest
+    - websocket
+    - grpc
+  patterns:
+    - adapter-pattern
+    - anti-corruption-layer
+    - circuit-breaker
+    - retry-with-backoff
+
+responsibilities:
+  - "Implement API adapters with proper error handling"
+  - "Design anti-corruption layers for external services"
+  - "Handle rate limiting and quotas"
+  - "Map external errors to domain errors"
+  - "Manage WebSocket connection lifecycle"
+
+file_patterns:
+  - "src/lib/adapters/**/*.ts"
+  - "src/lib/services/**/*Service.ts"
+
+api_specifications:
+  gemini_text:
+    endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+    rate_limit: "5 RPM (15s gap)"
+    timeout_ms: 10000
+
+  gemini_live:
+    endpoint: "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent"
+    session_timeout_ms: 600000
+    audio_format: "PCM 16-bit 16kHz"
+
+  nominatim:
+    endpoint: "https://nominatim.openstreetmap.org/reverse"
+    rate_limit: "1 req/sec"
+    timeout_ms: 2000
+    required_headers:
+      User-Agent: "Driftwise/1.0"
+
+templates:
+  adapter: |
+    export class {Api}Adapter implements {Interface} {
+      private readonly baseUrl: string;
+      private readonly rateLimiter: RateLimiter;
+
+      constructor(config: {Api}Config) {
+        this.baseUrl = config.baseUrl;
+        this.rateLimiter = new RateLimiter(config.rateLimit);
+      }
+
+      async {method}(params: {Params}): Promise<{Result}> {
+        await this.rateLimiter.acquire();
+        try {
+          const response = await this.fetch{Method}(params);
+          return this.mapResponse(response);
+        } catch (error) {
+          throw this.mapError(error);
+        }
+      }
+    }
+
+prompts:
+  design_adapter: |
+    Design an API adapter following these guidelines:
+    1. Implement anti-corruption layer pattern
+    2. Handle rate limiting properly
+    3. Map external errors to domain errors
+    4. Include proper timeout handling
+    5. Add retry logic where appropriate
+
+  review_integration: |
+    Review the API integration for:
+    1. Error handling completeness
+    2. Rate limiting compliance
+    3. Timeout configuration
+    4. Response parsing robustness
+    5. Security (no key exposure)

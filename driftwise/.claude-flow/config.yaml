@@ -1,0 +1,141 @@
+# Claude Flow V3 Runtime Configuration
+# Project: Driftwise - Voice-First Local History Companion
+# Generated: January 2026
+
+version: "3.0.0"
+
+# Project metadata
+project:
+  name: driftwise
+  description: "Voice-first PWA for serendipitous local history discovery"
+  type: pwa
+  framework: sveltekit
+
+# Swarm configuration for multi-agent coordination
+swarm:
+  topology: hierarchical-mesh
+  maxAgents: 12
+  autoScale: true
+  coordinationStrategy: consensus
+  agents:
+    - architect
+    - domain-modeler
+    - frontend-developer
+    - api-integrator
+    - test-engineer
+    - documentation
+
+# Memory persistence configuration
+memory:
+  backend: hybrid
+  enableHNSW: true           # Vector search for semantic code retrieval
+  persistPath: .claude-flow/data
+  cacheSize: 100
+  vectorDimensions: 384
+
+# Neural routing (optional ML-based agent selection)
+neural:
+  enabled: false             # Enable when agent count increases
+  modelPath: .claude-flow/neural
+
+# Git hooks for agentic workflows
+hooks:
+  enabled: true
+  autoExecute: true
+  preCommit:
+    - lint
+    - typecheck
+    - test:unit
+  prePush:
+    - test:integration
+
+# MCP (Model Context Protocol) server settings
+mcp:
+  autoStart: false
+  port: 3000
+  tools:
+    - file-operations
+    - git-operations
+    - terminal
+    - web-search
+
+# Phase-specific configurations
+phases:
+  foundation:
+    priority: 1
+    agents: [architect, domain-modeler]
+    goals:
+      - "Initialize SvelteKit project structure"
+      - "Configure TypeScript and build tools"
+      - "Set up testing framework"
+
+  location:
+    priority: 2
+    agents: [domain-modeler, frontend-developer]
+    goals:
+      - "Implement GPS acquisition service"
+      - "Create Nominatim geocoding adapter"
+      - "Build location Svelte store"
+
+  discovery:
+    priority: 3
+    agents: [api-integrator, domain-modeler]
+    goals:
+      - "Integrate Gemini Text API"
+      - "Implement fact generation service"
+      - "Create quality filtering logic"
+
+  voice:
+    priority: 4
+    agents: [api-integrator, frontend-developer]
+    goals:
+      - "Implement Gemini Live API WebSocket"
+      - "Build voice delivery engine"
+      - "Create command processor"
+
+  audio:
+    priority: 5
+    agents: [frontend-developer]
+    goals:
+      - "Configure Capacitor audio plugin"
+      - "Implement audio focus management"
+      - "Test ducking behavior"
+
+  integration:
+    priority: 6
+    agents: [architect, test-engineer]
+    goals:
+      - "Orchestrate end-to-end delivery cycle"
+      - "Implement error recovery"
+      - "Build state manager"
+
+  pwa:
+    priority: 7
+    agents: [frontend-developer, test-engineer]
+    goals:
+      - "Configure service worker"
+      - "Optimize for Lighthouse"
+      - "Implement offline mode"
+
+  release:
+    priority: 8
+    agents: [architect, documentation]
+    goals:
+      - "Security audit"
+      - "Production build"
+      - "Documentation completion"
+
+# Quality gates between phases
+quality:
+  lint: "npm run lint"
+  typecheck: "npm run check"
+  test: "npm run test"
+  build: "npm run build"
+
+# Logging and observability
+logging:
+  level: info
+  destinations:
+    - console
+    - file:.claude-flow/logs/driftwise.log
+  structured: true

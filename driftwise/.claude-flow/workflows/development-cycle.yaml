@@ -1,0 +1,109 @@
+# Claude Flow Workflow: Development Cycle
+# Automated workflow for implementing features with proper testing and review
+
+workflow:
+  name: development-cycle
+  description: "Standard development workflow for implementing features"
+  version: "1.0.0"
+
+triggers:
+  - manual
+  - on_issue_assigned
+  - on_feature_request
+
+stages:
+  analyze:
+    description: "Analyze requirements and plan implementation"
+    agents: [architect, domain-modeler]
+    steps:
+      - action: read_requirements
+        input: "{{issue_description}}"
+      - action: identify_bounded_context
+        input: "{{requirements}}"
+      - action: design_solution
+        output: solution_design
+    outputs:
+      - affected_contexts
+      - design_document
+      - test_requirements
+
+  implement:
+    description: "Implement the feature following DDD patterns"
+    agents: [domain-modeler, api-integrator]
+    depends_on: [analyze]
+    steps:
+      - action: create_domain_models
+        input: "{{solution_design}}"
+      - action: implement_services
+        input: "{{domain_models}}"
+      - action: create_adapters
+        input: "{{external_integrations}}"
+    outputs:
+      - source_files
+      - unit_tests
+
+  test:
+    description: "Run tests and validate implementation"
+    agents: [test-engineer]
+    depends_on: [implement]
+    steps:
+      - action: run_unit_tests
+        command: "npm run test:unit"
+      - action: run_integration_tests
+        command: "npm run test:integration"
+      - action: check_coverage
+        threshold: 80
+    gates:
+      - tests_pass: true
+      - coverage_met: true
+
+  review:
+    description: "Architecture and code review"
+    agents: [architect]
+    depends_on: [test]
+    steps:
+      - action: review_architecture
+        input: "{{source_files}}"
+      - action: review_code_quality
+        input: "{{source_files}}"
+      - action: review_security
+        input: "{{source_files}}"
+    outputs:
+      - review_comments
+      - approval_status
+
+  finalize:
+    description: "Prepare for merge"
+    agents: [architect]
+    depends_on: [review]
+    condition: "{{approval_status}} == 'approved'"
+    steps:
+      - action: update_documentation
+        input: "{{design_document}}"
+      - action: update_changelog
+        input: "{{feature_summary}}"
+      - action: create_commit
+        message: "feat: {{feature_name}}"
+
+quality_gates:
+  - name: lint
+    command: "npm run lint"
+    required: true
+
+  - name: typecheck
+    command: "npm run check"
+    required: true
+
+  - name: test
+    command: "npm run test"
+    required: true
+
+  - name: build
+    command: "npm run build"
+    required: true
+
+rollback:
+  on_failure: true
+  actions:
+    - git_reset_hard
+    - notify_team

@@ -1,0 +1,73 @@
+# Driftwise .gitignore
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+build/
+dist/
+.svelte-kit/
+
+# Environment files (contain secrets)
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Capacitor
+android/
+ios/
+*.keystore
+
+# Claude Flow data (optional - may want to persist)
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/neural/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Package manager locks (keep one, ignore others)
+# Uncomment the ones you don't use:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Vitest
+vitest.config.ts.timestamp-*
