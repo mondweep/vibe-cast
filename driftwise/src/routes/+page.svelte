@@ -73,6 +73,8 @@
 	}
 
 	async function startSession() {
+		console.log('[Driftwise] Starting session...');
+
 		if (!permissionGranted) {
 			try {
 				await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -109,7 +111,11 @@
 	const RETRY_DELAY_MS = 20000; // 20 seconds between retries
 
 	async function runDeliveryCycle(retryCount = 0) {
-		if (!$isRunning || !factService) return;
+		console.log('[Driftwise] Running delivery cycle...');
+		if (!$isRunning || !factService) {
+			console.log('[Driftwise] Not running or no factService');
+			return;
+		}
 
 		try {
 			// 1. Get location
