@@ -114,7 +114,7 @@ describe('FactGenerationService', () => {
 			expect(prompt.toLowerCase()).toContain('afternoon');
 		});
 
-		it('should enable Google Search for grounding', async () => {
+		it('should disable Google Search grounding by default', async () => {
 			mockAdapter.generateContent.mockResolvedValueOnce(
 				'In 1834, something happened.'
 			);
@@ -123,7 +123,7 @@ describe('FactGenerationService', () => {
 
 			expect(mockAdapter.generateContent).toHaveBeenCalledWith(
 				expect.any(String),
-				expect.objectContaining({ enableSearch: true })
+				expect.objectContaining({ enableSearch: false })
 			);
 		});
 

@@ -49,7 +49,7 @@ export class FactGenerationService {
 
 		const text = await this.adapter.generateContent(prompt, {
 			systemInstruction: SYSTEM_PROMPT,
-			enableSearch: true,
+			enableSearch: false, // Disabled - search grounding may not be available for all API keys
 			temperature: 0.7,
 			maxTokens: 150
 		});
