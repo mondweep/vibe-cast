@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[dev]
+  command = "npm run dev"
+
+# Ensure we use the latest node version compatible with SvelteKit adapter
+[build.environment]
+  NODE_VERSION = "20"
