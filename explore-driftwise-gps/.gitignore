@@ -1,0 +1,57 @@
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Claude Flow Runtime
+.claude-flow/daemon-state.json
+.claude-flow/daemon.pid
+.claude-flow/logs/
+.claude-flow/metrics/
+.claude-flow/tasks/
+.claude-flow/data/cache/
+.claude/memory.db
+
+# Swarm Runtime
+.swarm/memory.db
+.swarm/schema.sql
+.swarm/daemon-state.json
+
+# npm
+.npmrc
+package-lock.json
+yarn.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test Coverage
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.eslintcache

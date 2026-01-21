@@ -1,0 +1,42 @@
+{
+  "name": "driftwise",
+  "version": "0.1.0",
+  "description": "Driftwise: Voice-driven historical discovery PWA",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src tests --ext .ts,.tsx,.svelte",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "svelte": "^4.2.8",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4",
+    "neverthrow": "^6.0.0",
+    "js-sha256": "^0.11.0",
+    "capacitor": "^6.0.0",
+    "idb": "^8.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/kit": "^2.0.0",
+    "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "@sveltejs/adapter-auto": "^3.0.0",
+    "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vitest": "^1.1.0",
+    "@testing-library/svelte": "^2.4.6",
+    "happy-dom": "^12.10.3",
+    "@vitest/coverage-v8": "^1.1.0"
+  }
+}
