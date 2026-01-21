@@ -85,6 +85,14 @@ export const INCLUSION_PATTERNS = [
 ];
 
 /**
+ * Check if text ends with proper sentence punctuation
+ */
+function isCompleteSentence(text: string): boolean {
+	const trimmed = text.trim();
+	return /[.!?]$/.test(trimmed);
+}
+
+/**
  * Assess the quality of a fact text
  */
 export function assessFactQuality(text: string): QualityAssessment {
@@ -106,6 +114,11 @@ export function assessFactQuality(text: string): QualityAssessment {
 		score -= 30; // Too short to be useful
 	} else if (text.length > 500) {
 		score -= 10;
+	}
+
+	// Completeness check - must end with proper punctuation
+	if (!isCompleteSentence(text)) {
+		score -= 50; // Heavily penalize incomplete sentences
 	}
 
 	const isGeneric = containsExclusions && !containsSpecifics;

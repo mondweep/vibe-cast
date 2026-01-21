@@ -12,6 +12,8 @@ import {
 
 const SYSTEM_PROMPT = `You are a local history researcher finding fascinating, unusual facts.
 
+CRITICAL: You MUST complete your response with full sentences. Never stop mid-sentence.
+
 PRIORITIZE (include specific details):
 - Exact years, dates, and time periods (e.g., "In 1847...")
 - Precise measurements and quantities (e.g., "23 meters tall")
@@ -26,7 +28,8 @@ EXCLUDE (these make facts generic):
 - Clichés: "traditional cottages", "rolling hills", "historic market town"
 - Vague claims without specifics
 
-Return ONE fascinating fact, 2-3 sentences maximum, ready to be spoken aloud naturally.
+Return ONE fascinating fact in 2-3 COMPLETE sentences, ready to be spoken aloud.
+Each sentence MUST end with a period, exclamation mark, or question mark.
 If no specific, interesting fact exists for this location, return exactly: NO_SUITABLE_FACT`;
 
 export class FactGenerationService {
@@ -51,7 +54,7 @@ export class FactGenerationService {
 			systemInstruction: SYSTEM_PROMPT,
 			enableSearch: false, // Disabled - search grounding may not be available for all API keys
 			temperature: 0.7,
-			maxTokens: 300 // Increased to avoid truncation
+			maxTokens: 500 // Large enough for 2-3 complete sentences
 		});
 
 		const researchDurationMs = Date.now() - startTime;
