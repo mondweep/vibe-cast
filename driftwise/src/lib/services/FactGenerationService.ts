@@ -54,7 +54,7 @@ export class FactGenerationService {
 			systemInstruction: SYSTEM_PROMPT,
 			enableSearch: false, // Disabled - search grounding may not be available for all API keys
 			temperature: 0.7,
-			maxTokens: 500 // Large enough for 2-3 complete sentences
+			maxTokens: 2048 // Must be large - gemini-2.5 uses ~500 tokens for "thinking"
 		});
 
 		const researchDurationMs = Date.now() - startTime;
