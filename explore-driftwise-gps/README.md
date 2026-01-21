@@ -414,3 +414,20 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 ---
 
 *Driftwise v1.0.0 - Transform routine journeys into serendipitous discovery.*
+
+## 🕵️ Reverse Engineering using Antigravity
+**Lead Engineer:** Mondweep Chakravorty ([LinkedIn](https://www.linkedin.com/in/mondweepchakravorty/))
+
+This project is currently being reverse-engineered and recreated using the **Antigravity IDE** and **Claude Flow Swarms**.
+
+### Current Status (Recreation)
+*   ✅ **Phase 1: Foundation**: Project structure, TDD setup, MCP integration.
+*   ✅ **Phase 2: Location Core**: Geolocation & Nominatim service with Unit Tests.
+*   ✅ **Phase 3: The Brain**: Discovery Engine with "Serendipity Prompt".
+*   ✅ **Phase 4: The Voice**: WebSocket implementation for Gemini Live API.
+*   🚧 **Phase 5: Mobile Integration**: Audio Focus & Ducking (In Progress).
+
+### Methodology
+*   **Agentic Swarm**: Utilizing a 5-agent hierarchical swarm (simulated via Claude Flow).
+*   **Dynamic Model Switching**: Leveraged **Gemini 3 Pro** for coding and **Claude 3.5 Sonnet** for prompt engineering.
+*   **Test-Driven Development**: All features implemented using a strict Red-Green-Refactor cycle.
