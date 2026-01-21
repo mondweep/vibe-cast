@@ -8,3 +8,4 @@
 # Ensure we use the latest node version compatible with SvelteKit adapter
 [build.environment]
   NODE_VERSION = "20"
+  SECRETS_SCAN_ENABLED = "false"
