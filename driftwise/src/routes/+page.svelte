@@ -5,6 +5,7 @@
 		isRunning,
 		currentStatus,
 		currentFact,
+		factHistory,
 		pollingInterval,
 		stats
 	} from '$lib/stores/appState';
@@ -226,6 +227,34 @@
 	$: statusText = statusMessages[$currentStatus] || 'Unknown status';
 	$: factText = $currentFact?.text || null;
 	$: sessionStats = $stats;
+	$: allFacts = $factHistory;
+
+	// Export facts as text file
+	function exportFacts() {
+		if (allFacts.length === 0) return;
+
+		const header = `Driftwise - Local History Discoveries\nExported: ${new Date().toLocaleString()}\n${'='.repeat(50)}\n\n`;
+
+		const factsText = allFacts
+			.map((fact, index) => {
+				const location = fact.metadata.sourceLocation.displayName || 'Unknown location';
+				const date = new Date(fact.metadata.generatedAt).toLocaleString();
+				return `[${index + 1}] ${location}\n${date}\n\n${fact.text}\n\n${'─'.repeat(40)}\n`;
+			})
+			.join('\n');
+
+		const content = header + factsText;
+		const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `driftwise-facts-${new Date().toISOString().slice(0, 10)}.txt`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}
 </script>
 
 <svelte:head>
@@ -253,10 +282,23 @@
 		{/if}
 	</section>
 
-	{#if factText}
+	{#if allFacts.length > 0}
 		<section class="fact-section">
-			<div class="fact-card">
-				<p class="fact-text">{factText}</p>
+			<div class="fact-header">
+				<span class="fact-count">{allFacts.length} fact{allFacts.length !== 1 ? 's' : ''}</span>
+				<button class="export-button" on:click={exportFacts} title="Download all facts">
+					Export
+				</button>
+			</div>
+			<div class="facts-list">
+				{#each allFacts.slice().reverse() as fact, index (fact.id)}
+					<div class="fact-card" class:latest={index === 0}>
+						<p class="fact-text">{fact.text}</p>
+						<p class="fact-meta">
+							{fact.metadata.sourceLocation.displayName || 'Unknown location'}
+						</p>
+					</div>
+				{/each}
 			</div>
 		</section>
 	{/if}
@@ -325,10 +367,11 @@
 	}
 
 	.status-section {
-		flex: 1;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		padding: 1rem 0;
 	}
 
 	.status-indicator {
@@ -386,21 +429,77 @@
 	}
 
 	.fact-section {
-		margin: 2rem 0;
+		margin: 1rem 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+
+	.fact-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 0.75rem;
+		padding: 0 0.25rem;
+	}
+
+	.fact-count {
+		font-size: 0.85rem;
+		opacity: 0.8;
+	}
+
+	.export-button {
+		background: rgba(255, 255, 255, 0.2);
+		color: white;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		padding: 0.4rem 0.8rem;
+		font-size: 0.8rem;
+		border-radius: 1rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.export-button:hover {
+		background: rgba(255, 255, 255, 0.3);
+	}
+
+	.facts-list {
+		flex: 1;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		max-height: 50vh;
+		padding-right: 0.25rem;
 	}
 
 	.fact-card {
-		background: rgba(255, 255, 255, 0.95);
+		background: rgba(255, 255, 255, 0.9);
 		color: #333;
-		padding: 1.5rem;
-		border-radius: 1rem;
+		padding: 1rem 1.25rem;
+		border-radius: 0.75rem;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		flex-shrink: 0;
+	}
+
+	.fact-card.latest {
+		background: rgba(255, 255, 255, 0.98);
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+		border-left: 4px solid #4caf50;
 	}
 
 	.fact-text {
-		font-size: 1.1rem;
-		line-height: 1.6;
+		font-size: 1rem;
+		line-height: 1.5;
+		margin: 0 0 0.5rem 0;
+	}
+
+	.fact-meta {
+		font-size: 0.75rem;
+		color: #666;
 		margin: 0;
+		opacity: 0.8;
 	}
 
 	.controls-section {

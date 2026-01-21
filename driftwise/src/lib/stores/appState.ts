@@ -25,6 +25,7 @@ export interface AppState {
 	isRunning: boolean;
 	currentLocation: Location | null;
 	currentFact: HistoricalFact | null;
+	factHistory: HistoricalFact[]; // All discovered facts
 	lastError: string | null;
 	pollingIntervalMs: number;
 	sessionCount: number;
@@ -44,6 +45,7 @@ const defaultState: AppState = {
 	isRunning: false,
 	currentLocation: null,
 	currentFact: null,
+	factHistory: [],
 	lastError: null,
 	pollingIntervalMs: 60000, // 1 minute between discoveries for better UX
 	sessionCount: 0,
@@ -94,12 +96,17 @@ function createAppStore() {
 			update((state) => ({
 				...state,
 				currentFact: fact,
+				factHistory: [...state.factHistory, fact],
 				factsDelivered: state.factsDelivered + 1
 			}));
 		},
 
 		clearFact() {
 			update((state) => ({ ...state, currentFact: null }));
+		},
+
+		clearHistory() {
+			update((state) => ({ ...state, factHistory: [], factsDelivered: 0 }));
 		},
 
 		// Polling interval
@@ -145,6 +152,11 @@ export const currentLocation: Readable<Location | null> = derived(
 export const currentFact: Readable<HistoricalFact | null> = derived(
 	appState,
 	($state) => $state.currentFact
+);
+
+export const factHistory: Readable<HistoricalFact[]> = derived(
+	appState,
+	($state) => $state.factHistory
 );
 
 export const pollingInterval: Readable<number> = derived(
