@@ -113,3 +113,58 @@ export function calculateDistance(a: GPSCoordinates, b: GPSCoordinates): number 
 
 	return R * c;
 }
+
+/**
+ * Check if location has changed significantly (beyond threshold)
+ * @param previous - Previous coordinates (null for first acquisition)
+ * @param current - Current coordinates
+ * @param thresholdMeters - Distance threshold in meters (default 100)
+ */
+export function hasLocationChangedSignificantly(
+	previous: GPSCoordinates | null,
+	current: GPSCoordinates,
+	thresholdMeters: number = 100
+): boolean {
+	if (previous === null) {
+		return true;
+	}
+	const distance = calculateDistance(previous, current);
+	return distance > thresholdMeters;
+}
+
+/**
+ * Round coordinates for cache key generation
+ * Default precision of 3 decimal places (~100m resolution)
+ */
+export function roundCoordinatesForCache(
+	coords: GPSCoordinates,
+	precision: number = 3
+): { latitude: number; longitude: number } {
+	const factor = Math.pow(10, precision);
+	return {
+		latitude: Math.round(coords.latitude * factor) / factor,
+		longitude: Math.round(coords.longitude * factor) / factor
+	};
+}
+
+/**
+ * Generate a unique location ID
+ */
+export function generateLocationId(): string {
+	return `loc-${crypto.randomUUID()}`;
+}
+
+/**
+ * Create a Location entity
+ */
+export function createLocation(
+	coordinates: GPSCoordinates,
+	places: PlaceNames
+): Location {
+	return {
+		id: generateLocationId(),
+		coordinates,
+		places,
+		acquiredAt: Date.now()
+	};
+}

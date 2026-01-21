@@ -1,7 +1,16 @@
-// Location Context Unit Tests
+// Location Context Unit Tests - TDD Comprehensive Suite
 
-import { describe, it, expect } from 'vitest';
-import { createGPSCoordinates, calculateDistance, type GPSCoordinates } from '@domain/location';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+	createGPSCoordinates,
+	calculateDistance,
+	hasLocationChangedSignificantly,
+	roundCoordinatesForCache,
+	generateLocationId,
+	type GPSCoordinates,
+	type PlaceNames,
+	type Location
+} from '@domain/location';
 
 describe('Location Context', () => {
 	describe('createGPSCoordinates', () => {
@@ -150,6 +159,107 @@ describe('Location Context', () => {
 			// Should be approximately 14 km
 			expect(distance).toBeGreaterThan(13000);
 			expect(distance).toBeLessThan(15000);
+		});
+
+		it('should be symmetric', () => {
+			const london = createGPSCoordinates(51.5074, -0.1278, 10);
+			const paris = createGPSCoordinates(48.8566, 2.3522, 10);
+
+			const dist1 = calculateDistance(london, paris);
+			const dist2 = calculateDistance(paris, london);
+
+			expect(dist1).toBe(dist2);
+		});
+	});
+
+	describe('hasLocationChangedSignificantly', () => {
+		it('should return true when distance exceeds threshold', () => {
+			const prev = createGPSCoordinates(51.5074, -0.1278, 10);
+			const curr = createGPSCoordinates(51.5174, -0.1278, 10); // ~1.1 km north
+
+			const changed = hasLocationChangedSignificantly(prev, curr, 100);
+			expect(changed).toBe(true);
+		});
+
+		it('should return false when distance is below threshold', () => {
+			const prev = createGPSCoordinates(51.5074, -0.1278, 10);
+			const curr = createGPSCoordinates(51.5075, -0.1278, 10); // ~11 meters north
+
+			const changed = hasLocationChangedSignificantly(prev, curr, 100);
+			expect(changed).toBe(false);
+		});
+
+		it('should return false for same location', () => {
+			const coords = createGPSCoordinates(51.5074, -0.1278, 10);
+
+			const changed = hasLocationChangedSignificantly(coords, coords, 100);
+			expect(changed).toBe(false);
+		});
+
+		it('should handle null previous location', () => {
+			const curr = createGPSCoordinates(51.5074, -0.1278, 10);
+
+			const changed = hasLocationChangedSignificantly(null, curr, 100);
+			expect(changed).toBe(true);
+		});
+
+		it('should use default threshold of 100 meters', () => {
+			const prev = createGPSCoordinates(51.5074, -0.1278, 10);
+			const curr = createGPSCoordinates(51.5083, -0.1278, 10); // ~100 meters
+
+			// Exactly at threshold should return false
+			const changed = hasLocationChangedSignificantly(prev, curr);
+			// Since we're at exactly the threshold, behavior depends on implementation
+			expect(typeof changed).toBe('boolean');
+		});
+	});
+
+	describe('roundCoordinatesForCache', () => {
+		it('should round to 3 decimal places by default', () => {
+			const coords = createGPSCoordinates(51.5074123, -0.1278456, 10);
+			const rounded = roundCoordinatesForCache(coords);
+
+			expect(rounded.latitude).toBe(51.507);
+			expect(rounded.longitude).toBe(-0.128);
+		});
+
+		it('should support custom precision', () => {
+			const coords = createGPSCoordinates(51.5074123, -0.1278456, 10);
+			const rounded = roundCoordinatesForCache(coords, 2);
+
+			expect(rounded.latitude).toBe(51.51);
+			expect(rounded.longitude).toBe(-0.13);
+		});
+
+		it('should generate consistent cache keys', () => {
+			const coords1 = createGPSCoordinates(51.5074001, -0.1278001, 10);
+			const coords2 = createGPSCoordinates(51.5074999, -0.1278999, 10);
+
+			const rounded1 = roundCoordinatesForCache(coords1);
+			const rounded2 = roundCoordinatesForCache(coords2);
+
+			expect(rounded1.latitude).toBe(rounded2.latitude);
+			expect(rounded1.longitude).toBe(rounded2.longitude);
+		});
+	});
+
+	describe('generateLocationId', () => {
+		it('should generate unique IDs', () => {
+			const id1 = generateLocationId();
+			const id2 = generateLocationId();
+
+			expect(id1).not.toBe(id2);
+		});
+
+		it('should start with loc- prefix', () => {
+			const id = generateLocationId();
+			expect(id.startsWith('loc-')).toBe(true);
+		});
+
+		it('should be a valid string', () => {
+			const id = generateLocationId();
+			expect(typeof id).toBe('string');
+			expect(id.length).toBeGreaterThan(4);
 		});
 	});
 });

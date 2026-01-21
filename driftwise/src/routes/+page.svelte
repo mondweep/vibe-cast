@@ -1,25 +1,58 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
+	import {
+		appState,
+		isRunning,
+		currentStatus,
+		currentFact,
+		pollingInterval,
+		stats
+	} from '$lib/stores/appState';
+	import { LocationService } from '$lib/services/LocationService';
+	import { NominatimAdapter } from '$lib/adapters/NominatimAdapter';
+	import { FactGenerationService } from '$lib/services/FactGenerationService';
+	import { getCurrentSeasonalContext } from '$lib/domain/discovery';
+	import { createLocation } from '$lib/domain/location';
+	import type { HistoricalFact } from '$lib/domain/discovery';
 
-	// Application state
-	let status: 'idle' | 'locating' | 'researching' | 'speaking' | 'listening' | 'error' = 'idle';
-	let currentFact: string | null = null;
-	let isActive = false;
+	// Services
+	let locationService: LocationService;
+	let nominatimAdapter: NominatimAdapter;
+	let factService: FactGenerationService | null = null;
+
+	// Local state
 	let permissionGranted = false;
+	let pollingTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// Status messages
-	const statusMessages: Record<typeof status, string> = {
+	const statusMessages: Record<string, string> = {
 		idle: 'Waiting for next discovery...',
 		locating: 'Finding your location...',
+		geocoding: 'Identifying your area...',
 		researching: 'Researching local history...',
 		speaking: 'Sharing a discovery...',
 		listening: 'Listening for commands...',
+		paused: 'Paused',
 		error: 'Something went wrong'
 	};
 
 	onMount(() => {
-		// Check for location permission on mount
+		// Initialize services
+		locationService = new LocationService();
+		nominatimAdapter = new NominatimAdapter();
+
+		// Check for API key and create fact service
+		const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+		if (apiKey) {
+			factService = new FactGenerationService(apiKey);
+		}
+
+		// Check for location permission
 		checkLocationPermission();
+	});
+
+	onDestroy(() => {
+		stopSession();
 	});
 
 	async function checkLocationPermission() {
@@ -27,13 +60,12 @@
 			const result = await navigator.permissions.query({ name: 'geolocation' });
 			permissionGranted = result.state === 'granted';
 		} catch {
-			// Permissions API not supported, will check on first request
 			permissionGranted = false;
 		}
 	}
 
 	async function toggleSession() {
-		if (isActive) {
+		if ($isRunning) {
 			stopSession();
 		} else {
 			await startSession();
@@ -42,35 +74,102 @@
 
 	async function startSession() {
 		if (!permissionGranted) {
-			// Request location permission
 			try {
-				const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+				await new Promise<GeolocationPosition>((resolve, reject) => {
 					navigator.geolocation.getCurrentPosition(resolve, reject, {
 						enableHighAccuracy: true,
 						timeout: 5000
 					});
 				});
 				permissionGranted = true;
-			} catch (error) {
-				status = 'error';
+			} catch {
+				appState.setError('Location permission denied');
 				return;
 			}
 		}
 
-		isActive = true;
-		status = 'idle';
+		if (!factService) {
+			appState.setError('Gemini API key not configured');
+			return;
+		}
 
-		// TODO: Start polling cycle
-		// This will be implemented in Phase 2+
+		appState.start();
+		runDeliveryCycle();
 	}
 
 	function stopSession() {
-		isActive = false;
-		status = 'idle';
-		currentFact = null;
-
-		// TODO: Stop polling cycle
+		if (pollingTimer) {
+			clearTimeout(pollingTimer);
+			pollingTimer = null;
+		}
+		appState.stop();
 	}
+
+	async function runDeliveryCycle() {
+		if (!$isRunning || !factService) return;
+
+		try {
+			// 1. Get location
+			appState.setStatus('locating');
+			const coords = await locationService.requestLocation();
+
+			if (!coords) {
+				scheduleNextCycle();
+				return;
+			}
+
+			// 2. Geocode
+			appState.setStatus('geocoding');
+			const places = await nominatimAdapter.reverseGeocode(coords.latitude, coords.longitude);
+
+			if (!places) {
+				scheduleNextCycle();
+				return;
+			}
+
+			// 3. Generate fact
+			appState.setStatus('researching');
+			const location = createLocation(coords, places);
+			appState.setLocation(location);
+
+			const context = getCurrentSeasonalContext();
+			const fact = await factService.generateFact(places, context);
+
+			if (!fact) {
+				// No suitable fact found - skip cycle
+				scheduleNextCycle();
+				return;
+			}
+
+			// 4. Deliver fact
+			appState.setStatus('speaking');
+			appState.setFact(fact);
+
+			// In full implementation, this would use voice delivery
+			// For now, just display and schedule next cycle
+
+			// 5. Schedule next cycle
+			scheduleNextCycle();
+		} catch (error) {
+			console.error('Delivery cycle error:', error);
+			scheduleNextCycle();
+		}
+	}
+
+	function scheduleNextCycle() {
+		if (!$isRunning) return;
+
+		appState.setStatus('idle');
+
+		pollingTimer = setTimeout(() => {
+			runDeliveryCycle();
+		}, $pollingInterval);
+	}
+
+	// Reactive values from stores
+	$: statusText = statusMessages[$currentStatus] || 'Unknown status';
+	$: factText = $currentFact?.text || null;
+	$: sessionStats = $stats;
 </script>
 
 <svelte:head>
@@ -84,27 +183,35 @@
 	</header>
 
 	<section class="status-section">
-		<div class="status-indicator" class:active={isActive} class:error={status === 'error'}>
+		<div class="status-indicator" class:active={$isRunning} class:error={$currentStatus === 'error'}>
 			<span class="status-dot"></span>
-			<span class="status-text">{statusMessages[status]}</span>
+			<span class="status-text">{statusText}</span>
 		</div>
+
+		{#if sessionStats.facts > 0}
+			<p class="stats">{sessionStats.facts} fact{sessionStats.facts !== 1 ? 's' : ''} discovered</p>
+		{/if}
 	</section>
 
-	{#if currentFact}
+	{#if factText}
 		<section class="fact-section">
 			<div class="fact-card">
-				<p class="fact-text">{currentFact}</p>
+				<p class="fact-text">{factText}</p>
 			</div>
 		</section>
 	{/if}
 
 	<section class="controls-section">
-		<button class="primary-button" class:active={isActive} on:click={toggleSession}>
-			{isActive ? 'Stop Discovery' : 'Start Discovery'}
+		<button class="primary-button" class:active={$isRunning} on:click={toggleSession}>
+			{$isRunning ? 'Stop Discovery' : 'Start Discovery'}
 		</button>
 
-		{#if !permissionGranted}
+		{#if !permissionGranted && !$isRunning}
 			<p class="permission-note">Location permission required for discovery</p>
+		{/if}
+
+		{#if !factService && !$isRunning}
+			<p class="permission-note">Configure VITE_GEMINI_API_KEY in .env to enable fact generation</p>
 		{/if}
 	</section>
 
@@ -203,6 +310,12 @@
 
 	.status-text {
 		font-size: 0.9rem;
+	}
+
+	.stats {
+		font-size: 0.8rem;
+		opacity: 0.7;
+		margin-top: 0.5rem;
 	}
 
 	.fact-section {

@@ -121,8 +121,8 @@ export const COMMAND_PATTERNS: Record<CommandType, string[]> = {
 /**
  * Parse a transcript into a voice command
  */
-export function parseCommand(transcript: string): VoiceCommand | null {
-	const normalized = transcript.toLowerCase().trim();
+export function parseVoiceCommand(transcript: string): VoiceCommand | null {
+	const normalized = transcript.toLowerCase().trim().replace(/\s+/g, ' ');
 
 	for (const [type, patterns] of Object.entries(COMMAND_PATTERNS)) {
 		if (type === 'follow_up') continue;
@@ -131,7 +131,7 @@ export function parseCommand(transcript: string): VoiceCommand | null {
 			if (normalized.includes(pattern)) {
 				return {
 					type: type as CommandType,
-					confidence: 0.9,
+					confidence: 0.95,
 					transcript
 				};
 			}
@@ -143,9 +143,107 @@ export function parseCommand(transcript: string): VoiceCommand | null {
 		return {
 			type: 'follow_up',
 			confidence: 0.7,
-			transcript
+			transcript: normalized
 		};
 	}
 
 	return null;
+}
+
+// Alias for backwards compatibility
+export const parseCommand = parseVoiceCommand;
+
+/**
+ * Create a dialog turn
+ */
+export function createDialogTurn(
+	speaker: 'assistant' | 'user',
+	content: string,
+	durationMs?: number
+): DialogTurn {
+	return {
+		id: `turn-${crypto.randomUUID()}`,
+		speaker,
+		content,
+		timestamp: Date.now(),
+		durationMs
+	};
+}
+
+/**
+ * Valid session states
+ */
+const VALID_SESSION_STATES: SessionState[] = [
+	'idle',
+	'connecting',
+	'ready',
+	'speaking',
+	'listening',
+	'paused',
+	'closing',
+	'closed',
+	'error'
+];
+
+/**
+ * Check if a state is valid
+ */
+export function isValidSessionState(state: SessionState): boolean {
+	return VALID_SESSION_STATES.includes(state);
+}
+
+/**
+ * Session state transition actions
+ */
+type SessionAction =
+	| 'open'
+	| 'connected'
+	| 'speak'
+	| 'complete'
+	| 'pause'
+	| 'resume'
+	| 'timeout'
+	| 'follow_up'
+	| 'skip'
+	| 'closed'
+	| 'reset'
+	| 'error';
+
+/**
+ * State transition table
+ */
+const STATE_TRANSITIONS: Record<SessionState, Partial<Record<SessionAction, SessionState>>> = {
+	idle: { open: 'connecting' },
+	connecting: { connected: 'ready', error: 'error' },
+	ready: { speak: 'speaking', error: 'error' },
+	speaking: { complete: 'listening', pause: 'paused', skip: 'closing', error: 'error' },
+	listening: { follow_up: 'speaking', timeout: 'idle', skip: 'closing', error: 'error' },
+	paused: { resume: 'speaking', skip: 'closing', error: 'error' },
+	closing: { closed: 'closed' },
+	closed: { reset: 'idle' },
+	error: { reset: 'idle' }
+};
+
+/**
+ * Get the next session state for a given action
+ */
+export function getNextSessionState(
+	currentState: SessionState,
+	action: SessionAction
+): SessionState | null {
+	const transitions = STATE_TRANSITIONS[currentState];
+	return transitions[action] ?? null;
+}
+
+/**
+ * Create a new voice session
+ */
+export function createVoiceSession(): VoiceSession {
+	return {
+		id: `session-${crypto.randomUUID()}`,
+		state: 'idle',
+		turns: [],
+		startedAt: Date.now(),
+		lastActivityAt: Date.now()
+	};
 }
