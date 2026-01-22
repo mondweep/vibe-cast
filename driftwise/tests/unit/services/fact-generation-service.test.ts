@@ -41,7 +41,8 @@ describe('FactGenerationService', () => {
 		(GeminiTextAdapter as unknown as ReturnType<typeof vi.fn>).mockImplementation(
 			() => mockAdapter
 		);
-		service = new FactGenerationService('test-api-key');
+		// No API key needed - handled server-side
+		service = new FactGenerationService();
 	});
 
 	describe('generateFact', () => {

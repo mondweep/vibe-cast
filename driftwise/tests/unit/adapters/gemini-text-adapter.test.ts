@@ -1,5 +1,5 @@
 // GeminiTextAdapter Unit Tests - TDD Suite
-// Tests for Gemini Text API integration
+// Tests for Netlify Function proxy integration
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GeminiTextAdapter } from '@adapters/GeminiTextAdapter';
@@ -10,11 +10,10 @@ global.fetch = mockFetch;
 
 describe('GeminiTextAdapter', () => {
 	let adapter: GeminiTextAdapter;
-	const testApiKey = 'test-api-key';
 
 	beforeEach(() => {
 		vi.useFakeTimers();
-		adapter = new GeminiTextAdapter(testApiKey);
+		adapter = new GeminiTextAdapter();
 		vi.clearAllMocks();
 	});
 
@@ -28,13 +27,8 @@ describe('GeminiTextAdapter', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [
-							{
-								content: {
-									parts: [{ text: 'This is a historical fact about London.' }]
-								}
-							}
-						]
+						text: 'This is a historical fact about London.',
+						finishReason: 'STOP'
 					})
 			});
 
@@ -43,36 +37,38 @@ describe('GeminiTextAdapter', () => {
 			expect(result).toBe('This is a historical fact about London.');
 		});
 
-		it('should use correct API endpoint', async () => {
+		it('should call Netlify Function endpoint', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [{ content: { parts: [{ text: 'Test' }] } }]
+						text: 'Test',
+						finishReason: 'STOP'
 					})
 			});
 
 			await adapter.generateContent('Test prompt');
 
 			expect(mockFetch).toHaveBeenCalledWith(
-				expect.stringContaining('generativelanguage.googleapis.com'),
+				'/.netlify/functions/generate-fact',
 				expect.any(Object)
 			);
 		});
 
-		it('should include API key in URL', async () => {
+		it('should send prompt in request body', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [{ content: { parts: [{ text: 'Test' }] } }]
+						text: 'Test',
+						finishReason: 'STOP'
 					})
 			});
 
-			await adapter.generateContent('Test');
+			await adapter.generateContent('Test prompt');
 
-			const calledUrl = mockFetch.mock.calls[0][0] as string;
-			expect(calledUrl).toContain(`key=${testApiKey}`);
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+			expect(requestBody.prompt).toBe('Test prompt');
 		});
 
 		it('should include system instruction when provided', async () => {
@@ -80,7 +76,8 @@ describe('GeminiTextAdapter', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [{ content: { parts: [{ text: 'Test' }] } }]
+						text: 'Test',
+						finishReason: 'STOP'
 					})
 			});
 
@@ -89,22 +86,23 @@ describe('GeminiTextAdapter', () => {
 			});
 
 			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-			expect(requestBody.systemInstruction.parts[0].text).toBe('You are a history expert');
+			expect(requestBody.systemInstruction).toBe('You are a history expert');
 		});
 
-		it('should enable Google Search tool when requested', async () => {
+		it('should include enableSearch when requested', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [{ content: { parts: [{ text: 'Test' }] } }]
+						text: 'Test',
+						finishReason: 'STOP'
 					})
 			});
 
 			await adapter.generateContent('Test', { enableSearch: true });
 
 			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-			expect(requestBody.tools).toContainEqual({ googleSearch: {} });
+			expect(requestBody.enableSearch).toBe(true);
 		});
 
 		it('should use specified temperature', async () => {
@@ -112,14 +110,15 @@ describe('GeminiTextAdapter', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [{ content: { parts: [{ text: 'Test' }] } }]
+						text: 'Test',
+						finishReason: 'STOP'
 					})
 			});
 
 			await adapter.generateContent('Test', { temperature: 0.5 });
 
 			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-			expect(requestBody.generationConfig.temperature).toBe(0.5);
+			expect(requestBody.temperature).toBe(0.5);
 		});
 
 		it('should use specified maxTokens', async () => {
@@ -127,20 +126,22 @@ describe('GeminiTextAdapter', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [{ content: { parts: [{ text: 'Test' }] } }]
+						text: 'Test',
+						finishReason: 'STOP'
 					})
 			});
 
 			await adapter.generateContent('Test', { maxTokens: 100 });
 
 			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-			expect(requestBody.generationConfig.maxOutputTokens).toBe(100);
+			expect(requestBody.maxTokens).toBe(100);
 		});
 
 		it('should return null on HTTP error', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: false,
-				status: 500
+				status: 500,
+				json: () => Promise.resolve({ error: 'Server error' })
 			});
 
 			const result = await adapter.generateContent('Test');
@@ -159,7 +160,7 @@ describe('GeminiTextAdapter', () => {
 		it('should return null on empty response', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve({ candidates: [] })
+				json: () => Promise.resolve({ text: null })
 			});
 
 			const result = await adapter.generateContent('Test');
@@ -167,10 +168,10 @@ describe('GeminiTextAdapter', () => {
 			expect(result).toBeNull();
 		});
 
-		it('should return null on malformed response', async () => {
+		it('should return null on error response', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve({ invalid: 'response' })
+				json: () => Promise.resolve({ error: 'API error' })
 			});
 
 			const result = await adapter.generateContent('Test');
@@ -183,7 +184,8 @@ describe('GeminiTextAdapter', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [{ content: { parts: [{ text: 'NO_SUITABLE_FACT' }] } }]
+						text: 'NO_SUITABLE_FACT',
+						finishReason: 'STOP'
 					})
 			});
 
@@ -199,7 +201,8 @@ describe('GeminiTextAdapter', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [{ content: { parts: [{ text: 'Test' }] } }]
+						text: 'Test',
+						finishReason: 'STOP'
 					})
 			});
 
@@ -220,15 +223,15 @@ describe('GeminiTextAdapter', () => {
 		});
 
 		it('should queue requests and process in order', async () => {
-			const responses: string[] = [];
 			mockFetch.mockImplementation((url, options) => {
 				const body = JSON.parse(options.body);
-				const prompt = body.contents[0].parts[0].text;
+				const prompt = body.prompt;
 				return Promise.resolve({
 					ok: true,
 					json: () =>
 						Promise.resolve({
-							candidates: [{ content: { parts: [{ text: `Response to: ${prompt}` }] } }]
+							text: `Response to: ${prompt}`,
+							finishReason: 'STOP'
 						})
 				});
 			});
@@ -267,7 +270,8 @@ describe('GeminiTextAdapter', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve({
-						candidates: [{ content: { parts: [{ text: 'Test' }] } }]
+						text: 'Test',
+						finishReason: 'STOP'
 					})
 			});
 

@@ -44,11 +44,8 @@
 		locationService = new LocationService();
 		nominatimAdapter = new NominatimAdapter();
 
-		// Check for API key and create fact service
-		const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-		if (apiKey) {
-			factService = new FactGenerationService(apiKey);
-		}
+		// Create fact service (API key is handled server-side)
+		factService = new FactGenerationService();
 
 		// Check for location permission
 		checkLocationPermission();
@@ -94,7 +91,7 @@
 		}
 
 		if (!factService) {
-			appState.setError('Gemini API key not configured');
+			appState.setError('Service not initialized');
 			return;
 		}
 
@@ -310,10 +307,6 @@
 
 		{#if !permissionGranted && !$isRunning}
 			<p class="permission-note">Location permission required for discovery</p>
-		{/if}
-
-		{#if !factService && !$isRunning}
-			<p class="permission-note">Configure VITE_GEMINI_API_KEY in .env to enable fact generation</p>
 		{/if}
 	</section>
 

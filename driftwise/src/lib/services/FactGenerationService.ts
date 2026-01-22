@@ -36,8 +36,9 @@ export class FactGenerationService {
 	private adapter: GeminiTextAdapter;
 	private factHistory: Set<string> = new Set();
 
-	constructor(apiKey: string) {
-		this.adapter = new GeminiTextAdapter(apiKey);
+	constructor() {
+		// No API key needed - handled server-side by Netlify Function
+		this.adapter = new GeminiTextAdapter();
 	}
 
 	/**
@@ -147,12 +148,8 @@ Find one fascinating historical fact about this location.`;
 	}
 }
 
-// Factory function for creating service with environment API key
-export function createFactGenerationService(): FactGenerationService | null {
-	const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-	if (!apiKey) {
-		console.warn('VITE_GEMINI_API_KEY not set. Fact generation will not work.');
-		return null;
-	}
-	return new FactGenerationService(apiKey);
+// Factory function for creating service
+export function createFactGenerationService(): FactGenerationService {
+	// API key is handled server-side by Netlify Function
+	return new FactGenerationService();
 }

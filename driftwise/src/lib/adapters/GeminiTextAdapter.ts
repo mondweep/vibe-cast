@@ -1,9 +1,8 @@
-// GeminiTextAdapter - Gemini Text API integration
-// Handles fact generation with web search grounding
+// GeminiTextAdapter - Calls Netlify Function proxy for Gemini API
+// API key stays server-side, never exposed to client
 
-const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-const MODEL_ID = 'gemini-2.5-flash';
-const REQUEST_TIMEOUT_MS = 30000; // 30 seconds - gemini-2.5 can be slow
+const FUNCTION_URL = '/.netlify/functions/generate-fact';
+const REQUEST_TIMEOUT_MS = 35000; // Slightly longer than function timeout
 const MIN_REQUEST_GAP_MS = 15000; // 15 seconds between requests (rate limiting)
 
 interface GenerationConfig {
@@ -13,26 +12,23 @@ interface GenerationConfig {
 	enableSearch?: boolean;
 }
 
-interface GeminiResponse {
-	candidates?: Array<{
-		content?: {
-			parts?: Array<{ text?: string }>;
-		};
-	}>;
+interface FunctionResponse {
+	text?: string | null;
+	finishReason?: string;
+	error?: string;
 }
 
 export class GeminiTextAdapter {
-	private apiKey: string;
 	private lastRequestTime: number = 0;
 	private requestQueue: Array<() => void> = [];
 	private isProcessingQueue: boolean = false;
 
-	constructor(apiKey: string) {
-		this.apiKey = apiKey;
+	constructor() {
+		// No API key needed - it's handled server-side
 	}
 
 	/**
-	 * Generate content using Gemini API
+	 * Generate content using Netlify Function proxy
 	 */
 	async generateContent(
 		prompt: string,
@@ -78,12 +74,16 @@ export class GeminiTextAdapter {
 		prompt: string,
 		config: GenerationConfig
 	): Promise<string | null> {
-		const url = `${GEMINI_BASE_URL}/${MODEL_ID}:generateContent?key=${this.apiKey}`;
-
-		const requestBody = this.buildRequestBody(prompt, config);
+		const requestBody = {
+			prompt,
+			systemInstruction: config.systemInstruction,
+			temperature: config.temperature ?? 0.7,
+			maxTokens: config.maxTokens ?? 2048,
+			enableSearch: config.enableSearch ?? false
+		};
 
 		try {
-			const response = await this.fetchWithTimeout(url, {
+			const response = await this.fetchWithTimeout(FUNCTION_URL, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -92,44 +92,27 @@ export class GeminiTextAdapter {
 			});
 
 			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}));
+				console.error('[GeminiAdapter] Function error:', errorData);
 				return null;
 			}
 
-			const data: GeminiResponse = await response.json();
+			const data: FunctionResponse = await response.json();
+
+			if (data.error) {
+				console.error('[GeminiAdapter] API error:', data.error);
+				return null;
+			}
+
 			return this.parseResponse(data);
-		} catch {
+		} catch (error) {
+			console.error('[GeminiAdapter] Request failed:', error);
 			return null;
 		}
 	}
 
-	private buildRequestBody(prompt: string, config: GenerationConfig): object {
-		const body: Record<string, unknown> = {
-			contents: [
-				{
-					parts: [{ text: prompt }]
-				}
-			],
-			generationConfig: {
-				temperature: config.temperature ?? 0.7,
-				maxOutputTokens: config.maxTokens ?? 150
-			}
-		};
-
-		if (config.systemInstruction) {
-			body.systemInstruction = {
-				parts: [{ text: config.systemInstruction }]
-			};
-		}
-
-		if (config.enableSearch) {
-			body.tools = [{ googleSearch: {} }];
-		}
-
-		return body;
-	}
-
-	private parseResponse(response: GeminiResponse): string | null {
-		const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
+	private parseResponse(response: FunctionResponse): string | null {
+		const text = response.text;
 
 		if (!text) {
 			return null;
