@@ -1,6 +1,8 @@
 # @claude-flow/browser Demo Project
 
-Working examples for AI-optimized browser automation with `@claude-flow/browser`.
+**Working examples for AI-optimized browser automation with REAL websites.**
+
+This project demonstrates `@claude-flow/browser` capabilities using **actual, working websites** - no imaginary URLs or placeholder sites.
 
 ## Quick Start
 
@@ -11,8 +13,12 @@ npm install
 # 2. Install Playwright browsers
 npm run setup
 
-# 3. Run an example
-npm run example:basic
+# 3. Run a real-world example
+npm run real:hackernews   # Scrape Hacker News top stories
+npm run real:github       # Get GitHub trending repos
+npm run real:wikipedia    # Extract Wikipedia knowledge
+npm run real:news         # Aggregate tech news from multiple sites
+npm run real:status       # Monitor service status pages
 ```
 
 ## Prerequisites
@@ -23,15 +29,148 @@ npm run example:basic
   npm install -g agent-browser@latest
   ```
 
-## Examples
+## Real-World Examples
+
+These examples work with **actual websites** and produce **real data**:
+
+| Example | Command | What It Does |
+|---------|---------|--------------|
+| **Hacker News** | `npm run real:hackernews` | Scrapes top stories from news.ycombinator.com |
+| **GitHub Trending** | `npm run real:github` | Extracts trending repos by language |
+| **Wikipedia** | `npm run real:wikipedia` | Extracts article data and infoboxes |
+| **News Aggregator** | `npm run real:news` | Aggregates from BBC, NPR, Verge, Ars Technica |
+| **Status Monitor** | `npm run real:status` | Monitors GitHub, Cloudflare, Vercel, npm status |
+
+### 1. Hacker News Scraper (`real-01-hackernews.ts`)
+
+Scrapes real-time top stories from Hacker News.
+
+```typescript
+// Extracts: rank, title, URL, points, author, comments
+const result = await scrapeHackerNews(1);  // 1 page = ~30 stories
+
+// Also supports different sections
+await scrapeHackerNewsCategory('newest');  // or 'ask', 'show', 'jobs'
+```
+
+**Use cases:**
+- Tech news monitoring
+- Content curation
+- Trend analysis
+- Research data collection
+
+### 2. GitHub Trending Repos (`real-02-github-trending.ts`)
+
+Extracts trending repositories with language and time range filtering.
+
+```typescript
+// Get trending for all languages
+await scrapeGitHubTrending('all', 'daily');
+
+// Filter by language
+await scrapeGitHubTrending('typescript', 'weekly');
+await scrapeGitHubTrending('rust', 'monthly');
+
+// Parallel scraping multiple languages
+await scrapeMultipleLanguages(['python', 'rust', 'go']);
+```
+
+**Use cases:**
+- Discover new open-source projects
+- Track technology trends
+- Developer tooling
+- Portfolio research
+
+### 3. Wikipedia Knowledge Extractor (`real-03-wikipedia.ts`)
+
+Extracts structured data from Wikipedia articles.
+
+```typescript
+// Extract full article with infobox, sections, categories
+const article = await extractWikipediaArticle('Artificial intelligence');
+
+// Search Wikipedia
+const results = await searchWikipedia('machine learning', 5);
+
+// Compare multiple articles in parallel
+await compareArticles([
+  'Python (programming language)',
+  'JavaScript',
+  'Rust (programming language)',
+]);
+```
+
+**Use cases:**
+- Knowledge base building
+- Research automation
+- Educational content extraction
+- Data enrichment
+
+### 4. Multi-Site News Aggregator (`real-04-news-aggregator.ts`)
+
+Parallel scraping from 5 real tech news sources:
+
+- **BBC Technology** - bbc.com/news/technology
+- **NPR Technology** - npr.org/sections/technology
+- **The Verge** - theverge.com/tech
+- **Ars Technica** - arstechnica.com
+- **Hacker News** - news.ycombinator.com
+
+```typescript
+// Aggregate from all sources
+const news = await aggregateNews(['hackernews', 'bbc', 'ars', 'verge', 'npr']);
+
+// Analyze trending topics
+analyzeTopics(news);
+
+// Export to JSON
+const json = exportToJSON(news);
+```
+
+**Use cases:**
+- News monitoring dashboards
+- Content aggregation
+- Media analysis
+- Competitive intelligence
+
+### 5. Service Status Monitor (`real-05-status-monitor.ts`)
+
+Monitors real status pages for developer services:
+
+- **GitHub Status** - githubstatus.com
+- **Cloudflare Status** - cloudflarestatus.com
+- **Vercel Status** - vercel-status.com
+- **npm Status** - status.npmjs.org
+- **Atlassian Status** - status.atlassian.com
+
+```typescript
+// Check all services
+const report = await checkAllServices();
+
+// Check specific services
+const report = await checkAllServices(['github', 'cloudflare', 'npm']);
+
+// Generate alerts
+const alert = generateAlert(report);
+```
+
+**Use cases:**
+- Infrastructure monitoring
+- DevOps dashboards
+- Incident alerting
+- SLA tracking
+
+## Original Examples (Conceptual)
+
+The original examples demonstrate API patterns with placeholder URLs:
 
 | Example | Command | Description |
 |---------|---------|-------------|
-| Basic Navigation | `npm run example:basic` | Open pages, take snapshots, use element refs |
-| Login Flow | `npm run example:login` | Form filling, click actions, waiting |
-| Data Extraction | `npm run example:scrape` | Extract structured data from pages |
-| Parallel Swarm | `npm run example:swarm` | Multi-browser parallel scraping |
-| Form Automation | `npm run example:form` | Complete form automation with security |
+| Basic Navigation | `npm run example:basic` | Open pages, take snapshots |
+| Login Flow | `npm run example:login` | Form filling patterns |
+| Data Extraction | `npm run example:scrape` | Scraping concepts |
+| Parallel Swarm | `npm run example:swarm` | Multi-browser patterns |
+| Form Automation | `npm run example:form` | Form handling concepts |
 
 ## Key Concepts
 
@@ -47,39 +186,46 @@ await page.fill('input[name="email"][type="text"].form-control', 'user@example.c
 await browser.fill('@e1', 'user@example.com');
 ```
 
-Element refs come from `browser.snapshot()` which analyzes the page and assigns refs to interactive elements.
-
 ### Trajectory Learning
 
 Wrap interactions in trajectories to teach the system successful patterns:
 
 ```typescript
-browser.startTrajectory('Login to dashboard');
+browser.startTrajectory('Scrape Hacker News');
 
-await browser.open('https://app.example.com/login');
-await browser.fill('@e1', 'user@example.com');
-await browser.fill('@e2', 'password');
-await browser.click('@e3');
+await browser.open('https://news.ycombinator.com/');
+const stories = await browser.evaluate('...');
 
-// Mark as successful - this pattern gets saved for future use
-await browser.endTrajectory(true, 'Login successful');
+// Mark as successful - pattern saved for reuse
+await browser.endTrajectory(true, 'Scraped 30 stories');
+```
+
+### Browser Swarm (Parallel Processing)
+
+Process multiple URLs simultaneously:
+
+```typescript
+const swarm = createBrowserSwarm({ maxSessions: 5 });
+
+const promises = urls.map(async (url) => {
+  const browser = await swarm.spawn();
+  await browser.open(url);
+  const data = await browser.evaluate('...');
+  await browser.close();
+  return data;
+});
+
+const results = await Promise.all(promises);
 ```
 
 ### Security Features
 
-Built-in protection when `enableSecurity: true`:
+Built-in protection with `enableSecurity: true`:
 
 - URL validation and phishing detection
 - PII scanning in form submissions
 - XSS/SQL injection prevention
 - Domain allowlisting
-
-```typescript
-const browser = createBrowserService({
-  enableSecurity: true,
-  allowedDomains: ['myapp.com', 'api.myapp.com'],
-});
-```
 
 ## API Reference
 
@@ -87,10 +233,10 @@ const browser = createBrowserService({
 
 ```typescript
 const browser = createBrowserService({
-  sessionId: 'my-session',      // Unique session identifier
-  enableSecurity: true,         // URL/PII scanning
-  enableMemory: true,           // Trajectory learning
-  allowedDomains: ['...'],      // Domain whitelist
+  sessionId: 'my-session',
+  enableSecurity: true,
+  enableMemory: true,
+  allowedDomains: ['example.com'],
 });
 ```
 
@@ -115,20 +261,6 @@ const browser = createBrowserService({
 | `browser.startTrajectory(name)` | Begin recording |
 | `browser.endTrajectory(success, note)` | End and save pattern |
 
-### createBrowserSwarm(options)
-
-For parallel operations:
-
-```typescript
-const swarm = createBrowserSwarm({
-  maxSessions: 5,  // Max concurrent browsers
-});
-
-const browser = await swarm.spawn();  // Get a browser from the pool
-await browser.open('...');
-await browser.close();  // Return to pool
-```
-
 ## Integration with Claude Code
 
 Add as MCP server for Claude Code integration:
@@ -142,6 +274,45 @@ claude mcp list
 ```
 
 Then use 59 browser MCP tools directly in Claude Code conversations.
+
+## Project Structure
+
+```
+vibe-cast/
+├── package.json
+├── tsconfig.json
+├── README.md
+└── src/
+    ├── types.ts                    # TypeScript definitions
+    │
+    ├── # Original conceptual examples
+    ├── 01-basic-navigation.ts
+    ├── 02-login-flow.ts
+    ├── 03-data-extraction.ts
+    ├── 04-parallel-swarm.ts
+    ├── 05-form-automation.ts
+    │
+    └── # REAL-WORLD working examples
+    ├── real-01-hackernews.ts       # Hacker News scraper
+    ├── real-02-github-trending.ts  # GitHub trending repos
+    ├── real-03-wikipedia.ts        # Wikipedia extractor
+    ├── real-04-news-aggregator.ts  # Multi-site news
+    └── real-05-status-monitor.ts   # Service status monitor
+```
+
+## Running All Real Examples
+
+```bash
+# Run all real-world examples in sequence
+npm run real:all
+
+# Or run individually
+npm run real:hackernews
+npm run real:github
+npm run real:wikipedia
+npm run real:news
+npm run real:status
+```
 
 ## Troubleshooting
 
@@ -157,39 +328,23 @@ npm install -g agent-browser@latest
 npx playwright install chromium
 ```
 
+### Rate limiting or blocked requests
+
+Some websites may rate-limit or block automated requests. The examples include:
+- Respectful delays between requests
+- Standard browser user-agents
+- No aggressive retry loops
+
 ### Security blocking legitimate URLs
 
 ```typescript
-// Option 1: Whitelist domain
+// Whitelist specific domains
 const browser = createBrowserService({
   allowedDomains: ['trusted-domain.com'],
 });
 
-// Option 2: Skip for specific navigation
-await browser.open('http://trusted-domain.com', { skipSecurityCheck: true });
-```
-
-### Trajectories not persisting
-
-Always `await` the endTrajectory call:
-
-```typescript
-await browser.endTrajectory(true);  // Must await!
-```
-
-## Project Structure
-
-```
-claude-flow-browser-demo/
-├── package.json
-├── tsconfig.json
-├── README.md
-└── src/
-    ├── 01-basic-navigation.ts   # Simple navigation
-    ├── 02-login-flow.ts         # Form login pattern
-    ├── 03-data-extraction.ts    # Scraping example
-    ├── 04-parallel-swarm.ts     # Multi-browser swarm
-    └── 05-form-automation.ts    # Complete form handling
+// Or skip security for specific navigation
+await browser.open('http://example.com', { skipSecurityCheck: true });
 ```
 
 ## Links
@@ -200,4 +355,4 @@ claude-flow-browser-demo/
 
 ---
 
-Part of the Claude-Flow ecosystem 🌊
+Part of the Claude-Flow ecosystem
