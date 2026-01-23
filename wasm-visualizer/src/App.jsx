@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Network, Activity, GitMerge, Orbit, Combine, Workflow, Github, Linkedin, ExternalLink } from 'lucide-react';
+import { Network, Activity, GitMerge, Orbit, Combine, Workflow, Github, Linkedin, ExternalLink, ArrowRight } from 'lucide-react';
 
 import CohomologyViz from './components/visualizations/CohomologyViz';
 import SpectralViz from './components/visualizations/SpectralViz';
@@ -149,6 +149,11 @@ function App() {
             <p>{engine.description}</p>
             <div className="viz-preview">
               <engine.VizComponent />
+            </div>
+
+            <div className="click-hint">
+              <span>Click to Explore</span>
+              <ArrowRight size={14} />
             </div>
           </div>
         ))}

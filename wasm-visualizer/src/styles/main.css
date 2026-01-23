@@ -16,6 +16,7 @@
     margin: 0;
     background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: -0.02em;
 }
@@ -79,6 +80,29 @@
 }
 
 /* Utilities */
+.click-hint {
+    position: absolute;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--accent-primary);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    background: rgba(112, 0, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(112, 0, 255, 0.2);
+}
+
+.engine-card:hover .click-hint {
+    opacity: 1;
+    transform: translateX(0);
+}
+
 .glass-panel {
     background: rgba(10, 10, 10, 0.8);
     backdrop-filter: blur(12px);
