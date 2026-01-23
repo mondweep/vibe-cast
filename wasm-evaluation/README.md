@@ -1,5 +1,15 @@
 # Prime-Radiant Advanced WASM Evaluation
 
+## About
+
+This project is an evaluation and exploration of the `prime-radiant-advanced-wasm` package (available on [npm](https://www.npmjs.com/package/prime-radiant-advanced-wasm)).
+
+The goal is to understand the capabilities, input requirements, and potential use cases of this WebAssembly-based mathematical library, which provides advanced engines for Coherence, Stability, Causal Inference, Quantum States, Category Theory, and Homotopy Type Theory.
+
+We have reverse-engineered the required input data structures (which were strictly typed in the underlying Rust/WASM code) and created:
+1.  A working Node.js evaluation script (`evaluate.js`) in `wasm-evaluation/`.
+2.  A [React-based Visualizer](../wasm-visualizer/README.md) to demonstrate these concepts intuitively.
+
 This directory contains an evaluation setup for the [prime-radiant-advanced-wasm](https://www.npmjs.com/package/prime-radiant-advanced-wasm) npm package.
 
 ## Package Overview
