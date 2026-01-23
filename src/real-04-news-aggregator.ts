@@ -184,7 +184,7 @@ async function scrapeNewsSource(sourceKey: SourceKey): Promise<NewsSourceResult>
     await browser.open(source.url);
     const snapshot = await browser.snapshot({ interactive: true });
 
-    const articles = await browser.evaluate(source.extract);
+    const articles = (await browser.eval(source.extract)).data.result;
 
     await browser.endTrajectory(true, `Scraped ${articles.length} articles from ${source.name}`);
 
@@ -232,10 +232,10 @@ async function aggregateNews(sourceKeys: SourceKey[]): Promise<AggregatedNews> {
     console.log(`   🚀 Starting: ${source.name}`);
 
     try {
-      const browser = await swarm.spawn();
+      const browser = await swarm.spawnAgent('scraper');
       await browser.open(source.url);
 
-      const articles = await browser.evaluate(source.extract);
+      const articles = (await browser.eval(source.extract)).data.result;
       await browser.close();
 
       const duration = Date.now() - taskStart;

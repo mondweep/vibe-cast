@@ -62,7 +62,7 @@ async function scrapeHackerNews(pages: number = 1): Promise<HackerNewsResult> {
 
       // Extract stories using JavaScript evaluation
       console.log('🔍 Extracting stories...');
-      const pageStories = await browser.evaluate(`
+      const pageStories = (await browser.eval(`
         (() => {
           const stories = [];
           const rows = document.querySelectorAll('tr.athing');
@@ -106,7 +106,7 @@ async function scrapeHackerNews(pages: number = 1): Promise<HackerNewsResult> {
 
           return stories;
         })()
-      `);
+      `)).data.result as HackerNewsStory[];
 
       if (pageStories && Array.isArray(pageStories)) {
         allStories.push(...pageStories);
@@ -187,7 +187,7 @@ async function scrapeHackerNewsCategory(category: 'newest' | 'ask' | 'show' | 'j
     await browser.open(urlMap[category]);
     const snapshot = await browser.snapshot({ interactive: true });
 
-    const stories = await browser.evaluate(`
+    const stories = (await browser.eval(`
       (() => {
         const stories = [];
         const rows = document.querySelectorAll('tr.athing');
@@ -213,7 +213,7 @@ async function scrapeHackerNewsCategory(category: 'newest' | 'ask' | 'show' | 'j
 
         return stories;
       })()
-    `);
+    `)).data.result;
 
     await browser.endTrajectory(true, `Scraped ${category} section`);
     await browser.close();

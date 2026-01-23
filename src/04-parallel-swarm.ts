@@ -42,21 +42,21 @@ async function parallelScrape(urls: string[]): Promise<ScrapedResult[]> {
 
     try {
       // Spawn a new browser session from the swarm
-      const browser = await swarm.spawn();
+      const browser = await swarm.spawnAgent('scraper');
 
       // Navigate and extract
       await browser.open(url);
       const snapshot = await browser.snapshot({ interactive: true });
 
       // Extract page data
-      const data = await browser.evaluate(`
+      const data = (await browser.eval(`
         ({
           title: document.title,
           elementCount: document.querySelectorAll('*').length,
           textLength: document.body?.innerText?.length || 0,
           linkCount: document.querySelectorAll('a').length,
         })
-      `);
+      `)).data.result;
 
       await browser.close();
 
@@ -138,7 +138,7 @@ async function sequentialScrape(urls: string[]): Promise<ScrapedResult[]> {
     const taskStart = Date.now();
     try {
       await browser.open(url);
-      const data = await browser.evaluate(`({ title: document.title })`);
+      const data = (await browser.eval(`({ title: document.title })`)).data.result;
       results.push({
         url,
         title: data.title,

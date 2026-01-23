@@ -74,7 +74,7 @@ async function scrapeGitHubTrending(
     // Extract trending repositories
     console.log('🔍 Extracting repository data...\n');
 
-    const repos = await browser.evaluate(`
+    const repos = (await browser.eval(`
       (() => {
         const repos = [];
         const articles = document.querySelectorAll('article.Box-row');
@@ -143,7 +143,7 @@ async function scrapeGitHubTrending(
 
         return repos;
       })()
-    `);
+    `)).data.result;
 
     await browser.endTrajectory(true, `Found ${repos.length} trending repos`);
 
@@ -224,14 +224,14 @@ async function scrapeMultipleLanguages(
     console.log(`   🚀 Starting scraper for: ${lang}`);
 
     try {
-      const browser = await swarm.spawn();
+      const browser = await swarm.spawnAgent('scraper');
       const url = lang === 'all'
         ? 'https://github.com/trending'
         : `https://github.com/trending/${lang}`;
 
       await browser.open(url);
 
-      const repos = await browser.evaluate(`
+      const repos = (await browser.eval(`
         (() => {
           const repos = [];
           document.querySelectorAll('article.Box-row').forEach((article, i) => {
@@ -249,7 +249,7 @@ async function scrapeMultipleLanguages(
           });
           return repos;
         })()
-      `);
+      `)).data.result;
 
       await browser.close();
 

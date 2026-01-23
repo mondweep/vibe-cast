@@ -105,7 +105,7 @@ async function automateForm(url: string, formData: FormData) {
       await browser.click('@submit'); // or find submit button ref
     } catch {
       // Try common submit patterns
-      await browser.evaluate(`
+      await browser.eval(`
         const submitBtn = document.querySelector('button[type="submit"], input[type="submit"], button:contains("Submit")');
         if (submitBtn) submitBtn.click();
       `);

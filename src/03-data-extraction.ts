@@ -45,7 +45,7 @@ async function extractDataFromPage(url: string): Promise<ExtractedData> {
 
     // Method 2: Run JavaScript to extract structured data
     console.log('🔍 Extracting via JavaScript...');
-    const jsData = await browser.evaluate(`
+    const jsData = (await browser.eval(`
       (() => {
         return {
           title: document.title,
@@ -67,7 +67,7 @@ async function extractDataFromPage(url: string): Promise<ExtractedData> {
           }
         };
       })()
-    `);
+    `)).data.result;
 
     console.log('\n✅ Data extracted successfully!');
     console.log('─'.repeat(50));

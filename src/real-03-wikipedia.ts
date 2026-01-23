@@ -66,7 +66,7 @@ async function extractWikipediaArticle(articleTitle: string): Promise<WikipediaA
     // Extract article data
     console.log('🔍 Extracting article content...\n');
 
-    const articleData = await browser.evaluate(`
+    const articleData = (await browser.eval(`
       (() => {
         // Get title
         const title = document.querySelector('#firstHeading')?.textContent?.trim() || '';
@@ -157,7 +157,7 @@ async function extractWikipediaArticle(articleTitle: string): Promise<WikipediaA
           references: refCount
         };
       })()
-    `);
+    `)).data.result;
 
     await browser.endTrajectory(true, `Extracted article: ${articleData.title}`);
 
@@ -227,7 +227,7 @@ async function searchWikipedia(query: string, limit: number = 5): Promise<Wikipe
 
     await browser.open(searchUrl);
 
-    const results = await browser.evaluate(`
+    const results = (await browser.eval(`
       (() => {
         const results = [];
         const items = document.querySelectorAll('.mw-search-result');
@@ -247,7 +247,7 @@ async function searchWikipedia(query: string, limit: number = 5): Promise<Wikipe
 
         return results;
       })()
-    `);
+    `)).data.result;
 
     await browser.endTrajectory(true, `Found ${results.length} results`);
     await browser.close();
@@ -282,13 +282,13 @@ async function compareArticles(titles: string[]): Promise<Map<string, WikipediaA
 
   const promises = titles.map(async (title) => {
     try {
-      const browser = await swarm.spawn();
+      const browser = await swarm.spawnAgent('scraper');
       const encodedTitle = encodeURIComponent(title.replace(/ /g, '_'));
       const url = `https://en.wikipedia.org/wiki/${encodedTitle}`;
 
       await browser.open(url);
 
-      const data = await browser.evaluate(`
+      const data = (await browser.eval(`
         (() => {
           const infobox = {};
           document.querySelectorAll('.infobox tr').forEach(row => {
@@ -320,7 +320,7 @@ async function compareArticles(titles: string[]): Promise<Map<string, WikipediaA
             references: document.querySelectorAll('.reference').length
           };
         })()
-      `);
+      `)).data.result;
 
       await browser.close();
       console.log(`   ✅ ${title}`);

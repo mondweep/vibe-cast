@@ -4,6 +4,33 @@
 
 This project demonstrates `@claude-flow/browser` capabilities using **actual, working websites** - no imaginary URLs or placeholder sites.
 
+## 🛠️ Recent Fixes & Verification (Jan 23, 2026)
+
+We have resolved critical issues with the `@claude-flow/browser` library that were causing `browser.evaluate is not a function` errors.
+
+### Fixes Applied:
+1.  **Library Patch**: Patched `@claude-flow/browser` to:
+    *   Swap `execSync` for `execFileSync` to handle complex JavaScript shell escaping correctly.
+    *   Remove the unsupported `--timeout` flag injection.
+2.  **API Update**: Replaced all instances of `evaluate` (conceptual) with `eval` (actual API).
+3.  **Result Unwrapping**: Updated all examples to correctly unwrap the `browser.eval()` return object (using `.data.result`).
+
+### Verification
+The solution has been verified with the Hacker News scraper:
+```bash
+npm run real:hackernews
+```
+**Result**: Successfully scrapes 30 top stories and navigates categories.
+
+## Architecture
+
+This project uses a layered architecture to provide robust browser automation:
+
+1.  **Application Layer (`src/*.ts`)**: High-level scripts (e.g., `real-01-hackernews.ts`) that use `BrowserService`.
+2.  **Service Layer (`BrowserService`)**: Manages sessions, security/PII scanning, and trajectory recording.
+3.  **Adapter Layer (`AgentBrowserAdapter`)**: Bridges the service to the underlying CLI tool.
+4.  **Execution Layer (`agent-browser` CLI)**: The binary that actually controls the browser via Playwright.
+
 ## Quick Start
 
 ```bash

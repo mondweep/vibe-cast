@@ -281,7 +281,7 @@ async function checkServiceStatus(serviceKey: StatusPageKey): Promise<ServiceSta
     await browser.open(service.url);
     await browser.wait({ timeout: 3000 }); // Wait for dynamic content
 
-    const data = await browser.evaluate(service.extract);
+    const data = (await browser.eval(service.extract)).data.result;
 
     await browser.endTrajectory(true, `${service.name}: ${data.statusText}`);
 
@@ -336,11 +336,11 @@ async function checkAllServices(serviceKeys?: StatusPageKey[]): Promise<StatusRe
     console.log(`   🚀 Checking: ${service.name}`);
 
     try {
-      const browser = await swarm.spawn();
+      const browser = await swarm.spawnAgent('monitor');
       await browser.open(service.url);
       await browser.wait({ timeout: 2000 });
 
-      const data = await browser.evaluate(service.extract);
+      const data = (await browser.eval(service.extract)).data.result;
       await browser.close();
 
       const statusEmoji = {
