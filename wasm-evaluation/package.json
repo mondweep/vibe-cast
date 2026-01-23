@@ -1,0 +1,21 @@
+{
+  "name": "wasm-evaluation",
+  "version": "1.0.0",
+  "description": "Evaluation of prime-radiant-advanced-wasm package",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js",
+    "evaluate": "node evaluate.js"
+  },
+  "keywords": [
+    "wasm",
+    "evaluation",
+    "prime-radiant"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "prime-radiant-advanced-wasm": "^0.1.3"
+  }
+}
