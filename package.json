@@ -1,7 +1,7 @@
 {
   "name": "claude-flow-browser-demo",
   "version": "1.0.0",
-  "description": "Working examples for @claude-flow/browser automation",
+  "description": "Working examples for @claude-flow/browser automation with REAL websites",
   "type": "module",
   "scripts": {
     "setup": "npx playwright install chromium",
@@ -10,7 +10,13 @@
     "example:scrape": "npx tsx src/03-data-extraction.ts",
     "example:swarm": "npx tsx src/04-parallel-swarm.ts",
     "example:form": "npx tsx src/05-form-automation.ts",
-    "example:all": "npm run example:basic && npm run example:scrape"
+    "example:all": "npm run example:basic && npm run example:scrape",
+    "real:hackernews": "npx tsx src/real-01-hackernews.ts",
+    "real:github": "npx tsx src/real-02-github-trending.ts",
+    "real:wikipedia": "npx tsx src/real-03-wikipedia.ts",
+    "real:news": "npx tsx src/real-04-news-aggregator.ts",
+    "real:status": "npx tsx src/real-05-status-monitor.ts",
+    "real:all": "npm run real:hackernews && npm run real:github && npm run real:wikipedia"
   },
   "dependencies": {
     "@claude-flow/browser": "^3.0.0-alpha",
