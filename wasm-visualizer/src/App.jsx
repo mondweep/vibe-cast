@@ -185,35 +185,69 @@ function App() {
           </a>
         </div>
 
-        <a
-          href="https://github.com/mondweep/vibe-cast/tree/claude/evaluate-wasm-package-Vtdt2"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color: 'var(--text-primary)',
-            textDecoration: 'none',
-            padding: '8px 16px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '20px',
-            transition: 'all 0.2s'
-          }}
-          onMouseOver={e => {
-            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.borderColor = 'var(--border-subtle)';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
-          <Github size={18} />
-          <span>View Source</span>
-          <ExternalLink size={14} style={{ opacity: 0.5 }} />
-        </a>
+        <div style={{ display: 'flex', gap: 'var(--space-md)' }}>
+          <a
+            href="https://github.com/mondweep/vibe-cast/tree/claude/evaluate-wasm-package-Vtdt2/wasm-visualizer"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: 'var(--text-primary)',
+              textDecoration: 'none',
+              padding: '8px 16px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '20px',
+              transition: 'all 0.2s',
+              fontSize: '0.8rem'
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.borderColor = 'var(--border-subtle)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <Github size={16} />
+            <span>Viz Code</span>
+            <ExternalLink size={12} style={{ opacity: 0.5 }} />
+          </a>
+
+          <a
+            href="https://github.com/mondweep/vibe-cast/tree/claude/evaluate-wasm-package-Vtdt2/wasm-evaluation"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: 'var(--text-primary)',
+              textDecoration: 'none',
+              padding: '8px 16px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '20px',
+              transition: 'all 0.2s',
+              fontSize: '0.8rem'
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.borderColor = 'var(--accent-secondary)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.borderColor = 'var(--border-subtle)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <Github size={16} />
+            <span>Evaluation Code</span>
+            <ExternalLink size={12} style={{ opacity: 0.5 }} />
+          </a>
+        </div>
       </footer>
     </div>
   );
