@@ -1,0 +1,28 @@
+{
+  "name": "claude-flow-browser-demo",
+  "version": "1.0.0",
+  "description": "Working examples for @claude-flow/browser automation",
+  "type": "module",
+  "scripts": {
+    "setup": "npx playwright install chromium",
+    "example:basic": "npx tsx src/01-basic-navigation.ts",
+    "example:login": "npx tsx src/02-login-flow.ts",
+    "example:scrape": "npx tsx src/03-data-extraction.ts",
+    "example:swarm": "npx tsx src/04-parallel-swarm.ts",
+    "example:form": "npx tsx src/05-form-automation.ts",
+    "example:all": "npm run example:basic && npm run example:scrape"
+  },
+  "dependencies": {
+    "@claude-flow/browser": "^3.0.0-alpha",
+    "@claude-flow/cli": "^3.0.0-alpha",
+    "claude-flow": "v3alpha"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
