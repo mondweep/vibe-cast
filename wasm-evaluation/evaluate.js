@@ -54,15 +54,17 @@ async function runEvaluation() {
 
     // Graph with numeric node IDs and embedding data
     const graph = {
+      id: 0,
+      name: "Cohomology Graph",
       nodes: [
-        { id: 0, data: [0.9, 0.1, 0.0] },  // "Meeting at 3pm"
-        { id: 1, data: [0.8, 0.2, 0.0] },  // "John confirmed 3pm"
-        { id: 2, data: [0.1, 0.9, 0.0] },  // "Meeting moved to 4pm" (contradiction)
+        { id: 0, label: "Meeting at 3pm", section: [], weight: 1.0, data: [0.9, 0.1, 0.0] },
+        { id: 1, label: "John confirmed 3pm", section: [], weight: 1.0, data: [0.8, 0.2, 0.0] },
+        { id: 2, label: "Meeting moved to 4pm", section: [], weight: 1.0, data: [0.1, 0.9, 0.0] },
       ],
       edges: [
-        { source: 0, target: 1, weight: 0.9 },
-        { source: 1, target: 2, weight: 0.5 },
-        { source: 0, target: 2, weight: 0.2 },
+        { id: 0, source: 0, target: 1, weight: 0.9, restriction_map: [1.0], source_dim: 1, target_dim: 1 },
+        { id: 1, source: 1, target: 2, weight: 0.5, restriction_map: [1.0], source_dim: 1, target_dim: 1 },
+        { id: 2, source: 0, target: 2, weight: 0.2, restriction_map: [1.0], source_dim: 1, target_dim: 1 },
       ]
     };
 
@@ -89,7 +91,7 @@ async function runEvaluation() {
 
     // Graph with edges as tuples [source, target, weight]
     const graph = {
-      num_nodes: 4,
+      n: 4,
       edges: [
         [0, 1, 1.0],
         [1, 2, 1.0],
@@ -124,9 +126,9 @@ async function runEvaluation() {
     // Causal model with proper variable structure
     const model = {
       variables: [
-        { name: 'treatment', observed: true },
-        { name: 'outcome', observed: true },
-        { name: 'confounder', observed: true }
+        { name: 'treatment', var_type: 'binary', observed: true },
+        { name: 'outcome', var_type: 'binary', observed: true },
+        { name: 'confounder', var_type: 'binary', observed: true }
       ],
       edges: [
         { from: 'treatment', to: 'outcome' },
@@ -199,17 +201,18 @@ async function runEvaluation() {
 
     // Define a simple category with proper object structure
     const cat = {
+      name: "Simple Category",
       objects: [
-        { name: 'A', dimension: 1 },
-        { name: 'B', dimension: 1 },
-        { name: 'C', dimension: 1 }
+        { id: "0", name: 'A', dimension: 1, data: [] },
+        { id: "1", name: 'B', dimension: 1, data: [] },
+        { id: "2", name: 'C', dimension: 1, data: [] }
       ],
       morphisms: [
-        { name: 'f', source: 'A', target: 'B' },
-        { name: 'g', source: 'B', target: 'C' },
-        { name: 'id_A', source: 'A', target: 'A' },
-        { name: 'id_B', source: 'B', target: 'B' },
-        { name: 'id_C', source: 'C', target: 'C' },
+        { name: 'f', source: 'A', target: 'B', source_dim: 1, target_dim: 1, matrix: [1.0] },
+        { name: 'g', source: 'B', target: 'C', source_dim: 1, target_dim: 1, matrix: [1.0] },
+        { name: 'id_A', source: 'A', target: 'A', source_dim: 1, target_dim: 1, matrix: [1.0] },
+        { name: 'id_B', source: 'B', target: 'B', source_dim: 1, target_dim: 1, matrix: [1.0] },
+        { name: 'id_C', source: 'C', target: 'C', source_dim: 1, target_dim: 1, matrix: [1.0] },
       ]
     };
 
@@ -217,8 +220,8 @@ async function runEvaluation() {
     console.log(`  Category Laws Valid: ${isValid}`);
 
     // Compose morphisms with proper structure
-    const f = { name: 'f', source: 'A', target: 'B', matrix: [[2]] };
-    const g = { name: 'g', source: 'B', target: 'C', matrix: [[3]] };
+    const f = { name: 'f', source: 'A', target: 'B', source_dim: 1, target_dim: 1, matrix: [2.0] };
+    const g = { name: 'g', source: 'B', target: 'C', source_dim: 1, target_dim: 1, matrix: [3.0] };
 
     const composed = category.composeMorphisms(f, g);
     console.log(`  Composed Morphism (g . f):`, composed);
@@ -238,16 +241,16 @@ async function runEvaluation() {
     const hott = new HoTTEngine();
 
     // Create a type with proper structure
-    const natType = { name: 'Nat', kind: 'base' };
-    const point = { value: 42 };
+    const natType = { name: 'Nat', kind: 'base', level: 0, params: [] };
+    const point = { value: "42", kind: "term", children: [] };
 
     // Create reflexivity path
     const reflPath = hott.createReflPath(natType, point);
     console.log(`  Reflexivity Path:`, reflPath);
 
     // Check type equivalence
-    const type1 = { name: 'Nat', kind: 'base' };
-    const type2 = { name: 'Nat', kind: 'base' };
+    const type1 = { name: 'Nat', kind: 'base', level: 0, params: [] };
+    const type2 = { name: 'Nat', kind: 'base', level: 0, params: [] };
     const isEquiv = hott.checkTypeEquivalence(type1, type2);
     console.log(`  Type Equivalence (Nat = Nat): ${isEquiv}`);
 
