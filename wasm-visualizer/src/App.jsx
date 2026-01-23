@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Network, Activity, GitMerge, Orbit, Combine, Workflow } from 'lucide-react';
+import { Network, Activity, GitMerge, Orbit, Combine, Workflow, Github, Linkedin, ExternalLink } from 'lucide-react';
 
 import CohomologyViz from './components/visualizations/CohomologyViz';
 import SpectralViz from './components/visualizations/SpectralViz';
@@ -160,6 +160,61 @@ function App() {
           onClose={handleClose}
         />
       )}
+
+      <footer style={{
+        marginTop: 'var(--space-xl)',
+        paddingTop: 'var(--space-lg)',
+        borderTop: '1px solid var(--border-subtle)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        color: 'var(--text-secondary)',
+        fontSize: '0.9rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
+          <span>Created by <strong>Mondweep Chakravorty</strong></span>
+          <a
+            href="https://www.linkedin.com/in/mondweepchakravorty/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+            onMouseOver={e => e.currentTarget.style.color = '#0077b5'}
+            onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+          >
+            <Linkedin size={20} />
+          </a>
+        </div>
+
+        <a
+          href="https://github.com/mondweep/vibe-cast/tree/claude/evaluate-wasm-package-Vtdt2"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'var(--text-primary)',
+            textDecoration: 'none',
+            padding: '8px 16px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '20px',
+            transition: 'all 0.2s'
+          }}
+          onMouseOver={e => {
+            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseOut={e => {
+            e.currentTarget.style.borderColor = 'var(--border-subtle)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <Github size={18} />
+          <span>View Source</span>
+          <ExternalLink size={14} style={{ opacity: 0.5 }} />
+        </a>
+      </footer>
     </div>
   );
 }
