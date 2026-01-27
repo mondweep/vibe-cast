@@ -22,6 +22,17 @@ Every frontend developer has experienced it: you receive a Figma design, open yo
 
 This process is time-consuming, error-prone, and frankly, not the best use of developer expertise. What if we could automate the mechanical translation while preserving the creative decisions made by designers?
 
+```mermaid
+graph TD
+    A[Designer in Figma] -->|Handoff| B[Developer]
+    B -->|Manual Transcription| C[Write CSS/Code]
+    C -->|Visual Check| D{Matches?}
+    D -- No -->|Fix Padding/Colors| C
+    D -- Yes --> E[Deploy]
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#bbf,stroke:#333,stroke-width:2px
+```
+
 ---
 
 ## The Solution: Pix + Claude Code + Figma MCP
@@ -44,6 +55,15 @@ Rather than generating generic code, Pix:
 - Updates your configuration files with new design tokens
 - Generates components using your project's existing patterns
 
+```mermaid
+graph LR
+    A[Figma Design] -->|Figma API| B[Figma MCP]
+    B -->|Context| C[Claude Code]
+    C -->|Pix Skill| D[Local Codebase]
+    D -->|React + Tailwind| E[Running App]
+    style C fill:#d4a5ff,stroke:#333,stroke-width:2px
+```
+
 ### Visual Comparison Loop
 The most powerful feature is the autonomous refinement cycle:
 1. Generate initial component code
@@ -51,6 +71,24 @@ The most powerful feature is the autonomous refinement cycle:
 3. Compare against the Figma reference
 4. Identify pixel-level discrepancies
 5. Auto-fix and repeat until perfect
+
+```mermaid
+sequenceDiagram
+    participant C as Claude (Pix)
+    participant A as App (Vite)
+    participant F as Figma
+    
+    C->>A: Generate Component Code
+    C->>A: Capture Screenshot
+    C->>F: Fetch Original Design
+    C->>C: Compare Images (Pixel Diff)
+    alt Discrepancy Found
+        C->>C: Adjust CSS/Tailwind
+        C->>A: Update Code
+    else Perfect Match
+        C->>User: Task Completed
+    end
+```
 
 ---
 
