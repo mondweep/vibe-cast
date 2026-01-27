@@ -27,7 +27,7 @@ graph TD
     A[Designer in Figma] -->|Handoff| B[Developer]
     B -->|Manual Transcription| C[Write CSS/Code]
     C -->|Visual Check| D{Matches?}
-    D -- No -->|Fix Padding/Colors| C
+    D -- No, Fix Padding/Colors --> C
     D -- Yes --> E[Deploy]
     style B fill:#f9f,stroke:#333,stroke-width:2px
     style D fill:#bbf,stroke:#333,stroke-width:2px
