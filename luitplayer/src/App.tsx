@@ -114,7 +114,19 @@ function App() {
   useEffect(() => {
     if (!isPlaying) return;
 
+    const playClick = () => {
+      if (audioEngine?.ready) {
+        // Play a metronome click (High Woodblock - MIDI 77)
+        audioEngine.noteOn(77, 80);
+        setTimeout(() => audioEngine.noteOff(77), 100);
+      }
+    };
+
+    // Click on beat 1 immediately
+    playClick();
+
     const interval = setInterval(() => {
+      playClick();
       setCurrentMeasure((m) => {
         if (m >= 80) {
           setIsPlaying(false);
@@ -125,15 +137,21 @@ function App() {
     }, (60 / tempo) * 4 * 1000); // 4 beats per measure
 
     return () => clearInterval(interval);
-  }, [isPlaying, tempo]);
+  }, [isPlaying, tempo, audioEngine]);
 
-  // Cleanup on unmount
+  // Cleanup audio engine
   useEffect(() => {
     return () => {
       audioEngine?.dispose();
+    };
+  }, [audioEngine]);
+
+  // Cleanup PDF URL
+  useEffect(() => {
+    return () => {
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
     };
-  }, [audioEngine, pdfUrl]);
+  }, [pdfUrl]);
 
   return (
     <div style={styles.app}>
@@ -223,7 +241,11 @@ function App() {
 
               <div style={styles.tabContent}>
                 {activeTab === 'score' ? (
-                  <PDFViewer pdfUrl={pdfUrl} currentMeasure={currentMeasure} />
+                  <PDFViewer
+                    pdfUrl={pdfUrl}
+                    currentMeasure={currentMeasure}
+                    isPlaying={isPlaying}
+                  />
                 ) : (
                   <div style={styles.pianoContainer}>
                     <PianoKeyboard audioEngine={audioEngine} octave={4} />

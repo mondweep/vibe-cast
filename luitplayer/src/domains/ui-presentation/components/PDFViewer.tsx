@@ -9,6 +9,7 @@ import { PDFProcessor } from '@domains/pdf-processing';
 interface PDFViewerProps {
   pdfUrl?: string;
   currentMeasure?: number;
+  isPlaying?: boolean;
   onPageLoad?: (pageNumber: number, totalPages: number) => void;
 }
 
@@ -19,10 +20,16 @@ interface CursorPosition {
   height: number;
 }
 
-export function PDFViewer({ pdfUrl, currentMeasure = 0, onPageLoad }: PDFViewerProps) {
+export function PDFViewer({
+  pdfUrl,
+  currentMeasure = 0,
+  isPlaying = false,
+  onPageLoad,
+}: PDFViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const processorRef = useRef<PDFProcessor | null>(null);
+  const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -66,19 +73,46 @@ export function PDFViewer({ pdfUrl, currentMeasure = 0, onPageLoad }: PDFViewerP
   useEffect(() => {
     if (!canvasRef.current || !processorRef.current || totalPages === 0) return;
 
+    let isCancelled = false;
+
     const renderPage = async () => {
       try {
-        await processorRef.current!.renderPageToCanvas(
+        // Cancel previous render if any
+        if (renderTaskRef.current) {
+          renderTaskRef.current.cancel();
+          renderTaskRef.current = null;
+        }
+
+        const task = await processorRef.current!.renderPageToCanvas(
           currentPage,
           canvasRef.current!,
           scale
         );
-      } catch (err) {
+
+        if (isCancelled) {
+          task.cancel();
+          return;
+        }
+
+        renderTaskRef.current = task;
+        await task.promise;
+      } catch (err: unknown) {
+        // Ignore cancellation errors
+        if ((err as { name?: string })?.name === 'RenderingCancelledException') {
+          return;
+        }
         console.error('Failed to render page:', err);
       }
     };
 
     renderPage();
+
+    return () => {
+      isCancelled = true;
+      if (renderTaskRef.current) {
+        renderTaskRef.current.cancel();
+      }
+    };
   }, [currentPage, scale, totalPages]);
 
   // Update cursor position based on current measure
@@ -89,13 +123,24 @@ export function PDFViewer({ pdfUrl, currentMeasure = 0, onPageLoad }: PDFViewerP
     }
 
     // Calculate cursor position based on measure
-    // This is a placeholder - real implementation would use OMR data
     const measuresPerPage = 4;
     const measureOnPage = ((currentMeasure - 1) % measuresPerPage) + 1;
     const pageForMeasure = Math.ceil(currentMeasure / measuresPerPage);
 
-    if (pageForMeasure !== currentPage) {
+    // Auto-turn page only if playing
+    if (
+      isPlaying &&
+      totalPages > 0 &&
+      pageForMeasure <= totalPages &&
+      pageForMeasure !== currentPage
+    ) {
       setCurrentPage(pageForMeasure);
+    }
+
+    // Only show cursor if we are on the correct page
+    if (pageForMeasure !== currentPage) {
+      setCursorPosition(null);
+      return;
     }
 
     const canvas = canvasRef.current;
@@ -103,11 +148,11 @@ export function PDFViewer({ pdfUrl, currentMeasure = 0, onPageLoad }: PDFViewerP
 
     setCursorPosition({
       x: (measureOnPage - 1) * measureWidth,
-      y: 50,
+      y: 0,
       width: measureWidth,
-      height: canvas.height - 100,
+      height: canvas.height, // Full height
     });
-  }, [currentMeasure, currentPage]);
+  }, [currentMeasure, currentPage, isPlaying, totalPages]);
 
   const goToPage = useCallback((page: number) => {
     const newPage = Math.max(1, Math.min(page, totalPages));
@@ -277,7 +322,6 @@ export function PDFViewer({ pdfUrl, currentMeasure = 0, onPageLoad }: PDFViewerP
             }}
           />
 
-          {/* Follow-along cursor overlay */}
           {cursorPosition && (
             <div
               style={{

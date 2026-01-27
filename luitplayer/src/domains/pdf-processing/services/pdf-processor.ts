@@ -89,7 +89,7 @@ export class PDFProcessor {
     pageNumber: number,
     canvas: HTMLCanvasElement,
     displayScale = 1.0
-  ): Promise<void> {
+  ): Promise<{ promise: Promise<void>; cancel: () => void }> {
     if (!this.pdfDocument) {
       throw new Error('No PDF loaded');
     }
@@ -105,10 +105,15 @@ export class PDFProcessor {
       throw new Error('Could not get canvas context');
     }
 
-    await page.render({
+    const renderTask = page.render({
       canvasContext: context,
       viewport,
-    }).promise;
+    });
+
+    return {
+      promise: renderTask.promise,
+      cancel: () => renderTask.cancel(),
+    };
   }
 
   /**

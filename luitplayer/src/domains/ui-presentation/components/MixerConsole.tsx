@@ -16,7 +16,7 @@ export interface ChannelState {
 }
 
 interface MixerConsoleProps {
-  channels: ChannelState[];
+  channels?: ChannelState[];
   onVolumeChange?: (channelId: string, volume: number) => void;
   onMuteToggle?: (channelId: string, muted: boolean) => void;
   onSoloToggle?: (channelId: string, solo: boolean) => void;
