@@ -73,18 +73,37 @@ The app shall utilize a tri-worker architecture to ensure the UI remains respons
 
 - **Playback Fidelity:** The "Bass Guitar Solo" at measure 53 sounds distinct from the Piano accompaniment.
 
-## 7. Current Implementation Status (Jan 2026)
+## 7. Current Implementation Status (Jan 27, 2026)
 
 ### Completed
 - **Project Setup:** Vite + React + TypeScript environment established.
-- **Audio Infrastructure:** `AudioWorklet` implemented for low-latency synthesis.
-- **Basic UI:** Piano Keyboard component for testing audio generation.
+- **Detailed Architecture:** `ARCHITECTURE.md` created with tri-worker data flow diagrams.
+- **Audio Infrastructure:** `AudioWorklet` implemented. Currently uses a sine wave synthesizer for basic testing and a woodblock metronome for playback feedback.
+- **PDF Score Viewer:** 
+  - Integrated `pdfjs-dist` for rendering.
+  - Implemented custom `PDFViewer` component with zoom, manual navigation (Next/Prev), and boundary checks.
+  - Resolved rendering concurrency issues ("same canvas" errors).
+- **Interactive UI:** 
+  - **Piano Keyboard:** Fully functional virtual keyboard triggers audio engine.
+  - **Transport Controls:** Play/Pause/Stop with verified measure counting.
+  - **Mixer Console:** UI implementation with volume sliders/mute/solo (partial wiring).
+- **Playback Features:**
+  - **Metronome:** Audio click on every measure beat confirms engine activity.
+  - **Follow-Along Cursor:** Red overlay tracking measures (currently using fixed geometry, not OMR).
 - **PWA Support:** Service workers and manifest configured.
 
 ### In Progress
-- **Audio Refinement:** Debugging pitch accuracy and basic synthesis.
-- **OMR Integration:** `omr.worker.ts` scaffolding created; OpenCV integration pending.
+- **OMR Integration:** `omr.worker.ts` exists but lacks OpenCV logic. Real note detection is **NOT** yet implemented.
+- **Advanced Synthesis:** Moving from sine waves/metronome to Sample-based synthesis (required for Piano, Guitar, Strings).
 
-### Upcoming
-- **PDF Rendering:** Integration of `pdfjs-dist`.
-- **Shared Memory:** Implementation of `SharedArrayBuffer` for worker communication.
+### Remaining Scope
+- **Optical Music Recognition (OMR):**
+  - Implement caching/pipeline in `omr.worker.ts`.
+  - Detect staves, measures, and individual notes using OpenCV.js.
+  - Map PDF coordinates to audio events.
+- **Audio Engine Upgrade:** 
+  - Implement SoundFont or Wavetable synthesis.
+  - Support multi-channel mixer logic (currently all channels sum to one oscillator).
+- **Data Synchronization:**
+  - Connect OMR output (JSON IR) to the Audio Sequencer.
+  - Use `SharedArrayBuffer` for zero-copy data transfer between workers.
