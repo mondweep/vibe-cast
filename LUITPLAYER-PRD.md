@@ -49,15 +49,12 @@ The app shall utilize a tri-worker architecture to ensure the UI remains respons
 ## 4. Implementation Roadmap for AI Assistant
 
 ### Phase 1: The WASM "Glue"
-
 **Prompt for AI:** "Set up a Vite project with React and TypeScript. Configure a Web Worker that loads a basic WASM module. Set up an AudioWorkletNode that can receive a frequency value and play a sine wave as a proof of concept."
 
 ### Phase 2: OMR Engine (The Bottleneck)
-
 **Prompt for AI:** "Integrate OpenCV.js via WASM. Write a function to detect horizontal staff lines in an uploaded image. Once lines are found, segment the image into individual measures."
 
 ### Phase 3: Audio Synthesis
-
 **Prompt for AI:** "Create a WASM-based sampler in the AudioWorklet. It should hold an array of audio buffers (samples). When it receives a MIDI-style 'Note On' message, it should play the corresponding sample with gain adjustment based on dynamics (mp, f)."
 
 ## 5. Non-Functional Requirements
@@ -75,3 +72,19 @@ The app shall utilize a tri-worker architecture to ensure the UI remains respons
 - **Multithreading:** The UI remains at 60fps even while the OMR engine is parsing a new page.
 
 - **Playback Fidelity:** The "Bass Guitar Solo" at measure 53 sounds distinct from the Piano accompaniment.
+
+## 7. Current Implementation Status (Jan 2026)
+
+### Completed
+- **Project Setup:** Vite + React + TypeScript environment established.
+- **Audio Infrastructure:** `AudioWorklet` implemented for low-latency synthesis.
+- **Basic UI:** Piano Keyboard component for testing audio generation.
+- **PWA Support:** Service workers and manifest configured.
+
+### In Progress
+- **Audio Refinement:** Debugging pitch accuracy and basic synthesis.
+- **OMR Integration:** `omr.worker.ts` scaffolding created; OpenCV integration pending.
+
+### Upcoming
+- **PDF Rendering:** Integration of `pdfjs-dist`.
+- **Shared Memory:** Implementation of `SharedArrayBuffer` for worker communication.

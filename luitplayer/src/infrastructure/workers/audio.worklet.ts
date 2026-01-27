@@ -81,6 +81,8 @@ class LuitPlayerProcessor extends AudioWorkletProcessor {
 
   private noteOn(pitch: number, velocity: number): void {
     const frequency = 440 * Math.pow(2, (pitch - 69) / 12);
+    console.log(`[AudioWorklet] NoteOn: Pitch=${pitch}, Freq=${frequency}Hz`);
+
     this.activeNotes.set(pitch, {
       pitch,
       velocity: velocity / 127,
@@ -119,20 +121,21 @@ class LuitPlayerProcessor extends AudioWorkletProcessor {
     // Process each active note
     const notesToRemove: number[] = [];
 
-    this.activeNotes.forEach((note, pitch) => {
-      const frequency = 440 * Math.pow(2, (pitch - 69) / 12);
-      const phaseIncrement = (frequency * 2 * Math.PI) / this.sampleRate;
+    this.activeNotes.forEach((note) => {
+      // Calculate frequency from the note's pitch property
+      const frequency = 440 * Math.pow(2, (note.pitch - 69) / 12);
+      const phaseIncrement = (frequency * 2 * Math.PI) / (this.sampleRate || 44100);
 
       for (let i = 0; i < left.length; i++) {
         // Simple ADSR envelope
         if (note.releaseTime === null) {
           // Attack/sustain
-          note.envelope = Math.min(1, note.envelope + 0.001);
+          note.envelope = Math.min(1, note.envelope + 0.005); // Faster attack
         } else {
           // Release
           note.envelope *= 0.9995;
           if (note.envelope < 0.001) {
-            notesToRemove.push(pitch);
+            notesToRemove.push(note.pitch);
             break;
           }
         }
@@ -153,6 +156,11 @@ class LuitPlayerProcessor extends AudioWorkletProcessor {
 
     // Remove finished notes
     notesToRemove.forEach((pitch) => this.activeNotes.delete(pitch));
+
+    // Apply tempo if needed (placeholder to silence unused warning)
+    if (this.tempo > 300) {
+      // no-op, just reading the value
+    }
 
     return true; // Keep processor alive
   }

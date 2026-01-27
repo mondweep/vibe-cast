@@ -39,7 +39,7 @@ export interface OMRResultMessage {
 
 // Worker state
 let isInitialized = false;
-let opencv: unknown = null;
+// let opencv: unknown = null; // Unused for now
 
 /**
  * Initialize OpenCV WASM module
@@ -54,6 +54,7 @@ async function initializeOpenCV(wasmUrl: string): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     isInitialized = true;
+    // opencv = {}; // Mock initialization
     self.postMessage({
       type: 'init-complete',
       payload: { success: true },
@@ -91,7 +92,7 @@ function detectStaffLines(imageData: ImageData): number[][] {
 /**
  * Segment measures from detected staff lines
  */
-function segmentMeasures(staffLines: number[][], imageData: ImageData): MeasureIR[] {
+function segmentMeasures(_staffLines: number[][], _imageData: ImageData): MeasureIR[] {
   // Placeholder implementation
   // In production, this would detect bar lines and segment accordingly
   const measures: MeasureIR[] = [];

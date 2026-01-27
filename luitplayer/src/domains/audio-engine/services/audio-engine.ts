@@ -188,12 +188,11 @@ export class AudioEngine {
 /**
  * Create a default audio engine instance
  */
-export function createAudioEngine(): AudioEngine {
-  // In production, this URL would be resolved by Vite
-  const workletUrl = new URL(
-    '../../infrastructure/workers/audio.worklet.ts',
-    import.meta.url
-  ).href;
+import audioWorkletUrl from '../../../infrastructure/workers/audio.worklet.ts?worker&url';
 
-  return new AudioEngine({ workletUrl });
+/**
+ * Create a default audio engine instance
+ */
+export function createAudioEngine(): AudioEngine {
+  return new AudioEngine({ workletUrl: audioWorkletUrl });
 }

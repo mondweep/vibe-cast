@@ -145,11 +145,11 @@ export function PianoKeyboard({ audioEngine, octave = 4 }: PianoKeyboardProps) {
                 key={key.note}
                 style={{
                   ...styles.blackKey,
-                  left: `${positions[key.pitch] * 50 + 35}px`,
+                  left: `${positions[key.pitch] * 50}px`,
                 }}
-                onMouseDown={() => handleKeyDown(key.pitch)}
-                onMouseUp={() => handleKeyUp(key.pitch)}
-                onMouseLeave={() => handleKeyUp(key.pitch)}
+                onMouseDown={(e) => { e.stopPropagation(); handleKeyDown(key.pitch); }}
+                onMouseUp={(e) => { e.stopPropagation(); handleKeyUp(key.pitch); }}
+                onMouseLeave={(e) => { e.stopPropagation(); handleKeyUp(key.pitch); }}
               />
             );
           })}
@@ -199,6 +199,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '0 0 4px 4px',
     cursor: 'pointer',
     zIndex: 1,
+    pointerEvents: 'auto', // Ensure clicks are registered even if parent has none
   },
   blackKeys: {
     position: 'absolute',
