@@ -1,0 +1,162 @@
+{
+  "$schema": "https://claude-flow.dev/schemas/v3/swarm.config.json",
+  "version": "3.0.0",
+  "swarm": {
+    "name": "LuitPlayer Development Swarm",
+    "topology": "hierarchical-mesh",
+    "maxAgents": 7,
+    "consensus": {
+      "protocol": "raft",
+      "quorum": 4
+    }
+  },
+  "agents": [
+    {
+      "id": "queen-coordinator",
+      "type": "queen-coordinator",
+      "role": "Orchestrates all domain agents, manages task distribution, and ensures architectural consistency",
+      "domains": ["*"],
+      "priority": "critical",
+      "capabilities": [
+        "task-distribution",
+        "conflict-resolution",
+        "architectural-oversight",
+        "adr-enforcement"
+      ]
+    },
+    {
+      "id": "pdf-domain-agent",
+      "type": "domain-specialist",
+      "role": "Handles PDF parsing, page rendering, and coordinate mapping for score visualization",
+      "domains": ["pdf-processing"],
+      "priority": "high",
+      "capabilities": [
+        "pdf-parsing",
+        "page-segmentation",
+        "coordinate-mapping",
+        "canvas-rendering"
+      ],
+      "boundedContext": "PDFProcessing"
+    },
+    {
+      "id": "omr-domain-agent",
+      "type": "domain-specialist",
+      "role": "Optical Music Recognition engine - staff detection, note recognition, chord analysis",
+      "domains": ["omr-engine"],
+      "priority": "high",
+      "capabilities": [
+        "staff-line-detection",
+        "note-recognition",
+        "chord-analysis",
+        "tempo-detection",
+        "dynamics-recognition",
+        "assamese-ocr"
+      ],
+      "boundedContext": "OMREngine"
+    },
+    {
+      "id": "audio-domain-agent",
+      "type": "domain-specialist",
+      "role": "Audio synthesis, sample playback, mixer controls, and real-time tempo scaling",
+      "domains": ["audio-engine"],
+      "priority": "high",
+      "capabilities": [
+        "sample-synthesis",
+        "midi-processing",
+        "audio-worklet",
+        "tempo-scaling",
+        "mixer-control"
+      ],
+      "boundedContext": "AudioEngine"
+    },
+    {
+      "id": "ui-domain-agent",
+      "type": "domain-specialist",
+      "role": "React UI components, state management, user interactions, and visual feedback",
+      "domains": ["ui-presentation"],
+      "priority": "high",
+      "capabilities": [
+        "react-components",
+        "state-management",
+        "follow-cursor",
+        "mixer-ui",
+        "navigation-controls"
+      ],
+      "boundedContext": "UIPresentation"
+    },
+    {
+      "id": "testing-agent",
+      "type": "quality-assurance",
+      "role": "TDD enforcement, test generation, coverage analysis, and quality gates",
+      "domains": ["*"],
+      "priority": "high",
+      "capabilities": [
+        "unit-testing",
+        "integration-testing",
+        "e2e-testing",
+        "tdd-enforcement",
+        "coverage-analysis"
+      ]
+    },
+    {
+      "id": "integration-agent",
+      "type": "infrastructure-specialist",
+      "role": "WASM compilation, Web Worker setup, SharedArrayBuffer management, and PWA configuration",
+      "domains": ["infrastructure"],
+      "priority": "medium",
+      "capabilities": [
+        "wasm-compilation",
+        "worker-management",
+        "shared-memory",
+        "pwa-setup",
+        "build-optimization"
+      ],
+      "boundedContext": "Infrastructure"
+    }
+  ],
+  "workflows": {
+    "feature-implementation": {
+      "phases": [
+        {
+          "name": "analysis",
+          "agents": ["queen-coordinator"],
+          "tasks": ["requirement-analysis", "adr-review"]
+        },
+        {
+          "name": "test-first",
+          "agents": ["testing-agent"],
+          "tasks": ["write-failing-tests", "define-contracts"]
+        },
+        {
+          "name": "implementation",
+          "agents": ["pdf-domain-agent", "omr-domain-agent", "audio-domain-agent", "ui-domain-agent"],
+          "tasks": ["implement-feature"],
+          "parallel": true
+        },
+        {
+          "name": "integration",
+          "agents": ["integration-agent"],
+          "tasks": ["wasm-build", "worker-setup"]
+        },
+        {
+          "name": "verification",
+          "agents": ["testing-agent", "queen-coordinator"],
+          "tasks": ["run-tests", "quality-gate"]
+        }
+      ]
+    }
+  },
+  "memory": {
+    "backend": "hybrid",
+    "vectorIndex": "hnsw",
+    "sharedContext": true
+  },
+  "communication": {
+    "protocol": "event-driven",
+    "channels": [
+      "domain-events",
+      "integration-events",
+      "test-results"
+    ]
+  }
+}
