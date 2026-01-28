@@ -34,6 +34,7 @@ graph TD
 3.  **Playback:**
     *   Audio Engine reads note data from `SharedArrayBuffer` in real-time.
     *   It synthesizes audio (sample-based) and writes to the Audio Context.
+    *   Supports infinite looping for sustained instruments (Voice, Synth) to handle long durations.
     *   It writes the current playback timestamp back to `SharedArrayBuffer`.
 4.  **Visual Sync:** UI reads the timestamp from `SharedArrayBuffer` (via requestAnimationFrame) to update the cursor position and score view.
 

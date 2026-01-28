@@ -108,7 +108,7 @@ The app shall utilize a tri-worker architecture to ensure the UI remains respons
   - State and measure change callbacks
   - Tempo-aware timing calculations
   - **Metronome (NEW):** Toggleable click track with visual feedback
-  - **Stability:** Fixed premature disposal of AudioEngine on component updates
+  - **Stability:** Robust playback with looping support for sustained instruments (Voice, Synth, Strings) and resolved polyphony issues.
 
 ### ✅ Infrastructure - COMPLETE
 - **PDF Viewer:**
