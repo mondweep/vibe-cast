@@ -37,6 +37,7 @@ type ScheduledEvent = {
   velocity: number;
   duration: number;
   channel: number;
+  played: boolean;
 };
 
 /**
@@ -135,6 +136,7 @@ export class AudioSequencer {
               velocity: event.velocity ?? dynamicVelocity,
               duration: event.duration * secondsPerBeat,
               channel: channelIndex,
+              played: false,
             });
           }
         });
@@ -283,6 +285,9 @@ export class AudioSequencer {
     this.isPaused = false;
     this.currentMeasure = 1;
 
+    // Reset all events
+    this.scheduledEvents.forEach(e => e.played = false);
+
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
@@ -307,6 +312,14 @@ export class AudioSequencer {
     const seekTime = (this.currentMeasure - 1) * beatsPerMeasure * secondsPerBeat;
 
     this.startTime = performance.now() / 1000 - seekTime;
+
+    // Reset played status for future events
+    const currentTime = seekTime;
+    this.scheduledEvents.forEach(event => {
+      if (event.time >= currentTime) {
+        event.played = false;
+      }
+    });
 
     this.audioEngine.allNotesOff();
     this.notifyStateChange();
@@ -369,7 +382,11 @@ export class AudioSequencer {
     const playUntil = currentTime + lookAhead;
 
     this.scheduledEvents.forEach((event) => {
-      if (event.time >= currentTime && event.time < playUntil) {
+      // Check if event is in the window AND hasn't been played yet
+      if (!event.played && event.time >= currentTime && event.time < playUntil) {
+        // Mark as played immediately to prevent re-triggering in next frame
+        event.played = true;
+
         if (this.isChannelAudible(event.channel)) {
           const volume = this.getChannelVolume(event.channel);
           const adjustedVelocity = Math.round(event.velocity * volume);
