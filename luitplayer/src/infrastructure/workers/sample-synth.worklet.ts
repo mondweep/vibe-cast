@@ -68,6 +68,7 @@ interface ActiveVoice {
   channel: number;
   sampleIndex: number;
   playbackRate: number;
+  sample: LoadedSample | null; // Cache the sample reference
   envelope: {
     phase: 'attack' | 'decay' | 'sustain' | 'release';
     level: number;
@@ -178,13 +179,13 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
     // Get envelope for this instrument
     const env = this.envelopes.get(instrument) || this.defaultEnvelope;
 
-    // Find closest sample
+    // Find closest sample ONCE at start of note
     const sample = this.findClosestSample(instrument, message.pitch);
     const playbackRate = sample
       ? Math.pow(2, (message.pitch - sample.baseNote) / 12)
       : Math.pow(2, (message.pitch - 60) / 12);
 
-    // Create new voice
+    // Create new voice with cached sample
     const voice: ActiveVoice = {
       pitch: message.pitch,
       velocity: message.velocity / 127,
@@ -192,6 +193,7 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
       channel,
       sampleIndex: 0,
       playbackRate,
+      sample: sample, // Store reference
       envelope: {
         phase: 'attack',
         level: 0,
@@ -416,11 +418,9 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
     for (let v = 0; v < this.voices.length; v++) {
       const voice = this.voices[v];
 
-      // Find sample for this voice
-      const sample = this.findClosestSample(voice.instrument, voice.pitch);
-
-      if (sample) {
-        this.playSample(output, voice, sample, numFrames);
+      // Use cached sample
+      if (voice.sample) {
+        this.playSample(output, voice, voice.sample, numFrames);
       } else {
         this.generateSineWave(output, voice, numFrames);
       }
@@ -434,6 +434,14 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
     // Remove finished voices (in reverse order to maintain indices)
     for (let i = voicesToRemove.length - 1; i >= 0; i--) {
       this.voices.splice(voicesToRemove[i], 1);
+    }
+
+    // Apply Soft Limiter (tanh) to prevent hard clipping
+    for (let i = 0; i < numFrames; i++) {
+      left[i] = Math.tanh(left[i]);
+      if (right !== left) {
+        right[i] = Math.tanh(right[i]);
+      }
     }
 
     return true;
