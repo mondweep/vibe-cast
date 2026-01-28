@@ -140,10 +140,11 @@ The app shall utilize a tri-worker architecture to ensure the UI remains respons
 - **Integration:** Dynamics and chords integrated into Score IR measures
 
 ### 📋 Remaining Scope (Future Enhancements)
-- **OpenCV.js WASM Integration:** Would improve OMR detection accuracy
-- **Assamese OCR:** Tesseract-based lyrics recognition
-- **Time-stretching:** Tempo changes without pitch shift
+- **OpenCV.js WASM Integration:** Would improve OMR detection accuracy (Requires fetching `opencv.js` WASM binary)
+- **Assamese OCR:** Tesseract-based lyrics recognition (Requires fetching `tesseract.js` WASM binary)
+
 ### ✅ Full Integration - COMPLETE
+- **Time-stretching:** Real-time tempo scaling (40-240 BPM) implemented via Audio Sequencer and sustained sample looping.
 - **Pipeline:** OMR Worker Output -> Score IR -> Audio Sequencer -> Audio Engine -> Speakers
 - **Verification:** Manual verification successful with "Zubeen Mayabini" full score
 
@@ -180,3 +181,37 @@ luitplayer/
 Test Files: 2 passed (2)
 Tests: 35 passed (35)
 ```
+
+## Appendix A: Frequently Asked Questions
+
+### Q1: What are Web Audio API and AudioWorklet? Do they need the internet?
+**Answer:**
+No, they do **not** need the internet.
+*   **Web Audio API** is a built-in feature of modern browsers (Chrome, Safari, Firefox) that allows for processing and synthesizing audio directly on your device. It works like a virtual mixing desk inside the browser.
+*   **AudioWorklet** is a special, high-performance thread separate from the main UI. It allows us to run custom audio processing code (like our synthesizer) without freezing the screen.
+*   **Connectivity**: Since these are native browser technologies, they run 100% locally. Once the app is loaded, you could disconnect your internet, and LuitPlayer would continue to function perfectly. This is a key part of our "Local-First" architecture.
+
+### Q2: What is the main purpose of LuitPlayer?
+**Answer:**
+LuitPlayer is designed to bridge the gap between static PDF sheet music and interactive audio learning. Its goal is to take a complex, multi-staff score (like an orchestral or band arrangement) and make it "listenable" and "practice-able."
+*   **Breadth**: It handles everything from scanning the image (OMR) to understanding the musical structure (IR) to generating the sound (Synthesis).
+*   **Depth**: It offers deep control—you can solo the Bass line to practice along with it, slow down the tempo to master a tricky section, or loop a specific measure repeatedly.
+
+### Q3: How does the application work? (The Process)
+**Answer:**
+The process follows a pipeline:
+1.  **Input**: You upload a PDF of the sheet music.
+2.  **Scan (OMR)**: The app breaks the PDF into images and uses computer vision algorithms to detect staff lines, notes, and dynamics.
+3.  **Analyze**: It converts those visual blobs into a structured musical data format (what we call the "Score IR").
+4.  **Synthesize**: The Audio Engine reads this data and uses mathematical waveform generation (samples) to create the sound of pianos, guitars, and vocals in real-time.
+5.  **Play**: You hear the music while a red cursor follows along on the original PDF.
+
+### Q4: Why use "WASM" (WebAssembly)?
+**Answer:**
+Digital signal processing (audio) and image recognition (OMR) are very heavy tasks for a regular web page.
+**WASM** allows us to run code written in high-performance languages like C++ or Rust inside the browser at near-native speeds. This ensures that the music plays smoothly and analyzing a page takes seconds instead of minutes.
+
+### Q5: Is my sheet music data private?
+**Answer:**
+Yes. Because we use WebAssembly and local browser APIs, the analysis happens entirely on your computer's CPU. The PDF is **never** uploaded to a cloud server for processing. Your music stays on your machine.
+
