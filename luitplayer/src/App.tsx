@@ -182,8 +182,14 @@ function App() {
   }, [omrWorker, pdfProcessor, sequencer]);
 
   // Handle controls
-  const handlePlay = useCallback(() => {
-    if (sequencer && !isPlaying) sequencer.play();
+  const handlePlay = useCallback(async () => {
+    if (sequencer && !isPlaying) {
+      try {
+        await sequencer.play();
+      } catch (err) {
+        console.error('[App] Playback start failed:', err);
+      }
+    }
   }, [sequencer, isPlaying]);
 
   const handlePause = useCallback(() => {

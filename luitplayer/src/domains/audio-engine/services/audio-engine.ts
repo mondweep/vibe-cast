@@ -266,6 +266,16 @@ export class AudioEngine {
   }
 
   /**
+   * Resume audio context (required for autoplay policy)
+   */
+  async resume(): Promise<void> {
+    if (this.audioContext?.state === 'suspended') {
+      await this.audioContext.resume();
+      console.log('[AudioEngine] Context resumed');
+    }
+  }
+
+  /**
    * Clean up resources
    */
   public onLoadingState(callback: (isLoading: boolean) => void): void {

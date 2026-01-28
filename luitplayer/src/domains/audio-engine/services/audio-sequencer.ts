@@ -234,11 +234,14 @@ export class AudioSequencer {
   /**
    * Start playback
    */
-  play(): void {
+  async play(): Promise<void> {
     if (!this.scoreIR || !this.audioEngine.ready) {
       console.warn('[Sequencer] Cannot play: no score or audio not ready');
       return;
     }
+
+    // Ensure audio context is running
+    await this.audioEngine.resume();
 
     if (this.isPaused) {
       // Resume from pause
