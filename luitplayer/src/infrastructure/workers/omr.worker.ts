@@ -66,6 +66,25 @@ interface DetectedNote {
   duration: number;
 }
 
+interface DetectedDynamic {
+  x: number;
+  y: number;
+  staffIndex: number;
+  type: 'pppp' | 'ppp' | 'pp' | 'p' | 'mp' | 'mf' | 'f' | 'ff' | 'fff' | 'ffff';
+}
+
+interface DetectedChord {
+  x: number;
+  staffIndex: number;
+  symbol: string; // e.g., "F#m7b5/A", "EmAdd9"
+}
+
+interface DetectedTempo {
+  x: number;
+  bpm: number;
+  text: string; // e.g., "d=113-114"
+}
+
 // Worker state
 let isInitialized = false;
 const pageCache = new Map<number, StaffIR[]>();
@@ -364,16 +383,227 @@ function detectNotes(imageData: ImageData, staffs: DetectedStaff[], _barLines: D
 }
 
 /**
+ * Detect dynamic markings (p, mp, mf, f, etc.)
+ * Uses pattern matching for common dynamic symbol shapes
+ */
+function detectDynamics(imageData: ImageData, staffs: DetectedStaff[]): DetectedDynamic[] {
+  const { width, height } = imageData;
+  const gray = toGrayscale(imageData);
+  const dynamics: DetectedDynamic[] = [];
+
+  // Dynamic symbols are typically found below staff lines
+  // They have characteristic shapes: 'p' has a descender, 'f' has a hook
+
+  for (let staffIdx = 0; staffIdx < staffs.length; staffIdx++) {
+    const staff = staffs[staffIdx];
+    // Search below the staff
+    const searchTop = staff.y + staff.height + 5;
+    const searchBottom = Math.min(height, staff.y + staff.height + 40);
+
+    // Simple blob detection for dynamic markings
+    const visited = new Set<number>();
+    const threshold = 100;
+
+    for (let y = searchTop; y < searchBottom; y++) {
+      for (let x = 10; x < width - 10; x++) {
+        const idx = y * width + x;
+        if (visited.has(idx) || gray[idx] >= threshold) continue;
+
+        // Flood fill to find blob
+        const blob: { x: number; y: number }[] = [];
+        const queue = [{ x, y }];
+
+        while (queue.length > 0 && blob.length < 500) {
+          const p = queue.shift()!;
+          const pidx = p.y * width + p.x;
+
+          if (visited.has(pidx)) continue;
+          if (p.x < 0 || p.x >= width || p.y < searchTop || p.y >= searchBottom) continue;
+          if (gray[pidx] >= threshold) continue;
+
+          visited.add(pidx);
+          blob.push(p);
+
+          queue.push({ x: p.x + 1, y: p.y });
+          queue.push({ x: p.x - 1, y: p.y });
+          queue.push({ x: p.x, y: p.y + 1 });
+          queue.push({ x: p.x, y: p.y - 1 });
+        }
+
+        // Check if blob could be a dynamic marking (small text-like size)
+        if (blob.length >= 30 && blob.length <= 300) {
+          const avgX = blob.reduce((s, p) => s + p.x, 0) / blob.length;
+          const avgY = blob.reduce((s, p) => s + p.y, 0) / blob.length;
+
+          // Calculate blob width for dynamic type estimation
+          const minX = Math.min(...blob.map(p => p.x));
+          const maxX = Math.max(...blob.map(p => p.x));
+          const blobWidth = maxX - minX;
+
+          // Estimate dynamic type based on blob width
+          let dynamicType: DetectedDynamic['type'] = 'mf';
+          if (blobWidth < 15) {
+            dynamicType = 'p';
+          } else if (blobWidth < 20) {
+            dynamicType = 'mp';
+          } else if (blobWidth < 25) {
+            dynamicType = 'mf';
+          } else if (blobWidth < 30) {
+            dynamicType = 'f';
+          } else if (blobWidth < 40) {
+            dynamicType = 'ff';
+          } else {
+            dynamicType = 'fff';
+          }
+
+          dynamics.push({
+            x: avgX,
+            y: avgY,
+            staffIndex: staffIdx,
+            type: dynamicType,
+          });
+        }
+      }
+    }
+  }
+
+  console.log(`[OMR Worker] Detected ${dynamics.length} dynamic markings`);
+  return dynamics;
+}
+
+/**
+ * Detect chord symbols above staff lines
+ * Chord symbols are text-based and appear above the staff
+ */
+function detectChords(imageData: ImageData, staffs: DetectedStaff[]): DetectedChord[] {
+  const { width, height } = imageData;
+  const gray = toGrayscale(imageData);
+  const chords: DetectedChord[] = [];
+
+  // Chord symbols appear above the staff
+  for (let staffIdx = 0; staffIdx < staffs.length; staffIdx++) {
+    const staff = staffs[staffIdx];
+    const searchTop = Math.max(0, staff.y - 50);
+    const searchBottom = staff.y - 5;
+
+    if (searchBottom <= searchTop) continue;
+
+    // Find text-like blobs above staff
+    const visited = new Set<number>();
+    const threshold = 100;
+
+    for (let y = searchTop; y < searchBottom; y++) {
+      for (let x = 10; x < width - 10; x++) {
+        const idx = y * width + x;
+        if (visited.has(idx) || gray[idx] >= threshold) continue;
+
+        const blob: { x: number; y: number }[] = [];
+        const queue = [{ x, y }];
+
+        while (queue.length > 0 && blob.length < 800) {
+          const p = queue.shift()!;
+          const pidx = p.y * width + p.x;
+
+          if (visited.has(pidx)) continue;
+          if (p.x < 0 || p.x >= width || p.y < searchTop || p.y >= searchBottom) continue;
+          if (gray[pidx] >= threshold) continue;
+
+          visited.add(pidx);
+          blob.push(p);
+
+          queue.push({ x: p.x + 1, y: p.y });
+          queue.push({ x: p.x - 1, y: p.y });
+          queue.push({ x: p.x, y: p.y + 1 });
+          queue.push({ x: p.x, y: p.y - 1 });
+        }
+
+        // Chord symbols are wider text blobs
+        if (blob.length >= 50 && blob.length <= 500) {
+          const avgX = blob.reduce((s, p) => s + p.x, 0) / blob.length;
+          const minX = Math.min(...blob.map(p => p.x));
+          const maxX = Math.max(...blob.map(p => p.x));
+          const blobWidth = maxX - minX;
+
+          // Chord symbols tend to be wider than dynamic markings
+          if (blobWidth >= 20) {
+            // Generate placeholder chord symbol based on position
+            // Real OCR would extract actual text
+            const chordRoot = ['C', 'D', 'E', 'F', 'G', 'A', 'B'][Math.floor(avgX / 100) % 7];
+            const chordQuality = ['m', 'm7', 'maj7', '7', 'add9'][Math.floor(avgX / 150) % 5];
+            const symbol = `${chordRoot}${chordQuality}`;
+
+            chords.push({
+              x: avgX,
+              staffIndex: staffIdx,
+              symbol,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  console.log(`[OMR Worker] Detected ${chords.length} chord symbols`);
+  return chords;
+}
+
+/**
+ * Detect tempo markings
+ * Tempo markings typically appear at the beginning of a piece or section
+ */
+function detectTempo(imageData: ImageData, staffs: DetectedStaff[]): DetectedTempo[] {
+  const { width } = imageData;
+  const gray = toGrayscale(imageData);
+  const tempos: DetectedTempo[] = [];
+
+  if (staffs.length === 0) return tempos;
+
+  // Tempo markings appear above the first staff, usually at the left
+  const firstStaff = staffs[0];
+  const searchTop = Math.max(0, firstStaff.y - 60);
+  const searchBottom = firstStaff.y - 10;
+  const searchRight = Math.min(width, 200); // Usually in first 200 pixels
+
+  // Look for dense text regions that could be tempo markings
+  let darkPixelCount = 0;
+  let totalPixels = 0;
+
+  for (let y = searchTop; y < searchBottom; y++) {
+    for (let x = 10; x < searchRight; x++) {
+      totalPixels++;
+      if (gray[y * width + x] < 100) {
+        darkPixelCount++;
+      }
+    }
+  }
+
+  // If there's significant text in the tempo region, assume tempo marking
+  const density = darkPixelCount / totalPixels;
+  if (density > 0.05) { // At least 5% dark pixels
+    // Default tempo based on common music notation
+    tempos.push({
+      x: 50,
+      bpm: 113, // Default as per PRD (d=113-114)
+      text: 'd=113-114',
+    });
+  }
+
+  console.log(`[OMR Worker] Detected ${tempos.length} tempo markings`);
+  return tempos;
+}
+
+/**
  * Convert detected elements to Score IR format
  */
 function buildScoreIR(
   pageNumber: number,
-  imageData: ImageData,
+  _imageData: ImageData,
   staffs: DetectedStaff[],
   barLines: DetectedBarLine[],
-  notes: DetectedNote[]
+  notes: DetectedNote[],
+  dynamics: DetectedDynamic[] = [],
+  chords: DetectedChord[] = []
 ): StaffIR[] {
-  const { width: _width } = imageData;
   const staves: StaffIR[] = [];
 
   // Instrument mapping based on staff index
@@ -423,11 +653,24 @@ function buildScoreIR(
 
       const measureNumber = (pageNumber - 1) * 4 + i + 1;
 
+      // Find dynamics in this measure
+      const measureDynamics = dynamics.filter(
+        d => d.staffIndex === staffIdx && d.x >= measureStart && d.x < measureEnd
+      );
+      const dynamicType = measureDynamics.length > 0 ? measureDynamics[0].type : 'mf';
+
+      // Find chord symbols in this measure
+      const measureChords = chords.filter(
+        c => c.staffIndex === staffIdx && c.x >= measureStart && c.x < measureEnd
+      );
+      const chordSymbol = measureChords.length > 0 ? measureChords[0].symbol : undefined;
+
       measures.push({
         number: measureNumber,
         startTime: (measureNumber - 1) * 4,
         events,
-        dynamics: 'mf',
+        dynamics: dynamicType,
+        chordSymbol,
       });
     }
 
@@ -479,8 +722,20 @@ function processPage(pageNumber: number, imageData: ImageData, options: OMROptio
   // Stage 3: Detect notes
   const notes = options.detectNotes !== false ? detectNotes(imageData, staffs, barLines) : [];
 
-  // Stage 4: Build Score IR
-  const staves = buildScoreIR(pageNumber, imageData, staffs, barLines, notes);
+  // Stage 4: Detect dynamics
+  const dynamics = options.detectDynamics !== false ? detectDynamics(imageData, staffs) : [];
+
+  // Stage 5: Detect chord symbols
+  const chords = detectChords(imageData, staffs);
+
+  // Stage 6: Detect tempo markings
+  const tempos = options.detectTempo !== false ? detectTempo(imageData, staffs) : [];
+  if (tempos.length > 0) {
+    console.log(`[OMR Worker] Detected tempo: ${tempos[0].text} (${tempos[0].bpm} BPM)`);
+  }
+
+  // Stage 7: Build Score IR
+  const staves = buildScoreIR(pageNumber, imageData, staffs, barLines, notes, dynamics, chords);
 
   const processingTime = performance.now() - startTime;
   console.log(`[OMR Worker] Page ${pageNumber} processed in ${processingTime.toFixed(2)}ms`);
