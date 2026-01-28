@@ -33,15 +33,9 @@ The framework leverages India's Digital Public Infrastructure (DPI) — Aadhaar,
 
 ## Slide Preview
 
-[📑 View Full Presentation (20 slides)](./slides.pdf)
+[![India AI Governance - 20 Slide Overview](./slides_mosaic.png)](./slides.pdf)
 
-**To generate slide mosaic** (requires poppler-utils and ImageMagick):
-```bash
-cd content/india-ai-governance
-pdftoppm -png -r 100 slides.pdf slide
-montage slide-*.png -tile 4x5 -geometry 300x+5+5 -background white slides_mosaic.png
-rm slide-*.png
-```
+*Click mosaic to view full presentation (20 slides)*
 
 ## The Six Pillars
 
