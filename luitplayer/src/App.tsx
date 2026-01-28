@@ -210,15 +210,43 @@ function App() {
     sequencer?.toggleMetronome(enabled);
   }, [sequencer]);
 
-  // Cleanups
+  // Cleanup PDF URL on change or unmount
   useEffect(() => {
     return () => {
-      sequencer?.dispose();
-      audioEngine?.dispose();
-      pdfProcessor.dispose();
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
     };
-  }, [audioEngine, sequencer, pdfProcessor, pdfUrl]);
+  }, [pdfUrl]);
+
+  // Cleanup Audio Engine and Sequencer on unmount
+  useEffect(() => {
+    return () => {
+      // We explicitly check if these exist before disposing to avoid closures capturing stale state if possible,
+      // but relying on the ref or just letting the component unmount is standard.
+      // However, to avoid disposing active engines on re-renders, we use an empty dependency array
+      // combined with a ref tracking the current instances if strictly necessary, 
+      // OR we just trust React to only run this cleanup on unmount if deps are empty.
+      // But we can't capture state in empty deps cleanup easily without refs.
+
+      // Better approach: Do nothing here if we want them to persist. 
+      // But we SHOULD clean up on unmount.
+    };
+  }, []);
+
+  // Real cleanup needs refs to capture the latest instances for unmount
+  const engineRef = useRef<AudioEngine | null>(null);
+  const sequencerRef = useRef<AudioSequencer | null>(null);
+
+  // Keep refs in sync
+  useEffect(() => { engineRef.current = audioEngine; }, [audioEngine]);
+  useEffect(() => { sequencerRef.current = sequencer; }, [sequencer]);
+
+  useEffect(() => {
+    return () => {
+      sequencerRef.current?.dispose();
+      engineRef.current?.dispose();
+      pdfProcessor.dispose();
+    };
+  }, [pdfProcessor]); // pdfProcessor is stable state
 
   return (
     <div style={styles.app}>
