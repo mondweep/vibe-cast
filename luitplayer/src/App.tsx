@@ -1,5 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { AudioEngine, createAudioEngine } from '@domains/audio-engine';
+import { AudioSequencer, createAudioSequencer } from '@domains/audio-engine/services/audio-sequencer';
+import { PDFProcessor } from '@domains/pdf-processing';
+import OMRWorker from '@infrastructure/workers/omr.worker?worker';
+import type { ScoreIR, StaffIR } from '@domains/shared-kernel/types';
 import {
   PianoKeyboard,
   PDFViewer,
@@ -11,24 +15,25 @@ import {
 /**
  * LuitPlayer Main Application
  * Score-to-Audio WASM App with Tri-Worker Architecture
- *
- * Features:
- * - PDF score rendering
- * - AudioWorklet synthesis
- * - Mixer console with per-instrument controls
- * - Transport controls with looping
- * - Follow-along cursor
  */
 function App() {
   const [audioEngine, setAudioEngine] = useState<AudioEngine | null>(null);
+  const [sequencer, setSequencer] = useState<AudioSequencer | null>(null);
+  const [omrWorker, setOmrWorker] = useState<Worker | null>(null);
+  const [pdfProcessor] = useState(() => new PDFProcessor());
+
   const [isInitializing, setIsInitializing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
   const [volume, setVolume] = useState(0.7);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentMeasure, setCurrentMeasure] = useState(1);
   const [tempo, setTempo] = useState(113);
   const [activeTab, setActiveTab] = useState<'score' | 'piano'>('piano');
   const [pdfUrl, setPdfUrl] = useState<string | undefined>(undefined);
+  const [scoreIR, setScoreIR] = useState<ScoreIR | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,6 +47,23 @@ function App() {
     { label: 'Outro', measureNumber: 65 },
   ];
 
+  // Initialize OMR Worker
+  useEffect(() => {
+    const worker = new OMRWorker();
+    worker.postMessage({ type: 'init' });
+
+    worker.onmessage = (e) => {
+      const { type, payload } = e.data;
+      if (type === 'init-complete') {
+        console.log('[App] OMR Worker initialized:', payload.success);
+      }
+    };
+
+    setOmrWorker(worker);
+
+    return () => worker.terminate();
+  }, []);
+
   // Initialize audio engine on user interaction
   const handleInitialize = useCallback(async () => {
     if (audioEngine?.ready) return;
@@ -53,6 +75,16 @@ function App() {
       const engine = createAudioEngine();
       await engine.initialize();
       setAudioEngine(engine);
+
+      const seq = createAudioSequencer(engine);
+      setSequencer(seq);
+
+      // Sync state from sequencer
+      seq.onState((state) => {
+        setIsPlaying(state.isPlaying);
+        setCurrentMeasure(state.currentMeasure);
+      });
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to initialize audio');
     } finally {
@@ -60,98 +92,127 @@ function App() {
     }
   }, [audioEngine]);
 
-  // Handle volume changes
-  const handleVolumeChange = useCallback(
-    (newVolume: number) => {
-      setVolume(newVolume);
-      audioEngine?.setVolume(newVolume);
-    },
-    [audioEngine]
-  );
-
-  // Handle tempo changes
-  const handleTempoChange = useCallback(
-    (newTempo: number) => {
-      setTempo(newTempo);
-      audioEngine?.setTempo(newTempo);
-    },
-    [audioEngine]
-  );
-
-  // Playback controls
-  const handlePlay = useCallback(() => {
-    setIsPlaying(true);
-  }, []);
-
-  const handlePause = useCallback(() => {
-    setIsPlaying(false);
-  }, []);
-
-  const handleStop = useCallback(() => {
-    setIsPlaying(false);
-    setCurrentMeasure(1);
-  }, []);
-
-  const handleSeek = useCallback((measure: number) => {
-    setCurrentMeasure(measure);
-  }, []);
-
-  const handleJumpToMark = useCallback((mark: RehearsalMark) => {
-    setCurrentMeasure(mark.measureNumber);
-  }, []);
-
-  // Handle PDF file upload
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle PDF file upload and processing
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type === 'application/pdf') {
       const url = URL.createObjectURL(file);
       setPdfUrl(url);
       setActiveTab('score');
-    }
-  }, []);
 
-  // Simulate playback progression
-  useEffect(() => {
-    if (!isPlaying) return;
+      if (!omrWorker) return;
 
-    const playClick = () => {
-      if (audioEngine?.ready) {
-        // Play a metronome click (High Woodblock - MIDI 77)
-        audioEngine.noteOn(77, 80);
-        setTimeout(() => audioEngine.noteOff(77), 100);
-      }
-    };
+      setIsProcessing(true);
+      setProcessingProgress(0);
 
-    // Click on beat 1 immediately
-    playClick();
+      try {
+        // Load PDF for processing
+        const arrayBuffer = await file.arrayBuffer();
+        const numPages = await pdfProcessor.loadPDF(arrayBuffer);
 
-    const interval = setInterval(() => {
-      playClick();
-      setCurrentMeasure((m) => {
-        if (m >= 80) {
-          setIsPlaying(false);
-          return 1;
+        const staves: StaffIR[] = [];
+
+        // Process each page
+        for (let i = 1; i <= numPages; i++) {
+          setProcessingProgress(Math.round(((i - 1) / numPages) * 100));
+
+          const pageData = await pdfProcessor.renderPageToImageData(i);
+
+          omrWorker.postMessage({
+            type: 'process-page',
+            payload: {
+              pageNumber: i,
+              imageData: pageData.imageData,
+              options: { detectNotes: true }
+            }
+          });
+
+          // Wait for result (promisified for simplicity)
+          await new Promise<void>((resolve, reject) => {
+            const handler = (event: MessageEvent) => {
+              const { type, payload } = event.data;
+              if (type === 'result' && payload.pageNumber === i) {
+                if (payload.success) {
+                  staves.push(...(payload.staves || []));
+                  resolve();
+                } else {
+                  reject(new Error(payload.error));
+                }
+                omrWorker.removeEventListener('message', handler);
+              }
+            };
+            omrWorker.addEventListener('message', handler);
+          });
         }
-        return m + 1;
-      });
-    }, (60 / tempo) * 4 * 1000); // 4 beats per measure
 
-    return () => clearInterval(interval);
-  }, [isPlaying, tempo, audioEngine]);
+        setProcessingProgress(100);
 
-  // Cleanup audio engine
-  useEffect(() => {
-    return () => {
-      audioEngine?.dispose();
-    };
+        // Construct Score IR
+        const newScoreIR: ScoreIR = {
+          irVersion: '1.0.0',
+          staves,
+          metadata: {
+            title: file.name,
+            tempo: 113,
+            timeSignature: [4, 4],
+            keySignature: 'C'
+          },
+          rehearsalMarks: []
+        };
+
+        setScoreIR(newScoreIR);
+        sequencer?.loadScore(newScoreIR);
+        console.log('[App] Score processing complete:', newScoreIR);
+
+      } catch (err) {
+        console.error('Processing failed:', err);
+        setError('Failed to process score');
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+  }, [omrWorker, pdfProcessor, sequencer]);
+
+  // Handle controls
+  const handlePlay = useCallback(() => {
+    if (sequencer && !isPlaying) sequencer.play();
+  }, [sequencer, isPlaying]);
+
+  const handlePause = useCallback(() => {
+    if (sequencer && isPlaying) sequencer.pause();
+  }, [sequencer, isPlaying]);
+
+  const handleStop = useCallback(() => {
+    if (sequencer) sequencer.stop();
+  }, [sequencer]);
+
+  const handleSeek = useCallback((measure: number) => {
+    if (sequencer) sequencer.seekToMeasure(measure);
+  }, [sequencer]);
+
+  const handleTempoChange = useCallback((newTempo: number) => {
+    setTempo(newTempo);
+    sequencer?.setTempo(newTempo);
+  }, [sequencer]);
+
+  const handleVolumeChange = useCallback((newVolume: number) => {
+    setVolume(newVolume);
+    audioEngine?.setVolume(newVolume);
   }, [audioEngine]);
 
-  // Cleanup PDF URL
+  const handleJumpToMark = useCallback((mark: RehearsalMark) => {
+    sequencer?.seekToMeasure(mark.measureNumber);
+  }, [sequencer]);
+
+  // Cleanups
   useEffect(() => {
     return () => {
+      sequencer?.dispose();
+      audioEngine?.dispose();
+      pdfProcessor.dispose();
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
     };
-  }, [pdfUrl]);
+  }, [audioEngine, sequencer, pdfProcessor, pdfUrl]);
 
   return (
     <div style={styles.app}>
@@ -164,12 +225,18 @@ function App() {
 
           {audioEngine?.ready && (
             <div style={styles.headerControls}>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                style={styles.uploadButton}
-              >
-                Load PDF Score
-              </button>
+              {isProcessing ? (
+                <div style={styles.processingStatus}>
+                  Processing: {processingProgress}%
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  style={styles.uploadButton}
+                >
+                  Load PDF Score
+                </button>
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -207,9 +274,9 @@ function App() {
                 <ul>
                   <li>PDF score rendering with follow-along cursor</li>
                   <li>Low-latency AudioWorklet synthesis</li>
+                  <li>OMR & Note Detection (Beta)</li>
                   <li>Per-instrument mixer controls</li>
                   <li>Tempo scaling & looping</li>
-                  <li>PWA offline support</li>
                 </ul>
               </div>
             </div>
@@ -267,7 +334,7 @@ function App() {
               <TransportControls
                 isPlaying={isPlaying}
                 currentMeasure={currentMeasure}
-                totalMeasures={80}
+                totalMeasures={sequencer?.getTotalMeasures() || 80}
                 tempo={tempo}
                 rehearsalMarks={rehearsalMarks}
                 onPlay={handlePlay}
@@ -282,6 +349,12 @@ function App() {
                 masterVolume={volume}
                 onMasterVolumeChange={handleVolumeChange}
               />
+
+              {scoreIR && (
+                <div style={{ padding: '10px', fontSize: '12px', color: '#888' }}>
+                  Detected {scoreIR.staves.length} staves
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -332,6 +405,7 @@ const styles: Record<string, React.CSSProperties> = {
   headerControls: {
     display: 'flex',
     gap: '12px',
+    alignItems: 'center',
   },
   uploadButton: {
     padding: '10px 20px',
@@ -341,6 +415,11 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '14px',
+  },
+  processingStatus: {
+    color: '#e94560',
+    fontSize: '14px',
+    fontWeight: 500,
   },
   main: {
     flex: 1,
@@ -375,7 +454,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '16px 48px',
     fontSize: '1.2rem',
     backgroundColor: '#e94560',
-    color: '#fff',
+    color: 'white',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',

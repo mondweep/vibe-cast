@@ -4,7 +4,7 @@
  * Manages timing, scheduling, and multi-channel coordination
  */
 
-import type { ScoreIR, StaffIR, MeasureIR, NoteEvent, Dynamic } from '@domains/shared-kernel/types';
+import type { ScoreIR } from '@domains/shared-kernel/types';
 import { dynamicToVelocity } from '@domains/shared-kernel/types';
 import type { AudioEngine } from './audio-engine';
 
@@ -83,7 +83,7 @@ export class AudioSequencer {
     }
 
     // Initialize channels from staves
-    scoreIR.staves.forEach((staff, index) => {
+    scoreIR.staves.forEach((staff, _index) => {
       this.channels.set(staff.id, {
         staffId: staff.id,
         instrument: staff.instrument,
@@ -325,8 +325,8 @@ export class AudioSequencer {
     const secondsPerMeasure = beatsPerMeasure * secondsPerBeat;
 
     // Calculate current position
+    // Calculate current position
     const newMeasure = Math.floor(currentTime / secondsPerMeasure) + 1;
-    const currentBeat = (currentTime % secondsPerMeasure) / secondsPerBeat;
 
     // Check for measure change
     if (newMeasure !== this.currentMeasure) {

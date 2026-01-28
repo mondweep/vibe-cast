@@ -158,8 +158,8 @@ function detectStaffSystems(imageData: ImageData): DetectedStaff[] {
 
   for (let y = 1; y < height - 1; y++) {
     if (projection[y] > minPeakWidth &&
-        projection[y] >= projection[y - 1] &&
-        projection[y] >= projection[y + 1]) {
+      projection[y] >= projection[y - 1] &&
+      projection[y] >= projection[y + 1]) {
       peaks.push(y);
     }
   }
@@ -245,8 +245,8 @@ function detectBarLines(imageData: ImageData, staffs: DetectedStaff[]): Detected
     const minBarHeight = (staffBottom - staffTop) * 0.8;
     for (let x = 5; x < width - 5; x++) {
       if (projection[x] > minBarHeight &&
-          projection[x] > projection[x - 1] &&
-          projection[x] > projection[x + 1]) {
+        projection[x] > projection[x - 1] &&
+        projection[x] > projection[x + 1]) {
         barLines.push({ x, staffIndex: staffIdx });
       }
     }
@@ -287,7 +287,7 @@ function yToMidiPitch(y: number, staff: DetectedStaff, clef: 'treble' | 'bass' =
 /**
  * Detect note heads in staff region (simplified blob detection)
  */
-function detectNotes(imageData: ImageData, staffs: DetectedStaff[], barLines: DetectedBarLine[]): DetectedNote[] {
+function detectNotes(imageData: ImageData, staffs: DetectedStaff[], _barLines: DetectedBarLine[]): DetectedNote[] {
   const { width, height } = imageData;
   const gray = toGrayscale(imageData);
   const notes: DetectedNote[] = [];
@@ -303,10 +303,10 @@ function detectNotes(imageData: ImageData, staffs: DetectedStaff[], barLines: De
     const staffBottom = Math.min(height, staff.y + staff.height + 20);
 
     // Get bar lines for this staff
-    const staffBarLines = barLines
-      .filter(bl => bl.staffIndex === staffIdx)
-      .map(bl => bl.x)
-      .sort((a, b) => a - b);
+//    const _staffBarLines = barLines
+//      .filter(bl => bl.staffIndex === staffIdx)
+//      .map(bl => bl.x)
+//      .sort((a, b) => a - b);
 
     // Simple blob detection using connected component analysis
     const visited = new Set<number>();
@@ -373,7 +373,7 @@ function buildScoreIR(
   barLines: DetectedBarLine[],
   notes: DetectedNote[]
 ): StaffIR[] {
-  const { width } = imageData;
+  const { width: _width } = imageData;
   const staves: StaffIR[] = [];
 
   // Instrument mapping based on staff index
@@ -383,7 +383,6 @@ function buildScoreIR(
   ] as const;
 
   for (let staffIdx = 0; staffIdx < staffs.length; staffIdx++) {
-    const staff = staffs[staffIdx];
     const instrument = instruments[staffIdx % instruments.length];
 
     // Get bar lines for this staff
