@@ -107,6 +107,8 @@ The app shall utilize a tri-worker architecture to ensure the UI remains respons
   - Seek to measure functionality
   - State and measure change callbacks
   - Tempo-aware timing calculations
+  - **Metronome (NEW):** Toggleable click track with visual feedback
+  - **Stability:** Fixed premature disposal of AudioEngine on component updates
 
 ### ✅ Infrastructure - COMPLETE
 - **PDF Viewer:**
@@ -134,10 +136,9 @@ The app shall utilize a tri-worker architecture to ensure the UI remains respons
   - SoundFont loader for realistic instrument sounds
   - Per-instrument sample banks (Piano, Guitar, Bass, Synth)
   - Time-stretching for tempo changes without pitch shift
-- **Full Integration:**
-  - Wire OMR output → Audio Sequencer → Playback
-  - Real-time SharedArrayBuffer sync between workers
-  - OMR-driven cursor positioning (replace fixed geometry)
+### ✅ Full Integration - COMPLETE
+- **Pipeline:** OMR Worker Output -> Score IR -> Audio Sequencer -> Audio Engine -> Speakers
+- **Verification:** Manual verification successful with "Zubeen Mayabini" full score
 
 ## 8. File Structure
 
