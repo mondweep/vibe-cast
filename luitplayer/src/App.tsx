@@ -29,6 +29,7 @@ function App() {
 
   const [volume, setVolume] = useState(0.7);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMetronomeEnabled, setIsMetronomeEnabled] = useState(false);
   const [currentMeasure, setCurrentMeasure] = useState(1);
   const [tempo, setTempo] = useState(113);
   const [activeTab, setActiveTab] = useState<'score' | 'piano'>('piano');
@@ -204,6 +205,11 @@ function App() {
     sequencer?.seekToMeasure(mark.measureNumber);
   }, [sequencer]);
 
+  const handleToggleMetronome = useCallback((enabled: boolean) => {
+    setIsMetronomeEnabled(enabled);
+    sequencer?.toggleMetronome(enabled);
+  }, [sequencer]);
+
   // Cleanups
   useEffect(() => {
     return () => {
@@ -343,6 +349,8 @@ function App() {
                 onTempoChange={handleTempoChange}
                 onSeek={handleSeek}
                 onJumpToMark={handleJumpToMark}
+                isMetronomeEnabled={isMetronomeEnabled}
+                onToggleMetronome={handleToggleMetronome}
               />
 
               <MixerConsole

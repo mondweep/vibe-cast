@@ -59,6 +59,8 @@ export class AudioSequencer {
   private loop = false;
   private loopStart = 1;
   private loopEnd = 8;
+  private isMetronomeEnabled = false;
+  private lastScheduledBeat = -1;
 
   private animationFrameId: number | null = null;
   private onStateChange?: (state: SequencerState) => void;
@@ -209,6 +211,13 @@ export class AudioSequencer {
     const channels = Array.from(this.channels.values());
     const channel = channels[channelIndex];
     return channel?.volume ?? 0.8;
+  }
+
+  /**
+   * Toggle metronome
+   */
+  toggleMetronome(enabled: boolean): void {
+    this.isMetronomeEnabled = enabled;
   }
 
   /**
@@ -365,6 +374,28 @@ export class AudioSequencer {
         }
       }
     });
+
+    // Play metronome click
+    if (this.isMetronomeEnabled) {
+      const lookAheadBeatIndex = Math.floor(playUntil / secondsPerBeat);
+
+      if (lookAheadBeatIndex > this.lastScheduledBeat) {
+        const beatTime = lookAheadBeatIndex * secondsPerBeat;
+        const isDownbeat = lookAheadBeatIndex % beatsPerMeasure === 0;
+        const pitch = isDownbeat ? 77 : 76; // High vs Low Woodblock
+
+        // Schedule note
+        const delay = Math.max(0, (beatTime - currentTime) * 1000);
+        setTimeout(() => {
+          if (this.isPlaying && this.isMetronomeEnabled) {
+            this.audioEngine.noteOn(pitch, 90);
+            setTimeout(() => this.audioEngine.noteOff(pitch), 100);
+          }
+        }, delay);
+
+        this.lastScheduledBeat = lookAheadBeatIndex;
+      }
+    }
 
     // Notify state change
     this.notifyStateChange();

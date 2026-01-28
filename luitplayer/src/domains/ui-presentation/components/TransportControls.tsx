@@ -22,6 +22,8 @@ interface TransportControlsProps {
   onTempoChange?: (tempo: number) => void;
   onSeek?: (measure: number) => void;
   onJumpToMark?: (mark: RehearsalMark) => void;
+  isMetronomeEnabled?: boolean;
+  onToggleMetronome?: (enabled: boolean) => void;
 }
 
 export function TransportControls({
@@ -36,6 +38,8 @@ export function TransportControls({
   onTempoChange,
   onSeek,
   onJumpToMark,
+  isMetronomeEnabled = false,
+  onToggleMetronome,
 }: TransportControlsProps) {
   const [localTempo, setLocalTempo] = useState(tempo);
   const [isLooping, setIsLooping] = useState(false);
@@ -141,6 +145,27 @@ export function TransportControls({
           title="Loop"
         >
           🔁
+        </button>
+
+        {/* Metronome toggle */}
+        <button
+          onClick={() => onToggleMetronome?.(!isMetronomeEnabled)}
+          style={{
+            width: '48px',
+            height: '48px',
+            backgroundColor: isMetronomeEnabled ? '#e94560' : '#3a3a5e',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px',
+          }}
+          title="Metronome"
+        >
+          ⏱️
         </button>
       </div>
 
