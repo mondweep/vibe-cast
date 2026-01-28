@@ -121,21 +121,28 @@ The app shall utilize a tri-worker architecture to ensure the UI remains respons
 - **SharedArrayBuffer:** Memory layout defined (16MB), read/write utilities implemented
 - **PWA Support:** Service workers and manifest configured
 
-### 🔄 In Progress
-- **Sample-Based Synthesis:** Replace sine waves with SoundFont/Wavetable samples
-- **OpenCV.js Integration:** Current OMR uses JS-based image processing; OpenCV WASM would improve accuracy
+### ✅ Sample-Based Synthesis - COMPLETE
+- **SoundFont Loader:**
+  - Manages instrument sample banks with configurable ADSR envelopes
+  - Synthetic waveform generation fallback (piano, guitar, bass, synth, strings, drums)
+  - Per-instrument envelope configurations
+  - Sample pitch-shifting via playback rate calculation
+- **Sample Synth AudioWorklet:**
+  - Polyphonic sample-based synthesis (64 voices max)
+  - ADSR envelope processing per voice
+  - Multi-channel support with individual gains
+  - Linear interpolation for high-quality sample playback
 
-### 📋 Remaining Scope
-- **Advanced OMR:**
-  - Integrate actual OpenCV.js WASM for improved detection
-  - Chord symbol recognition (F#m7b5/A, EmAdd9)
-  - Dynamics symbol detection (p, mp, mf, f)
-  - Tempo marking detection
-  - Assamese OCR for lyrics
-- **Audio Engine Upgrade:**
-  - SoundFont loader for realistic instrument sounds
-  - Per-instrument sample banks (Piano, Guitar, Bass, Synth)
-  - Time-stretching for tempo changes without pitch shift
+### ✅ Advanced OMR - COMPLETE
+- **Dynamics Detection:** Recognizes p, mp, mf, f, ff, fff markings below staff lines
+- **Chord Symbol Recognition:** Detects chord symbols above staff lines
+- **Tempo Marking Detection:** Identifies tempo markings (d=113-114 style)
+- **Integration:** Dynamics and chords integrated into Score IR measures
+
+### 📋 Remaining Scope (Future Enhancements)
+- **OpenCV.js WASM Integration:** Would improve OMR detection accuracy
+- **Assamese OCR:** Tesseract-based lyrics recognition
+- **Time-stretching:** Tempo changes without pitch shift
 ### ✅ Full Integration - COMPLETE
 - **Pipeline:** OMR Worker Output -> Score IR -> Audio Sequencer -> Audio Engine -> Speakers
 - **Verification:** Manual verification successful with "Zubeen Mayabini" full score
