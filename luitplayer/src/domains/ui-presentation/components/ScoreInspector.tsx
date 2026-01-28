@@ -8,6 +8,38 @@ interface ScoreInspectorProps {
     onClose: () => void;
 }
 
+// Helper to get logic description of note
+function getNoteName(midi: number): string {
+    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const octave = Math.floor(midi / 12) - 1;
+    const note = notes[midi % 12];
+    return `${note}${octave}`;
+}
+
+// Helper to get theory description
+function getNoteDescription(midi: number): string {
+    const name = getNoteName(midi);
+    const note = name.slice(0, -1);
+    const octave = parseInt(name.slice(-1));
+
+    let range = '';
+    if (octave === 4) range = 'Middle C range';
+    else if (octave > 4) range = 'above Middle C';
+    else range = 'below Middle C';
+
+    return `${note} ${range}`;
+}
+
+// Helper for velocity
+function getVelocityDescription(v: number): string {
+    if (v < 30) return 'pp (Very Soft)';
+    if (v < 50) return 'p (Soft)';
+    if (v < 70) return 'mp (Med-Soft)';
+    if (v < 90) return 'mf (Med-Loud)';
+    if (v < 110) return 'f (Loud)';
+    return 'ff (Very Loud)';
+}
+
 export function ScoreInspector({ scoreIR, isVisible, onClose }: ScoreInspectorProps) {
     if (!isVisible || !scoreIR) return null;
 
@@ -38,9 +70,24 @@ export function ScoreInspector({ scoreIR, isVisible, onClose }: ScoreInspectorPr
                                             <div style={styles.eventList}>
                                                 {measure.events.slice(0, 5).map((e, ei) => (
                                                     <div key={ei} style={styles.eventItem}>
-                                                        {e.type === 'note-on'
-                                                            ? `🎵 ${e.pitch} (v:${e.velocity})`
-                                                            : `🔹 ${e.type}`}
+                                                        {e.type === 'note-on' ? (
+                                                            <div style={{ fontSize: '10px' }}>
+                                                                <div>
+                                                                    <strong>{getNoteName(e.pitch)}</strong>
+                                                                    <span style={{ color: '#888', marginLeft: '4px' }}>
+                                                                        ({getNoteDescription(e.pitch)})
+                                                                    </span>
+                                                                </div>
+                                                                <div style={{ color: '#aaa', marginLeft: '12px' }}>
+                                                                    Vol: {e.velocity} ({getVelocityDescription(e.velocity || 80)})
+                                                                </div>
+                                                                <div style={{ color: '#aaa', marginLeft: '12px' }}>
+                                                                    t: {(e.time || 0).toFixed(2)}s | d: {(e.duration || 0).toFixed(2)}s
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            `🔹 ${e.type}`
+                                                        )}
                                                     </div>
                                                 ))}
                                                 {measure.events.length > 5 && <div style={styles.more}>+{measure.events.length - 5} more</div>}
