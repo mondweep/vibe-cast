@@ -141,6 +141,35 @@ export class AudioEngine {
   }
 
   /**
+   * Stop all currently playing notes
+   */
+  allNotesOff(): void {
+    if (!this.workletNode) return;
+
+    // Send note-off for all possible MIDI notes (0-127)
+    for (let pitch = 0; pitch <= 127; pitch++) {
+      this.workletNode.port.postMessage({
+        type: 'note-off',
+        pitch,
+        time: 0,
+      });
+    }
+  }
+
+  /**
+   * Set channel gain (for mixer)
+   */
+  setChannelGain(channel: number, gain: number): void {
+    if (!this.workletNode) return;
+
+    this.workletNode.port.postMessage({
+      type: 'set-gain',
+      channel,
+      gain: Math.max(0, Math.min(1, gain)),
+    });
+  }
+
+  /**
    * Check if engine is ready
    */
   get ready(): boolean {
