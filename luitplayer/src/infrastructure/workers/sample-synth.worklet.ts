@@ -204,9 +204,35 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
     };
 
     // Limit polyphony to prevent CPU overload
-    if (this.voices.length >= 64) {
-      // Remove oldest voice
-      this.voices.shift();
+    const MAX_POLYPHONY = 128; // Increased from 64
+    if (this.voices.length >= MAX_POLYPHONY) {
+      // Find best voice to steal (quietest / oldest / released)
+      let bestCandidateIndex = -1;
+      let minScore = Infinity;
+
+      for (let i = 0; i < this.voices.length; i++) {
+        const v = this.voices[i];
+        let score = v.envelope.level; // Bias towards quiet notes
+
+        // Prefer released notes significantly
+        if (v.envelope.phase === 'release') {
+          score *= 0.1;
+        }
+
+        // Bias slightly towards older notes (lower index)
+        score *= (1 + i / this.voices.length * 0.1);
+
+        if (score < minScore) {
+          minScore = score;
+          bestCandidateIndex = i;
+        }
+      }
+
+      if (bestCandidateIndex !== -1) {
+        this.voices.splice(bestCandidateIndex, 1);
+      } else {
+        this.voices.shift(); // Fallback to oldest
+      }
     }
 
     this.voices.push(voice);
@@ -218,8 +244,8 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
     // Find voice and start release
     for (const voice of this.voices) {
       if (voice.pitch === message.pitch &&
-          voice.instrument === instrument &&
-          voice.releaseTime === null) {
+        voice.instrument === instrument &&
+        voice.releaseTime === null) {
         voice.releaseTime = currentTime;
         voice.envelope.phase = 'release';
         break;

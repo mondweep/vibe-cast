@@ -5,6 +5,12 @@
 
 import { useState, useCallback } from 'react';
 
+declare global {
+  interface Window {
+    mixerThrottleMap: Map<string, number>;
+  }
+}
+
 export interface ChannelState {
   id: string;
   name: string;
@@ -183,7 +189,26 @@ export function MixerConsole({
       setLocalChannels((prev) =>
         prev.map((ch) => (ch.id === channelId ? { ...ch, volume } : ch))
       );
-      onVolumeChange?.(channelId, volume);
+
+      // Throttle updates to parent/audio engine using requestAnimationFrame
+      // This prevents flooding the message port with high-frequency slider events
+      if (!window.mixerThrottleMap) {
+        window.mixerThrottleMap = new Map();
+      }
+
+      if (window.mixerThrottleMap.has(channelId)) {
+        const frameId = window.mixerThrottleMap.get(channelId);
+        if (frameId !== undefined) {
+          cancelAnimationFrame(frameId);
+        }
+      }
+
+      const frameId = requestAnimationFrame(() => {
+        onVolumeChange?.(channelId, volume);
+        window.mixerThrottleMap.delete(channelId);
+      });
+
+      window.mixerThrottleMap.set(channelId, frameId);
     },
     [onVolumeChange]
   );
