@@ -84,15 +84,24 @@ export class AudioSequencer {
       this.tempo = scoreIR.metadata.tempo;
     }
 
-    // Initialize channels from staves
-    scoreIR.staves.forEach((staff, _index) => {
+    // Load instruments
+    const instruments = new Set<string>();
+    scoreIR.staves.forEach((staff) => {
+      const instrument = staff.instrument || 'piano';
+      instruments.add(instrument);
+
       this.channels.set(staff.id, {
         staffId: staff.id,
-        instrument: staff.instrument,
+        instrument,
         volume: 0.8,
         muted: false,
         solo: false,
       });
+    });
+
+    // Initialize instruments in audio engine
+    instruments.forEach((inst) => {
+      this.audioEngine.loadInstrument(inst);
     });
 
     // Pre-schedule all events
@@ -365,11 +374,14 @@ export class AudioSequencer {
           const volume = this.getChannelVolume(event.channel);
           const adjustedVelocity = Math.round(event.velocity * volume);
 
-          this.audioEngine.noteOn(event.pitch, adjustedVelocity);
+          const channelConfig = this.channels.get(this.scoreIR!.staves[event.channel].id);
+          const instrument = channelConfig?.instrument || 'piano';
+
+          this.audioEngine.noteOn(event.pitch, adjustedVelocity, instrument, event.channel);
 
           // Schedule note off
           setTimeout(() => {
-            this.audioEngine.noteOff(event.pitch);
+            this.audioEngine.noteOff(event.pitch, instrument, event.channel);
           }, event.duration * 1000);
         }
       }
@@ -388,8 +400,9 @@ export class AudioSequencer {
         const delay = Math.max(0, (beatTime - currentTime) * 1000);
         setTimeout(() => {
           if (this.isPlaying && this.isMetronomeEnabled) {
-            this.audioEngine.noteOn(pitch, 90);
-            setTimeout(() => this.audioEngine.noteOff(pitch), 100);
+            // Use 'drums' instrument for metronome
+            this.audioEngine.noteOn(pitch, 90, 'drums', 9); // Channel 9 reserved for drums usually
+            setTimeout(() => this.audioEngine.noteOff(pitch, 'drums', 9), 100);
           }
         }, delay);
 

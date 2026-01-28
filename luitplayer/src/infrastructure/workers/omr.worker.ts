@@ -322,10 +322,10 @@ function detectNotes(imageData: ImageData, staffs: DetectedStaff[], _barLines: D
     const staffBottom = Math.min(height, staff.y + staff.height + 20);
 
     // Get bar lines for this staff
-//    const _staffBarLines = barLines
-//      .filter(bl => bl.staffIndex === staffIdx)
-//      .map(bl => bl.x)
-//      .sort((a, b) => a - b);
+    //    const _staffBarLines = barLines
+    //      .filter(bl => bl.staffIndex === staffIdx)
+    //      .map(bl => bl.x)
+    //      .sort((a, b) => a - b);
 
     // Simple blob detection using connected component analysis
     const visited = new Set<number>();
@@ -476,7 +476,7 @@ function detectDynamics(imageData: ImageData, staffs: DetectedStaff[]): Detected
  * Chord symbols are text-based and appear above the staff
  */
 function detectChords(imageData: ImageData, staffs: DetectedStaff[]): DetectedChord[] {
-  const { width, height } = imageData;
+  const { width } = imageData;
   const gray = toGrayscale(imageData);
   const chords: DetectedChord[] = [];
 
