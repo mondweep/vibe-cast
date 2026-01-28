@@ -181,8 +181,20 @@ export class SoundFontLoader {
       const t = i / sampleRate;
       const phase = 2 * Math.PI * frequency * t;
 
-      // Natural decay envelope
-      const envelope = Math.exp(-t * 2);
+      // Envelope generation
+      let envelope = 1.0;
+
+      // For percussive/plucked instruments, apply natural decay to the sample itself
+      if (type === 'piano' || type === 'acoustic-guitar' || type === 'electric-guitar' ||
+        type === 'bass-guitar' || type === 'drums') {
+        // Decay to silence over time (but slower than before to allow looping if needed)
+        envelope = Math.exp(-t * 2);
+      } else {
+        // For sustaining instruments (voice, synth, strings, brass), 
+        // keeps steady volume so we can loop it indefinitely.
+        // The ADSR envelope in SampleSynthProcessor determines duration.
+        envelope = 1.0;
+      }
 
       let sample = 0;
 
