@@ -94,7 +94,7 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
   private samples: Map<string, Map<number, LoadedSample>> = new Map();
   private voices: ActiveVoice[] = [];
   private channelGains: number[] = new Array(16).fill(1.0);
-  private masterGain = 0.7;
+  private masterGain = 2.0; // Boosted for visibility/audibility
   private envelopes: Map<string, InstrumentEnvelope> = new Map();
 
   // Default envelope for instruments without custom settings
@@ -181,9 +181,15 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
 
     // Find closest sample ONCE at start of note
     const sample = this.findClosestSample(instrument, message.pitch);
-    const playbackRate = sample
+
+    // Calculate pitch shift
+    const pitchShift = sample
       ? Math.pow(2, (message.pitch - sample.baseNote) / 12)
       : Math.pow(2, (message.pitch - 60) / 12);
+
+    // Compensate for sample rate mismatch (e.g. 44.1k sample vs 48k context)
+    const sampleRateRatio = sample ? (sample.sampleRate / sampleRate) : 1.0;
+    const playbackRate = pitchShift * sampleRateRatio;
 
     // Create new voice with cached sample
     const voice: ActiveVoice = {
