@@ -46,7 +46,8 @@ const DEFAULT_ENVELOPES: Record<InstrumentType, InstrumentBank['envelope']> = {
   brass: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.2 },
   drums: { attack: 0.001, decay: 0.1, sustain: 0.3, release: 0.1 },
   voice: { attack: 0.1, decay: 0.1, sustain: 0.8, release: 0.3 },
-};
+  'lead-vocal': { attack: 0.1, decay: 0.1, sustain: 0.8, release: 0.3 }, // Alias
+} as any;
 
 // Frequency ratios for basic waveform synthesis (fallback when no samples)
 const NOTE_FREQUENCIES: number[] = [];
@@ -70,7 +71,9 @@ export class SoundFontLoader {
   /**
    * Load an instrument bank from URL or generate synthetic samples
    */
-  async loadInstrument(type: InstrumentType, url?: string): Promise<InstrumentBank> {
+  async loadInstrument(inputName: string, url?: string): Promise<InstrumentBank> {
+    const type = this.normalizeInstrumentName(inputName);
+
     // Check cache
     if (this.banks.has(type)) {
       return this.banks.get(type)!;
@@ -151,6 +154,8 @@ export class SoundFontLoader {
       samples.set(baseNote, {
         buffer,
         baseNote,
+        loopStart: 0,
+        loopEnd: numSamples, // Loop the entire 2s buffer (smooth sine wave)
       });
     }
 
@@ -314,6 +319,18 @@ export class SoundFontLoader {
   /**
    * Clear all loaded samples
    */
+  private normalizeInstrumentName(name: string): InstrumentType {
+    const n = name.toLowerCase();
+    if (n.includes('vocal') || n.includes('voice') || n.includes('choir')) return 'voice';
+    if (n.includes('guitar')) return 'acoustic-guitar';
+    if (n.includes('bass')) return 'bass-guitar';
+    if (n.includes('string') || n.includes('violin') || n.includes('cello')) return 'strings';
+    if (n.includes('brass') || n.includes('trumpet') || n.includes('horn')) return 'brass';
+    if (n.includes('drum') || n.includes('percussion')) return 'drums';
+    if (n.includes('synth')) return 'synth-pad';
+    return 'piano'; // Default
+  }
+
   clear(): void {
     this.banks.clear();
     this.loadingPromises.clear();

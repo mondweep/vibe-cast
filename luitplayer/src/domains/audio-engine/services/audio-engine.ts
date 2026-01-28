@@ -112,6 +112,8 @@ export class AudioEngine {
           midiNote: note,
           samples: sample.buffer.getChannelData(0), // Mono for now
           sampleRate: sample.buffer.sampleRate,
+          loopStart: sample.loopStart,
+          loopEnd: sample.loopEnd,
         });
       }
 

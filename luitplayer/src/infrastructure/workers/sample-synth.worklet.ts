@@ -10,6 +10,8 @@ interface SampleMessage {
   midiNote: number;
   samples: Float32Array; // Interleaved stereo
   sampleRate: number;
+  loopStart?: number;
+  loopEnd?: number;
 }
 
 interface NoteOnMessage {
@@ -59,6 +61,8 @@ interface LoadedSample {
   data: Float32Array;
   baseNote: number;
   sampleRate: number;
+  loopStart?: number;
+  loopEnd?: number;
 }
 
 interface ActiveVoice {
@@ -66,7 +70,8 @@ interface ActiveVoice {
   velocity: number;
   instrument: string;
   channel: number;
-  sampleIndex: number;
+  sampleIndex: number; // Total frames processed
+  samplePosition: number; // Current read position in sample (handling loops)
   playbackRate: number;
   sample: LoadedSample | null; // Cache the sample reference
   envelope: {
@@ -167,6 +172,8 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
       data: message.samples,
       baseNote: message.midiNote,
       sampleRate: message.sampleRate,
+      loopStart: message.loopStart,
+      loopEnd: message.loopEnd,
     });
 
     console.log(`[SampleSynth] Loaded sample: ${message.instrument} note ${message.midiNote}`);
@@ -198,6 +205,7 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
       instrument,
       channel,
       sampleIndex: 0,
+      samplePosition: 0,
       playbackRate,
       sample: sample, // Store reference
       envelope: {
@@ -335,9 +343,22 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
       }
 
       // Get sample position with interpolation
-      const samplePos = voice.sampleIndex * voice.playbackRate;
-      if (samplePos >= sampleLength - 1) {
-        // Sample ended
+      let samplePos = voice.sampleIndex * voice.playbackRate;
+
+      // Handle looping
+      if (sample.loopStart !== undefined && sample.loopEnd !== undefined) {
+        if (samplePos >= sample.loopEnd) {
+          const loopLen = sample.loopEnd - sample.loopStart;
+          // Wrap around
+          samplePos = sample.loopStart + ((samplePos - sample.loopEnd) % loopLen);
+
+          // We can't easily update voice.sampleIndex to reflect the wrap 
+          // because sampleIndex is "total frames played".
+          // So we need to calculate position based on (totalFrames * rate) % totalLoop?
+          // Actually, standard way is to track currentPhase separately from totalFrames.
+        }
+      } else if (samplePos >= sampleLength - 1) {
+        // Sample ended (one-shot)
         voice.envelope.phase = 'release';
         voice.envelope.level = 0;
         break;
@@ -347,10 +368,14 @@ class SampleSynthProcessor extends AudioWorkletProcessor {
       const pos1 = pos0 + 1;
       const frac = samplePos - pos0;
 
+      // Bound checks for interpolation
+      const p0 = pos0 % sampleLength; // Safety wrap for simple looping if no strict points
+      const p1 = pos1 % sampleLength;
+
       // Linear interpolation
-      const leftSample = sampleData[pos0 * 2] * (1 - frac) + sampleData[pos1 * 2] * frac;
+      const leftSample = sampleData[p0 * 2] * (1 - frac) + sampleData[p1 * 2] * frac;
       const rightSample =
-        sampleData[pos0 * 2 + 1] * (1 - frac) + sampleData[pos1 * 2 + 1] * frac;
+        sampleData[p0 * 2 + 1] * (1 - frac) + sampleData[p1 * 2 + 1] * frac;
 
       // Apply velocity, envelope, and channel gain
       const channelGain = this.channelGains[voice.channel] || 1.0;
