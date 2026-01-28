@@ -73,37 +73,102 @@ The app shall utilize a tri-worker architecture to ensure the UI remains respons
 
 - **Playback Fidelity:** The "Bass Guitar Solo" at measure 53 sounds distinct from the Piano accompaniment.
 
-## 7. Current Implementation Status (Jan 27, 2026)
+## 7. Current Implementation Status (Jan 28, 2026)
 
-### Completed
-- **Project Setup:** Vite + React + TypeScript environment established.
-- **Detailed Architecture:** `ARCHITECTURE.md` created with tri-worker data flow diagrams.
-- **Audio Infrastructure:** `AudioWorklet` implemented. Currently uses a sine wave synthesizer for basic testing and a woodblock metronome for playback feedback.
-- **PDF Score Viewer:** 
-  - Integrated `pdfjs-dist` for rendering.
-  - Implemented custom `PDFViewer` component with zoom, manual navigation (Next/Prev), and boundary checks.
-  - Resolved rendering concurrency issues ("same canvas" errors).
-- **Interactive UI:** 
-  - **Piano Keyboard:** Fully functional virtual keyboard triggers audio engine.
-  - **Transport Controls:** Play/Pause/Stop with verified measure counting.
-  - **Mixer Console:** UI implementation with volume sliders/mute/solo (partial wiring).
-- **Playback Features:**
-  - **Metronome:** Audio click on every measure beat confirms engine activity.
-  - **Follow-Along Cursor:** Red overlay tracking measures (currently using fixed geometry, not OMR).
-- **PWA Support:** Service workers and manifest configured.
+### ✅ Phase 1: WASM Glue - COMPLETE
+- **Project Setup:** Vite + React 19 + TypeScript environment with DDD architecture
+- **Claude Flow V3:** 7-agent hierarchical-mesh swarm configuration
+- **Architecture Decision Records:** 7 ADRs documenting key decisions
+- **TDD Framework:** Vitest configured with 35 tests passing
+- **Audio Infrastructure:** AudioWorklet with sine wave synthesis and metronome
 
-### In Progress
-- **OMR Integration:** `omr.worker.ts` exists but lacks OpenCV logic. Real note detection is **NOT** yet implemented.
-- **Advanced Synthesis:** Moving from sine waves/metronome to Sample-based synthesis (required for Piano, Guitar, Strings).
+### ✅ Phase 2: OMR Engine - COMPLETE
+- **OMR Worker Pipeline:**
+  - Grayscale conversion and image preprocessing
+  - Horizontal projection analysis for staff line detection
+  - Vertical projection for bar line/measure segmentation
+  - Blob detection for note head recognition
+  - Y-position to MIDI pitch mapping (treble/bass clef support)
+  - LRU page cache (max 20 pages) for performance
+  - Processing time tracking per page
+- **Score IR Generation:** Converts detected elements to JSON intermediate representation
 
-### Remaining Scope
-- **Optical Music Recognition (OMR):**
-  - Implement caching/pipeline in `omr.worker.ts`.
-  - Detect staves, measures, and individual notes using OpenCV.js.
-  - Map PDF coordinates to audio events.
-- **Audio Engine Upgrade:** 
-  - Implement SoundFont or Wavetable synthesis.
-  - Support multi-channel mixer logic (currently all channels sum to one oscillator).
-- **Data Synchronization:**
-  - Connect OMR output (JSON IR) to the Audio Sequencer.
-  - Use `SharedArrayBuffer` for zero-copy data transfer between workers.
+### ✅ Phase 3: Audio Synthesis - PARTIAL
+- **Audio Engine:**
+  - Sine wave synthesis working
+  - `noteOn()` / `noteOff()` MIDI-style control
+  - `allNotesOff()` for stopping all notes
+  - `setChannelGain()` for mixer control
+  - `setTempo()` for BPM changes
+- **Audio Sequencer (NEW):**
+  - Loads Score IR and pre-schedules all events
+  - Multi-channel support with volume/mute/solo per channel
+  - Loop points configuration (start/end measures)
+  - Seek to measure functionality
+  - State and measure change callbacks
+  - Tempo-aware timing calculations
+
+### ✅ Infrastructure - COMPLETE
+- **PDF Viewer:**
+  - `pdfjs-dist` integration with zoom and navigation
+  - Render task cancellation for concurrency handling
+  - Auto page-turn during playback
+- **Follow-Along Cursor:** Red overlay tracking current measure
+- **Transport Controls:** Play/Pause/Stop, tempo control (40-240 BPM), looping UI
+- **Mixer Console:** 8-channel mixer with volume faders, mute (M), solo (S)
+- **SharedArrayBuffer:** Memory layout defined (16MB), read/write utilities implemented
+- **PWA Support:** Service workers and manifest configured
+
+### 🔄 In Progress
+- **Sample-Based Synthesis:** Replace sine waves with SoundFont/Wavetable samples
+- **OpenCV.js Integration:** Current OMR uses JS-based image processing; OpenCV WASM would improve accuracy
+
+### 📋 Remaining Scope
+- **Advanced OMR:**
+  - Integrate actual OpenCV.js WASM for improved detection
+  - Chord symbol recognition (F#m7b5/A, EmAdd9)
+  - Dynamics symbol detection (p, mp, mf, f)
+  - Tempo marking detection
+  - Assamese OCR for lyrics
+- **Audio Engine Upgrade:**
+  - SoundFont loader for realistic instrument sounds
+  - Per-instrument sample banks (Piano, Guitar, Bass, Synth)
+  - Time-stretching for tempo changes without pitch shift
+- **Full Integration:**
+  - Wire OMR output → Audio Sequencer → Playback
+  - Real-time SharedArrayBuffer sync between workers
+  - OMR-driven cursor positioning (replace fixed geometry)
+
+## 8. File Structure
+
+```
+luitplayer/
+├── .claude-flow/
+│   └── swarm.config.json          # 7-agent hierarchical-mesh config
+├── docs/
+│   ├── adr/                       # 7 Architecture Decision Records
+│   └── ARCHITECTURE.md            # Tri-worker data flow diagrams
+├── src/
+│   ├── domains/
+│   │   ├── audio-engine/          # AudioWorklet, Sequencer
+│   │   ├── omr-engine/            # (placeholder for OpenCV)
+│   │   ├── pdf-processing/        # PDF.js integration
+│   │   ├── ui-presentation/       # React components
+│   │   └── shared-kernel/         # Score IR types, music theory
+│   └── infrastructure/
+│       └── workers/               # OMR Worker, Audio Worklet, SharedArrayBuffer
+├── tests/
+│   └── unit/                      # 35 tests (all passing)
+└── public/
+    └── pwa-*.png                  # PWA icons
+```
+
+## 9. Test Status
+
+```
+✓ tests/unit/shared-kernel/music-theory.spec.ts (22 tests)
+✓ tests/unit/shared-kernel/score-ir.spec.ts (13 tests)
+
+Test Files: 2 passed (2)
+Tests: 35 passed (35)
+```
