@@ -37,9 +37,9 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "jsdom": "^24.0.0",
-    "typescript": "~5.9.3",
+    "typescript": "~5.7.2",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4",
+    "vite": "^6.0.0",
     "vite-plugin-pwa": "^0.21.0",
     "vitest": "^1.2.0",
     "workbox-window": "^7.0.0"
