@@ -422,8 +422,40 @@ function App() {
       </main>
 
       <footer style={styles.footer}>
-        <p>Built with Claude Flow V3 - 7 Agent Hierarchical Mesh</p>
-        <p style={styles.footerSub}>DDD | ADR | TDD | WASM</p>
+        <p style={{ marginBottom: '8px' }}>
+          Original Concept by{' '}
+          <a
+            href="https://www.linkedin.com/in/mondweepchakravorty/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={styles.footerLink}
+          >
+            Mondweep Chakravorty
+          </a>
+        </p>
+        <p style={{ marginBottom: '12px', color: '#666' }}>
+          Contributions from Audio Engineers & DSP Experts Welcome!
+        </p>
+        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', fontSize: '12px' }}>
+          <a
+            href="https://github.com/mondweep/vibe-cast/blob/claude/sheet-music-player-w1UAI/LUITPLAYER-PRD.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={styles.footerLink}
+          >
+            Product Requirements (PRD)
+          </a>
+          <span style={{ color: '#444' }}>|</span>
+          <a
+            href="https://github.com/mondweep/vibe-cast/blob/claude/sheet-music-player-w1UAI/luitplayer/docs/ARCHITECTURE.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={styles.footerLink}
+          >
+            Architecture Docs
+          </a>
+        </div>
+        <p style={styles.footerSub}>Built with Claude Flow V3 | DDD | WASM | TDD</p>
       </footer>
 
       <ScoreInspector
@@ -629,7 +661,14 @@ const styles: Record<string, React.CSSProperties> = {
   footerSub: {
     fontSize: '11px',
     color: '#444',
-    marginTop: '4px',
+    marginTop: '16px',
+    opacity: 0.6,
+  },
+  footerLink: {
+    color: '#e94560',
+    textDecoration: 'none',
+    transition: 'color 0.2s',
+    fontWeight: 500,
   },
 };
 
