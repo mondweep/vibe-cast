@@ -9,6 +9,7 @@ import {
   PDFViewer,
   MixerConsole,
   TransportControls,
+  ScoreInspector,
   type RehearsalMark,
 } from '@domains/ui-presentation';
 
@@ -35,6 +36,8 @@ function App() {
   const [activeTab, setActiveTab] = useState<'score' | 'piano'>('piano');
   const [pdfUrl, setPdfUrl] = useState<string | undefined>(undefined);
   const [scoreIR, setScoreIR] = useState<ScoreIR | null>(null);
+  const [isInspectorVisible, setIsInspectorVisible] = useState(false);
+  const [isLoadingInstruments, setIsLoadingInstruments] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -76,6 +79,10 @@ function App() {
       const engine = createAudioEngine();
       await engine.initialize();
       setAudioEngine(engine);
+
+      engine.onLoadingState((isLoading: boolean) => {
+        setIsLoadingInstruments(isLoading);
+      });
 
       const seq = createAudioSequencer(engine);
       setSequencer(seq);
@@ -263,6 +270,10 @@ function App() {
                 <div style={styles.processingStatus}>
                   Processing: {processingProgress}%
                 </div>
+              ) : isLoadingInstruments ? (
+                <div style={styles.loadingStatus}>
+                  ⏳ Loading Instruments...
+                </div>
               ) : (
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -387,8 +398,22 @@ function App() {
               />
 
               {scoreIR && (
-                <div style={{ padding: '10px', fontSize: '12px', color: '#888' }}>
-                  Detected {scoreIR.staves.length} staves
+                <div style={{ padding: '10px', fontSize: '12px', color: '#888', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Detected {scoreIR.staves.length} staves</span>
+                  <button
+                    onClick={() => setIsInspectorVisible(true)}
+                    style={{
+                      background: 'none',
+                      border: '1px solid #444',
+                      color: '#aaa',
+                      borderRadius: '4px',
+                      padding: '4px 8px',
+                      cursor: 'pointer',
+                      fontSize: '11px'
+                    }}
+                  >
+                    Inspect Data
+                  </button>
                 </div>
               )}
             </div>
@@ -400,6 +425,12 @@ function App() {
         <p>Built with Claude Flow V3 - 7 Agent Hierarchical Mesh</p>
         <p style={styles.footerSub}>DDD | ADR | TDD | WASM</p>
       </footer>
+
+      <ScoreInspector
+        scoreIR={scoreIR}
+        isVisible={isInspectorVisible}
+        onClose={() => setIsInspectorVisible(false)}
+      />
     </div>
   );
 }
@@ -456,6 +487,12 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#e94560',
     fontSize: '14px',
     fontWeight: 500,
+  },
+  loadingStatus: {
+    color: '#f39c12',
+    fontSize: '14px',
+    fontWeight: 500,
+    marginRight: '10px'
   },
   main: {
     flex: 1,

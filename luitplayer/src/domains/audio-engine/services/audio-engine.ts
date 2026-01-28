@@ -25,6 +25,7 @@ export class AudioEngine {
   private soundFontLoader: SoundFontLoader | null = null;
   private isInitialized = false;
   private workletUrl: string;
+  private onLoadingStateChange?: (isLoading: boolean) => void;
 
   constructor(config: AudioEngineConfig) {
     this.workletUrl = config.workletUrl;
@@ -94,6 +95,8 @@ export class AudioEngine {
       return;
     }
 
+    this.onLoadingStateChange?.(true);
+
     try {
       // Load samples via SoundFont loader
       const bank = await this.soundFontLoader.loadInstrument(
@@ -122,6 +125,8 @@ export class AudioEngine {
       console.log(`[AudioEngine] Loaded instrument: ${instrument}`);
     } catch (error) {
       console.error(`[AudioEngine] Failed to load instrument ${instrument}:`, error);
+    } finally {
+      this.onLoadingStateChange?.(false);
     }
   }
 
@@ -261,6 +266,10 @@ export class AudioEngine {
   /**
    * Clean up resources
    */
+  public onLoadingState(callback: (isLoading: boolean) => void): void {
+    this.onLoadingStateChange = callback;
+  }
+
   async dispose(): Promise<void> {
     if (this.soundFontLoader) {
       this.soundFontLoader.clear();
