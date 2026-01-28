@@ -9,10 +9,10 @@ LuitPlayer utilizes a **Tri-Worker Architecture** to ensure high performance and
 ```mermaid
 graph TD
     subgraph Browser
-        UI[Main Thread (React UI)]
-        OMR[OMR Worker (OpenCV/WASM)]
-        Audio[Audio Engine (AudioWorklet)]
-        SAB[(SharedArrayBuffer)]
+        UI["Main Thread (React UI)"]
+        OMR["OMR Worker (OpenCV/WASM)"]
+        Audio["Audio Engine (AudioWorklet)"]
+        SAB[("SharedArrayBuffer")]
     end
 
     User[User] -->|Interact| UI
