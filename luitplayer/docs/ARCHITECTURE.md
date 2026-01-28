@@ -45,3 +45,14 @@ graph TD
 *   **OMR:** OpenCV.js (WASM)
 *   **State:** Zustand
 *   **Styling:** CSS Modules / Inline (Proof of Concept)
+
+## Acknowledgements
+
+**Original Concept:** [Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty/)
+
+**Contribution Invitation:**
+We welcome PRs to improve the WASM OMR accuracy or the AudioWorklet synthesis (especially for more realistic instrument samples).
+
+**Repository Links:**
+*   [Architecture Diagram](https://github.com/mondweep/vibe-cast/blob/claude/sheet-music-player-w1UAI/luitplayer/docs/ARCHITECTURE.md)
+*   [Full PRD](https://github.com/mondweep/vibe-cast/blob/claude/sheet-music-player-w1UAI/LUITPLAYER-PRD.md)

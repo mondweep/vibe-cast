@@ -215,3 +215,13 @@ Digital signal processing (audio) and image recognition (OMR) are very heavy tas
 **Answer:**
 Yes. Because we use WebAssembly and local browser APIs, the analysis happens entirely on your computer's CPU. The PDF is **never** uploaded to a cloud server for processing. Your music stays on your machine.
 
+## 10. Acknowledgements & Contribution
+
+**Idea & Concept by:** [Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty/)
+
+This project aims to democratize access to musical practice tools. We actively invite contributions from the open-source community—particularly Audio Engineers and DSP experts—to help improve the quality of the synthesis engine. Our goal is to evolve the playback from "accurate" to "human-like" and expressive.
+
+**Project Links:**
+*   [Product Requirements Document (PRD)](https://github.com/mondweep/vibe-cast/blob/claude/sheet-music-player-w1UAI/LUITPLAYER-PRD.md)
+*   [Architecture Documentation](https://github.com/mondweep/vibe-cast/blob/claude/sheet-music-player-w1UAI/luitplayer/docs/ARCHITECTURE.md)
+
