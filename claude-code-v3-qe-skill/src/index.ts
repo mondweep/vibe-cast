@@ -39,6 +39,33 @@ export { QualityGate } from './quality/index.js';
 // Workflow exports
 export { BuildWithQualityOrchestrator } from './workflows/index.js';
 
+// Methodologies exports (DDD, ADR, TDD)
+export {
+  DDD_GUIDE,
+  ADR_TEMPLATE,
+  ADR_CATEGORIES,
+  TDD_GUIDE,
+  TDD_PATTERNS,
+  METHODOLOGY_WORKFLOW,
+  createADR,
+  createTDDSession,
+  analyzeDomainForDDD,
+} from './methodologies/index.js';
+export type {
+  BoundedContext,
+  AggregateDefinition,
+  EntityDefinition,
+  ValueObjectDefinition,
+  DDDAnalysis,
+  ADR,
+  ADRStatus,
+  ADRAlternative,
+  TDDCycle,
+  TDDPhase,
+  TDDSession,
+  MethodologyWorkflow,
+} from './methodologies/index.js';
+
 // ============================================================================
 // Main Skill Class
 // ============================================================================
