@@ -38,6 +38,23 @@ A powerful skill that combines the development capabilities of Claude Code V3 wi
 - **Contract Validation**: API schema and backward compatibility
 - **Defect Prediction**: ML-powered with F1 > 0.8
 
+### Development Methodologies
+
+#### Domain-Driven Design (DDD)
+- **Strategic Design**: Bounded contexts, context mapping, ubiquitous language
+- **Tactical Patterns**: Aggregates, entities, value objects, domain events, repositories
+- **Guidelines**: Small aggregates, reference by ID, domain events for cross-aggregate communication
+
+#### Architecture Decision Records (ADR)
+- **Templates**: Standardized ADR format with context, decision, consequences
+- **Categories**: Architecture, technology, patterns, operations decisions
+- **Tracking**: Status management (proposed → accepted → deprecated → superseded)
+
+#### Test-Driven Development (TDD)
+- **Red-Green-Refactor**: Strict cycle enforcement with TDD-specific agents
+- **Test Patterns**: Unit, integration, and contract test templates
+- **Best Practices**: Arrange-Act-Assert, descriptive naming, behavior-focused tests
+
 ## Installation
 
 ```bash
@@ -207,6 +224,96 @@ See [config/skill.yaml](./config/skill.yaml) for full configuration options.
 - `createBuildWithQualitySkill(config?)` - Create skill instance
 - `initializeBuildWithQualitySkill(config?)` - Create and initialize
 - `buildWithQuality(path, requirements, config?)` - Quick execution
+
+### Methodology Helpers
+
+- `DDD_GUIDE` - Strategic and tactical DDD guidance
+- `ADR_TEMPLATE` - Standard ADR markdown template
+- `ADR_CATEGORIES` - Common ADR decision categories
+- `TDD_GUIDE` - Red-Green-Refactor cycle guidance
+- `TDD_PATTERNS` - Test structure templates
+- `METHODOLOGY_WORKFLOW` - Integrated DDD+ADR+TDD workflow
+- `createADR(number, title, context, decision, consequences)` - Create ADR
+- `createTDDSession(feature, testFile, implFile)` - Start TDD session
+
+## Using Methodologies
+
+### DDD Example
+
+```typescript
+import { DDD_GUIDE, analyzeDomainForDDD } from '@claude-flow/build-with-quality-skill';
+
+// Get DDD guidance
+console.log(DDD_GUIDE.strategicDesign.steps);
+console.log(DDD_GUIDE.tacticalDesign.patterns);
+
+// Analyze domain
+const analysis = analyzeDomainForDDD('Build an e-commerce platform');
+```
+
+### ADR Example
+
+```typescript
+import { createADR, ADR_TEMPLATE } from '@claude-flow/build-with-quality-skill';
+
+const adr = createADR(
+  1,
+  'Use PostgreSQL for persistence',
+  'We need a reliable database for order management',
+  'Use PostgreSQL with TypeORM',
+  {
+    positive: ['ACID compliance', 'Rich querying'],
+    negative: ['Operational complexity'],
+    risks: ['Schema migrations need care'],
+  }
+);
+```
+
+### TDD Example
+
+```typescript
+import { TDD_GUIDE, createTDDSession } from '@claude-flow/build-with-quality-skill';
+
+// Start TDD session
+const session = createTDDSession(
+  'User authentication',
+  'tests/auth.test.ts',
+  'src/auth.ts'
+);
+
+// Follow the cycle
+console.log(TDD_GUIDE.redPhase.steps);   // Write failing test
+console.log(TDD_GUIDE.greenPhase.steps); // Make it pass
+console.log(TDD_GUIDE.refactorPhase.steps); // Clean up
+```
+
+## Integrated Workflow (DDD + ADR + TDD)
+
+```
+Phase 1: Discovery & Strategic Design
+├── DDD: Identify bounded contexts
+├── DDD: Define ubiquitous language
+├── ADR: Document architecture decisions
+└── ADR: Document context boundaries
+
+Phase 2: Technical Design
+├── DDD: Design aggregates per context
+├── DDD: Define entities and value objects
+├── ADR: Document database strategy
+└── ADR: Document technology stack
+
+Phase 3: Implementation (Per Feature)
+├── TDD RED: Write failing test
+├── TDD GREEN: Minimal implementation
+├── TDD REFACTOR: Clean up code
+├── DDD: Implement aggregate behaviors
+└── ADR: Document significant decisions
+
+Phase 4: Integration
+├── DDD: Implement anti-corruption layers
+├── DDD: Implement domain event handlers
+└── TDD: Write integration tests
+```
 
 ## License
 

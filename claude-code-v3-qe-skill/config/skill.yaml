@@ -230,6 +230,66 @@ performance:
   startup_time_ms: 500
   token_reduction: 0.75
 
+# Development Methodologies
+methodologies:
+  ddd:
+    enabled: true
+    strategic_design:
+      - identify_subdomains
+      - define_bounded_contexts
+      - establish_ubiquitous_language
+      - create_context_map
+    tactical_patterns:
+      - aggregate
+      - entity
+      - value_object
+      - domain_event
+      - repository
+      - domain_service
+      - factory
+    guidelines:
+      - keep_aggregates_small
+      - reference_by_id_only
+      - validate_invariants_in_root
+      - immutable_value_objects
+      - domain_events_for_cross_aggregate
+
+  adr:
+    enabled: true
+    output_directory: docs/adr
+    template: standard  # standard | madr | nygard
+    required_sections:
+      - status
+      - context
+      - decision
+      - consequences
+    categories:
+      - architecture
+      - technology
+      - patterns
+      - operations
+      - security
+
+  tdd:
+    enabled: true
+    enforce_cycle: true  # Must complete red-green-refactor
+    phases:
+      red:
+        - write_failing_test_first
+        - verify_test_fails
+        - test_one_thing_only
+      green:
+        - write_minimum_code
+        - all_tests_must_pass
+        - no_premature_optimization
+      refactor:
+        - improve_while_green
+        - remove_duplication
+        - improve_naming
+        - extract_abstractions
+    commit_policy: after_green  # Commit after each green phase
+    naming_convention: should_X_when_Y
+
 # Integration points
 integrations:
   mcp:
