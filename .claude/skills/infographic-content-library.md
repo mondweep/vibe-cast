@@ -397,6 +397,14 @@ graph TB
 
 ## Attribution
 
-Content pipeline: Source documents → Google NotebookLM → Visual outputs + structured metadata
+**Based on:** [Dinis Cruz's NotebookLM Infographics repository](https://github.com/DinisCruz/NotebookLM__Infographics-and-slides)
 
-License: CC BY 4.0 — Attribution required for sharing/adaptation
+This skill adapts and extends the workflow patterns, templates, and documentation standards created by Dinis Cruz for organizing AI-generated visual content libraries. His original `.claude` directory provided the foundation for:
+- Two-file documentation pattern (README.md + SEMANTIC-GRAPH.md)
+- Mermaid diagram templates and color conventions
+- Review checklists and execution modes
+- Cypher export standards for Neo4j
+
+**Content pipeline:** Source documents → Google NotebookLM → Visual outputs + structured metadata
+
+**License:** CC BY 4.0 — Attribution required for sharing/adaptation
