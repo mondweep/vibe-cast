@@ -1,6 +1,6 @@
 /**
  * Cross-Domain Event Bridge
- * Enables asynchronous communication between Claude Code V3 and Agentic QE domains
+ * Enables asynchronous communication between Claude Flow V3 and Agentic QE domains
  * Supports pattern matching, event correlation, and replay
  */
 

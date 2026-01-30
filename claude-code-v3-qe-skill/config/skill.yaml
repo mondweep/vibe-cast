@@ -1,10 +1,10 @@
-# Claude Code V3 + Agentic QE Combined Skill Configuration
+# Claude Flow V3 + Agentic QE Combined Skill Configuration
 # "Build with Quality" - Optimal project building with integrated quality engineering
 
 name: build-with-quality
 version: 1.0.0
 description: |
-  Combined Claude Code V3 and Agentic QE skill for optimal project building
+  Combined Claude Flow V3 and Agentic QE skill for optimal project building
   with integrated quality engineering. Provides 111+ specialized agents,
   unified learning (SONA + ReasoningBank), and comprehensive quality gates.
 
@@ -41,7 +41,7 @@ swarm:
 
   domains:
     - name: development
-      source: claude-code-v3
+      source: claude-flow-v3
       max_concurrent: 4
       agents:
         - architect
@@ -69,9 +69,9 @@ swarm:
       source: mixed
       max_concurrent: 2
       agents:
-        - security-architect      # claude-code-v3
-        - security-implementer    # claude-code-v3
-        - security-tester         # claude-code-v3
+        - security-architect      # claude-flow-v3
+        - security-implementer    # claude-flow-v3
+        - security-tester         # claude-flow-v3
         - sast-scanner            # agentic-qe
         - dast-scanner            # agentic-qe
         - compliance-auditor      # agentic-qe

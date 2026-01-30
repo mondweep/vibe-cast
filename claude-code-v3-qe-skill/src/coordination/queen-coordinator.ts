@@ -1,7 +1,7 @@
 /**
  * Queen Coordinator
  * Unified swarm coordination engine with Byzantine fault-tolerant consensus
- * Merges Claude Code V3 and Agentic QE coordination patterns
+ * Merges Claude Flow V3 and Agentic QE coordination patterns
  */
 
 import type {

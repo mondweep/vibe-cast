@@ -1,6 +1,6 @@
 /**
  * Combined Agent Registry
- * 111+ specialized agents from Claude Code V3 (60+) and Agentic QE (51)
+ * 111+ specialized agents from Claude Flow V3 (60+) and Agentic QE (51)
  */
 
 import type {
@@ -31,15 +31,15 @@ export interface AgentDefinition {
 }
 
 // ============================================================================
-// Claude Code V3 Agents (60+)
+// Claude Flow V3 Agents (60+)
 // ============================================================================
 
-export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
+export const CLAUDE_FLOW_V3_AGENTS: AgentDefinition[] = [
   // Core Development Agents
   {
     name: 'architect',
     domain: 'development',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Architecture planning and design decisions',
     capabilities: {
       canGenerate: true,
@@ -54,7 +54,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'coder',
     domain: 'development',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Code generation and implementation',
     capabilities: {
       canGenerate: true,
@@ -69,7 +69,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'reviewer',
     domain: 'development',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Code review and quality feedback',
     capabilities: {
       canGenerate: false,
@@ -84,7 +84,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'browser-agent',
     domain: 'development',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Web browsing and automation',
     capabilities: {
       canGenerate: false,
@@ -100,7 +100,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'security-architect',
     domain: 'security',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Security architecture and threat modeling',
     capabilities: {
       canGenerate: true,
@@ -115,7 +115,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'security-implementer',
     domain: 'security',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Security implementation and fixes',
     capabilities: {
       canGenerate: true,
@@ -130,7 +130,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'security-tester',
     domain: 'security',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Security testing and vulnerability scanning',
     capabilities: {
       canGenerate: false,
@@ -146,7 +146,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'memory-indexer',
     domain: 'learning',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'HNSW indexing and vector operations',
     capabilities: {
       canGenerate: false,
@@ -161,7 +161,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'memory-optimizer',
     domain: 'learning',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Memory optimization and consolidation',
     capabilities: {
       canGenerate: false,
@@ -177,7 +177,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'mcp-coordinator',
     domain: 'coordination',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'MCP protocol coordination',
     capabilities: {
       canGenerate: false,
@@ -193,7 +193,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'deployer',
     domain: 'development',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'CI/CD and deployment automation',
     capabilities: {
       canGenerate: false,
@@ -209,7 +209,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'benchmarker',
     domain: 'quality',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Performance benchmarking and profiling',
     capabilities: {
       canGenerate: false,
@@ -225,7 +225,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'sona-optimizer',
     domain: 'learning',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'SONA pattern optimization',
     capabilities: {
       canGenerate: false,
@@ -240,7 +240,7 @@ export const CLAUDE_CODE_V3_AGENTS: AgentDefinition[] = [
   {
     name: 'trajectory-tracker',
     domain: 'learning',
-    source: 'claude-code-v3',
+    source: 'claude-flow-v3',
     description: 'Execution trajectory tracking',
     capabilities: {
       canGenerate: false,
@@ -717,7 +717,7 @@ export const SHARED_AGENTS: AgentDefinition[] = [
 // ============================================================================
 
 export const ALL_AGENTS: AgentDefinition[] = [
-  ...CLAUDE_CODE_V3_AGENTS,
+  ...CLAUDE_FLOW_V3_AGENTS,
   ...AGENTIC_QE_AGENTS,
   ...SHARED_AGENTS,
 ];

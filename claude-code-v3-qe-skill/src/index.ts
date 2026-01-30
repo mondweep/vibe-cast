@@ -1,5 +1,5 @@
 /**
- * Claude Code V3 + Agentic QE Combined Skill
+ * Claude Flow V3 + Agentic QE Combined Skill
  * "Build with Quality" - Optimal project building with integrated quality engineering
  *
  * @module @claude-flow/build-with-quality-skill
@@ -24,7 +24,7 @@ export { EventBus, createEvent } from './events/index.js';
 export {
   AgentFactory,
   ALL_AGENTS,
-  CLAUDE_CODE_V3_AGENTS,
+  CLAUDE_FLOW_V3_AGENTS,
   AGENTIC_QE_AGENTS,
   SHARED_AGENTS,
 } from './agents/index.js';
@@ -96,9 +96,9 @@ const DEFAULT_SWARM_CONFIG: SwarmConfig = {
   topology: 'hierarchical-mesh',
   maxAgents: 100,
   domains: [
-    { name: 'development', source: 'claude-code-v3', agents: ['architect', 'coder', 'reviewer', 'deployer'], maxConcurrent: 4 },
+    { name: 'development', source: 'claude-flow-v3', agents: ['architect', 'coder', 'reviewer', 'deployer'], maxConcurrent: 4 },
     { name: 'quality', source: 'agentic-qe', agents: ['test-strategist', 'coverage-analyzer', 'defect-predictor', 'chaos-engineer'], maxConcurrent: 4 },
-    { name: 'security', source: 'claude-code-v3', agents: ['security-architect', 'sast-scanner', 'compliance-auditor'], maxConcurrent: 2 },
+    { name: 'security', source: 'claude-flow-v3', agents: ['security-architect', 'sast-scanner', 'compliance-auditor'], maxConcurrent: 2 },
     { name: 'learning', source: 'shared', agents: ['sona-optimizer', 'reasoning-bank-manager', 'cross-project-transfer'], maxConcurrent: 2 },
     { name: 'coordination', source: 'shared', agents: ['unified-coordinator', 'event-bridge'], maxConcurrent: 1 },
   ],

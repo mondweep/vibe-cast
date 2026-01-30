@@ -1,7 +1,7 @@
 {
   "name": "@claude-flow/build-with-quality-skill",
   "version": "1.0.0",
-  "description": "Combined Claude Code V3 + Agentic QE skill for optimal project building with integrated quality engineering",
+  "description": "Combined Claude Flow V3 + Agentic QE skill for optimal project building with integrated quality engineering",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,7 +34,7 @@
     "validate": "npm run lint && npm run typecheck && npm run test"
   },
   "keywords": [
-    "claude-code",
+    "claude-flow",
     "agentic-qe",
     "quality-engineering",
     "multi-agent",
@@ -42,7 +42,7 @@
     "ai-testing",
     "swarm-coordination"
   ],
-  "author": "Claude Code V3 QE Skill",
+  "author": "Claude Flow V3 QE Skill",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"

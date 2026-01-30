@@ -1,5 +1,5 @@
 /**
- * Core type definitions for the Claude Code V3 + Agentic QE combined skill
+ * Core type definitions for the Claude Flow V3 + Agentic QE combined skill
  */
 
 // ============================================================================
@@ -39,7 +39,7 @@ export type AgentDomain =
   | 'learning'
   | 'coordination';
 
-export type AgentSource = 'claude-code-v3' | 'agentic-qe' | 'shared';
+export type AgentSource = 'claude-flow-v3' | 'agentic-qe' | 'shared';
 
 export type AgentStatus = 'idle' | 'active' | 'busy' | 'error' | 'terminated';
 
