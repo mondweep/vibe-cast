@@ -1,8 +1,8 @@
 # Build with Quality Skill
 
-**Claude Code V3 + Agentic QE Combined Skill**
+**[Claude Flow V3](https://github.com/ruvnet/claude-flow/tree/main/v3) + [Agentic QE](https://github.com/proffesor-for-testing/agentic-qe) Combined Skill**
 
-A powerful skill that combines the development capabilities of Claude Code V3 with the quality engineering excellence of Agentic QE, enabling optimal project building with integrated quality assurance.
+A powerful skill that combines the development capabilities of [Claude Flow V3](https://github.com/ruvnet/claude-flow/tree/main/v3) with the quality engineering excellence of [Agentic QE](https://github.com/proffesor-for-testing/agentic-qe), enabling optimal project building with integrated quality assurance.
 
 ## Features
 
@@ -10,8 +10,8 @@ A powerful skill that combines the development capabilities of Claude Code V3 wi
 
 | Source | Count | Examples |
 |--------|-------|----------|
-| Claude Code V3 | 60+ | architect, coder, reviewer, security-architect, deployer |
-| Agentic QE | 51 | test-strategist, coverage-analyzer, defect-predictor, chaos-engineer |
+| [Claude Flow V3](https://github.com/ruvnet/claude-flow/tree/main/v3) | 60+ | architect, coder, reviewer, security-architect, deployer |
+| [Agentic QE](https://github.com/proffesor-for-testing/agentic-qe) | 51 | test-strategist, coverage-analyzer, defect-predictor, chaos-engineer |
 | Shared | 3 | unified-coordinator, event-bridge, unified-memory-coordinator |
 
 ### Unified Learning System
@@ -173,7 +173,7 @@ Phase 5: LEARNING
 │     │                        │                        │    │
 │     ▼                        ▼                        ▼    │
 │  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐ │
-│  │ CLAUDE CODE │      │   UNIFIED   │      │ AGENTIC QE  │ │
+│  │ CLAUDE FLOW │      │   UNIFIED   │      │ AGENTIC QE  │ │
 │  │  V3 SWARM   │◄────►│   MEMORY    │◄────►│   SWARM     │ │
 │  │ (60+ agents)│      │ SONA+HNSW   │      │ (51 agents) │ │
 │  └─────────────┘      └─────────────┘      └─────────────┘ │
