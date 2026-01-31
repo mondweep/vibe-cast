@@ -4,6 +4,31 @@
 
 A powerful skill that combines the development capabilities of [Claude Flow V3](https://github.com/ruvnet/claude-flow/tree/main/v3) with the quality engineering excellence of [Agentic QE](https://github.com/proffesor-for-testing/agentic-qe), enabling optimal project building with integrated quality assurance.
 
+## Quick Start Guide
+
+**Want to start building immediately?** Copy the prompt and go:
+
+| Document | Purpose |
+|----------|---------|
+| [BUILD-WITH-QUALITY-PROMPT.md](./BUILD-WITH-QUALITY-PROMPT.md) | Copy-paste prompt to invoke the skill in Claude Code |
+| [USAGE-EXAMPLES.md](./USAGE-EXAMPLES.md) | 5 example projects (Todo, REST API, E-commerce, CLI, Chat) |
+| [config/skill.yaml](./config/skill.yaml) | Full skill configuration (thresholds, agents, gates) |
+
+### Minimal Invocation
+
+```markdown
+Build with Quality skill (v1.0.0).
+
+Project: MyApp | Stack: Next.js + TypeScript | Task: Build user dashboard
+
+Methodology: DDD + ADR + TDD
+Quality: 85% coverage, security scan, WCAG AA
+
+Execute and deliver tested code.
+```
+
+See [USAGE-EXAMPLES.md](./USAGE-EXAMPLES.md) for complete examples including E-commerce, REST APIs, and real-time apps.
+
 ## Features
 
 ### 111+ Specialized Agents
@@ -57,11 +82,31 @@ A powerful skill that combines the development capabilities of [Claude Flow V3](
 
 ## Installation
 
+### Option 1: Use the Prompt Directly (Recommended)
+
+No installation required. Copy the prompt from [BUILD-WITH-QUALITY-PROMPT.md](./BUILD-WITH-QUALITY-PROMPT.md) and paste it into Claude Code.
+
+### Option 2: With Orchestration Tools (Full Swarm)
+
+For full multi-agent swarm capabilities:
+
+```bash
+# Claude Flow V3 (development agents)
+npx claude-flow@alpha init
+
+# Agentic QE (quality agents)
+npm install -g agentic-qe
+aqe init --auto
+claude mcp add aqe -- aqe-mcp
+```
+
+### Option 3: NPM Package (Coming Soon)
+
 ```bash
 npm install @claude-flow/build-with-quality-skill
 ```
 
-## Quick Start
+## Programmatic Usage
 
 ```typescript
 import { buildWithQuality } from '@claude-flow/build-with-quality-skill';
@@ -199,7 +244,15 @@ Phase 5: LEARNING
 
 ## Configuration
 
-See [config/skill.yaml](./config/skill.yaml) for full configuration options.
+See [config/skill.yaml](./config/skill.yaml) for full configuration options including:
+
+- **Swarm topology**: hierarchical-mesh with 100 max agents
+- **Quality gates**: Coverage, security, accessibility, chaos thresholds
+- **Methodologies**: DDD, ADR, TDD settings
+- **Learning**: SONA modes, ReasoningBank, Q-learning parameters
+- **Model routing**: TinyDancer tier configuration
+
+The [BUILD-WITH-QUALITY-PROMPT.md](./BUILD-WITH-QUALITY-PROMPT.md) provides a human-readable summary of these settings.
 
 ## API Reference
 
@@ -314,6 +367,19 @@ Phase 4: Integration
 ├── DDD: Implement domain event handlers
 └── TDD: Write integration tests
 ```
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [BUILD-WITH-QUALITY-PROMPT.md](./BUILD-WITH-QUALITY-PROMPT.md) | Copy-paste prompt for Claude Code |
+| [USAGE-EXAMPLES.md](./USAGE-EXAMPLES.md) | Example projects with complete prompts |
+| [config/skill.yaml](./config/skill.yaml) | Full skill configuration |
+
+## References
+
+- [Claude Flow V3](https://github.com/ruvnet/claude-flow/tree/main/v3) - Multi-agent coordination (60+ agents)
+- [Agentic QE](https://github.com/proffesor-for-testing/agentic-qe) - Quality engineering (51 agents)
 
 ## License
 
