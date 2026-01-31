@@ -4,6 +4,22 @@
 
 This is a **self-contained, copy-paste prompt** that invokes the full Claude Flow V3 + Agentic QE skill for building software with integrated quality engineering. Use this prompt when starting any new project or feature.
 
+## Configuration Reference
+
+This prompt is derived from the skill configuration at:
+- **Skill Config:** [`config/skill.yaml`](./config/skill.yaml)
+- **Usage Examples:** [`USAGE-EXAMPLES.md`](./USAGE-EXAMPLES.md)
+
+All thresholds, agent definitions, methodology settings, and quality gates are defined in `skill.yaml`. This prompt summarizes them for human-readable activation.
+
+| Prompt Says | skill.yaml Source |
+|-------------|-------------------|
+| "85% coverage" | `quality_gates.coverage.minimum: 85` |
+| "TDD red-green-refactor" | `methodologies.tdd.phases` |
+| "111+ agents" | `swarm.domains[*].agents` |
+| "SONA balanced mode" | `learning.sona.mode: balanced` |
+| "WCAG AA" | `quality_gates.accessibility.level: AA` |
+
 ---
 
 ## 🚀 THE PROMPT
