@@ -49,9 +49,187 @@ npm run db:generate
 # Run database migrations
 npm run db:push
 
+# Seed the database with sample products
+npm run db:seed
+
 # Start development server
 npm run dev
 ```
+
+## 🔧 Configuration & Setup Guide
+
+This section documents the complete setup process to get ShopFlow V2 running with all features.
+
+### Prerequisites
+
+- Node.js 20+
+- PostgreSQL (local or cloud)
+- Stripe account (test mode)
+- Resend account (for emails)
+
+### Step 1: Database Setup
+
+```bash
+# Create PostgreSQL database
+createdb shopflow
+
+# Update .env.local with your connection string
+DATABASE_URL="postgresql://username@localhost:5432/shopflow?schema=public"
+
+# Also create .env file (Prisma CLI reads from this)
+echo 'DATABASE_URL="postgresql://username@localhost:5432/shopflow?schema=public"' > .env
+
+# Push schema and seed data
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
+
+### Step 2: Stripe Configuration
+
+1. Get API keys from [Stripe Dashboard > Developers > API keys](https://dashboard.stripe.com/test/apikeys)
+
+2. Add to `.env.local`:
+```env
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+```
+
+### Step 3: Stripe Webhook Setup (Local Development)
+
+```bash
+# Install Stripe CLI
+brew install stripe/stripe-cli/stripe
+
+# Login to Stripe
+stripe login
+
+# Start webhook forwarding (in separate terminal)
+stripe listen --forward-to localhost:3002/api/webhooks/stripe
+```
+
+Copy the webhook signing secret (`whsec_...`) and add to `.env.local`:
+```env
+STRIPE_WEBHOOK_SECRET="whsec_..."
+```
+
+### Step 4: Email Configuration (Resend)
+
+1. Get API key from [Resend](https://resend.com/api-keys)
+
+2. Add to `.env.local`:
+```env
+RESEND_API_KEY="re_..."
+```
+
+**Note:** Free tier sends emails from `onboarding@resend.dev` and only to your account email. For production, verify a domain at [resend.com/domains](https://resend.com/domains).
+
+### Step 5: Complete Environment File
+
+Your `.env.local` should look like:
+```env
+# Database
+DATABASE_URL="postgresql://username@localhost:5432/shopflow?schema=public"
+
+# Stripe
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# Email
+RESEND_API_KEY="re_..."
+
+# App
+NEXT_PUBLIC_APP_URL="http://localhost:3002"
+NODE_ENV="development"
+```
+
+### Step 6: Run the Application
+
+```bash
+# Terminal 1: Start the dev server
+npm run dev
+
+# Terminal 2: Start Stripe webhook forwarding
+stripe listen --forward-to localhost:3002/api/webhooks/stripe
+```
+
+The app will be available at http://localhost:3002 (or next available port).
+
+---
+
+## 🛒 Features & Usage
+
+### Discount Codes
+
+| Code | Discount | Description |
+|------|----------|-------------|
+| `FREEORDER` | 100% | Complete order for free |
+| `HALF50` | 50% | Half price discount |
+| `SAVE20` | 20% | Standard discount |
+
+### Test Payment Flow
+
+1. Go to `/products` and add items to cart
+2. Go to `/cart` and apply a discount code
+3. For paid orders: Click "Pay $XX.XX" → Complete Stripe Checkout
+4. For free orders (100% discount): Enter email → Click "Complete Free Order"
+5. Check email for order confirmation
+
+### Test Card Numbers
+
+| Card | Number | Use Case |
+|------|--------|----------|
+| Visa | `4242 4242 4242 4242` | Successful payment |
+| Decline | `4000 0000 0000 0002` | Card declined |
+
+Use any future expiry date and any 3-digit CVC.
+
+---
+
+## 🌐 Netlify Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for full deployment instructions.
+
+### Quick Deployment Checklist
+
+1. **Database:** Set up cloud PostgreSQL (Neon, Supabase, or Railway)
+2. **Stripe Webhook:** Create endpoint at `https://your-site.netlify.app/api/webhooks/stripe`
+3. **Environment Variables:** Add all variables to Netlify Dashboard
+4. **Email Domain:** Verify domain in Resend for production emails
+
+### Environment Variables for Netlify
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | Cloud PostgreSQL connection string |
+| `STRIPE_SECRET_KEY` | `sk_test_...` or `sk_live_...` |
+| `STRIPE_PUBLISHABLE_KEY` | `pk_test_...` or `pk_live_...` |
+| `STRIPE_WEBHOOK_SECRET` | From Stripe Dashboard webhook |
+| `RESEND_API_KEY` | Your Resend API key |
+| `NEXT_PUBLIC_APP_URL` | Your Netlify site URL |
+
+---
+
+## 🧪 E2E Testing
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run specific test
+npx playwright test tests/e2e/free-order-email.spec.ts --headed
+npx playwright test tests/e2e/paid-order-stripe.spec.ts --headed
+```
+
+### Test Scenarios
+
+| Test | Description | File |
+|------|-------------|------|
+| Free Order Flow | 100% discount, email confirmation | `free-order-email.spec.ts` |
+| Paid Order Flow | 50% discount, Stripe checkout, webhook | `paid-order-stripe.spec.ts` |
+
+---
 
 ## 🧪 Testing
 

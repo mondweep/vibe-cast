@@ -1,0 +1,34 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# Next.js on Netlify requires the Next.js Runtime
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Environment variables (set these in Netlify Dashboard > Site Settings > Environment Variables)
+# Required:
+#   - DATABASE_URL (your production PostgreSQL connection string)
+#   - STRIPE_PUBLISHABLE_KEY (pk_live_... or pk_test_...)
+#   - STRIPE_SECRET_KEY (sk_live_... or sk_test_...)
+#   - STRIPE_WEBHOOK_SECRET (whsec_... from Stripe Dashboard webhook endpoint)
+#   - RESEND_API_KEY (your Resend API key)
+#   - NEXT_PUBLIC_BASE_URL (your Netlify site URL, e.g., https://your-site.netlify.app)
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Redirects for SPA-like behavior
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/___netlify-handler/:splat"
+  status = 200
