@@ -4,6 +4,8 @@
 
 This is a **self-contained, copy-paste prompt** that invokes the full Claude Flow V3 + Agentic QE skill for building software with integrated quality engineering. Use this prompt when starting any new project or feature.
 
+> **🚨 EXECUTION REQUIREMENT:** Claude Code MUST use **Claude Flow MCP tools** (`mcp__claude-flow__*`) to orchestrate the swarm. Without these tools, execution falls back to single-agent mode. See [CLAUDE FLOW MCP SWARM ORCHESTRATION](#claude-flow-mcp-swarm-orchestration) section for required tool calls.
+
 ## Configuration Reference
 
 This prompt is derived from the skill configuration at:
@@ -336,6 +338,84 @@ At completion, ensure:
 
 ---
 
+## CLAUDE FLOW MCP SWARM ORCHESTRATION
+
+**CRITICAL: Claude Code MUST use Claude Flow MCP tools to orchestrate the swarm.**
+
+### Step 1: Initialize Swarm (Single Message)
+
+Use these MCP tools in ONE parallel batch:
+
+```
+mcp__claude-flow__swarm_init {
+  topology: "hierarchical-mesh",
+  maxAgents: 13,
+  strategy: "parallel"
+}
+
+mcp__claude-flow__agent_spawn { type: "coordinator", name: "unified-coordinator" }
+mcp__claude-flow__agent_spawn { type: "architect", name: "system-architect" }
+mcp__claude-flow__agent_spawn { type: "coder", name: "primary-developer" }
+mcp__claude-flow__agent_spawn { type: "coder", name: "secondary-developer" }
+mcp__claude-flow__agent_spawn { type: "reviewer", name: "code-reviewer" }
+mcp__claude-flow__agent_spawn { type: "tester", name: "test-strategist" }
+mcp__claude-flow__agent_spawn { type: "tester", name: "unit-test-generator" }
+mcp__claude-flow__agent_spawn { type: "tester", name: "e2e-test-generator" }
+mcp__claude-flow__agent_spawn { type: "analyst", name: "coverage-analyzer" }
+mcp__claude-flow__agent_spawn { type: "security", name: "security-scanner" }
+mcp__claude-flow__agent_spawn { type: "researcher", name: "tech-researcher" }
+mcp__claude-flow__agent_spawn { type: "coordinator", name: "quality-coordinator" }
+```
+
+### Step 2: Orchestrate Tasks
+
+```
+mcp__claude-flow__task_orchestrate {
+  task: "[PROJECT_DESCRIPTION]",
+  strategy: "parallel"
+}
+```
+
+### Step 3: Store Coordination Memory
+
+After each major phase, persist decisions:
+
+```
+mcp__claude-flow__memory_usage {
+  action: "store",
+  key: "project/[phase]/decisions",
+  value: { ... }
+}
+```
+
+### Step 4: Monitor Progress
+
+```
+mcp__claude-flow__swarm_status { verbose: true }
+mcp__claude-flow__agent_metrics {}
+```
+
+### Agent Coordination Protocol
+
+Each spawned Task agent MUST use these hooks:
+
+**Before starting:**
+```bash
+npx claude-flow@alpha hooks pre-task --description "[task]" --auto-spawn-agents false
+```
+
+**After each file operation:**
+```bash
+npx claude-flow@alpha hooks post-edit --file "[filepath]" --memory-key "agent/[step]"
+```
+
+**After completing:**
+```bash
+npx claude-flow@alpha hooks post-task --task-id "[task]" --analyze-performance true
+```
+
+---
+
 ## INVOCATION
 
 Execute this skill by:
@@ -344,6 +424,13 @@ Execute this skill by:
 2. Filling in the PROJECT CONTEXT section
 3. Filling in the FEATURE/TASK REQUEST section
 4. Submitting to Claude Code with claude-flow initialized
+
+**Claude Code will automatically:**
+1. Call `mcp__claude-flow__swarm_init` with hierarchical-mesh topology
+2. Spawn agents using `mcp__claude-flow__agent_spawn` in parallel
+3. Orchestrate tasks with `mcp__claude-flow__task_orchestrate`
+4. Store patterns with `mcp__claude-flow__memory_usage`
+5. Monitor with `mcp__claude-flow__swarm_status`
 
 The swarm will:
 1. Decompose your task across domains
