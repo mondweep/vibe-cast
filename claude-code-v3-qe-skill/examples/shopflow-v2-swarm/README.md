@@ -14,6 +14,126 @@ This project was generated using a coordinated swarm of 13 agents:
 
 ## 🏗️ Architecture
 
+### System Architecture Diagram
+
+```mermaid
+flowchart TB
+    subgraph Client["🌐 Client (Browser)"]
+        UI[React/Next.js UI]
+    end
+
+    subgraph Netlify["☁️ Netlify Platform"]
+        subgraph Edge["Edge Network"]
+            CDN[Static Assets CDN]
+        end
+        subgraph Functions["Serverless Functions"]
+            API[Next.js API Routes]
+        end
+    end
+
+    subgraph External["🔗 External Services"]
+        subgraph Stripe["💳 Stripe"]
+            Checkout[Checkout Session]
+            Webhooks[Webhook Events]
+        end
+        subgraph Railway["🐘 Railway"]
+            Postgres[(PostgreSQL Database)]
+        end
+        subgraph Resend["📧 Resend"]
+            Email[Email API]
+        end
+    end
+
+    UI -->|Static Files| CDN
+    UI -->|API Calls| API
+    API -->|Prisma ORM| Postgres
+    API -->|Create Session| Checkout
+    Checkout -->|Payment Complete| Webhooks
+    Webhooks -->|POST /api/webhooks/stripe| API
+    API -->|Send Confirmation| Email
+    Email -->|Order Receipt| Client
+
+    style Client fill:#e0e7ff,stroke:#6366f1
+    style Netlify fill:#d1fae5,stroke:#10b981
+    style External fill:#fef3c7,stroke:#f59e0b
+```
+
+### User Journey Flow
+
+```mermaid
+flowchart LR
+    A[👤 Browse Products] --> B[🛒 Add to Cart]
+    B --> C[🏷️ Apply Discount]
+    C --> D{Total = $0?}
+    D -->|Yes| E[📧 Enter Email]
+    D -->|No| F[💳 Stripe Checkout]
+    E --> G[✅ Free Order Complete]
+    F --> H[💰 Payment Processing]
+    H --> I[🔔 Webhook Received]
+    I --> J[📧 Email Confirmation]
+    J --> K[✅ Order Complete]
+    G --> L[📧 Email Confirmation]
+
+    style A fill:#dbeafe,stroke:#3b82f6
+    style K fill:#d1fae5,stroke:#10b981
+    style G fill:#d1fae5,stroke:#10b981
+```
+
+### Technical Component Architecture
+
+```mermaid
+flowchart TB
+    subgraph Frontend["Frontend Layer"]
+        Pages[Next.js Pages<br>/products, /cart, /checkout]
+        Components[React Components<br>ProductCard, CartItem, etc.]
+        Hooks[Custom Hooks<br>useCart, useDiscount]
+    end
+
+    subgraph API["API Layer (Route Handlers)"]
+        CartAPI["/api/cart/*<br>add, get, update, remove"]
+        CheckoutAPI["/api/checkout-session<br>Stripe + Free Orders"]
+        DiscountAPI["/api/discount<br>Code Validation"]
+        WebhookAPI["/api/webhooks/stripe<br>Payment Events"]
+    end
+
+    subgraph Services["Service Layer"]
+        CartService[Cart Service]
+        PaymentService[Payment Service]
+        EmailService[Email Service]
+    end
+
+    subgraph Data["Data Layer"]
+        Prisma[Prisma Client]
+        Models["Models:<br>Product, Cart, CartItem,<br>Category, Inventory"]
+    end
+
+    subgraph External["External APIs"]
+        StripeAPI[Stripe API]
+        ResendAPI[Resend API]
+        PostgresDB[(PostgreSQL)]
+    end
+
+    Pages --> Components
+    Components --> Hooks
+    Hooks --> API
+
+    CartAPI --> CartService
+    CheckoutAPI --> PaymentService
+    WebhookAPI --> PaymentService
+    PaymentService --> EmailService
+
+    CartService --> Prisma
+    PaymentService --> StripeAPI
+    EmailService --> ResendAPI
+    Prisma --> PostgresDB
+
+    style Frontend fill:#e0e7ff,stroke:#6366f1
+    style API fill:#d1fae5,stroke:#10b981
+    style Services fill:#fef3c7,stroke:#f59e0b
+    style Data fill:#fee2e2,stroke:#ef4444
+    style External fill:#f3e8ff,stroke:#a855f7
+```
+
 ### Bounded Contexts (DDD)
 
 ```
@@ -189,25 +309,80 @@ Use any future expiry date and any 3-digit CVC.
 
 ## 🌐 Netlify Deployment
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for full deployment instructions.
+**Live Demo:** [https://ecommerce-shopfrontv2-thisismon.netlify.app](https://ecommerce-shopfrontv2-thisismon.netlify.app)
 
-### Quick Deployment Checklist
+### Deployment Configuration
 
-1. **Database:** Set up cloud PostgreSQL (Neon, Supabase, or Railway)
-2. **Stripe Webhook:** Create endpoint at `https://your-site.netlify.app/api/webhooks/stripe`
-3. **Environment Variables:** Add all variables to Netlify Dashboard
-4. **Email Domain:** Verify domain in Resend for production emails
+The following settings were used to successfully deploy to Netlify:
+
+#### Build Settings (Netlify Dashboard)
+
+| Setting | Value |
+|---------|-------|
+| **Base directory** | `claude-code-v3-qe-skill/examples/shopflow-v2-swarm` |
+| **Build command** | `npx prisma generate && npm run build` |
+| **Publish directory** | `.next` |
+
+#### netlify.toml Configuration
+
+```toml
+[build]
+  command = "npx prisma generate && npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+```
+
+### Build Issues & Solutions
+
+During deployment, several issues were encountered and resolved:
+
+| Issue | Error | Solution |
+|-------|-------|----------|
+| Missing email module | `Cannot find module '@/lib/email'` | Force-add file ignored by global gitignore: `git add -f src/lib/email.ts` |
+| Missing bcryptjs | `Cannot find module 'bcryptjs'` | Install dependency: `npm install bcryptjs @types/bcryptjs` |
+| Test files in build | `Cannot find name 'beforeEach'` | Exclude tests from tsconfig: `"exclude": ["tests", "*.test.ts", "*.spec.ts"]` |
+| Vitest config in build | `Cannot find module '@vitejs/plugin-react'` | Exclude config files: `"exclude": [..., "vitest.config.ts", "playwright.config.ts"]` |
+| Prisma client not generated | `Prisma has detected that this project was built on Netlify` | Add to build command: `npx prisma generate && npm run build` |
 
 ### Environment Variables for Netlify
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | Cloud PostgreSQL connection string |
-| `STRIPE_SECRET_KEY` | `sk_test_...` or `sk_live_...` |
-| `STRIPE_PUBLISHABLE_KEY` | `pk_test_...` or `pk_live_...` |
-| `STRIPE_WEBHOOK_SECRET` | From Stripe Dashboard webhook |
-| `RESEND_API_KEY` | Your Resend API key |
-| `NEXT_PUBLIC_APP_URL` | Your Netlify site URL |
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | Railway PostgreSQL connection string | `postgresql://postgres:xxx@xxx.railway.app:5432/railway` |
+| `STRIPE_SECRET_KEY` | Stripe secret key | `sk_test_...` |
+| `STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | `pk_test_...` |
+| `STRIPE_WEBHOOK_SECRET` | From Stripe Dashboard webhook endpoint | `whsec_...` |
+| `RESEND_API_KEY` | Resend API key | `re_...` |
+| `NEXT_PUBLIC_APP_URL` | Your Netlify site URL | `https://your-site.netlify.app` |
+
+### Setting Up Railway PostgreSQL
+
+1. Go to [railway.app](https://railway.app) and create a new project
+2. Click **"Provision PostgreSQL"**
+3. Go to **Variables** tab and copy `DATABASE_PUBLIC_URL` (not the internal one)
+4. Add to Netlify environment variables as `DATABASE_URL`
+5. Push schema: `DATABASE_URL="your_url" npx prisma db push`
+6. Seed data: `DATABASE_URL="your_url" npx tsx prisma/seed.ts`
+
+**Note:** Use `DATABASE_PUBLIC_URL` (external) not `DATABASE_URL` (internal) from Railway.
+
+### Setting Up Stripe Webhook
+
+1. Go to [Stripe Dashboard → Webhooks](https://dashboard.stripe.com/test/webhooks)
+2. Click **"Add endpoint"**
+3. Enter URL: `https://your-site.netlify.app/api/webhooks/stripe`
+4. Select events:
+   - `checkout.session.completed`
+   - `payment_intent.succeeded`
+   - `payment_intent.payment_failed`
+5. Click **"Add endpoint"**
+6. Copy the **Signing secret** (`whsec_...`)
+7. Add to Netlify as `STRIPE_WEBHOOK_SECRET`
 
 ---
 
