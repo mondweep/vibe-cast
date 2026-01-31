@@ -1,0 +1,226 @@
+// ShopFlow Database Schema
+// Built with DDD bounded contexts
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// Catalog Bounded Context
+// =============================================================================
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+model Product {
+  id             String      @id @default(uuid())
+  name           String
+  slug           String      @unique
+  description    String
+  priceAmount    Int         // Cents
+  priceCurrency  String      @default("USD")
+  compareAtPrice Int?        // Original price for sales
+  categoryId     String
+  category       Category    @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  tags           String[]
+  // Inventory (from Inventory bounded context)
+  stockTotal     Int         @default(0)
+  stockReserved  Int         @default(0)
+  stockSold      Int         @default(0)
+  // Status
+  isActive       Boolean     @default(true)
+  isFeatured     Boolean     @default(false)
+  // Timestamps
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  // Relations
+  orderItems     OrderItem[]
+  reservations   StockReservation[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([isActive, isFeatured])
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String
+  width     Int
+  height    Int
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+// =============================================================================
+// Inventory Bounded Context
+// =============================================================================
+
+model StockReservation {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  cartId      String?  // For cart reservations
+  orderId     String?  // For order reservations
+  order       Order?   @relation(fields: [orderId], references: [id])
+  status      String   @default("active") // active, confirmed, released
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([productId])
+  @@index([cartId])
+  @@index([orderId])
+  @@index([status, expiresAt])
+}
+
+// =============================================================================
+// Users & Auth Bounded Context
+// =============================================================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  role          String    @default("customer") // customer, admin
+  // Stripe
+  stripeCustomerId String? @unique
+  // Relations
+  orders        Order[]
+  addresses     Address[]
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+  @@index([stripeCustomerId])
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName   String
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  postalCode String
+  country    String   @default("US")
+  phone      String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// =============================================================================
+// Orders Bounded Context (Core Domain)
+// =============================================================================
+
+model Order {
+  id                    String      @id @default(uuid())
+  orderNumber           String      @unique
+  userId                String
+  user                  User        @relation(fields: [userId], references: [id])
+  status                String      @default("pending")
+  // Items
+  items                 OrderItem[]
+  // Shipping
+  shippingFullName      String
+  shippingLine1         String
+  shippingLine2         String?
+  shippingCity          String
+  shippingState         String
+  shippingPostalCode    String
+  shippingCountry       String
+  shippingPhone         String?
+  // Totals (stored as cents)
+  subtotalAmount        Int
+  shippingAmount        Int
+  taxAmount             Int
+  discountAmount        Int         @default(0)
+  totalAmount           Int
+  currency              String      @default("USD")
+  // Payment
+  stripeSessionId       String?     @unique
+  stripePaymentIntentId String?
+  // Tracking
+  trackingNumber        String?
+  trackingUrl           String?
+  // Timestamps
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  paidAt                DateTime?
+  shippedAt             DateTime?
+  deliveredAt           DateTime?
+  cancelledAt           DateTime?
+  // Relations
+  reservations          StockReservation[]
+
+  @@index([userId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([stripeSessionId])
+}
+
+model OrderItem {
+  id           String   @id @default(uuid())
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id])
+  productName  String   // Snapshot at time of order
+  productImage String
+  unitPrice    Int      // Cents, snapshot at time of order
+  quantity     Int
+  subtotal     Int      // unitPrice * quantity
+  createdAt    DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// =============================================================================
+// Notifications Bounded Context
+// =============================================================================
+
+model EmailLog {
+  id        String   @id @default(uuid())
+  to        String
+  subject   String
+  template  String
+  data      Json
+  status    String   @default("pending") // pending, sent, failed
+  sentAt    DateTime?
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([to])
+}
