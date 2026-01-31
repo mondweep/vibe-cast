@@ -308,3 +308,155 @@ integrations:
     cross_domain_bridge: true
     correlation: true
     replay: true
+
+# MCP Tool Execution Configuration
+# CRITICAL: These are the actual MCP tools Claude Code MUST invoke
+mcp_execution:
+  # Claude Flow MCP tools for swarm orchestration
+  claude_flow:
+    required: true
+    server_name: claude-flow
+    init_command: "npx claude-flow@alpha mcp start"
+
+    # Step 1: Initialize swarm (call in parallel batch)
+    swarm_init:
+      tool: mcp__claude-flow__swarm_init
+      params:
+        topology: hierarchical-mesh
+        maxAgents: 13
+        strategy: parallel
+
+    # Step 2: Spawn agents (call ALL in single parallel batch)
+    agent_spawn:
+      tool: mcp__claude-flow__agent_spawn
+      agents:
+        - { type: coordinator, name: unified-coordinator }
+        - { type: architect, name: system-architect }
+        - { type: coder, name: primary-developer }
+        - { type: coder, name: secondary-developer }
+        - { type: reviewer, name: code-reviewer }
+        - { type: tester, name: test-strategist }
+        - { type: tester, name: unit-test-generator }
+        - { type: tester, name: e2e-test-generator }
+        - { type: analyst, name: coverage-analyzer }
+        - { type: security, name: security-scanner }
+        - { type: researcher, name: tech-researcher }
+        - { type: coordinator, name: quality-coordinator }
+
+    # Step 3: Orchestrate tasks
+    task_orchestrate:
+      tool: mcp__claude-flow__task_orchestrate
+      params:
+        strategy: parallel
+
+    # Step 4: Memory persistence
+    memory:
+      tool: mcp__claude-flow__memory_usage
+      actions: [store, retrieve, list]
+
+    # Step 5: Monitoring
+    monitoring:
+      - tool: mcp__claude-flow__swarm_status
+      - tool: mcp__claude-flow__agent_metrics
+      - tool: mcp__claude-flow__swarm_monitor
+
+    # Agent coordination hooks (each Task agent must run these)
+    hooks:
+      pre_task: "npx claude-flow@alpha hooks pre-task --description \"[task]\" --auto-spawn-agents false"
+      post_edit: "npx claude-flow@alpha hooks post-edit --file \"[filepath]\" --memory-key \"agent/[step]\""
+      post_task: "npx claude-flow@alpha hooks post-task --task-id \"[task]\" --analyze-performance true"
+      notification: "npx claude-flow@alpha hooks notification --message \"[message]\" --telemetry true"
+
+  # Agentic QE MCP tools for quality engineering
+  agentic_qe:
+    required: true
+    server_name: aqe
+    init_command: "claude mcp add aqe -- aqe-mcp"
+
+    # Fleet initialization
+    fleet_init:
+      tool: mcp__aqe__fleet_init
+      params:
+        topology: hierarchical
+        maxAgents: 15
+        enabledDomains: [test-generation, coverage, security, accessibility]
+
+    # Test generation
+    test_generate:
+      tool: mcp__aqe__test_generate_enhanced
+      params:
+        testType: [unit, integration, e2e]
+
+    # Coverage analysis
+    coverage:
+      tool: mcp__aqe__coverage_analyze_sublinear
+      params:
+        detectGaps: true
+
+    # Security scanning
+    security:
+      tool: mcp__aqe__security_scan_comprehensive
+      params:
+        sast: true
+        dast: true
+
+    # Quality assessment
+    quality:
+      tool: mcp__aqe__quality_assess
+      params:
+        runGate: true
+
+    # Accessibility testing
+    accessibility:
+      tool: mcp__aqe__accessibility_test
+      params:
+        standard: WCAG-AA
+
+    # Defect prediction
+    defect_prediction:
+      tool: mcp__aqe__defect_predict
+
+    # Chaos testing
+    chaos:
+      tool: mcp__aqe__chaos_test
+
+# Execution Order
+# Claude Code MUST follow this sequence when skill is invoked
+execution_sequence:
+  1_initialize:
+    parallel: true
+    actions:
+      - mcp__claude-flow__swarm_init
+      - mcp__aqe__fleet_init
+      - "Spawn all agents via mcp__claude-flow__agent_spawn (batch)"
+
+  2_planning:
+    agents: [unified-coordinator, system-architect, test-strategist]
+    actions:
+      - mcp__claude-flow__task_orchestrate
+      - "Create DDD bounded contexts"
+      - "Write ADR for architecture decisions"
+      - "Define test strategy"
+
+  3_implementation:
+    agents: [primary-developer, secondary-developer, unit-test-generator]
+    actions:
+      - "TDD: Write failing test (RED)"
+      - "TDD: Implement code (GREEN)"
+      - "TDD: Refactor"
+      - mcp__aqe__coverage_analyze_sublinear
+
+  4_quality_validation:
+    agents: [e2e-test-generator, security-scanner, coverage-analyzer]
+    actions:
+      - mcp__aqe__test_generate_enhanced
+      - mcp__aqe__security_scan_comprehensive
+      - mcp__aqe__quality_assess
+      - mcp__aqe__accessibility_test
+
+  5_finalization:
+    agents: [code-reviewer, quality-coordinator]
+    actions:
+      - "Code review"
+      - mcp__claude-flow__memory_usage (store patterns)
+      - "Commit and push"
