@@ -368,5 +368,143 @@ describe('Presence Handlers', () => {
       );
       expect(mockDependencies.logger.error).toHaveBeenCalled();
     });
+
+    it('should handle typing start errors gracefully', async () => {
+      mockDependencies.typingService.startTyping = vi.fn().mockRejectedValue(
+        new Error('Redis error')
+      );
+
+      registerPresenceHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('presence:typing:start')!;
+
+      // Should not throw, just log error
+      await handler({ roomId: 'room-123' });
+
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
+
+    it('should handle typing stop errors gracefully', async () => {
+      mockDependencies.typingService.stopTyping = vi.fn().mockRejectedValue(
+        new Error('Redis error')
+      );
+
+      registerPresenceHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('presence:typing:stop')!;
+
+      // Should not throw, just log error
+      await handler({ roomId: 'room-123' });
+
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
+
+    it('should handle heartbeat errors gracefully', async () => {
+      mockDependencies.presenceService.heartbeat = vi.fn().mockRejectedValue(
+        new Error('Redis error')
+      );
+
+      registerPresenceHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('presence:heartbeat')!;
+      const callback = vi.fn();
+
+      await handler(callback);
+
+      // Should log error
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
+
+    it('should handle room members errors gracefully', async () => {
+      mockDependencies.presenceService.getOnlineUsers = vi.fn().mockRejectedValue(
+        new Error('Redis error')
+      );
+
+      registerPresenceHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('presence:room:members')!;
+      const callback = vi.fn();
+
+      await handler({ roomId: 'room-123' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          users: [],
+        })
+      );
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
+
+    it('should handle room typing errors gracefully', async () => {
+      mockDependencies.typingService.getTypingUsers = vi.fn().mockRejectedValue(
+        new Error('Redis error')
+      );
+
+      registerPresenceHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('presence:room:typing')!;
+      const callback = vi.fn();
+
+      await handler({ roomId: 'room-123' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          typing: [],
+        })
+      );
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('Utility Functions', () => {
+    it('should validate status with isValidStatus', async () => {
+      const { isValidStatus } = await import('@/lib/socket/handlers/presence');
+
+      expect(isValidStatus('online')).toBe(true);
+      expect(isValidStatus('away')).toBe(true);
+      expect(isValidStatus('do_not_disturb')).toBe(true);
+      expect(isValidStatus('offline')).toBe(true);
+      expect(isValidStatus('invalid')).toBe(false);
+      expect(isValidStatus('')).toBe(false);
+    });
+
+    it('should return presence channel name', async () => {
+      const { getPresenceChannel } = await import('@/lib/socket/handlers/presence');
+
+      expect(getPresenceChannel()).toBe('presence:updates');
+    });
+  });
+
+  describe('Typing Validation', () => {
+    beforeEach(() => {
+      registerPresenceHandlers(mockSocket, mockDependencies);
+    });
+
+    it('should ignore typing start with null roomId', async () => {
+      const handler = eventHandlers.get('presence:typing:start')!;
+
+      await handler({ roomId: null });
+
+      expect(mockDependencies.typingService.startTyping).not.toHaveBeenCalled();
+    });
+
+    it('should ignore typing stop with empty roomId', async () => {
+      const handler = eventHandlers.get('presence:typing:stop')!;
+
+      await handler({ roomId: '' });
+
+      expect(mockDependencies.typingService.stopTyping).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Disconnect Cleanup', () => {
+    it('should handle disconnect errors gracefully', async () => {
+      mockDependencies.presenceService.setUserOffline = vi.fn().mockRejectedValue(
+        new Error('Redis error')
+      );
+
+      registerPresenceHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('disconnect')!;
+
+      // Should not throw
+      await handler();
+
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
   });
 });

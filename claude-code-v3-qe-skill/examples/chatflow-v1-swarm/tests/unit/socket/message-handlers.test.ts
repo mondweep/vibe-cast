@@ -510,5 +510,225 @@ describe('Message Handlers', () => {
       );
       expect(mockDependencies.logger.error).toHaveBeenCalled();
     });
+
+    it('should handle edit service errors gracefully', async () => {
+      mockDependencies.messageService.editMessage = vi.fn().mockRejectedValue(
+        new Error('Database error')
+      );
+
+      registerMessageHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('message:edit')!;
+      const callback = vi.fn();
+
+      await handler({ messageId: 'msg-123', content: 'Updated' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Failed to edit message',
+        })
+      );
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
+
+    it('should handle delete service errors gracefully', async () => {
+      mockDependencies.messageService.deleteMessage = vi.fn().mockRejectedValue(
+        new Error('Database error')
+      );
+
+      registerMessageHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('message:delete')!;
+      const callback = vi.fn();
+
+      await handler({ messageId: 'msg-123' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Failed to delete message',
+        })
+      );
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
+
+    it('should handle reaction add service errors gracefully', async () => {
+      mockDependencies.messageService.addReaction = vi.fn().mockRejectedValue(
+        new Error('Database error')
+      );
+
+      registerMessageHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('message:react')!;
+      const callback = vi.fn();
+
+      await handler({ messageId: 'msg-123', emoji: 'thumbsup' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Failed to add reaction',
+        })
+      );
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
+
+    it('should handle reaction remove service errors gracefully', async () => {
+      mockDependencies.messageService.removeReaction = vi.fn().mockRejectedValue(
+        new Error('Database error')
+      );
+
+      registerMessageHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('message:unreact')!;
+      const callback = vi.fn();
+
+      await handler({ messageId: 'msg-123', emoji: 'thumbsup' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Failed to remove reaction',
+        })
+      );
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
+    });
+
+    it('should handle message not found on delete', async () => {
+      mockDependencies.messageService.getMessageById = vi.fn().mockResolvedValue(null);
+
+      registerMessageHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('message:delete')!;
+      const callback = vi.fn();
+
+      await handler({ messageId: 'nonexistent' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Message not found',
+        })
+      );
+    });
+
+    it('should handle message not found on react', async () => {
+      mockDependencies.messageService.getMessageById = vi.fn().mockResolvedValue(null);
+
+      registerMessageHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('message:react')!;
+      const callback = vi.fn();
+
+      await handler({ messageId: 'nonexistent', emoji: 'thumbsup' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Message not found',
+        })
+      );
+    });
+
+    it('should handle message not found on unreact', async () => {
+      mockDependencies.messageService.getMessageById = vi.fn().mockResolvedValue(null);
+
+      registerMessageHandlers(mockSocket, mockDependencies);
+      const handler = eventHandlers.get('message:unreact')!;
+      const callback = vi.fn();
+
+      await handler({ messageId: 'nonexistent', emoji: 'thumbsup' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Message not found',
+        })
+      );
+    });
+  });
+
+  describe('Content Validation', () => {
+    beforeEach(() => {
+      registerMessageHandlers(mockSocket, mockDependencies);
+    });
+
+    it('should reject whitespace-only message content', async () => {
+      const handler = eventHandlers.get('message:send')!;
+      const callback = vi.fn();
+
+      await handler(
+        { roomId: 'room-123', content: '   ', type: 'text' },
+        callback
+      );
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Message content cannot be empty',
+        })
+      );
+    });
+
+    it('should reject whitespace-only edit content', async () => {
+      const handler = eventHandlers.get('message:edit')!;
+      const callback = vi.fn();
+
+      await handler({ messageId: 'msg-123', content: '   ' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Message content cannot be empty',
+        })
+      );
+    });
+
+    it('should reject edit exceeding max length', async () => {
+      const handler = eventHandlers.get('message:edit')!;
+      const callback = vi.fn();
+
+      await handler(
+        { messageId: 'msg-123', content: 'a'.repeat(10001) },
+        callback
+      );
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Message content exceeds maximum length',
+        })
+      );
+    });
+  });
+
+  describe('Admin Permissions', () => {
+    it('should allow admin to delete any message', async () => {
+      mockDependencies.messageService.getMessageById = vi.fn().mockResolvedValue({
+        id: 'msg-123',
+        content: 'Original content',
+        roomId: 'room-123',
+        senderId: 'user-456', // Different user
+      });
+
+      // Create admin socket
+      const adminSocket = {
+        id: 'socket-123',
+        data: { userId: 'user-123', isAdmin: true },
+        on: vi.fn((event: string, handler: Function) => {
+          eventHandlers.set(event, handler);
+        }),
+        to: vi.fn().mockReturnThis(),
+        emit: vi.fn(),
+        rooms: new Set(['room:room-123']),
+      } as unknown as Socket;
+
+      registerMessageHandlers(adminSocket, mockDependencies);
+      const handler = eventHandlers.get('message:delete')!;
+      const callback = vi.fn();
+
+      await handler({ messageId: 'msg-123' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+        })
+      );
+    });
   });
 });

@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Socket } from 'socket.io';
+import { Socket, Server as SocketIOServer } from 'socket.io';
 import {
   registerRoomHandlers,
   RoomHandlerDependencies,
@@ -324,6 +324,113 @@ describe('Room Handlers', () => {
           error: 'Invalid roomId',
         })
       );
+    });
+  });
+
+  describe('Utility Functions', () => {
+    it('should get users in a room with getRoomUsers', async () => {
+      const { getRoomUsers } = await import('@/lib/socket/handlers/room');
+
+      const mockIo = {
+        in: vi.fn().mockReturnValue({
+          fetchSockets: vi.fn().mockResolvedValue([
+            { data: { userId: 'user-123' } },
+            { data: { userId: 'user-456' } },
+          ]),
+        }),
+      } as unknown as SocketIOServer;
+
+      const users = await getRoomUsers(mockIo, 'room-123');
+
+      expect(users).toContain('user-123');
+      expect(users).toContain('user-456');
+      expect(users.length).toBe(2);
+    });
+
+    it('should broadcast event to room with broadcastToRoom', async () => {
+      const { broadcastToRoom } = await import('@/lib/socket/handlers/room');
+
+      const mockEmit = vi.fn();
+      const mockSocket = {
+        to: vi.fn().mockReturnValue({ emit: mockEmit }),
+      } as unknown as Socket;
+
+      broadcastToRoom(mockSocket, 'room-123', 'test:event', { data: 'test' });
+
+      expect(mockSocket.to).toHaveBeenCalledWith('room:room-123');
+      expect(mockEmit).toHaveBeenCalledWith('test:event', { data: 'test' });
+    });
+
+    it('should emit event to all room members with emitToRoom', async () => {
+      const { emitToRoom } = await import('@/lib/socket/handlers/room');
+
+      const mockEmit = vi.fn();
+      const mockIo = {
+        to: vi.fn().mockReturnValue({ emit: mockEmit }),
+      } as unknown as SocketIOServer;
+
+      emitToRoom(mockIo, 'room-123', 'test:event', { data: 'test' });
+
+      expect(mockIo.to).toHaveBeenCalledWith('room:room-123');
+      expect(mockEmit).toHaveBeenCalledWith('test:event', { data: 'test' });
+    });
+  });
+
+  describe('room:leave edge cases', () => {
+    beforeEach(() => {
+      registerRoomHandlers(mockSocket, mockDependencies);
+    });
+
+    it('should handle invalid roomId on leave', async () => {
+      const handler = eventHandlers.get('room:leave')!;
+      const callback = vi.fn();
+
+      await handler({ roomId: '' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Invalid roomId',
+        })
+      );
+    });
+
+    it('should handle null roomId on leave', async () => {
+      const handler = eventHandlers.get('room:leave')!;
+      const callback = vi.fn();
+
+      await handler({ roomId: null }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Invalid roomId',
+        })
+      );
+    });
+
+    it('should handle presence service error on leave gracefully', async () => {
+      // First join a room
+      const joinHandler = eventHandlers.get('room:join')!;
+      await joinHandler({ roomId: 'room-123' }, vi.fn());
+
+      // Set up error
+      mockDependencies.presenceService.removeUserFromRoom = vi.fn().mockRejectedValue(
+        new Error('Presence service error')
+      );
+
+      const handler = eventHandlers.get('room:leave')!;
+      const callback = vi.fn();
+
+      await handler({ roomId: 'room-123' }, callback);
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Internal server error',
+        })
+      );
+      expect(mockDependencies.logger.error).toHaveBeenCalled();
     });
   });
 });

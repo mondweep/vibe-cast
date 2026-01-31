@@ -194,4 +194,127 @@ describe('Socket Server', () => {
       expect(io).toBeDefined();
     });
   });
+
+  describe('Utility Functions', () => {
+    it('should get room name with getRoomName', async () => {
+      const { getRoomName } = await import('@/lib/socket/server');
+
+      expect(getRoomName('room-123')).toBe('room:room-123');
+      expect(getRoomName('my-room')).toBe('room:my-room');
+    });
+
+    it('should get user room name with getUserRoom', async () => {
+      const { getUserRoom } = await import('@/lib/socket/server');
+
+      expect(getUserRoom('user-123')).toBe('user:user-123');
+      expect(getUserRoom('admin')).toBe('user:admin');
+    });
+
+    it('should get namespace by name', async () => {
+      const { getNamespace } = await import('@/lib/socket/server');
+      const io = createSocketServer(httpServer);
+
+      const messagingNs = getNamespace('/messaging');
+      const presenceNs = getNamespace('/presence');
+
+      expect(messagingNs).toBeDefined();
+      expect(presenceNs).toBeDefined();
+    });
+
+    it('should return undefined for non-existent namespace', async () => {
+      const { getNamespace } = await import('@/lib/socket/server');
+
+      // Get namespace before server created should return undefined
+      await shutdownSocketServer();
+      const ns = getNamespace('/nonexistent');
+
+      expect(ns).toBeUndefined();
+    });
+
+    it('should get and set socket data', async () => {
+      const { getSocketData, setSocketData } = await import('@/lib/socket/server');
+
+      const mockSocket = {
+        data: { userId: 'user-123' },
+      } as unknown as Socket;
+
+      const data = getSocketData<{ userId: string }>(mockSocket);
+      expect(data.userId).toBe('user-123');
+
+      setSocketData(mockSocket, { sessionId: 'session-456' });
+      expect(mockSocket.data).toEqual({ userId: 'user-123', sessionId: 'session-456' });
+    });
+  });
+
+  describe('Rate Limiting', () => {
+    beforeEach(async () => {
+      // Clear rate limit state before each test to ensure isolation
+      const { clearRateLimit } = await import('@/lib/socket/server');
+      clearRateLimit('socket-1');
+      clearRateLimit('socket-2');
+    });
+
+    it('should create rate limiter that allows events within limit', async () => {
+      const { createRateLimiter } = await import('@/lib/socket/server');
+
+      const limiter = createRateLimiter(5, 1000);
+
+      // Should allow first 5 events
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(true);
+
+      // 6th should be blocked
+      expect(limiter('socket-1')).toBe(false);
+    });
+
+    it('should track rate limits per socket', async () => {
+      const { createRateLimiter } = await import('@/lib/socket/server');
+
+      const limiter = createRateLimiter(2, 1000);
+
+      // Each socket has its own limit
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(false);
+
+      // Different socket should have fresh limit
+      expect(limiter('socket-2')).toBe(true);
+      expect(limiter('socket-2')).toBe(true);
+      expect(limiter('socket-2')).toBe(false);
+    });
+
+    it('should clear rate limit for a socket', async () => {
+      const { createRateLimiter, clearRateLimit } = await import('@/lib/socket/server');
+
+      const limiter = createRateLimiter(2, 1000);
+
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(false);
+
+      clearRateLimit('socket-1');
+
+      // After clear, should be allowed again
+      expect(limiter('socket-1')).toBe(true);
+    });
+
+    it('should reset rate limit after window expires', async () => {
+      const { createRateLimiter } = await import('@/lib/socket/server');
+
+      const limiter = createRateLimiter(2, 50); // 50ms window
+
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(true);
+      expect(limiter('socket-1')).toBe(false);
+
+      // Wait for window to expire
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
+      // Should be allowed again
+      expect(limiter('socket-1')).toBe(true);
+    });
+  });
 });
