@@ -1,0 +1,32 @@
+# Unit Tests Directory
+
+Place unit test files here following the naming convention:
+- `*.test.ts` for TypeScript tests
+- `*.spec.ts` for specification-style tests
+
+Example structure:
+```
+tests/unit/
+  domain/
+    identity/
+      user.entity.test.ts
+      auth.service.test.ts
+    messaging/
+      message.entity.test.ts
+      message.service.test.ts
+    presence/
+      presence.service.test.ts
+  lib/
+    socket/
+      connection.handler.test.ts
+      message.handler.test.ts
+    redis/
+      cache.service.test.ts
+  components/
+    chat/
+      MessageInput.test.tsx
+      MessageList.test.tsx
+  hooks/
+    useSocket.test.ts
+    useMessages.test.ts
+```

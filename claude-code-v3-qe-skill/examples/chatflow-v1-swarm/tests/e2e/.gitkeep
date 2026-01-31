@@ -1,0 +1,39 @@
+# E2E Tests Directory
+
+Place end-to-end test files here following the naming convention:
+- `*.spec.ts` for Playwright tests
+
+Example structure:
+```
+tests/e2e/
+  auth/
+    login.spec.ts
+    logout.spec.ts
+    register.spec.ts
+  messaging/
+    send-message.spec.ts
+    receive-message.spec.ts
+    message-history.spec.ts
+  rooms/
+    create-room.spec.ts
+    join-room.spec.ts
+    room-settings.spec.ts
+  accessibility/
+    keyboard-navigation.spec.ts
+    screen-reader.spec.ts
+  performance/
+    page-load.spec.ts
+    message-latency.spec.ts
+  visual/
+    chat-room.spec.ts
+    login-page.spec.ts
+  global-setup.ts
+  global-teardown.ts
+  fixtures/
+    test-user.ts
+  __snapshots__/
+```
+
+Run with: `npm run test:e2e`
+Run with UI: `npm run test:e2e:ui`
+Debug: `PWDEBUG=1 npm run test:e2e`

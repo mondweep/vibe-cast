@@ -1,0 +1,28 @@
+# Integration Tests Directory
+
+Place integration test files here following the naming convention:
+- `*.integration.test.ts` for integration tests
+
+Example structure:
+```
+tests/integration/
+  api/
+    auth.integration.test.ts
+    messages.integration.test.ts
+    rooms.integration.test.ts
+    users.integration.test.ts
+  database/
+    prisma.integration.test.ts
+    migrations.integration.test.ts
+  redis/
+    cache.integration.test.ts
+    pubsub.integration.test.ts
+  websocket/
+    socket.integration.test.ts
+```
+
+Integration tests require external services:
+- PostgreSQL (localhost:5433 or TEST_DATABASE_URL)
+- Redis (localhost:6380 or TEST_REDIS_URL)
+
+Run with: `npm run test:integration`

@@ -1,0 +1,300 @@
+// ChatFlow Database Schema
+// Using PostgreSQL with Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// IDENTITY CONTEXT
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+
+  // Profile information
+  displayName   String
+  avatarUrl     String?
+  bio           String?
+  timezone      String    @default("UTC")
+
+  // Status
+  isActive      Boolean   @default(true)
+  lastSeenAt    DateTime  @default(now())
+
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations - Identity Context
+  accounts      Account[]
+  sessions      Session[]
+
+  // Relations - Messaging Context
+  messages      Message[]
+  roomMembers   RoomMember[]
+  createdRooms  Room[]         @relation("RoomCreator")
+  reactions     Reaction[]
+
+  // Indexes
+  @@index([email])
+  @@index([lastSeenAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  // Device information
+  userAgent    String?
+  ipAddress    String?
+  deviceType   String?  // 'web' | 'mobile' | 'desktop'
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expires])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// MESSAGING CONTEXT
+// ============================================
+
+model Room {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  type        RoomType   @default(GROUP)
+  avatarUrl   String?
+
+  // Settings
+  isPrivate   Boolean    @default(false)
+  allowInvites Boolean   @default(true)
+  slowModeSeconds Int    @default(0)
+  messageRetentionDays Int?
+
+  // Metadata
+  lastMessageAt DateTime?
+  messageCount  Int      @default(0)
+
+  // Creator
+  createdById String
+  createdBy   User       @relation("RoomCreator", fields: [createdById], references: [id])
+
+  // Timestamps
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  archivedAt  DateTime?
+
+  // Relations
+  members     RoomMember[]
+  messages    Message[]
+  pinnedMessages PinnedMessage[]
+
+  @@index([type])
+  @@index([lastMessageAt])
+  @@index([createdById])
+}
+
+enum RoomType {
+  DIRECT    // 1:1 conversation
+  GROUP     // Multiple users, invite-only
+  CHANNEL   // Public or private channel
+}
+
+model RoomMember {
+  id        String      @id @default(cuid())
+  roomId    String
+  userId    String
+  role      MemberRole  @default(MEMBER)
+
+  // Member settings
+  nickname  String?
+  mutedUntil DateTime?
+  notificationLevel NotificationLevel @default(ALL)
+
+  // Activity tracking
+  lastReadAt  DateTime  @default(now())
+  lastTypedAt DateTime?
+
+  // Timestamps
+  joinedAt  DateTime    @default(now())
+  leftAt    DateTime?
+
+  room      Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([userId])
+  @@index([roomId, role])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum NotificationLevel {
+  ALL       // All messages
+  MENTIONS  // Only @mentions
+  NONE      // No notifications
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  content   String      @db.Text
+  type      MessageType @default(TEXT)
+
+  // Metadata (JSON for flexibility)
+  metadata  Json?       // { attachments, embeds, editHistory }
+
+  // Relations
+  roomId    String
+  room      Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  senderId  String
+  sender    User        @relation(fields: [senderId], references: [id])
+
+  // Thread support
+  threadId  String?
+  thread    Message?    @relation("MessageThread", fields: [threadId], references: [id])
+  replies   Message[]   @relation("MessageThread")
+  replyCount Int        @default(0)
+
+  // Reply to specific message
+  replyToId String?
+  replyTo   Message?    @relation("MessageReply", fields: [replyToId], references: [id])
+  repliedBy Message[]   @relation("MessageReply")
+
+  // Reactions
+  reactions Reaction[]
+
+  // Timestamps
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  editedAt  DateTime?
+  deletedAt DateTime?
+
+  // Pinned message relation
+  pinnedMessage PinnedMessage?
+
+  @@index([roomId, createdAt(sort: Desc)])
+  @@index([senderId])
+  @@index([threadId])
+  @@index([deletedAt])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  VIDEO
+  AUDIO
+  SYSTEM    // Join/leave notifications, etc.
+  EMBED     // Rich embeds (links, etc.)
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  emoji     String   // Unicode emoji or custom emoji ID
+
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+}
+
+model PinnedMessage {
+  id        String   @id @default(cuid())
+
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  messageId String   @unique
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  pinnedById String
+  pinnedAt   DateTime @default(now())
+
+  @@index([roomId, pinnedAt])
+}
+
+// ============================================
+// PRESENCE CONTEXT (Ephemeral - stored in Redis)
+// These models are for reference only; actual data lives in Redis
+// ============================================
+
+// Note: Presence data is stored in Redis for performance
+// Schema documented here for reference:
+//
+// user:{userId}:status     -> "online" | "away" | "dnd" | "offline" (TTL: 30s)
+// user:{userId}:lastSeen   -> ISO timestamp (TTL: 7d)
+// user:{userId}:typing     -> roomId (TTL: 3s)
+// user:{userId}:connections -> count of active connections
+// room:{roomId}:online     -> Set of online userIds
+// room:{roomId}:typing     -> Set of currently typing userIds
+
+// ============================================
+// INDEXES FOR COMMON QUERIES
+// ============================================
+
+// Additional composite indexes for performance
+// These are added to models above using @@index
+
+// Query: Get room messages with pagination
+// SELECT * FROM Message WHERE roomId = ? ORDER BY createdAt DESC LIMIT 50
+// Index: Message @@index([roomId, createdAt(sort: Desc)])
+
+// Query: Get user's rooms sorted by activity
+// SELECT r.* FROM Room r JOIN RoomMember rm ON ... ORDER BY r.lastMessageAt DESC
+// Index: Room @@index([lastMessageAt])
+
+// Query: Search messages (requires full-text search extension)
+// Consider adding pg_trgm extension for LIKE queries
+// Or use external search service (Elasticsearch, Meilisearch)

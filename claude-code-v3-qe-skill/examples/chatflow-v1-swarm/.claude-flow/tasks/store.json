@@ -1,0 +1,18 @@
+{
+  "tasks": {
+    "task-1769903082713-478c6b": {
+      "taskId": "task-1769903082713-478c6b",
+      "type": "implementation",
+      "description": "Build ChatFlow Real-time Chat App with Next.js 14, Socket.io, Redis, PostgreSQL",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [],
+      "createdAt": "2026-01-31T23:44:42.713Z",
+      "startedAt": null,
+      "completedAt": null
+    }
+  },
+  "version": "3.0.0"
+}

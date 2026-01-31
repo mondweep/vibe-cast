@@ -1,0 +1,341 @@
+/**
+ * Global Styles for ChatFlow
+ *
+ * CSS custom properties, base styles, and utility classes
+ * for the real-time chat application.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+
+    /* Chat-specific variables */
+    --chat-sidebar-width: 280px;
+    --chat-header-height: 64px;
+    --chat-input-min-height: 56px;
+    --chat-message-max-width: 80%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Selection color */
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+}
+
+@layer components {
+  /* Chat Layout */
+  .chat-layout {
+    @apply h-screen flex overflow-hidden;
+  }
+
+  .chat-sidebar {
+    @apply w-[var(--chat-sidebar-width)] flex-shrink-0 border-r bg-card;
+  }
+
+  .chat-main {
+    @apply flex-1 flex flex-col min-w-0;
+  }
+
+  .chat-header {
+    @apply h-[var(--chat-header-height)] flex-shrink-0 border-b bg-card;
+  }
+
+  .chat-messages {
+    @apply flex-1 overflow-y-auto;
+  }
+
+  .chat-input {
+    @apply min-h-[var(--chat-input-min-height)] flex-shrink-0 border-t bg-card;
+  }
+
+  /* Message Styles */
+  .message-bubble {
+    @apply max-w-[var(--chat-message-max-width)] rounded-2xl px-4 py-2;
+  }
+
+  .message-sent {
+    @apply bg-primary text-primary-foreground ml-auto;
+  }
+
+  .message-received {
+    @apply bg-muted text-foreground mr-auto;
+  }
+
+  .message-system {
+    @apply bg-transparent text-muted-foreground text-center text-sm italic mx-auto;
+  }
+
+  /* Typing Indicator */
+  .typing-indicator {
+    @apply flex items-center gap-2 text-sm text-muted-foreground;
+  }
+
+  .typing-indicator-compact {
+    @apply text-xs;
+  }
+
+  .typing-dot {
+    @apply w-2 h-2 bg-current rounded-full;
+    animation: typing-dot 1.4s ease-in-out infinite;
+  }
+
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  /* Presence Badge */
+  .presence-badge {
+    @apply absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-background;
+  }
+
+  .presence-online {
+    @apply bg-green-500;
+  }
+
+  .presence-away {
+    @apply bg-yellow-500;
+  }
+
+  .presence-dnd {
+    @apply bg-red-500;
+  }
+
+  .presence-offline {
+    @apply bg-gray-400;
+  }
+
+  /* Reaction Badge */
+  .reaction-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-muted hover:bg-muted/80 transition-colors;
+  }
+
+  /* Room Item */
+  .room-item {
+    @apply flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-accent cursor-pointer;
+  }
+
+  .room-item-active {
+    @apply bg-accent;
+  }
+
+  .room-item-unread {
+    @apply font-medium;
+  }
+
+  /* Scrollbar Styles */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* Screen Reader Only */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+    clip: rect(0, 0, 0, 0);
+  }
+}
+
+@layer utilities {
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply backdrop-blur-sm bg-background/80;
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-sm bg-background/60;
+  }
+
+  /* Safe area for mobile */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Animation delays */
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  /* Hide scrollbar */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Custom Animations */
+@keyframes typing-dot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes message-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-appear {
+  animation: message-appear 0.2s ease-out;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .chat-sidebar {
+    @apply fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300;
+  }
+
+  .chat-sidebar.open {
+    @apply translate-x-0;
+  }
+
+  .chat-overlay {
+    @apply fixed inset-0 z-30 bg-black/50 opacity-0 pointer-events-none transition-opacity;
+  }
+
+  .chat-overlay.open {
+    @apply opacity-100 pointer-events-auto;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .chat-messages {
+    overflow: visible;
+    height: auto;
+  }
+}
