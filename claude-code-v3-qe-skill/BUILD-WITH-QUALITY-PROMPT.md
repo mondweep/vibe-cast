@@ -4,7 +4,7 @@
 
 This is a **self-contained, copy-paste prompt** that invokes the full Claude Flow V3 + Agentic QE skill for building software with integrated quality engineering. Use this prompt when starting any new project or feature.
 
-> **🚨 EXECUTION REQUIREMENT:** Claude Code MUST use **Claude Flow MCP tools** (`mcp__claude-flow__*`) to orchestrate the swarm. Without these tools, execution falls back to single-agent mode. See [CLAUDE FLOW MCP SWARM ORCHESTRATION](#claude-flow-mcp-swarm-orchestration) section for required tool calls.
+> **🚨 EXECUTION REQUIREMENT:** Claude Code MUST use **Claude Flow** to orchestrate the swarm. Use MCP tools (`mcp__claude-flow__*`) if available, otherwise use **CLI commands** (`npx claude-flow@alpha ...`) as fallback. See [CLAUDE FLOW SWARM ORCHESTRATION](#claude-flow-swarm-orchestration) section for both approaches.
 
 ## Configuration Reference
 
@@ -338,11 +338,17 @@ At completion, ensure:
 
 ---
 
-## CLAUDE FLOW MCP SWARM ORCHESTRATION
+## CLAUDE FLOW SWARM ORCHESTRATION
 
-**CRITICAL: Claude Code MUST use Claude Flow MCP tools to orchestrate the swarm.**
+**CRITICAL: Claude Code MUST use Claude Flow to orchestrate the swarm.**
 
-### Step 1: Initialize Swarm (Single Message)
+Claude Flow can be used in two ways:
+1. **MCP Tools** (preferred) - If `mcp__claude-flow__*` tools are available
+2. **CLI Commands** (fallback) - If MCP is not configured, use `npx claude-flow@alpha` commands
+
+---
+
+### Option A: MCP Tools (When Available)
 
 Use these MCP tools in ONE parallel batch:
 
@@ -367,41 +373,67 @@ mcp__claude-flow__agent_spawn { type: "researcher", name: "tech-researcher" }
 mcp__claude-flow__agent_spawn { type: "coordinator", name: "quality-coordinator" }
 ```
 
-### Step 2: Orchestrate Tasks
-
+Then orchestrate and monitor:
 ```
-mcp__claude-flow__task_orchestrate {
-  task: "[PROJECT_DESCRIPTION]",
-  strategy: "parallel"
-}
-```
-
-### Step 3: Store Coordination Memory
-
-After each major phase, persist decisions:
-
-```
-mcp__claude-flow__memory_usage {
-  action: "store",
-  key: "project/[phase]/decisions",
-  value: { ... }
-}
-```
-
-### Step 4: Monitor Progress
-
-```
+mcp__claude-flow__task_orchestrate { task: "[PROJECT]", strategy: "parallel" }
+mcp__claude-flow__memory_usage { action: "store", key: "project/init", value: {...} }
 mcp__claude-flow__swarm_status { verbose: true }
-mcp__claude-flow__agent_metrics {}
 ```
 
-### Agent Coordination Protocol
+---
 
-Each spawned Task agent MUST use these hooks:
+### Option B: CLI Commands (Fallback When MCP Not Available)
 
-**Before starting:**
+**If `mcp__claude-flow__*` tools are NOT available, use CLI commands instead:**
+
+#### Step 1: Initialize Swarm
 ```bash
-npx claude-flow@alpha hooks pre-task --description "[task]" --auto-spawn-agents false
+npx claude-flow@alpha swarm init --topology hierarchical-mesh --max-agents 13 --strategy parallel
+```
+
+#### Step 2: Spawn Agents (run in parallel via Bash)
+```bash
+npx claude-flow@alpha agent spawn --type coordinator --name unified-coordinator &
+npx claude-flow@alpha agent spawn --type architect --name system-architect &
+npx claude-flow@alpha agent spawn --type coder --name primary-developer &
+npx claude-flow@alpha agent spawn --type coder --name secondary-developer &
+npx claude-flow@alpha agent spawn --type reviewer --name code-reviewer &
+npx claude-flow@alpha agent spawn --type tester --name test-strategist &
+npx claude-flow@alpha agent spawn --type tester --name unit-test-generator &
+npx claude-flow@alpha agent spawn --type tester --name e2e-test-generator &
+npx claude-flow@alpha agent spawn --type analyst --name coverage-analyzer &
+npx claude-flow@alpha agent spawn --type security --name security-scanner &
+npx claude-flow@alpha agent spawn --type researcher --name tech-researcher &
+npx claude-flow@alpha agent spawn --type coordinator --name quality-coordinator &
+wait
+```
+
+#### Step 3: Orchestrate Tasks
+```bash
+npx claude-flow@alpha task orchestrate --task "[PROJECT_DESCRIPTION]" --strategy parallel
+```
+
+#### Step 4: Store Memory
+```bash
+npx claude-flow@alpha memory store --key "project/phase/decisions" --value '{"decision": "value"}'
+```
+
+#### Step 5: Monitor Progress
+```bash
+npx claude-flow@alpha swarm status --verbose
+npx claude-flow@alpha agent list
+npx claude-flow@alpha agent metrics
+```
+
+---
+
+### Agent Coordination Protocol (Required for ALL Agents)
+
+Each spawned Task agent MUST run these CLI hooks for coordination:
+
+**Before starting work:**
+```bash
+npx claude-flow@alpha hooks pre-task --description "[task description]" --auto-spawn-agents false
 ```
 
 **After each file operation:**
@@ -409,10 +441,30 @@ npx claude-flow@alpha hooks pre-task --description "[task]" --auto-spawn-agents 
 npx claude-flow@alpha hooks post-edit --file "[filepath]" --memory-key "agent/[step]"
 ```
 
-**After completing:**
+**To share decisions with other agents:**
+```bash
+npx claude-flow@alpha hooks notification --message "[what was decided/done]" --telemetry true
+```
+
+**After completing work:**
 ```bash
 npx claude-flow@alpha hooks post-task --task-id "[task]" --analyze-performance true
 ```
+
+---
+
+### Detection Logic
+
+Claude Code should check for MCP availability at the start:
+
+```
+IF mcp__claude-flow__swarm_init is available:
+    USE MCP Tools (Option A)
+ELSE:
+    USE CLI Commands (Option B)
+```
+
+Both approaches provide the same swarm coordination - MCP is just more integrated.
 
 ---
 

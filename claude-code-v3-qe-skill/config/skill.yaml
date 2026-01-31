@@ -309,16 +309,19 @@ integrations:
     correlation: true
     replay: true
 
-# MCP Tool Execution Configuration
-# CRITICAL: These are the actual MCP tools Claude Code MUST invoke
-mcp_execution:
-  # Claude Flow MCP tools for swarm orchestration
-  claude_flow:
-    required: true
-    server_name: claude-flow
-    init_command: "npx claude-flow@alpha mcp start"
+# Claude Flow Execution Configuration
+# Supports both MCP tools (preferred) and CLI commands (fallback)
+claude_flow_execution:
+  # Detection: Check if MCP tools are available, otherwise use CLI
+  detection:
+    check_mcp: "Try mcp__claude-flow__swarm_init - if unavailable, use CLI"
+    fallback: cli
 
-    # Step 1: Initialize swarm (call in parallel batch)
+  # Option A: MCP Tools (when available)
+  mcp:
+    server_name: claude-flow
+    setup_command: "claude mcp add claude-flow npx claude-flow@alpha mcp start"
+
     swarm_init:
       tool: mcp__claude-flow__swarm_init
       params:
@@ -326,7 +329,6 @@ mcp_execution:
         maxAgents: 13
         strategy: parallel
 
-    # Step 2: Spawn agents (call ALL in single parallel batch)
     agent_spawn:
       tool: mcp__claude-flow__agent_spawn
       agents:
@@ -343,29 +345,63 @@ mcp_execution:
         - { type: researcher, name: tech-researcher }
         - { type: coordinator, name: quality-coordinator }
 
-    # Step 3: Orchestrate tasks
     task_orchestrate:
       tool: mcp__claude-flow__task_orchestrate
       params:
         strategy: parallel
 
-    # Step 4: Memory persistence
     memory:
       tool: mcp__claude-flow__memory_usage
       actions: [store, retrieve, list]
 
-    # Step 5: Monitoring
     monitoring:
       - tool: mcp__claude-flow__swarm_status
       - tool: mcp__claude-flow__agent_metrics
-      - tool: mcp__claude-flow__swarm_monitor
 
-    # Agent coordination hooks (each Task agent must run these)
-    hooks:
-      pre_task: "npx claude-flow@alpha hooks pre-task --description \"[task]\" --auto-spawn-agents false"
-      post_edit: "npx claude-flow@alpha hooks post-edit --file \"[filepath]\" --memory-key \"agent/[step]\""
-      post_task: "npx claude-flow@alpha hooks post-task --task-id \"[task]\" --analyze-performance true"
-      notification: "npx claude-flow@alpha hooks notification --message \"[message]\" --telemetry true"
+  # Option B: CLI Commands (fallback when MCP not available)
+  cli:
+    # Step 1: Initialize swarm
+    swarm_init: "npx claude-flow@alpha swarm init --topology hierarchical-mesh --max-agents 13 --strategy parallel"
+
+    # Step 2: Spawn agents (run in parallel with &)
+    agent_spawn:
+      - "npx claude-flow@alpha agent spawn --type coordinator --name unified-coordinator"
+      - "npx claude-flow@alpha agent spawn --type architect --name system-architect"
+      - "npx claude-flow@alpha agent spawn --type coder --name primary-developer"
+      - "npx claude-flow@alpha agent spawn --type coder --name secondary-developer"
+      - "npx claude-flow@alpha agent spawn --type reviewer --name code-reviewer"
+      - "npx claude-flow@alpha agent spawn --type tester --name test-strategist"
+      - "npx claude-flow@alpha agent spawn --type tester --name unit-test-generator"
+      - "npx claude-flow@alpha agent spawn --type tester --name e2e-test-generator"
+      - "npx claude-flow@alpha agent spawn --type analyst --name coverage-analyzer"
+      - "npx claude-flow@alpha agent spawn --type security --name security-scanner"
+      - "npx claude-flow@alpha agent spawn --type researcher --name tech-researcher"
+      - "npx claude-flow@alpha agent spawn --type coordinator --name quality-coordinator"
+
+    # Step 3: Orchestrate tasks
+    task_orchestrate: "npx claude-flow@alpha task orchestrate --task \"[TASK]\" --strategy parallel"
+
+    # Step 4: Memory operations
+    memory:
+      store: "npx claude-flow@alpha memory store --key \"[KEY]\" --value '[VALUE_JSON]'"
+      retrieve: "npx claude-flow@alpha memory retrieve --key \"[KEY]\""
+      list: "npx claude-flow@alpha memory list --pattern \"[PATTERN]\""
+
+    # Step 5: Monitoring
+    monitoring:
+      status: "npx claude-flow@alpha swarm status --verbose"
+      agents: "npx claude-flow@alpha agent list"
+      metrics: "npx claude-flow@alpha agent metrics"
+
+  # Agent coordination hooks (REQUIRED for all agents - works with both MCP and CLI)
+  hooks:
+    pre_task: "npx claude-flow@alpha hooks pre-task --description \"[task]\" --auto-spawn-agents false"
+    post_edit: "npx claude-flow@alpha hooks post-edit --file \"[filepath]\" --memory-key \"agent/[step]\""
+    post_task: "npx claude-flow@alpha hooks post-task --task-id \"[task]\" --analyze-performance true"
+    notification: "npx claude-flow@alpha hooks notification --message \"[message]\" --telemetry true"
+    session_restore: "npx claude-flow@alpha hooks session-restore --session-id \"[session]\" --load-memory true"
+
+# Agentic QE MCP tools for quality engineering (separate from Claude Flow)
 
   # Agentic QE MCP tools for quality engineering
   agentic_qe:
