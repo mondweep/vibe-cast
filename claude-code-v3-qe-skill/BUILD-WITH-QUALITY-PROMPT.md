@@ -503,10 +503,9 @@ npm install -g agentic-qe && aqe init --auto && claude mcp add aqe -- aqe-mcp
 
 ## 📚 REFERENCES
 
-- [Claude Flow V3](https://github.com/ruvnet/claude-flow)
-- [Agentic QE](https://github.com/proffesor-for-testing/agentic-qe)
-- [Build with Quality Skill](https://github.com/mondweep/vibe-cast/tree/claude/claude-code-v3-skill-KucJF/claude-code-v3-qe-skill)
-- [Swarm Reference Doc](./CLAUDE-FLOW-SWARM-REFERENCE.md)
+- [Claude Flow V3](https://github.com/ruvnet/claude-flow/tree/main/v3) - Multi-agent coordination system (60+ agents)
+- [Agentic QE](https://github.com/proffesor-for-testing/agentic-qe) - Quality engineering platform (51 agents)
+- [Build with Quality Skill](https://github.com/mondweep/vibe-cast/tree/claude/claude-code-v3-skill-KucJF/claude-code-v3-qe-skill) - Combined skill implementation
 
 ---
 
