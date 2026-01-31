@@ -366,9 +366,14 @@ export default function CartPage() {
                 {discountError && (
                   <p className="mt-2 text-sm text-red-600">{discountError}</p>
                 )}
-                <p className="mt-2 text-xs text-gray-500">
-                  Try: <code className="rounded bg-gray-100 px-1">FREEORDER</code> for 100% off
-                </p>
+                <div className="mt-3 rounded-md bg-blue-50 p-3">
+                  <p className="text-xs font-medium text-blue-800 mb-1">Test Discount Codes:</p>
+                  <ul className="text-xs text-blue-700 space-y-1">
+                    <li><code className="rounded bg-blue-100 px-1 font-mono">FREEORDER</code> — 100% off (free!)</li>
+                    <li><code className="rounded bg-blue-100 px-1 font-mono">HALF50</code> — 50% off</li>
+                    <li><code className="rounded bg-blue-100 px-1 font-mono">SAVE20</code> — 20% off</li>
+                  </ul>
+                </div>
               </div>
 
               {/* Price Breakdown */}
