@@ -25,10 +25,11 @@ I am invoking the **Build with Quality** skill (v1.0.0) which combines:
 
 ## PREREQUISITES
 
-Before proceeding, ensure claude-flow is initialized:
+Before proceeding, ensure **BOTH** orchestration tools are initialized:
 
+### 1. Claude Flow V3 (Development & Coordination Agents)
 ```bash
-# Check if claude-flow is installed
+# Check if installed
 npx claude-flow --version
 
 # If not installed, initialize:
@@ -37,6 +38,30 @@ npx claude-flow@alpha init
 # Or full installation with MCP:
 curl -fsSL https://cdn.jsdelivr.net/gh/ruvnet/claude-flow@main/scripts/install.sh | bash -s -- --full
 ```
+
+### 2. Agentic QE (Quality Engineering Agents)
+```bash
+# Install globally
+npm install -g agentic-qe
+
+# Initialize in your project
+aqe init --auto
+
+# Add as MCP server to Claude Code
+claude mcp add aqe -- aqe-mcp
+
+# Verify connection
+claude mcp list  # Should show 'aqe' server
+```
+
+### 3. Verify Both Tools
+```bash
+npx claude-flow --version   # Should show version
+aqe --version               # Should show version
+claude mcp list             # Should show 'aqe' in list
+```
+
+> ⚠️ **Without both tools**: The skill falls back to single-agent execution with manual quality checks. You lose swarm coordination, AI test generation, mutation testing, defect prediction, and pattern learning.
 
 ## PROJECT CONTEXT
 
@@ -415,14 +440,76 @@ chaos: 90% all categories
 
 ---
 
-## 📚 REFERENCES
+## ⚠️ DEGRADED MODE (Tools Not Installed)
 
-- [Claude Flow V3](https://github.com/ruvnet/claude-flow/tree/main/v3) - Multi-agent coordination system (60+ agents)
-- [Agentic QE](https://github.com/proffesor-for-testing/agentic-qe) - Quality engineering platform (51 agents)
-- [Build with Quality Skill](https://github.com/mondweep/vibe-cast/tree/claude/claude-code-v3-skill-KucJF/claude-code-v3-qe-skill) - Combined skill implementation
+If the prerequisite tools are not installed, the skill operates in degraded mode:
+
+### Capability Matrix by Installation State
+
+| Capability | Full (Both Tools) | Claude Flow Only | Agentic QE Only | Neither (Single Agent) |
+|------------|-------------------|------------------|-----------------|------------------------|
+| **Swarm orchestration** | ✓ 100 agents | ✓ 60 agents | ❌ | ❌ |
+| **Development agents** | ✓ architect, coder, reviewer | ✓ | ❌ | ❌ Manual |
+| **AI test generation** | ✓ All types | ❌ Basic | ✓ | ❌ Manual |
+| **Coverage analysis** | ✓ HNSW O(log n) | ❌ | ✓ | ❌ `npm test --coverage` |
+| **Mutation testing** | ✓ | ❌ | ✓ | ❌ Not available |
+| **Defect prediction** | ✓ F1 > 0.8 | ❌ | ✓ | ❌ Not available |
+| **Chaos engineering** | ✓ | ❌ | ✓ | ❌ Not available |
+| **Security scanning** | ✓ SAST + DAST | ✓ SAST | ❌ | ❌ Manual |
+| **SONA learning** | ✓ Full | ✓ Partial | ✓ Partial | ❌ None |
+| **ReasoningBank** | ✓ Full | ✓ Partial | ✓ Partial | ❌ None |
+| **Quality gates** | ✓ Automated | ✓ Partial | ✓ Partial | ❌ Manual |
+
+### Fallback Behavior
+
+**Without Claude Flow V3:**
+- No swarm coordination (single-threaded execution)
+- No architect/coder/reviewer agent separation
+- No browser-agent visual validation
+- Security scanning limited to manual SAST
+
+**Without Agentic QE:**
+- No AI-powered test generation
+- No mutation testing (critical for test quality)
+- No defect prediction model
+- No chaos/resilience testing
+- Coverage analysis via basic `npm test -- --coverage`
+- No flaky test detection
+
+**Without Both (Current Default):**
+- Claude (single agent) follows TDD methodology manually
+- Tests written by Claude without specialized generators
+- Coverage checked via CLI tools
+- No pattern learning or persistence
+- Quality gates checked manually via build/test commands
+- ~40% slower than full swarm execution
+
+### Recommended Minimum
+
+For meaningful skill benefits, install at least **one** tool:
+
+```bash
+# Option A: Development focus (faster coding, parallel work)
+npx claude-flow@alpha init
+
+# Option B: Quality focus (better tests, mutation, prediction)
+npm install -g agentic-qe && aqe init --auto && claude mcp add aqe -- aqe-mcp
+
+# Option C: Full capability (recommended)
+# Install both as per PREREQUISITES section
+```
 
 ---
 
-*Template Version: 1.0.0*
-*Last Updated: 2026-01-30*
-*Compatible with: claude-flow@alpha*
+## 📚 REFERENCES
+
+- [Claude Flow V3](https://github.com/ruvnet/claude-flow)
+- [Agentic QE](https://github.com/proffesor-for-testing/agentic-qe)
+- [Build with Quality Skill](https://github.com/mondweep/vibe-cast/tree/claude/claude-code-v3-skill-KucJF/claude-code-v3-qe-skill)
+- [Swarm Reference Doc](./CLAUDE-FLOW-SWARM-REFERENCE.md)
+
+---
+
+*Template Version: 1.1.0*
+*Last Updated: 2026-01-31*
+*Compatible with: claude-flow@alpha, agentic-qe@latest*
