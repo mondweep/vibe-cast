@@ -68,32 +68,32 @@ I've spent the past months building and validating exactly that.
 ## Introducing the "Build with Quality" Skill
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│     🐝  BUILD WITH QUALITY SKILL                           │
-│                                                             │
-│     ┌─────────────┐         ┌─────────────┐                │
-│     │ Claude Flow │    +    │ Agentic QE  │                │
-│     │    V3       │         │             │                │
-│     │  60+ Agents │         │  51 Agents  │                │
-│     └─────────────┘         └─────────────┘                │
-│              │                     │                        │
-│              └──────────┬──────────┘                        │
-│                         ▼                                   │
-│              ┌─────────────────┐                           │
-│              │  111+ Combined  │                           │
-│              │  AI Agents      │                           │
-│              └─────────────────┘                           │
-│                         │                                   │
-│         ┌───────────────┼───────────────┐                  │
-│         ▼               ▼               ▼                  │
-│    ┌─────────┐    ┌─────────┐    ┌─────────┐              │
-│    │   DDD   │    │   ADR   │    │   TDD   │              │
-│    │ Domain  │    │ Decision│    │ Test    │              │
-│    │ Driven  │    │ Records │    │ Driven  │              │
-│    └─────────┘    └─────────┘    └─────────┘              │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│      🐝 BUILD WITH QUALITY SKILL                        │
+│                                                         │
+│     ┌─────────────┐       ┌─────────────┐               │
+│     │ Claude Flow │   +   │ Agentic QE  │               │
+│     │     V3      │       │             │               │
+│     │ 60+ Agents  │       │  51 Agents  │               │
+│     └─────────────┘       └─────────────┘               │
+│            │                     │                      │
+│            └──────────┬──────────┘                      │
+│                       ▼                                 │
+│            ┌─────────────────┐                          │
+│            │  111+ Combined  │                          │
+│            │   AI Agents     │                          │
+│            └─────────────────┘                          │
+│                       │                                 │
+│       ┌───────────────┼───────────────┐                 │
+│       ▼               ▼               ▼                 │
+│  ┌─────────┐    ┌─────────┐    ┌─────────┐              │
+│  │   DDD   │    │   ADR   │    │   TDD   │              │
+│  │ Domain  │    │Decision │    │  Test   │              │
+│  │ Driven  │    │ Records │    │ Driven  │              │
+│  └─────────┘    └─────────┘    └─────────┘              │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
 ```
 
 This isn't another AI coding assistant. It's a **coordinated system** that:
@@ -115,35 +115,35 @@ I didn't just theorize. I built a complete e-commerce application to validate th
 ### What Was Built
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                     SHOPFLOW V2 ARCHITECTURE                    │
-├────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  👤 User                                                       │
-│    │                                                           │
-│    ▼                                                           │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │  FRONTEND (Next.js 14 on Netlify Edge)                  │  │
+┌──────────────────────────────────────────────────────────────┐
+│                   SHOPFLOW V2 ARCHITECTURE                   │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  👤 User                                                     │
+│    │                                                         │
+│    ▼                                                         │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  FRONTEND (Next.js 14 on Netlify Edge)                 │  │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │  │
 │  │  │ Products │ │   Cart   │ │ Checkout │ │ Success  │   │  │
 │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘   │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│                            │                                   │
-│                            ▼                                   │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │  API LAYER (Serverless Functions)                       │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                           │                                  │
+│                           ▼                                  │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  API LAYER (Serverless Functions)                      │  │
 │  │  ┌────────────┐ ┌────────────┐ ┌────────────┐          │  │
 │  │  │ /api/cart  │ │ /checkout  │ │ /webhooks  │          │  │
 │  │  └────────────┘ └────────────┘ └────────────┘          │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│            │                │                │                 │
-│            ▼                ▼                ▼                 │
+│  └────────────────────────────────────────────────────────┘  │
+│           │                │                │                │
+│           ▼                ▼                ▼                │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
 │  │  PostgreSQL  │  │    Stripe    │  │    Resend    │        │
 │  │   (Railway)  │  │  (Payments)  │  │   (Email)    │        │
 │  └──────────────┘  └──────────────┘  └──────────────┘        │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### By the Numbers
@@ -166,33 +166,33 @@ Traditional AI coding: One model, one conversation, linear thinking.
 **Swarm approach**: Multiple specialized agents working in parallel.
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                    HIERARCHICAL-MESH TOPOLOGY                   │
-├────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│                    ┌─────────────────────┐                     │
-│                    │  Queen Coordinator  │                     │
-│                    │   (Orchestration)   │                     │
-│                    └──────────┬──────────┘                     │
-│                               │                                 │
-│         ┌─────────────────────┼─────────────────────┐          │
-│         │                     │                     │          │
-│         ▼                     ▼                     ▼          │
-│  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐    │
-│  │ Development │◄────►│   Quality   │◄────►│  Security   │    │
-│  │   Domain    │      │   Domain    │      │   Domain    │    │
-│  │ (4 agents)  │      │ (4 agents)  │      │ (2 agents)  │    │
-│  └─────────────┘      └─────────────┘      └─────────────┘    │
-│         │                     │                     │          │
-│         ▼                     ▼                     ▼          │
-│  • Architect           • Test Generator    • SAST Scanner     │
-│  • Coder               • Coverage Analyzer • Security Auditor │
-│  • Reviewer            • Mutation Tester                      │
-│  • Deployer            • Defect Predictor                     │
-│                                                                │
-│         ◄──────── Mesh Communication ────────►                 │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                  HIERARCHICAL-MESH TOPOLOGY                  │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│                  ┌─────────────────────┐                     │
+│                  │  Queen Coordinator  │                     │
+│                  │   (Orchestration)   │                     │
+│                  └──────────┬──────────┘                     │
+│                             │                                │
+│       ┌─────────────────────┼─────────────────────┐          │
+│       │                     │                     │          │
+│       ▼                     ▼                     ▼          │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     │
+│  │ Development │◄───►│   Quality   │◄───►│  Security   │     │
+│  │   Domain    │     │   Domain    │     │   Domain    │     │
+│  │ (4 agents)  │     │ (4 agents)  │     │ (2 agents)  │     │
+│  └─────────────┘     └─────────────┘     └─────────────┘     │
+│       │                     │                     │          │
+│       ▼                     ▼                     ▼          │
+│  • Architect          • Test Generator    • SAST Scanner     │
+│  • Coder              • Coverage Analyzer • Security Auditor │
+│  • Reviewer           • Mutation Tester                      │
+│  • Deployer           • Defect Predictor                     │
+│                                                              │
+│       ◄──────── Mesh Communication ────────►                 │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 **Key differentiator**: Agents communicate and coordinate. The test generator knows what the coder built. The security scanner feeds findings back to the architect.
@@ -202,17 +202,17 @@ Traditional AI coding: One model, one conversation, linear thinking.
 ## The User Journey: From Browse to Purchase
 
 ```
-┌─────┐     ┌─────┐     ┌─────┐     ┌─────┐     ┌─────┐
-│  1  │────►│  2  │────►│  3  │────►│  4  │────►│  5  │
-└─────┘     └─────┘     └─────┘     └─────┘     └─────┘
-   │           │           │           │           │
-   ▼           ▼           ▼           ▼           ▼
-┌─────┐     ┌─────┐     ┌─────┐     ┌─────┐     ┌─────┐
-│ 🛍️  │     │ 🛒  │     │ 🏷️  │     │ 💳  │     │ 📧  │
-│     │     │     │     │     │     │     │     │     │
-│Browse│     │ Add │     │Apply │     │Pay  │     │Email│
-│Prods │     │Cart │     │Code │     │     │     │     │
-└─────┘     └─────┘     └─────┘     └─────┘     └─────┘
+┌───────┐     ┌───────┐     ┌───────┐     ┌───────┐     ┌───────┐
+│   1   │────►│   2   │────►│   3   │────►│   4   │────►│   5   │
+└───────┘     └───────┘     └───────┘     └───────┘     └───────┘
+    │             │             │             │             │
+    ▼             ▼             ▼             ▼             ▼
+┌───────┐     ┌───────┐     ┌───────┐     ┌───────┐     ┌───────┐
+│  🛍   │     │  🛒   │     │  🏷   │     │  💳   │     │  📧   │
+│       │     │       │     │       │     │       │     │       │
+│Browse │     │ Add   │     │ Apply │     │ Pay   │     │ Email │
+│Prods  │     │ Cart  │     │ Code  │     │       │     │       │
+└───────┘     └───────┘     └───────┘     └───────┘     └───────┘
 
 Complete flow with:
 ✓ Real Stripe payments (test mode)
@@ -234,22 +234,22 @@ Requirements → Design → Code → Test → Deploy → Document
 
 ### Build with Quality Approach
 ```
-┌────────────────────────────────────────────────────────────┐
-│  SINGLE SESSION                                            │
-│                                                            │
+┌──────────────────────────────────────────────────────────┐
+│  SINGLE SESSION                                          │
+│                                                          │
 │  ┌──────────┐   ┌──────────┐   ┌──────────┐              │
 │  │  Phase 1 │   │  Phase 2 │   │  Phase 3 │              │
 │  │ Planning │──►│  Build   │──►│ Validate │              │
 │  └──────────┘   └──────────┘   └──────────┘              │
-│       │              │              │                     │
-│       ▼              ▼              ▼                     │
+│       │              │              │                    │
+│       ▼              ▼              ▼                    │
 │   • DDD Design   • Parallel    • Auto Tests              │
 │   • ADR Docs       Coding      • Coverage                │
 │   • TDD Setup    • Type-Safe   • Security                │
-│                    APIs                                   │
-│                                                           │
-│  OUTPUT: Production-ready code WITH documentation         │
-└────────────────────────────────────────────────────────────┘
+│                    APIs                                  │
+│                                                          │
+│  OUTPUT: Production-ready code WITH documentation        │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -287,29 +287,29 @@ Every significant decision is documented:
 ### 3️⃣ Test-Driven Development (TDD)
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    TDD CYCLE                            │
-│                                                         │
-│         ┌───────────┐                                   │
-│         │   RED     │ Write failing test                │
-│         │   🔴      │                                   │
-│         └─────┬─────┘                                   │
-│               │                                         │
-│               ▼                                         │
-│         ┌───────────┐                                   │
-│         │  GREEN    │ Write minimal code to pass        │
-│         │   🟢      │                                   │
-│         └─────┬─────┘                                   │
-│               │                                         │
-│               ▼                                         │
-│         ┌───────────┐                                   │
-│         │ REFACTOR  │ Improve while keeping green       │
-│         │   🔵      │                                   │
-│         └─────┬─────┘                                   │
-│               │                                         │
-│               └──────────► Commit                       │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────┐
+│                      TDD CYCLE                        │
+│                                                       │
+│       ┌───────────┐                                   │
+│       │    RED    │ Write failing test                │
+│       │    🔴     │                                   │
+│       └─────┬─────┘                                   │
+│             │                                         │
+│             ▼                                         │
+│       ┌───────────┐                                   │
+│       │   GREEN   │  Write minimal code to pass       │
+│       │    🟢     │                                   │
+│       └─────┬─────┘                                   │
+│             │                                         │
+│             ▼                                         │
+│       ┌───────────┐                                   │
+│       │ REFACTOR  │  Improve while keeping green      │
+│       │    🔵     │                                   │
+│       └─────┬─────┘                                   │
+│             │                                         │
+│             └──────────► Commit                       │
+│                                                       │
+└───────────────────────────────────────────────────────┘
 ```
 
 **Why it matters for CIOs**: Tests ARE the specification. Regression protection is built-in, not bolted-on.
@@ -341,24 +341,24 @@ I didn't just build one app. The skill has been validated across multiple projec
 ## The Technology Stack
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│                     PRODUCTION STACK                        │
-├────────────────────────────────────────────────────────────┤
-│                                                             │
-│  FRONTEND          API              DATA                   │
-│  ─────────         ───              ────                   │
-│  Next.js 14        Route Handlers   PostgreSQL             │
-│  React 18          Prisma ORM       (Railway)              │
-│  TypeScript        Zod Validation                          │
-│  Tailwind CSS                                              │
-│                                                             │
-│  SERVICES          HOSTING          TESTING                │
-│  ────────          ───────          ───────                │
-│  Stripe            Netlify          Vitest                 │
-│  Resend            Edge Functions   Playwright             │
-│                    CDN              90% Coverage           │
-│                                                             │
-└────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                    PRODUCTION STACK                      │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  FRONTEND          API              DATA                 │
+│  ─────────         ───              ────                 │
+│  Next.js 14        Route Handlers   PostgreSQL           │
+│  React 18          Prisma ORM       (Railway)            │
+│  TypeScript        Zod Validation                        │
+│  Tailwind CSS                                            │
+│                                                          │
+│  SERVICES          HOSTING          TESTING              │
+│  ────────          ───────          ───────              │
+│  Stripe            Netlify          Vitest               │
+│  Resend            Edge Functions   Playwright           │
+│                    CDN              90% Coverage         │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -382,24 +382,24 @@ This is what the Build with Quality skill addresses.
 ## What This Means for Your Digital Transformation
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│                   TRANSFORMATION IMPACT                     │
-├────────────────────────────────────────────────────────────┤
-│                                                             │
-│  WITHOUT AI AUGMENTATION        WITH AI AUGMENTATION        │
-│  ───────────────────────        ────────────────────        │
-│                                                             │
-│  ┌─────────────────────┐       ┌─────────────────────┐     │
-│  │ 6-month MVP         │       │ Weeks to MVP        │     │
-│  │ Limited docs        │       │ Full documentation  │     │
-│  │ Technical debt      │   ►   │ Clean architecture  │     │
-│  │ 40% test coverage   │       │ 90%+ test coverage  │     │
-│  │ Tribal knowledge    │       │ ADRs capture WHY    │     │
-│  └─────────────────────┘       └─────────────────────┘     │
-│                                                             │
-│  RESULT: Faster delivery with HIGHER quality               │
-│                                                             │
-└────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                  TRANSFORMATION IMPACT                   │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  WITHOUT AI AUGMENTATION       WITH AI AUGMENTATION      │
+│  ───────────────────────       ────────────────────      │
+│                                                          │
+│  ┌─────────────────────┐      ┌─────────────────────┐    │
+│  │ 6-month MVP         │      │ Weeks to MVP        │    │
+│  │ Limited docs        │      │ Full documentation  │    │
+│  │ Technical debt      │  ►   │ Clean architecture  │    │
+│  │ 40% test coverage   │      │ 90%+ test coverage  │    │
+│  │ Tribal knowledge    │      │ ADRs capture WHY    │    │
+│  └─────────────────────┘      └─────────────────────┘    │
+│                                                          │
+│  RESULT: Faster delivery with HIGHER quality             │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ### Key Benefits for the Enterprise
