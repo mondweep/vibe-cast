@@ -681,7 +681,7 @@ Solution: Use foreground mode or migrate to proper EC2 instance
 | Node.js | ✅ v24.13.0 | Via nvm on EC2 |
 | Gateway | ✅ **Running** | systemd active (pid 7224) |
 | systemd | ✅ Enabled | Auto-starts on boot |
-| WhatsApp | ✅ **Linked & Working** | +447786265893 on EC2 |
+| WhatsApp | ✅ **Linked & Working** | +XX-XXXX-XXXXXX on EC2 |
 | Skills | ⚠️ Partial | 4 eligible, 45 missing requirements |
 | Plugins | ✅ 2 Loaded | 28 disabled, 0 errors |
 
@@ -702,7 +702,7 @@ After the initial CloudShell setup documented in Appendix A, we completed the mi
 aws ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId,PublicIpAddress,State.Name]' --output table
 
 # Result:
-# i-00f2c778c02ec7a53 | 52.207.252.100 | running
+# <YOUR_INSTANCE_ID> | <YOUR_EC2_IP> | running
 ```
 
 ### Phase 2: SSH Key Permissions
@@ -712,13 +712,13 @@ aws ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId,Pub
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-Permissions 0644 for 'moltbot.pem' are too open.
+Permissions 0644 for 'your-key.pem' are too open.
 ```
 
 **Solution:**
 ```bash
-chmod 400 moltbot.pem
-ssh -i moltbot.pem ec2-user@52.207.252.100
+chmod 400 your-key.pem
+ssh -i your-key.pem ec2-user@<YOUR_EC2_IP>
 ```
 
 ### Phase 3: Config Migration via Tarball
@@ -730,7 +730,7 @@ Migrated OpenClaw config from CloudShell to EC2:
 tar -czvf openclaw-backup.tar.gz -C ~ .openclaw
 
 # Copy to EC2
-scp -i moltbot.pem openclaw-backup.tar.gz ec2-user@52.207.252.100:~/
+scp -i your-key.pem openclaw-backup.tar.gz ec2-user@<YOUR_EC2_IP>:~/
 
 # On EC2 - extract (note: paths need adjustment)
 tar -xzvf openclaw-backup.tar.gz -C ~/
@@ -854,13 +854,13 @@ openclaw status
 ### EC2 Instance Details
 
 ```
-Instance ID: i-00f2c778c02ec7a53
-Public IP: 52.207.252.100
+Instance ID: <YOUR_INSTANCE_ID>
+Public IP: <YOUR_EC2_IP>
 State: running
 Node.js: v24.13.0 (nvm)
 OpenClaw: v2026.1.30
 Gateway: ws://127.0.0.1:18789 (systemd managed)
-WhatsApp: +447786265893 (linked)
+WhatsApp: +XX-XXXX-XXXXXX (linked)
 ```
 
 ### Success Criteria Met
