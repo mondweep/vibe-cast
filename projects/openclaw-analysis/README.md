@@ -459,4 +459,278 @@ See [OWASP-SECURITY-ASSESSMENT.md](./OWASP-SECURITY-ASSESSMENT.md) for the compl
 
 ---
 
+## Frequently Asked Questions (FAQ)
+
+### Installation & Setup
+
+**Q: What Node.js version do I need?**
+A: Node.js 22 or higher. OpenClaw will not work with Node.js 20 or earlier. Check with `node --version`.
+
+**Q: How do I install OpenClaw on Amazon Linux / EC2?**
+```bash
+# Remove old Node.js if present
+sudo yum remove -y nodejs20 nodejs20-npm
+
+# Install Node.js 22
+curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+sudo yum install -y nodejs
+
+# Install OpenClaw globally (requires sudo for global install)
+sudo npm install -g openclaw@latest
+
+# Run onboarding
+openclaw onboard --install-daemon
+```
+
+**Q: Why do I get "EACCES permission denied" when installing?**
+A: Use `sudo npm install -g openclaw@latest` for global installations on Linux.
+
+**Q: What's the difference between CloudShell and EC2?**
+A: AWS CloudShell is a browser-based shell environment separate from your EC2 instances. To work on EC2, you must SSH into it:
+```bash
+ssh -i /path/to/key.pem ec2-user@YOUR_EC2_IP
+```
+
+### Gateway & Services
+
+**Q: How do I start the gateway without systemd?**
+A: Use foreground mode with a process manager:
+```bash
+# Option 1: nohup
+nohup openclaw gateway start --foreground > ~/.openclaw/gateway.log 2>&1 &
+
+# Option 2: screen
+screen -S openclaw
+openclaw gateway start --foreground
+# Detach: Ctrl+A, D
+
+# Option 3: PM2
+pm2 start "openclaw gateway start --foreground" --name openclaw-gateway
+```
+
+**Q: Why is my gateway "unreachable"?**
+A: The gateway service isn't running. Start it with `openclaw gateway start --foreground` or install the daemon with `openclaw onboard --install-daemon`.
+
+**Q: How do I keep OpenClaw running permanently on EC2?**
+A: Use systemd (available on full EC2, not CloudShell):
+```bash
+openclaw onboard --install-daemon
+# This installs systemd services that auto-start on boot
+```
+
+### Channels
+
+**Q: How do I link WhatsApp?**
+```bash
+openclaw channel add whatsapp
+# Scan the QR code with WhatsApp > Settings > Linked Devices > Link a Device
+```
+
+**Q: Can I link the same WhatsApp account to multiple OpenClaw instances?**
+A: No. WhatsApp allows only one linked session per "Linked Devices" slot. Unlink from the old instance first before linking to a new one.
+
+**Q: How do I unlink WhatsApp?**
+```bash
+openclaw channel remove whatsapp
+# Or from phone: WhatsApp > Settings > Linked Devices > Select device > Log out
+```
+
+### Skills & Dependencies
+
+**Q: Why are skills failing to install with "brew not installed"?**
+A: Some skills require Homebrew. Install it on Linux:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
+```
+
+**Q: What are the common Homebrew packages needed for skills?**
+```bash
+brew install go    # For blogwatcher skill
+brew install uv    # For nano-pdf skill (Python package manager)
+```
+
+**Q: Can I skip skill installation?**
+A: Yes, OpenClaw works without optional skills. Select "Skip for now" during onboarding and install them later with `openclaw skill install <name>`.
+
+### Security
+
+**Q: How do I fix "Credentials dir is readable by others"?**
+```bash
+chmod 700 ~/.openclaw/credentials
+```
+
+**Q: What does "Gateway auth missing on loopback" mean?**
+A: If your gateway is only accessed locally (127.0.0.1), this is acceptable. If exposing via reverse proxy, set `gateway.auth` in your config.
+
+**Q: Which AI model should I use?**
+A: Use Claude 4.5+ (Opus or Sonnet) for production. Haiku is cheaper but more susceptible to prompt injection. Configure in `~/.openclaw/openclaw.json`:
+```json
+{
+  "agent": {
+    "model": "anthropic/claude-opus-4-5"
+  }
+}
+```
+
+### Troubleshooting
+
+**Q: Where are the logs?**
+```bash
+openclaw logs --follow
+# Or check: ~/.openclaw/logs/
+```
+
+**Q: How do I reset everything?**
+```bash
+rm -rf ~/.openclaw
+openclaw onboard --install-daemon
+```
+
+**Q: How do I check system health?**
+```bash
+openclaw doctor --fix
+openclaw status --deep
+openclaw security audit --deep
+```
+
+---
+
+## Appendix A: Installation Log - February 1, 2026
+
+### Session Summary
+
+This appendix documents the complete OpenClaw installation and exploration session conducted on February 1, 2026.
+
+### What We Did
+
+#### 1. Environment Preparation
+- Created feature branch `claude/openclaw-tinkering-aI4U7` for OpenClaw exploration
+- Installed **Agentic QE** (Quality Engineering platform) - 63 skills, 51 agents
+- Installed **Claude-Flow V3** (AI orchestration platform) - 92 agents, 30 skills, HNSW vector indexing
+
+#### 2. OpenClaw Analysis
+- Analyzed the OpenClaw codebase from https://github.com/openclaw/openclaw
+- Created comprehensive documentation with Mermaid architecture diagrams
+- Documented all 10+ messaging channel integrations
+- Created Claude agent skill for channel integration (`.claude/skills/openclaw-channel-integration/`)
+
+#### 3. Security Assessment
+- Completed full **OWASP Top 10 for Agentic Applications 2026** assessment
+- Documented in `OWASP-SECURITY-ASSESSMENT.md`
+- Created reference guide `OWASP-TOP-10-AGENTIC-2026.md`
+- Risk ratings: 4 LOW, 6 MEDIUM, 0 HIGH/CRITICAL
+
+#### 4. AWS Installation Journey
+
+**Initial Attempt (AWS CloudShell):**
+```
+Location: AWS CloudShell (browser-based shell)
+Issue: CloudShell ≠ EC2 instance
+```
+
+**Node.js Upgrade:**
+```bash
+# Problem: Node.js 20 installed, OpenClaw requires 22+
+# Solution:
+sudo yum remove -y nodejs20 nodejs20-npm
+curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+sudo yum install -y nodejs
+```
+
+**OpenClaw Installation:**
+```bash
+# Problem: EACCES permission denied
+# Solution: Use sudo for global install
+sudo npm install -g openclaw@latest
+# Result: 696 packages installed
+```
+
+**Homebrew Installation (for optional skills):**
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+brew install go uv
+```
+
+**Gateway Issue:**
+```
+Problem: "systemd user services are unavailable"
+Cause: CloudShell doesn't have systemd
+Solution: Use foreground mode or migrate to proper EC2 instance
+```
+
+### Lessons Learned
+
+| Lesson | Detail |
+|--------|--------|
+| **CloudShell ≠ EC2** | AWS CloudShell is a separate environment, not connected to EC2 instances |
+| **Node.js 22 Required** | OpenClaw strictly requires Node.js 22+, won't work with v20 |
+| **Package Conflicts** | Must remove old nodejs packages before installing new version |
+| **sudo for Global Install** | Linux requires `sudo npm install -g` for global packages |
+| **systemd Availability** | CloudShell lacks systemd; use foreground mode or PM2/screen |
+| **Homebrew on Linux** | Works via Linuxbrew at `/home/linuxbrew/.linuxbrew/` |
+| **WhatsApp Single Link** | Can only link WhatsApp to one OpenClaw instance at a time |
+
+### Current Status
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| OpenClaw CLI | ✅ Installed | v2026.1.30 on CloudShell |
+| Node.js | ✅ v22.22.0 | Upgraded from v20 |
+| Homebrew | ✅ v5.0.12 | With go 1.25.6, uv 0.9.28 |
+| WhatsApp | ✅ Linked | +447786265893 (on CloudShell) |
+| Gateway | ⚠️ Not Running | Needs foreground mode or EC2 migration |
+| systemd | ❌ Unavailable | CloudShell limitation |
+| Skills | ⚠️ Partial | 5 eligible, 44 missing requirements |
+| Plugins | ✅ 2 Loaded | 28 disabled, 0 errors |
+
+### Recommended Next Steps
+
+1. **Migrate to EC2 Instance** (for production use):
+   ```bash
+   # From CloudShell, SSH to EC2
+   ssh -i /path/to/key.pem ec2-user@52.207.252.100
+
+   # Fresh install on EC2 with systemd support
+   openclaw onboard --install-daemon
+   ```
+
+2. **Unlink WhatsApp from CloudShell** before EC2 setup:
+   ```bash
+   openclaw channel remove whatsapp
+   ```
+
+3. **Re-link WhatsApp on EC2** after migration:
+   ```bash
+   openclaw channel add whatsapp
+   ```
+
+4. **Fix Security Warnings**:
+   ```bash
+   chmod 700 ~/.openclaw/credentials
+   openclaw security audit --deep
+   ```
+
+### Files Created This Session
+
+| File | Purpose |
+|------|---------|
+| `projects/openclaw-analysis/README.md` | Main documentation (this file) |
+| `projects/openclaw-analysis/OWASP-SECURITY-ASSESSMENT.md` | Security assessment |
+| `projects/openclaw-analysis/OWASP-TOP-10-AGENTIC-2026.md` | OWASP reference guide |
+| `.claude/skills/openclaw-channel-integration/SKILL.md` | Channel integration skill |
+
+### EC2 Instance Details
+
+```
+Instance ID: i-00f2c778c02ec7a53
+Public IP: 52.207.252.100
+State: running
+```
+
+---
+
 *Generated for the vibe-cast project - OpenClaw Analysis*
+*Last updated: February 1, 2026*
