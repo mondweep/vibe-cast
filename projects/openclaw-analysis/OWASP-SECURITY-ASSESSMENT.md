@@ -651,7 +651,7 @@ flowchart TB
     end
 
     subgraph "Kill Switch"
-        K1[/reset Command]
+        K1[Reset Command]
         K2[Session Termination]
         K3[Gateway Shutdown]
     end
