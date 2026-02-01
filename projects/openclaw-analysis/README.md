@@ -673,45 +673,174 @@ Solution: Use foreground mode or migrate to proper EC2 instance
 | **Homebrew on Linux** | Works via Linuxbrew at `/home/linuxbrew/.linuxbrew/` |
 | **WhatsApp Single Link** | Can only link WhatsApp to one OpenClaw instance at a time |
 
-### Current Status
+### Current Status (FINAL - February 1, 2026)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| OpenClaw CLI | ✅ Installed | v2026.1.30 on CloudShell |
-| Node.js | ✅ v22.22.0 | Upgraded from v20 |
-| Homebrew | ✅ v5.0.12 | With go 1.25.6, uv 0.9.28 |
-| WhatsApp | ✅ Linked | +447786265893 (on CloudShell) |
-| Gateway | ⚠️ Not Running | Needs foreground mode or EC2 migration |
-| systemd | ❌ Unavailable | CloudShell limitation |
-| Skills | ⚠️ Partial | 5 eligible, 44 missing requirements |
+| OpenClaw CLI | ✅ Installed | v2026.1.30 on EC2 |
+| Node.js | ✅ v24.13.0 | Via nvm on EC2 |
+| Gateway | ✅ **Running** | systemd active (pid 7224) |
+| systemd | ✅ Enabled | Auto-starts on boot |
+| WhatsApp | ✅ **Linked & Working** | +447786265893 on EC2 |
+| Skills | ⚠️ Partial | 4 eligible, 45 missing requirements |
 | Plugins | ✅ 2 Loaded | 28 disabled, 0 errors |
 
-### Recommended Next Steps
+**OpenClaw is fully operational and responding to WhatsApp messages!**
 
-1. **Migrate to EC2 Instance** (for production use):
-   ```bash
-   # From CloudShell, SSH to EC2
-   ssh -i /path/to/key.pem ec2-user@52.207.252.100
+---
 
-   # Fresh install on EC2 with systemd support
-   openclaw onboard --install-daemon
-   ```
+## Appendix B: EC2 Migration Journey - February 1, 2026 (Continued)
 
-2. **Unlink WhatsApp from CloudShell** before EC2 setup:
-   ```bash
-   openclaw channel remove whatsapp
-   ```
+After the initial CloudShell setup documented in Appendix A, we completed the migration to EC2 for production use.
 
-3. **Re-link WhatsApp on EC2** after migration:
-   ```bash
-   openclaw channel add whatsapp
-   ```
+### Phase 1: Understanding CloudShell vs EC2
 
-4. **Fix Security Warnings**:
-   ```bash
-   chmod 700 ~/.openclaw/credentials
-   openclaw security audit --deep
-   ```
+**Key Learning:** AWS CloudShell is NOT your EC2 instance - it's a separate browser-based shell environment.
+
+```bash
+# To find your EC2 instance from CloudShell:
+aws ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId,PublicIpAddress,State.Name]' --output table
+
+# Result:
+# i-00f2c778c02ec7a53 | 52.207.252.100 | running
+```
+
+### Phase 2: SSH Key Permissions
+
+**Problem:** SSH key file had wrong permissions
+```
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Permissions 0644 for 'moltbot.pem' are too open.
+```
+
+**Solution:**
+```bash
+chmod 400 moltbot.pem
+ssh -i moltbot.pem ec2-user@52.207.252.100
+```
+
+### Phase 3: Config Migration via Tarball
+
+Migrated OpenClaw config from CloudShell to EC2:
+
+```bash
+# On CloudShell - create backup
+tar -czvf openclaw-backup.tar.gz -C ~ .openclaw
+
+# Copy to EC2
+scp -i moltbot.pem openclaw-backup.tar.gz ec2-user@52.207.252.100:~/
+
+# On EC2 - extract (note: paths need adjustment)
+tar -xzvf openclaw-backup.tar.gz -C ~/
+mv ~/home/cloudshell-user/.openclaw ~/.openclaw
+rm -rf ~/home
+```
+
+### Phase 4: EC2 Node.js & OpenClaw Installation
+
+**Existing state:** EC2 had Node.js v24.13.0 via nvm
+
+**Problem:** npm install hung due to low memory (1.9GB RAM, no swap)
+
+**Solution - Add swap space:**
+```bash
+# Create 1GB swap file
+sudo dd if=/dev/zero of=/swapfile bs=128M count=8
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# Then install OpenClaw
+sudo npm install -g openclaw@latest
+```
+
+**What is swap?** Virtual memory that uses disk storage when RAM runs out. Essential for npm on small EC2 instances.
+
+### Phase 5: systemd Configuration
+
+**What is systemd?** Linux's service manager that:
+- Starts services when Linux boots
+- Auto-restarts crashed services
+- Manages dependencies between services
+- Captures logs via `journalctl`
+
+**Setup:**
+```bash
+openclaw onboard --install-daemon
+```
+
+**Useful systemd commands:**
+```bash
+systemctl --user status openclaw-gateway    # Check status
+systemctl --user restart openclaw-gateway   # Restart
+systemctl --user enable openclaw-gateway    # Enable auto-start
+journalctl --user -u openclaw-gateway -f    # View logs
+```
+
+### Phase 6: WhatsApp Re-linking
+
+WhatsApp sessions are tied to a single device. After migrating to EC2, we needed to re-link:
+
+```bash
+# WhatsApp session from CloudShell was logged out
+openclaw channels login
+# Scanned QR code with phone
+# Result: "✅ Linked after restart; web session ready."
+```
+
+### Phase 7: Security Hardening
+
+Fixed permission warnings:
+```bash
+chmod 700 /home/ec2-user/.openclaw
+chmod 700 /home/ec2-user/.openclaw/credentials
+```
+
+### Phase 8: Gateway Startup Issues
+
+**Problem:** Gateway service stuck in "activating" state
+
+**Root cause:** systemd service was pointing to wrong Node.js path (nvm vs system)
+
+**Solution:**
+```bash
+systemctl --user restart openclaw-gateway
+systemctl --user status openclaw-gateway
+# Result: Active: active (running)
+```
+
+### Final Verification
+
+```bash
+openclaw status
+```
+
+**Output confirmed:**
+- Gateway: ✅ reachable (88ms)
+- Gateway service: ✅ systemd installed, enabled, running (pid 7224)
+- WhatsApp: ✅ ON, linked, auth just now
+
+### Key Commands Reference
+
+| Task | Command |
+|------|---------|
+| Check status | `openclaw status` |
+| View logs | `openclaw logs --follow` |
+| Health check | `openclaw doctor --fix` |
+| Restart gateway | `systemctl --user restart openclaw-gateway` |
+| Security audit | `openclaw security audit --deep` |
+| Link WhatsApp | `openclaw channels login` |
+
+### npm vs npx Explained
+
+| Aspect | npm | npx |
+|--------|-----|-----|
+| Purpose | Install packages | Run packages |
+| Persistence | Permanent | Temporary |
+| Example | `npm install -g openclaw` | `npx openclaw@latest status` |
+| When to use | Production installs | Testing/one-off runs |
 
 ### Files Created This Session
 
@@ -728,9 +857,22 @@ Solution: Use foreground mode or migrate to proper EC2 instance
 Instance ID: i-00f2c778c02ec7a53
 Public IP: 52.207.252.100
 State: running
+Node.js: v24.13.0 (nvm)
+OpenClaw: v2026.1.30
+Gateway: ws://127.0.0.1:18789 (systemd managed)
+WhatsApp: +447786265893 (linked)
 ```
+
+### Success Criteria Met
+
+1. ✅ OpenClaw installed on production EC2 instance
+2. ✅ systemd service enabled (auto-starts on reboot)
+3. ✅ Gateway running and reachable
+4. ✅ WhatsApp linked and responding to messages
+5. ✅ Security permissions hardened
+6. ✅ Comprehensive documentation created
 
 ---
 
 *Generated for the vibe-cast project - OpenClaw Analysis*
-*Last updated: February 1, 2026*
+*Last updated: February 1, 2026 - EC2 Migration Complete*
