@@ -1,0 +1,8 @@
+{
+  "name": "pattern-consolidator",
+  "enabled": true,
+  "interval": 1800000,
+  "projectRoot": "/home/user/vibe-cast",
+  "dataDir": "/home/user/vibe-cast/.agentic-qe/data",
+  "createdAt": "2026-02-01T18:53:31.213Z"
+}

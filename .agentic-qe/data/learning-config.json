@@ -1,0 +1,13 @@
+{
+  "embeddingModel": "auto",
+  "hnswConfig": {
+    "M": 8,
+    "efConstruction": 100,
+    "efSearch": 50
+  },
+  "qualityThreshold": 0.5,
+  "promotionThreshold": 2,
+  "databasePath": "/home/user/vibe-cast/.agentic-qe/data/memory.db",
+  "hnswIndexPath": "/home/user/vibe-cast/.agentic-qe/data/hnsw/index.bin",
+  "initialized": "2026-02-01T18:53:30.917Z"
+}
