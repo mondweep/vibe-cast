@@ -258,6 +258,6 @@ I work with CIOs on digital transformation initiatives, including technology eva
 
 ## About
 
-I advise CIOs on digital transformation, with a focus on technology strategy, enterprise architecture, and safe adoption of emerging capabilities. My work typically involves initiatives exceeding £15M where technology decisions have material business impact.
+I advise CIOs on digital transformation, with a focus on technology strategy, enterprise architecture, and safe adoption of emerging capabilities. My work typically involves initiatives exceeding £XXM where technology decisions have material business impact.
 
 Available for confidential discussions on AI strategy and adoption.
