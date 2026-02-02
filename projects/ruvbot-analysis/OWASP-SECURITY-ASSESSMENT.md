@@ -668,31 +668,35 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    subgraph "Layer 1: Transport"
+    subgraph Layer1["Layer 1: Transport"]
         L1[TLS 1.3 + HSTS + Cert Pinning]
     end
 
-    subgraph "Layer 2: Authentication"
+    subgraph Layer2["Layer 2: Authentication"]
         L2[JWT RS256 + OAuth 2.0 + Rate Limiting]
     end
 
-    subgraph "Layer 3: Authorization"
+    subgraph Layer3["Layer 3: Authorization"]
         L3[RBAC + Claims + Tenant Isolation]
     end
 
-    subgraph "Layer 4: Data Protection"
+    subgraph Layer4["Layer 4: Data Protection"]
         L4[AES-256-GCM + Key Rotation]
     end
 
-    subgraph "Layer 5: AI Defense"
+    subgraph Layer5["Layer 5: AI Defense"]
         L5[Prompt Injection + Jailbreak + PII Detection]
     end
 
-    subgraph "Layer 6: Sandbox"
+    subgraph Layer6["Layer 6: Sandbox"]
         L6[WASM + Memory Limits + Resource Caps]
     end
 
-    L1 --> L2 --> L3 --> L4 --> L5 --> L6
+    L1 --> L2
+    L2 --> L3
+    L3 --> L4
+    L4 --> L5
+    L5 --> L6
 ```
 
 ### Compliance Alignment

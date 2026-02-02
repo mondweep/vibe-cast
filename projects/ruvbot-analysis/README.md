@@ -106,42 +106,42 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    subgraph "Core Context"
+    subgraph CoreContext["Core Context"]
         Agent[Agent]
         Session[Session]
         Memory[Memory]
         Skill[Skill]
     end
 
-    subgraph "Infrastructure"
+    subgraph Infra["Infrastructure"]
         EventBus[Event Bus]
         Queue[Queue Manager]
         WorkerPool[Worker Pool]
         Persistence[Persistence]
     end
 
-    subgraph "Integration"
+    subgraph Integration["Integration"]
         SlackInt[Slack]
         Webhooks[Webhooks]
         Providers[LLM Providers]
     end
 
-    subgraph "Security"
+    subgraph Security["Security"]
         AuthContext[Auth]
-        RBAC[RBAC]
+        RBACNode[RBAC]
         AIDefenceCtx[AIDefence]
     end
 
-    subgraph "Learning"
+    subgraph Learning["Learning"]
         EmbeddingsCtx[Embeddings]
         Training[Training]
         PatternRecog[Pattern Recognition]
     end
 
-    Core Context --> Infrastructure
-    Core Context --> Integration
-    Security --> Core Context
-    Learning --> Core Context
+    Agent --> EventBus
+    Agent --> SlackInt
+    AuthContext --> Agent
+    EmbeddingsCtx --> Memory
 ```
 
 ### Data Flow
@@ -186,48 +186,48 @@ RuvBot implements a **6-layer security model** designed to address vulnerabiliti
 
 ```mermaid
 flowchart TB
-    subgraph "Layer 1: Transport"
+    subgraph L1["Layer 1: Transport"]
         TLS[TLS 1.3]
         HSTS[HSTS Headers]
         CertPin[Certificate Pinning]
     end
 
-    subgraph "Layer 2: Authentication"
+    subgraph L2["Layer 2: Authentication"]
         JWT[JWT RS256]
         OAuth[OAuth 2.0]
         RateLimit[Rate Limiting]
     end
 
-    subgraph "Layer 3: Authorization"
+    subgraph L3["Layer 3: Authorization"]
         RBACLayer[Role-Based Access]
         Claims[Claims-Based Access]
         TenantIso[Tenant Isolation]
     end
 
-    subgraph "Layer 4: Data Protection"
+    subgraph L4["Layer 4: Data Protection"]
         AES[AES-256-GCM]
         KeyRotation[Key Rotation]
         AtRest[Encryption at Rest]
     end
 
-    subgraph "Layer 5: AI Defense"
+    subgraph L5["Layer 5: AI Defense"]
         PromptInj[Prompt Injection Detection]
         Jailbreak[Jailbreak Prevention]
-        PII[PII Detection & Masking]
+        PII[PII Detection and Masking]
         Anomaly[Behavioral Anomaly Detection]
     end
 
-    subgraph "Layer 6: Sandbox"
+    subgraph L6["Layer 6: Sandbox"]
         WASM[WASM Isolation]
         MemLimits[Memory Limits]
         ResourceCap[Resource Caps]
     end
 
-    Layer 1 --> Layer 2
-    Layer 2 --> Layer 3
-    Layer 3 --> Layer 4
-    Layer 4 --> Layer 5
-    Layer 5 --> Layer 6
+    TLS --> JWT
+    JWT --> RBACLayer
+    RBACLayer --> AES
+    AES --> PromptInj
+    PromptInj --> WASM
 ```
 
 ### AIDefence Integration
