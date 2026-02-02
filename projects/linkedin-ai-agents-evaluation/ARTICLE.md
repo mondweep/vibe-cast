@@ -1,414 +1,233 @@
-# I Spent 48 Hours Evaluating AI Agents for Enterprise Use. Here's What Every CIO Needs to Know Before 2026.
+# Evaluating AI Agents for Enterprise: A Practical Evening with OpenClaw and RuvBot
 
 ## LinkedIn Cover Post
 
 ---
 
-**AI agents are coming to your enterprise. The question isn't IF—it's HOW SAFELY.**
+I spent last night deploying two AI agent platforms on production AWS infrastructure and assessing them against the OWASP Top 10 for Agentic Applications 2026.
 
-I spent 48 hours hands-on with two leading AI agent platforms, deploying them on production infrastructure and assessing them against the OWASP Top 10 for Agentic Applications 2026.
+Here's what I found:
 
-What I found will change how you think about AI adoption:
+- One platform scored 8.5/10 on enterprise security, the other 7.5/10
+- Both have supply chain gaps that most teams won't catch
+- The installation documentation undersells the actual complexity
+- systemd knowledge is now a prerequisite for AI operations
 
-✅ One platform scored 8.5/10 on enterprise security
-⚠️ Both had supply chain vulnerabilities most teams would miss
-🔐 The security differences could make or break your compliance posture
+The full write-up covers the evaluation framework, the problems I hit, and what the security differences actually mean.
 
-The full technical breakdown is in my latest article—including the evaluation framework I used, architecture diagrams, and specific recommendations for CIOs planning AI initiatives >£15M.
+Link in comments.
 
-If you're evaluating AI agents for your organisation, I'd welcome a confidential conversation about doing it safely.
-
-#AIAgents #CIO #DigitalTransformation #EnterpriseSecurity #OWASP #AIStrategy
+#AIAgents #EnterpriseSecurity #OWASP
 
 ---
 
 ## Full Article
 
-### The AI Agent Imperative
+### Background
 
-Every CIO I speak with is asking the same question: *"How do we harness AI agents without creating the next headline-grabbing security breach?"*
+I've been tracking AI agent platforms for several months. Last night I decided to stop reading about them and actually deploy two—OpenClaw and RuvBot—on a production AWS EC2 instance.
 
-It's a valid concern. AI agents aren't just chatbots—they're autonomous systems that can read your data, execute code, access external services, and make decisions without human intervention. The attack surface is fundamentally different from anything we've deployed before.
+This isn't a sponsored review. I paid for my own AWS resources. The goal was to understand what it actually takes to get these platforms running and how they compare on security.
 
-Last week, I decided to stop theorising and start evaluating. I took two leading AI agent platforms—**OpenClaw** and **RuvBot**—and deployed them on production AWS infrastructure. Not in a sandbox. Not with sample data. Real deployment, real security assessment, real findings.
+### The Platforms
 
-Here's what I discovered.
+**OpenClaw** is a personal AI assistant with a local-first architecture. It connects to WhatsApp, Telegram, Slack, Discord, and other messaging platforms. The pitch is privacy—your data stays on your hardware.
 
----
+**RuvBot** positions itself as enterprise-grade with a 6-layer security model. It includes something called AIDefence for prompt injection detection and supports multiple LLM providers including Claude, GPT, and Gemini.
 
-## The Evaluation Framework
+Both are open source. Both required more effort to deploy than their documentation suggested.
 
-Before diving into platforms, I needed a structured approach. Too many AI evaluations focus on features and miss the risks that will matter most to your board.
+### The Evaluation Approach
 
-```mermaid
-flowchart TB
-    subgraph Phase1["Phase 1: Technical Validation"]
-        P1A[Infrastructure Requirements]
-        P1B[Installation Complexity]
-        P1C[Integration Capability]
-    end
-
-    subgraph Phase2["Phase 2: Security Assessment"]
-        P2A[OWASP Agentic Top 10]
-        P2B[Supply Chain Analysis]
-        P2C[Authentication Model]
-    end
-
-    subgraph Phase3["Phase 3: Operational Readiness"]
-        P3A[High Availability]
-        P3B[Monitoring & Observability]
-        P3C[Incident Response]
-    end
-
-    subgraph Phase4["Phase 4: Business Alignment"]
-        P4A[Total Cost of Ownership]
-        P4B[Compliance Mapping]
-        P4C[Strategic Fit]
-    end
-
-    Phase1 --> Phase2
-    Phase2 --> Phase3
-    Phase3 --> Phase4
-```
-
-This four-phase approach ensures you're not just buying technology—you're adopting capability that aligns with enterprise risk appetite.
-
----
-
-## What I Evaluated
-
-### Platform 1: OpenClaw
-
-**Positioning**: Personal AI assistant with local-first architecture
-**Target**: Privacy-conscious users and developers
-**Architecture**: Gateway-based hub-and-spoke model
-
-### Platform 2: RuvBot
-
-**Positioning**: Enterprise-grade AI assistant with military-strength security
-**Target**: Organisations requiring compliance and scale
-**Architecture**: 6-layer security model with WASM sandboxing
-
----
-
-## The Journey: From Theory to Production
-
-### Day 1: The Reality of "Simple" Installation
-
-The documentation promised 10-minute installs. Reality was different.
-
-**Challenge 1: Environment Mismatch**
-
-I started in AWS CloudShell, assuming it was connected to my EC2 instance. It wasn't. CloudShell is a separate, ephemeral environment—a distinction that would cost an unprepared team hours.
+I used a four-phase framework:
 
 ```mermaid
 flowchart LR
-    subgraph "Common Misconception"
-        CS1[AWS CloudShell]
-        EC1[EC2 Instance]
-        CS1 -.->|"Assumed Connection"| EC1
-    end
+    P1[Technical<br/>Validation]
+    P2[Security<br/>Assessment]
+    P3[Operational<br/>Readiness]
+    P4[Business<br/>Fit]
 
-    subgraph "Reality"
-        CS2[AWS CloudShell<br/>Separate Environment]
-        EC2[EC2 Instance<br/>Your Infrastructure]
-        CS2 x--x|"No Connection"| EC2
-        SSH[SSH Required]
-        CS2 --> SSH --> EC2
+    P1 --> P2 --> P3 --> P4
+```
+
+**Phase 1** covers whether the thing actually installs and runs.
+**Phase 2** applies the OWASP Top 10 for Agentic Applications.
+**Phase 3** asks what it takes to keep it running.
+**Phase 4** maps findings to business requirements.
+
+Most evaluations skip Phase 3. That's a mistake.
+
+### What Actually Happened
+
+#### Problem 1: Environment Confusion
+
+I started in AWS CloudShell, assuming it was connected to my EC2 instance. It isn't. CloudShell is a separate browser-based shell environment with no connection to your EC2 infrastructure.
+
+```mermaid
+flowchart LR
+    subgraph Reality
+        CS[AWS CloudShell]
+        EC2[EC2 Instance]
+        CS x--x EC2
     end
 ```
 
-**Lesson for CIOs**: Your teams will make assumptions about cloud environments. Document the exact infrastructure topology before any AI deployment.
+This cost me 20 minutes of confusion. The fix was straightforward once I understood the problem—SSH into EC2 separately.
 
-**Challenge 2: Dependency Hell**
+#### Problem 2: Node.js Version
 
-Both platforms required Node.js 22+. My EC2 instance had Node.js 20. The upgrade process created package conflicts that broke the installation.
-
-The fix required understanding package management at a level most enterprise teams won't have readily available:
+Both platforms require Node.js 22+. The EC2 instance had Node.js 20. Upgrading created package conflicts:
 
 ```
+file /usr/lib/node_modules/npm/... conflicts with file from package nodejs20-npm
+```
+
+The fix:
+```bash
 sudo yum remove -y nodejs20 nodejs20-npm
 curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
 sudo yum install -y nodejs
 ```
 
-**Lesson for CIOs**: AI platforms move fast. Your infrastructure standards may be 6-12 months behind their requirements. Budget for environment modernisation.
+Not complex, but not documented either.
 
-**Challenge 3: Memory Constraints**
+#### Problem 3: Memory Constraints
 
-One platform's installation hung indefinitely. The cause? A 1.9GB RAM instance with no swap space couldn't handle npm's memory requirements.
+The OpenClaw installation hung indefinitely on a 1.9GB RAM instance. The npm process was running out of memory with no error message—just a frozen terminal.
+
+The fix was adding swap space:
+```bash
+sudo dd if=/dev/zero of=/swapfile bs=128M count=8
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+```
+
+#### Problem 4: systemd Dependency
+
+Both platforms assume systemd for process management. AWS CloudShell doesn't have systemd. This meant I had to complete the migration to EC2 before I could get persistent operation.
+
+The actual deployment path looked like this:
 
 ```mermaid
 flowchart TB
-    subgraph "Installation Failure"
-        NPM[npm install]
-        RAM[1.9GB RAM<br/>No Swap]
-        HANG[Process Hangs]
+    A[Start in CloudShell]
+    B[Hit systemd limitation]
+    C[Migrate config to EC2]
+    D[Install on EC2]
+    E[Configure systemd service]
+    F[Running system]
 
-        NPM --> RAM
-        RAM --> HANG
-    end
-
-    subgraph "Resolution"
-        SWAP[Add Swap Space]
-        RETRY[Retry Installation]
-        SUCCESS[Success]
-
-        SWAP --> RETRY
-        RETRY --> SUCCESS
-    end
+    A --> B --> C --> D --> E --> F
 ```
 
-**Lesson for CIOs**: AI workloads have different resource profiles than traditional applications. Right-size infrastructure before deployment, not after failure.
+### Security Assessment
 
----
+I assessed both platforms against the OWASP Top 10 for Agentic Applications 2026. This framework covers vulnerabilities specific to AI agents—things like prompt injection, tool misuse, and rogue agent behaviour.
 
-## The Security Assessment: OWASP Agentic Top 10
-
-This is where the evaluation got serious. The OWASP Top 10 for Agentic Applications 2026 defines ten vulnerability categories specific to AI agents:
-
-```mermaid
-flowchart TB
-    subgraph "OWASP Agentic Top 10"
-        ASI01[ASI01: Goal Hijack<br/>Prompt Injection]
-        ASI02[ASI02: Tool Misuse<br/>Least-Agency Failure]
-        ASI03[ASI03: Identity Abuse<br/>Privilege Escalation]
-        ASI04[ASI04: Supply Chain<br/>Dependency Risks]
-        ASI05[ASI05: Code Execution<br/>Sandbox Escape]
-        ASI06[ASI06: Memory Poisoning<br/>Context Corruption]
-        ASI07[ASI07: Insecure Comms<br/>Agent-to-Agent]
-        ASI08[ASI08: Cascading Failures<br/>Recovery Loops]
-        ASI09[ASI09: Trust Exploitation<br/>Human Deception]
-        ASI10[ASI10: Rogue Agents<br/>Goal Drift]
-    end
-```
-
-### Comparative Security Scores
+#### Summary Scores
 
 | Vulnerability | OpenClaw | RuvBot |
 |---------------|----------|--------|
-| ASI01: Goal Hijack | 🟡 MEDIUM | 🟢 LOW |
-| ASI02: Tool Misuse | 🟡 MEDIUM | 🟡 MEDIUM |
-| ASI03: Identity Abuse | 🟢 LOW | 🟢 LOW |
-| ASI04: Supply Chain | 🟡 MEDIUM | 🟡 MEDIUM |
-| ASI05: Code Execution | 🟢 LOW | 🟢 LOW |
-| ASI06: Memory Poisoning | 🟡 MEDIUM | 🟢 LOW |
-| ASI07: Insecure Comms | 🟢 LOW | 🟢 LOW |
-| ASI08: Cascading Failures | 🟡 MEDIUM | 🟡 MEDIUM |
-| ASI09: Trust Exploitation | 🟢 LOW | 🟢 LOW |
-| ASI10: Rogue Agents | 🟢 LOW | 🟢 LOW |
-| **Overall Score** | **7.5/10** | **8.5/10** |
+| ASI01: Prompt Injection | MEDIUM | LOW |
+| ASI02: Tool Misuse | MEDIUM | MEDIUM |
+| ASI03: Identity Abuse | LOW | LOW |
+| ASI04: Supply Chain | MEDIUM | MEDIUM |
+| ASI05: Code Execution | LOW | LOW |
+| ASI06: Memory Poisoning | MEDIUM | LOW |
+| ASI07: Inter-Agent Comms | LOW | LOW |
+| ASI08: Cascading Failures | MEDIUM | MEDIUM |
+| ASI09: Trust Exploitation | LOW | LOW |
+| ASI10: Rogue Agents | LOW | LOW |
 
-### The Critical Differentiator: Prompt Injection Defence
+**OpenClaw: 7.5/10**
+**RuvBot: 8.5/10**
 
-RuvBot's AIDefence module provides 50+ signature patterns for prompt injection detection with <10ms latency. OpenClaw relies on session boundaries and user allowlisting—effective but reactive.
+#### The Key Difference: Prompt Injection Defence
 
-```mermaid
-flowchart LR
-    subgraph "OpenClaw Approach"
-        OC1[User Input]
-        OC2[Session Boundary]
-        OC3[Allowlist Check]
-        OC4[Process]
+RuvBot includes AIDefence, which scans inputs against 50+ prompt injection patterns with sub-10ms latency. It also normalises Unicode to prevent homoglyph attacks and detects PII.
 
-        OC1 --> OC2 --> OC3 --> OC4
-    end
-
-    subgraph "RuvBot Approach"
-        RB1[User Input]
-        RB2[AIDefence Scanner<br/>50+ Patterns]
-        RB3[Unicode Normalisation]
-        RB4[PII Detection]
-        RB5[Process]
-
-        RB1 --> RB2 --> RB3 --> RB4 --> RB5
-    end
-```
-
-**Lesson for CIOs**: Defence-in-depth matters more for AI than traditional applications. A single layer of protection is insufficient.
-
----
-
-## The Shared Vulnerability: Supply Chain
-
-Both platforms flagged MEDIUM risk for supply chain vulnerabilities. Here's why this matters:
+OpenClaw relies on session boundaries and user allowlisting. This works, but it's reactive rather than proactive.
 
 ```mermaid
 flowchart TB
-    subgraph "Supply Chain Risk"
-        NPM[npm Packages<br/>500-700 dependencies]
-        LLM[LLM Providers<br/>External APIs]
-        Plugins[Plugin Ecosystem<br/>Third-party code]
+    subgraph OpenClaw
+        OC1[Input] --> OC2[Session Check] --> OC3[Allowlist] --> OC4[Process]
     end
 
-    subgraph "Missing Controls"
-        SBOM[No SBOM Generation]
-        CVE[No Automated CVE Scanning]
-        Sign[No Dependency Signing]
+    subgraph RuvBot
+        RB1[Input] --> RB2[AIDefence Scan] --> RB3[Unicode Normalise] --> RB4[PII Check] --> RB5[Process]
     end
-
-    NPM --> SBOM
-    LLM --> CVE
-    Plugins --> Sign
 ```
 
-Neither platform generates a Software Bill of Materials (SBOM). Neither has documented CVE scanning in their CI/CD pipeline. This is a compliance gap that will matter for regulated industries.
+For internal tools with trusted users, OpenClaw's approach is probably sufficient. For customer-facing applications or environments with compliance requirements, RuvBot's defence-in-depth matters more.
 
-**Lesson for CIOs**: Assume supply chain security is YOUR responsibility until platforms mature. Budget for wrapper controls.
+#### Shared Weakness: Supply Chain
 
----
+Both platforms pulled 500-700 npm packages during installation. Neither generates a Software Bill of Materials. Neither has documented CVE scanning in their build process.
 
-## The Hidden Cost: Operational Complexity
+This is a gap. If you're in a regulated industry, you'll need to add your own supply chain controls around either platform.
 
-Getting these platforms running is one thing. Keeping them running is another.
+### Operational Reality
 
-### Operational Requirements
+Getting these platforms installed is Phase 1. Keeping them running is the ongoing work.
 
 | Requirement | OpenClaw | RuvBot |
 |-------------|----------|--------|
-| Process Management | systemd required | systemd or PM2 |
-| High Availability | Manual configuration | Built-in failover |
-| Log Aggregation | File-based | Structured logging |
-| Health Monitoring | Basic endpoints | Comprehensive /health |
-| Secret Management | File-based | Environment variables |
+| Process Management | systemd | systemd or PM2 |
+| Health Endpoints | Basic | Comprehensive |
+| Structured Logging | No | Yes |
+| Multi-tenancy | No | PostgreSQL RLS |
 
-```mermaid
-flowchart TB
-    subgraph "Day 2 Operations"
-        Deploy[Initial Deployment]
-        Monitor[Monitoring Setup]
-        Incident[Incident Response]
-        Update[Update Management]
-        Scale[Scaling]
-    end
+OpenClaw is simpler. RuvBot is more enterprise-ready. The right choice depends on your use case.
 
-    Deploy -->|"Day 1"| Monitor
-    Monitor -->|"Week 1"| Incident
-    Incident -->|"Month 1"| Update
-    Update -->|"Ongoing"| Scale
-```
+### What I Learned
 
-**Lesson for CIOs**: The vendor relationship doesn't end at procurement. Factor in operational maturity and support models.
+**1. Documentation understates complexity.** Both platforms claim 10-minute installs. Neither achieved that on a standard EC2 instance.
 
----
+**2. Infrastructure requirements are moving targets.** Node.js 22 is new. Your standard AMIs probably don't have it yet. Budget for environment updates.
 
-## The Strategic Decision Framework
+**3. Memory matters more than expected.** AI tooling is heavier than traditional web applications. Right-size your instances.
 
-After 48 hours of hands-on evaluation, here's how I'd frame the decision for a CIO:
+**4. Security varies significantly.** The difference between 7.5/10 and 8.5/10 might not matter for a personal project. It matters a lot for enterprise deployment.
 
-```mermaid
-flowchart TB
-    subgraph "Decision Matrix"
-        Q1{Primary Use Case?}
-        Q2{Compliance Requirements?}
-        Q3{Team Capability?}
-        Q4{Budget Envelope?}
-    end
+**5. Operational maturity differs.** Installation is the easy part. Think through monitoring, logging, and incident response before you commit.
 
-    subgraph "OpenClaw Path"
-        OC[OpenClaw]
-        OC1[Privacy-First]
-        OC2[Developer Teams]
-        OC3[Lower TCO]
-    end
+### When to Use Which
 
-    subgraph "RuvBot Path"
-        RB[RuvBot]
-        RB1[Enterprise Security]
-        RB2[Regulated Industries]
-        RB3[Higher TCO]
-    end
+**OpenClaw** makes sense when:
+- Privacy is the primary concern
+- Users are trusted (internal teams)
+- You have strong DevOps capability
+- Budget is constrained
 
-    Q1 -->|"Internal Productivity"| OC
-    Q1 -->|"Customer-Facing"| RB
-    Q2 -->|"SOC2/HIPAA"| RB
-    Q2 -->|"Minimal"| OC
-    Q3 -->|"Strong DevOps"| OC
-    Q3 -->|"Limited"| RB
-    Q4 -->|"Constrained"| OC
-    Q4 -->|"Flexible"| RB
-```
+**RuvBot** makes sense when:
+- Security is the primary concern
+- You're in a regulated industry
+- You need multi-tenancy
+- You want more operational tooling out of the box
+
+### Closing Thoughts
+
+AI agents are a meaningful capability. They're also a meaningful risk surface. The platforms I evaluated are both functional, but they require more operational maturity than their marketing suggests.
+
+If you're evaluating AI agents for your organisation, I'd suggest:
+
+1. **Deploy on real infrastructure.** Sandboxes hide problems.
+2. **Apply a security framework.** The OWASP Agentic Top 10 is a reasonable starting point.
+3. **Think about Day 2.** Installation is temporary. Operations are permanent.
+
+I work with CIOs on digital transformation initiatives, including technology evaluation and adoption. If you're working through similar questions about AI agents in your organisation, I'm happy to discuss.
 
 ---
 
-## Recommendations for CIOs
-
-### Immediate Actions (Next 30 Days)
-
-1. **Establish an AI Agent Policy**: Define what autonomous AI can and cannot do in your environment
-2. **Map Compliance Requirements**: Identify which OWASP Agentic vulnerabilities matter for your regulatory context
-3. **Assess Team Readiness**: Do you have the DevSecOps capability to operate AI agents safely?
-
-### Strategic Initiatives (Next 90 Days)
-
-1. **Pilot with Boundaries**: Start with internal use cases where blast radius is contained
-2. **Build Observability First**: You can't secure what you can't see
-3. **Create Incident Playbooks**: AI failures are different—prepare for them
-
-### Transformation Planning (6-12 Months)
-
-1. **Integrate with Identity**: AI agents need the same IAM rigour as human users
-2. **Establish Governance**: Who approves new AI capabilities? Who reviews them?
-3. **Measure Value**: Connect AI initiatives to business outcomes, not just technical metrics
+*Technical documentation and full OWASP assessments available at: github.com/mondweep/vibe-cast*
 
 ---
 
-## The Bigger Picture
+## About
 
-AI agents represent a step-change in enterprise capability. The organisations that adopt them safely will outcompete those that either:
-- Rush in without security (and face breaches)
-- Hold back entirely (and lose competitive ground)
+I advise CIOs on digital transformation, with a focus on technology strategy, enterprise architecture, and safe adoption of emerging capabilities. My work typically involves initiatives exceeding £15M where technology decisions have material business impact.
 
-The winning strategy is **deliberate adoption with appropriate controls**.
-
-```mermaid
-flowchart LR
-    subgraph "Market Position"
-        A[Fast Adopters<br/>High Risk]
-        B[Deliberate Adopters<br/>Controlled Risk]
-        C[Late Adopters<br/>Missed Opportunity]
-    end
-
-    subgraph "Outcomes"
-        A1[Breaches<br/>Regulatory Action]
-        B1[Competitive Advantage<br/>Sustainable Growth]
-        C1[Market Share Loss]
-    end
-
-    A --> A1
-    B --> B1
-    C --> C1
-```
-
----
-
-## Let's Talk
-
-I help CIOs pursue growth opportunities exceeding £15M through targeted digital transformation—including safe AI adoption.
-
-If you're evaluating AI agents for your organisation, I'd welcome a confidential discussion about:
-- Applying this evaluation framework to your specific context
-- Mapping AI capabilities to your strategic objectives
-- Building the governance and operational foundation for sustainable AI adoption
-
-**The conversation is confidential. The insights could be transformational.**
-
-Connect with me or reach out directly to start the discussion.
-
----
-
-*Assessment methodology based on OWASP Top 10 for Agentic Applications 2026. Full technical documentation available upon request.*
-
----
-
-## About the Author
-
-Digital transformation advisor specialising in AI strategy, enterprise architecture, and technology-enabled growth. Working with CIOs to identify and execute transformation initiatives that deliver measurable business value.
-
-**Areas of Focus:**
-- AI Agent Adoption & Governance
-- Enterprise Architecture Modernisation
-- Digital Transformation Strategy
-- Technology Due Diligence
-
-*All opinions are my own. Vendor assessments reflect point-in-time evaluation and should be validated against your specific requirements.*
+Available for confidential discussions on AI strategy and adoption.
