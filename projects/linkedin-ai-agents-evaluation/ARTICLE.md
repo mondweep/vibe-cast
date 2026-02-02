@@ -12,6 +12,7 @@ Here's what I found:
 - Both have supply chain gaps that most teams won't catch
 - The installation documentation undersells the actual complexity
 - systemd knowledge is now a prerequisite for AI operations
+- Day-one releases have rough edges—one API server wouldn't start despite reporting success
 
 The full write-up covers the evaluation framework, the problems I hit, and what the security differences actually mean.
 
@@ -25,7 +26,7 @@ Link in comments.
 
 ### Background
 
-I've been tracking AI agent platforms for several months. Last night I decided to stop reading about them and actually deploy two—OpenClaw and RuvBot—on a production AWS EC2 instance.
+I've been reading about OpenClaw for about a week. RuvBot was announced as coming soon and released yesterday evening. Last night I decided to stop reading and actually deploy both on a production AWS EC2 instance.
 
 This isn't a sponsored review. I paid for my own AWS resources. The goal was to understand what it actually takes to get these platforms running and how they compare on security.
 
@@ -148,6 +149,8 @@ I assessed both platforms against the OWASP Top 10 for Agentic Applications 2026
 
 RuvBot includes AIDefence, which scans inputs against 50+ prompt injection patterns with sub-10ms latency. It also normalises Unicode to prevent homoglyph attacks and detects PII.
 
+**What's a homoglyph attack?** Attackers use visually identical characters from different Unicode scripts to bypass security filters. The Cyrillic 'а' looks identical to the Latin 'a' but has a different code point. An attacker could craft a prompt injection using these lookalikes to evade pattern matching. Unicode normalisation converts these to canonical forms before scanning, closing that gap.
+
 OpenClaw relies on session boundaries and user allowlisting. This works, but it's reactive rather than proactive.
 
 ```mermaid
@@ -180,7 +183,32 @@ Getting these platforms installed is Phase 1. Keeping them running is the ongoin
 | Structured Logging | No | Yes |
 | Multi-tenancy | No | PostgreSQL RLS |
 
+**PM2** is a Node.js process manager that provides an alternative to systemd. It handles auto-restart on crash, cluster mode for multi-core utilisation, zero-downtime reloads, and built-in monitoring. If you're already in the Node.js ecosystem, PM2 is often simpler than writing systemd unit files.
+
 OpenClaw is simpler. RuvBot is more enterprise-ready. The right choice depends on your use case.
+
+#### Problem 5: RuvBot API Server
+
+This one caught me off guard. After configuring RuvBot with a Google AI API key and running `ruvbot start`, the CLI reported success:
+
+```
+✔ RuvBot started successfully
+```
+
+But the process exited immediately. Port 3000 never bound. Running `ruvbot doctor` showed:
+
+```
+⚠ LLM API Key - No LLM API key found
+⚠ Config File - No config file found
+✗ Database - Database file not found
+✗ Memory Index - Vector memory not initialized
+```
+
+The GOOGLE_AI_API_KEY was set correctly in both the environment and .env file. The config file existed at the expected path. But the doctor didn't recognise either.
+
+This is a day-one release issue. The platform is hours old. But it illustrates the gap between documentation and reality—the startup flow looks straightforward until you actually run it and find the API server component doesn't bind.
+
+For now, RuvBot works in CLI mode but the REST API server needs more work.
 
 ### What I Learned
 
@@ -194,10 +222,12 @@ OpenClaw is simpler. RuvBot is more enterprise-ready. The right choice depends o
 
 **5. Operational maturity differs.** Installation is the easy part. Think through monitoring, logging, and incident response before you commit.
 
+**6. Day-one releases need caution.** RuvBot was released yesterday. The CLI works, but the API server component has issues. This is normal for new software—just factor it into your evaluation timeline.
+
 ### When to Use Which
 
 **OpenClaw** makes sense when:
-- Privacy is the primary concern
+- Data residency is the primary concern (note: session logs stay local, but LLM requests still go to external providers—this isn't complete privacy, it's about controlling where your logs and context live)
 - Users are trusted (internal teams)
 - You have strong DevOps capability
 - Budget is constrained
