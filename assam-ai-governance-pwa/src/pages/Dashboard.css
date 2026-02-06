@@ -1,0 +1,132 @@
+.dashboard__header {
+  margin-bottom: var(--space-xl);
+}
+
+.dashboard__header h2 {
+  font-size: 1.75rem;
+  color: var(--color-text);
+}
+
+.dashboard__desc {
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
+}
+
+.dashboard__section {
+  margin-bottom: var(--space-2xl);
+}
+
+.dashboard__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.dashboard__section h3 {
+  font-size: 1.25rem;
+  color: var(--color-text);
+}
+
+.dashboard__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-md);
+}
+
+.dashboard__trends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.dashboard__trends-grid h4 {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+/* Simple bar chart */
+.trends-chart {
+  height: 150px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.trends-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  width: 100%;
+  height: 100%;
+}
+
+.trends-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.trends-bar {
+  width: 100%;
+  max-width: 40px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: height 0.5s ease;
+  min-height: 4px;
+}
+
+.trends-bar--primary { background: var(--color-primary); }
+.trends-bar--success { background: var(--color-success); }
+.trends-bar--warning { background: var(--color-warning); }
+
+.trends-bar-label {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-xs);
+}
+
+/* Quick Actions */
+.dashboard__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-md);
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.action-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.action-card__icon {
+  font-size: 2rem;
+}
+
+.action-card__label {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.action-card__desc {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
