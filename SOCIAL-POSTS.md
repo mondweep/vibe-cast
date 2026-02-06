@@ -1,3 +1,32 @@
+## LinkedIn Cover Post (Feed Post)
+
+A ₹2 crore road. A ₹6-7 crore estimate. A Chief Minister who said: enough.
+
+When CM @himaborsa announced Assam's AI governance vision — digital property registration from home and AI-powered cost auditing to catch inflated estimates — I thought: what if we could show this working today?
+
+So I built it.
+
+A working Progressive Web App prototype with:
+
+-> AI document verification (96.3% accuracy)
+-> Three-tier risk scoring for cost estimates (Green/Yellow/Red)
+-> Processing time cut from 22 days to 6.2 days
+-> Projected ₹50+ crore savings in Year 1
+
+The CM's approach stands out because AI flags the anomalies — but humans make the final call. Engineers can still justify costs. The system simply demands transparency.
+
+210 automated tests. Works offline. Works on mobile. Built for Assam's reality.
+
+Read the full article below for the technical breakdown, demo metrics, and the CM's original announcement in Assamese.
+
+সেয়া গৌৰৱৰ কথা। This could be a model for the entire country.
+
+#AIGovernance #Assam #HimantaBiswaSarma #DigitalIndia #GovTech #AntiCorruption #SmartGovernance #BuildInPublic #TechForGood
+
+---
+
+# LinkedIn Article
+
 # From Vision to Prototype in Days: Building an AI Governance Demo for Assam
 
 A few weeks ago, Hon'ble Chief Minister Shri Himanta Biswa Sarma made a landmark announcement that sent a clear signal — Assam is ready to lead India's AI governance revolution.
