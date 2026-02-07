@@ -1,23 +1,25 @@
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { mockEstimates } from '../services/mockData';
 import type { RiskLevel } from '../types';
 import './CostAuditing.css';
 
-const riskLabels: Record<RiskLevel, { label: string; badge: string; action: string }> = {
-  green: { label: 'Green', badge: 'badge--green', action: 'Auto-approved. No further action required.' },
-  yellow: { label: 'Yellow', badge: 'badge--yellow', action: 'Supervisor review required. Engineer must provide justification.' },
-  red: { label: 'Red', badge: 'badge--red', action: 'Executive investigation required. Detailed quotation review mandatory.' },
-};
-
 export function EstimateDetail() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const estimate = mockEstimates.find((e) => e.id === id);
+
+  const riskLabels: Record<RiskLevel, { label: string; badge: string; action: string }> = {
+    green: { label: t('auditing.green'), badge: 'badge--green', action: t('auditing.riskActions.green') },
+    yellow: { label: t('auditing.yellow'), badge: 'badge--yellow', action: t('auditing.riskActions.yellow') },
+    red: { label: t('auditing.red'), badge: 'badge--red', action: t('auditing.riskActions.red') },
+  };
 
   if (!estimate) {
     return (
       <div className="ca-detail">
-        <h2>Estimate Not Found</h2>
-        <Link to="/auditing" className="btn btn--primary">Back to Dashboard</Link>
+        <h2>{t('auditing.notFound')}</h2>
+        <Link to="/auditing" className="btn btn--primary">{t('auditing.backToDashboard')}</Link>
       </div>
     );
   }
@@ -27,7 +29,7 @@ export function EstimateDetail() {
   return (
     <div className="ca-detail">
       <div className="ca-detail__breadcrumb">
-        <Link to="/auditing">Cost Auditing</Link>
+        <Link to="/auditing">{t('nav.costAuditing')}</Link>
         <span aria-hidden="true"> / </span>
         <span>{estimate.projectName}</span>
       </div>
@@ -38,76 +40,76 @@ export function EstimateDetail() {
           <p className="ca-detail__location">{estimate.location} &middot; {estimate.district}</p>
         </div>
         <span className={`badge ${risk.badge}`} style={{ fontSize: '1rem', padding: '8px 20px' }}>
-          {risk.label} Risk
+          {t('auditing.riskLabel', { level: risk.label })}
         </span>
       </div>
 
       {/* AI Analysis Alert */}
       <div className={`ca-alert ca-alert--${estimate.riskLevel}`} role="alert">
         <div className="ca-alert__header">
-          <strong>AI Analysis Result</strong>
-          <span>Score: {(estimate.aiAnalysis.overallScore * 100).toFixed(0)}/100</span>
+          <strong>{t('auditing.aiAnalysisResult')}</strong>
+          <span>{t('auditing.score', { score: (estimate.aiAnalysis.overallScore * 100).toFixed(0) })}</span>
         </div>
         <p>{estimate.aiAnalysis.explanation}</p>
-        <p className="ca-alert__action"><strong>Required Action:</strong> {risk.action}</p>
+        <p className="ca-alert__action"><strong>{t('auditing.requiredAction')}</strong> {risk.action}</p>
       </div>
 
       <div className="ca-detail__grid">
         {/* Project Overview */}
         <section className="card" aria-labelledby="overview-heading">
-          <h3 id="overview-heading">Project Overview</h3>
+          <h3 id="overview-heading">{t('auditing.projectOverview')}</h3>
           <dl className="ca-detail__dl">
-            <dt>Project Type</dt>
+            <dt>{t('auditing.projectType')}</dt>
             <dd style={{ textTransform: 'capitalize' }}>{estimate.projectType.replace(/-/g, ' ')}</dd>
-            <dt>Length</dt>
+            <dt>{t('auditing.lengthLabel')}</dt>
             <dd>{estimate.lengthKm} km</dd>
-            <dt>Width</dt>
+            <dt>{t('auditing.width')}</dt>
             <dd>{estimate.widthM} m</dd>
-            <dt>Submitted By</dt>
+            <dt>{t('auditing.submittedBy')}</dt>
             <dd>{estimate.submittedBy}</dd>
-            <dt>Submitted On</dt>
-            <dd>{new Date(estimate.submittedAt).toLocaleDateString('en-IN')}</dd>
+            <dt>{t('auditing.submittedOn')}</dt>
+            <dd>{new Date(estimate.submittedAt).toLocaleDateString(i18n.language)}</dd>
           </dl>
         </section>
 
         {/* Cost Comparison */}
         <section className="card" aria-labelledby="cost-heading">
-          <h3 id="cost-heading">Cost Comparison</h3>
+          <h3 id="cost-heading">{t('auditing.costComparison')}</h3>
           <div className="ca-cost-comparison">
             <div className="ca-cost-item">
-              <span className="ca-cost-item__label">Estimated Cost</span>
+              <span className="ca-cost-item__label">{t('auditing.estimatedCostLabel')}</span>
               <span className="ca-cost-item__value ca-cost-item__value--estimated">
-                ₹{(estimate.estimatedCost_inr / 10000000).toFixed(2)} Cr
+                ₹{(estimate.estimatedCost_inr / 10000000).toFixed(2)} {t('auditing.cr')}
               </span>
             </div>
             <div className="ca-cost-item">
-              <span className="ca-cost-item__label">AI Baseline</span>
+              <span className="ca-cost-item__label">{t('auditing.aiBaseline')}</span>
               <span className="ca-cost-item__value ca-cost-item__value--baseline">
-                ₹{(estimate.baselineCost_inr / 10000000).toFixed(2)} Cr
+                ₹{(estimate.baselineCost_inr / 10000000).toFixed(2)} {t('auditing.cr')}
               </span>
             </div>
             <div className="ca-cost-item">
-              <span className="ca-cost-item__label">Variance</span>
+              <span className="ca-cost-item__label">{t('auditing.variance')}</span>
               <span className={`ca-cost-item__value ca-cost-item__value--${estimate.riskLevel}`}>
-                {estimate.costRatio.toFixed(2)}x ({((estimate.costRatio - 1) * 100).toFixed(0)}% above baseline)
+                {estimate.costRatio.toFixed(2)}x ({t('auditing.aboveBaseline', { pct: ((estimate.costRatio - 1) * 100).toFixed(0) })})
               </span>
             </div>
             <div className="ca-cost-item">
-              <span className="ca-cost-item__label">Baseline Cost/km</span>
+              <span className="ca-cost-item__label">{t('auditing.baselineCostPerKm')}</span>
               <span className="ca-cost-item__value">
-                ₹{(estimate.aiAnalysis.baselineCostPerKm / 100000).toFixed(1)} Lakh/km
+                ₹{(estimate.aiAnalysis.baselineCostPerKm / 100000).toFixed(1)} {t('auditing.lakhPerKm')}
               </span>
             </div>
           </div>
 
           {/* Visual cost bar */}
-          <div className="ca-cost-visual" aria-label={`Estimated cost is ${estimate.costRatio.toFixed(2)}x the baseline`}>
+          <div className="ca-cost-visual" aria-label={`${t('auditing.estimatedCostLabel')} ${estimate.costRatio.toFixed(2)}x ${t('auditing.baseline')}`}>
             <div className="ca-cost-bar">
               <div className="ca-cost-bar__baseline" style={{ width: `${(1 / Math.max(estimate.costRatio, 1)) * 100}%` }}>
-                <span>Baseline</span>
+                <span>{t('auditing.baselineBar')}</span>
               </div>
               <div className={`ca-cost-bar__estimate ca-cost-bar__estimate--${estimate.riskLevel}`}>
-                <span>Estimate</span>
+                <span>{t('auditing.estimateBar')}</span>
               </div>
             </div>
           </div>
@@ -115,17 +117,17 @@ export function EstimateDetail() {
 
         {/* Material Breakdown */}
         <section className="card ca-detail__full-width" aria-labelledby="materials-heading">
-          <h3 id="materials-heading">Material Cost Breakdown</h3>
+          <h3 id="materials-heading">{t('auditing.materialBreakdown')}</h3>
           <div className="table-wrap">
-            <table aria-label="Material cost breakdown with market rate comparison">
+            <table aria-label={t('auditing.materialBreakdown')}>
               <thead>
                 <tr>
-                  <th scope="col">Material</th>
-                  <th scope="col">Quantity</th>
-                  <th scope="col">Unit Price (₹)</th>
-                  <th scope="col">Market Rate (₹)</th>
-                  <th scope="col">Variance</th>
-                  <th scope="col">Total (₹)</th>
+                  <th scope="col">{t('auditing.material')}</th>
+                  <th scope="col">{t('auditing.quantity')}</th>
+                  <th scope="col">{t('auditing.unitPrice')}</th>
+                  <th scope="col">{t('auditing.marketRate')}</th>
+                  <th scope="col">{t('auditing.varianceCol')}</th>
+                  <th scope="col">{t('auditing.totalCol')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -160,7 +162,7 @@ export function EstimateDetail() {
         {/* Suspicious Items */}
         {estimate.aiAnalysis.suspiciousLineItems.length > 0 && (
           <section className="card" aria-labelledby="suspicious-heading">
-            <h3 id="suspicious-heading">Suspicious Line Items</h3>
+            <h3 id="suspicious-heading">{t('auditing.suspiciousItems')}</h3>
             <ul className="ca-suspicious-list">
               {estimate.aiAnalysis.suspiciousLineItems.map((item, i) => (
                 <li key={i} className="ca-suspicious-item">{item}</li>
@@ -171,16 +173,16 @@ export function EstimateDetail() {
 
         {/* Similar Projects */}
         <section className="card" aria-labelledby="similar-heading">
-          <h3 id="similar-heading">Similar Historical Projects</h3>
+          <h3 id="similar-heading">{t('auditing.similarProjects')}</h3>
           <div className="table-wrap">
-            <table aria-label="Similar historical projects used for baseline">
+            <table aria-label={t('auditing.similarProjects')}>
               <thead>
                 <tr>
-                  <th scope="col">Project</th>
-                  <th scope="col">District</th>
-                  <th scope="col">Length</th>
-                  <th scope="col">Cost/km</th>
-                  <th scope="col">Year</th>
+                  <th scope="col">{t('auditing.project')}</th>
+                  <th scope="col">{t('auditing.district')}</th>
+                  <th scope="col">{t('auditing.length')}</th>
+                  <th scope="col">{t('auditing.costPerKm')}</th>
+                  <th scope="col">{t('auditing.year')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -201,7 +203,7 @@ export function EstimateDetail() {
         {/* Justification */}
         {estimate.justification && (
           <section className="card" aria-labelledby="justification-heading">
-            <h3 id="justification-heading">Engineer's Justification</h3>
+            <h3 id="justification-heading">{t('auditing.engineerJustification')}</h3>
             <blockquote className="ca-justification">
               "{estimate.justification}"
               <footer>— {estimate.submittedBy}</footer>
@@ -211,7 +213,7 @@ export function EstimateDetail() {
 
         {/* Audit Trail */}
         <section className="card ca-detail__full-width" aria-labelledby="audit-heading">
-          <h3 id="audit-heading">Audit Trail</h3>
+          <h3 id="audit-heading">{t('auditing.auditTrail')}</h3>
           <ol className="ca-audit-trail">
             {estimate.auditTrail.map((entry, i) => (
               <li key={i} className="ca-audit-entry">
@@ -220,7 +222,7 @@ export function EstimateDetail() {
                   <strong>{entry.action}</strong>
                   <span className="ca-audit-entry__actor">{entry.actor}</span>
                   <time dateTime={entry.timestamp}>
-                    {new Date(entry.timestamp).toLocaleString('en-IN')}
+                    {new Date(entry.timestamp).toLocaleString(i18n.language)}
                   </time>
                   {entry.notes && <p className="ca-audit-entry__note">{entry.notes}</p>}
                 </div>
@@ -232,11 +234,11 @@ export function EstimateDetail() {
         {/* Approval Actions */}
         {estimate.approvalStatus === 'under_review' && (
           <section className="card ca-detail__full-width" aria-labelledby="actions-heading">
-            <h3 id="actions-heading">Approval Actions</h3>
+            <h3 id="actions-heading">{t('auditing.approvalActions')}</h3>
             <div className="ca-approval-actions">
-              <button className="btn btn--primary">Approve Estimate</button>
-              <button className="btn btn--secondary">Request More Information</button>
-              <button className="btn btn--danger">Reject & Flag for Investigation</button>
+              <button className="btn btn--primary">{t('auditing.approveEstimate')}</button>
+              <button className="btn btn--secondary">{t('auditing.requestMoreInfo')}</button>
+              <button className="btn btn--danger">{t('auditing.rejectFlag')}</button>
             </div>
           </section>
         )}

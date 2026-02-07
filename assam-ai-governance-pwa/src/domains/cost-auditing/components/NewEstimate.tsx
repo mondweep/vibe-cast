@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { ProjectType } from '../types';
 import './CostAuditing.css';
 
@@ -11,6 +12,7 @@ interface MaterialEntry {
 }
 
 export function NewEstimate() {
+  const { t } = useTranslation();
   const [submitted, setSubmitted] = useState(false);
 
   const [projectName, setProjectName] = useState('');
@@ -31,12 +33,12 @@ export function NewEstimate() {
   ];
 
   const projectTypes: { value: ProjectType; label: string }[] = [
-    { value: '2-lane-asphalt', label: '2-Lane Asphalt' },
-    { value: '4-lane-asphalt', label: '4-Lane Asphalt' },
-    { value: '2-lane-concrete', label: '2-Lane Concrete' },
-    { value: '4-lane-concrete', label: '4-Lane Concrete' },
-    { value: 'bridge', label: 'Bridge' },
-    { value: 'culvert', label: 'Culvert' },
+    { value: '2-lane-asphalt', label: t('auditing.projectTypes.2-lane-asphalt') },
+    { value: '4-lane-asphalt', label: t('auditing.projectTypes.4-lane-asphalt') },
+    { value: '2-lane-concrete', label: t('auditing.projectTypes.2-lane-concrete') },
+    { value: '4-lane-concrete', label: t('auditing.projectTypes.4-lane-concrete') },
+    { value: 'bridge', label: t('auditing.projectTypes.bridge') },
+    { value: 'culvert', label: t('auditing.projectTypes.culvert') },
   ];
 
   const addMaterial = () => {
@@ -56,23 +58,23 @@ export function NewEstimate() {
       <div className="ca-new">
         <div className="ca-new__success card">
           <span className="ca-new__success-icon" aria-hidden="true">📊</span>
-          <h2>Estimate Submitted for AI Analysis</h2>
-          <p>Your estimate for <strong>{projectName}</strong> is being analyzed by the AI scoring engine.</p>
+          <h2>{t('auditing.successHeading')}</h2>
+          <p dangerouslySetInnerHTML={{ __html: t('auditing.successDesc', { name: projectName }) }} />
           <div className="ca-new__analysis-preview">
             <div className="ca-new__analysis-item">
-              <span>Total Estimated Cost</span>
-              <strong>₹{(totalCost / 10000000).toFixed(2)} Cr</strong>
+              <span>{t('auditing.totalEstimatedCostLabel')}</span>
+              <strong>₹{totalCost.toLocaleString()} ({(totalCost / 10000000).toFixed(2)} {t('auditing.cr')})</strong>
             </div>
             <div className="ca-new__analysis-item">
-              <span>AI Analysis Status</span>
-              <span className="badge badge--yellow">Processing...</span>
+              <span>{t('auditing.aiAnalysisStatus')}</span>
+              <span className="badge badge--yellow">{t('auditing.processing')}</span>
             </div>
           </div>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
-            You will be notified once the AI scoring is complete and a risk level is assigned.
+            {t('auditing.successNote')}
           </p>
           <div className="ca-new__success-actions">
-            <Link to="/auditing" className="btn btn--primary">View All Estimates</Link>
+            <Link to="/auditing" className="btn btn--primary">{t('auditing.viewAllEstimates')}</Link>
           </div>
         </div>
       </div>
@@ -82,32 +84,32 @@ export function NewEstimate() {
   return (
     <div className="ca-new">
       <div className="ca-detail__breadcrumb">
-        <Link to="/auditing">Cost Auditing</Link>
+        <Link to="/auditing">{t('nav.costAuditing')}</Link>
         <span aria-hidden="true"> / </span>
-        <span>New Estimate</span>
+        <span>{t('auditing.newEstimate')}</span>
       </div>
 
-      <h2>Submit Cost Estimate</h2>
+      <h2>{t('auditing.submitHeading')}</h2>
       <p className="ca-new__subtitle">
-        Submit a road project cost estimate for AI-powered validation against historical baselines
+        {t('auditing.submitSubtitle')}
       </p>
 
       <div className="card ca-new__form">
         <fieldset>
-          <legend>Project Details</legend>
+          <legend>{t('auditing.projectDetails')}</legend>
           <div className="form-grid">
             <div className="form-field form-field--full">
-              <label htmlFor="est-name">Project Name *</label>
+              <label htmlFor="est-name">{t('auditing.projectName')}</label>
               <input
                 id="est-name"
                 type="text"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder="e.g., NH-37 Jorhat-Golaghat Road Widening"
+                placeholder={t('auditing.projectNamePlaceholder')}
               />
             </div>
             <div className="form-field">
-              <label htmlFor="est-type">Project Type *</label>
+              <label htmlFor="est-type">{t('auditing.projectTypeLabel')}</label>
               <select id="est-type" value={projectType} onChange={(e) => setProjectType(e.target.value as ProjectType)}>
                 {projectTypes.map((pt) => (
                   <option key={pt.value} value={pt.value}>{pt.label}</option>
@@ -115,24 +117,24 @@ export function NewEstimate() {
               </select>
             </div>
             <div className="form-field">
-              <label htmlFor="est-district">District *</label>
+              <label htmlFor="est-district">{t('auditing.districtLabel')}</label>
               <select id="est-district" value={district} onChange={(e) => setDistrict(e.target.value)}>
-                <option value="">Select district</option>
+                <option value="">{t('auditing.selectDistrict')}</option>
                 {districts.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
             <div className="form-field form-field--full">
-              <label htmlFor="est-location">Location Details *</label>
+              <label htmlFor="est-location">{t('auditing.locationDetails')}</label>
               <input
                 id="est-location"
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g., NH-37, Km 12 to Km 28"
+                placeholder={t('auditing.locationPlaceholder')}
               />
             </div>
             <div className="form-field">
-              <label htmlFor="est-length">Length (km) *</label>
+              <label htmlFor="est-length">{t('auditing.lengthKm')}</label>
               <input
                 id="est-length"
                 type="number"
@@ -141,7 +143,7 @@ export function NewEstimate() {
               />
             </div>
             <div className="form-field">
-              <label htmlFor="est-width">Width (m) *</label>
+              <label htmlFor="est-width">{t('auditing.widthM')}</label>
               <input
                 id="est-width"
                 type="number"
@@ -153,22 +155,22 @@ export function NewEstimate() {
         </fieldset>
 
         <fieldset>
-          <legend>Material Breakdown</legend>
+          <legend>{t('auditing.materialBreakdownLegend')}</legend>
           <div className="ca-new__materials">
             {materials.map((mat, i) => (
               <div key={i} className="ca-new__material-row">
                 <div className="form-field">
-                  <label htmlFor={`mat-name-${i}`}>Material</label>
+                  <label htmlFor={`mat-name-${i}`}>{t('auditing.materialLabel')}</label>
                   <input
                     id={`mat-name-${i}`}
                     type="text"
                     value={mat.material}
                     onChange={(e) => updateMaterial(i, 'material', e.target.value)}
-                    placeholder="e.g., Asphalt Grade A"
+                    placeholder={t('auditing.materialPlaceholder')}
                   />
                 </div>
                 <div className="form-field">
-                  <label htmlFor={`mat-qty-${i}`}>Quantity</label>
+                  <label htmlFor={`mat-qty-${i}`}>{t('auditing.quantityLabel')}</label>
                   <input
                     id={`mat-qty-${i}`}
                     type="number"
@@ -177,20 +179,20 @@ export function NewEstimate() {
                   />
                 </div>
                 <div className="form-field">
-                  <label htmlFor={`mat-unit-${i}`}>Unit</label>
+                  <label htmlFor={`mat-unit-${i}`}>{t('auditing.unitLabel')}</label>
                   <select
                     id={`mat-unit-${i}`}
                     value={mat.unit}
                     onChange={(e) => updateMaterial(i, 'unit', e.target.value)}
                   >
-                    <option value="tonnes">Tonnes</option>
-                    <option value="cubic metres">Cubic Metres</option>
-                    <option value="units">Units</option>
-                    <option value="sqm">Sq Metres</option>
+                    <option value="tonnes">{t('auditing.units.tonnes')}</option>
+                    <option value="cubic metres">{t('auditing.units.cubicMetres')}</option>
+                    <option value="units">{t('auditing.units.units')}</option>
+                    <option value="sqm">{t('auditing.units.sqm')}</option>
                   </select>
                 </div>
                 <div className="form-field">
-                  <label htmlFor={`mat-price-${i}`}>Unit Price (₹)</label>
+                  <label htmlFor={`mat-price-${i}`}>{t('auditing.unitPriceLabel')}</label>
                   <input
                     id={`mat-price-${i}`}
                     type="number"
@@ -199,7 +201,7 @@ export function NewEstimate() {
                   />
                 </div>
                 <div className="form-field">
-                  <label>Line Total</label>
+                  <label>{t('auditing.lineTotal')}</label>
                   <span className="ca-new__line-total">
                     ₹{(mat.quantity * mat.unitPrice).toLocaleString()}
                   </span>
@@ -207,35 +209,35 @@ export function NewEstimate() {
               </div>
             ))}
             <button className="btn btn--secondary" onClick={addMaterial} style={{ marginTop: 'var(--space-sm)' }}>
-              + Add Material
+              {t('auditing.addMaterial')}
             </button>
           </div>
           <div className="ca-new__total">
-            <span>Total Estimated Cost:</span>
-            <strong>₹{totalCost.toLocaleString()} ({(totalCost / 10000000).toFixed(2)} Cr)</strong>
+            <span>{t('auditing.totalEstimatedCost')}</span>
+            <strong>₹{totalCost.toLocaleString()} ({(totalCost / 10000000).toFixed(2)} {t('auditing.cr')})</strong>
           </div>
         </fieldset>
 
         <fieldset>
-          <legend>Justification (if above baseline)</legend>
+          <legend>{t('auditing.justificationLegend')}</legend>
           <div className="form-field">
             <label htmlFor="est-justification">
-              Explain any factors that may justify costs above historical baseline
+              {t('auditing.justificationLabel')}
             </label>
             <textarea
               id="est-justification"
               rows={4}
               value={justification}
               onChange={(e) => setJustification(e.target.value)}
-              placeholder="e.g., Difficult terrain, environmental protection measures, remote location transport costs..."
+              placeholder={t('auditing.justificationPlaceholder')}
             />
           </div>
         </fieldset>
 
         <div className="form-actions">
-          <Link to="/auditing" className="btn btn--secondary">Cancel</Link>
+          <Link to="/auditing" className="btn btn--secondary">{t('auditing.cancel')}</Link>
           <button className="btn btn--primary" onClick={() => setSubmitted(true)}>
-            Submit for AI Analysis
+            {t('auditing.submitForAI')}
           </button>
         </div>
       </div>

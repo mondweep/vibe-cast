@@ -1,20 +1,32 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './Layout.css';
+
+const languages = [
+  { code: 'en', label: 'EN' },
+  { code: 'as', label: 'অস' },
+  { code: 'hi', label: 'हि' },
+];
 
 export function Layout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const { t, i18n } = useTranslation();
 
   const navItems = [
-    { to: '/', label: 'Dashboard', icon: '📊' },
-    { to: '/property', label: 'Property Registration', icon: '🏠' },
-    { to: '/auditing', label: 'Cost Auditing', icon: '📋' },
+    { to: '/', label: t('nav.dashboard'), icon: '📊' },
+    { to: '/property', label: t('nav.propertyRegistration'), icon: '🏠' },
+    { to: '/auditing', label: t('nav.costAuditing'), icon: '📋' },
   ];
 
   const currentTitle = navItems.find(
     (item) => item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to)
-  )?.label ?? 'Assam AI Governance';
+  )?.label ?? t('header.title');
+
+  const switchLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+  };
 
   return (
     <div className="layout">
@@ -26,22 +38,33 @@ export function Layout() {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-expanded={menuOpen}
               aria-controls="main-nav"
-              aria-label="Toggle navigation menu"
+              aria-label={t('header.toggleNav')}
             >
               <span className="header__menu-icon" aria-hidden="true">
                 {menuOpen ? '✕' : '☰'}
               </span>
             </button>
             <div className="header__title-group">
-              <h1 className="header__title">Assam AI Governance</h1>
+              <h1 className="header__title">{t('header.title')}</h1>
               <span className="header__subtitle">{currentTitle}</span>
             </div>
           </div>
           <div className="header__meta">
-            <span className="header__status" aria-label="System status: Online">
-              <span className="header__status-dot" aria-hidden="true" /> Online
+            <span className="header__status" aria-label={`System status: ${t('header.online')}`}>
+              <span className="header__status-dot" aria-hidden="true" /> {t('header.online')}
             </span>
-            <span className="header__lang">EN</span>
+            <div className="header__lang-switcher" role="group" aria-label="Language">
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  className={`header__lang ${i18n.language === lang.code ? 'header__lang--active' : ''}`}
+                  onClick={() => switchLanguage(lang.code)}
+                  aria-pressed={i18n.language === lang.code}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </header>
@@ -70,8 +93,8 @@ export function Layout() {
           ))}
         </ul>
         <div className="sidebar__footer">
-          <p>Government of Assam</p>
-          <p className="sidebar__version">PWA Demo v1.0</p>
+          <p>{t('footer.govOfAssam')}</p>
+          <p className="sidebar__version">{t('footer.pwaDemo')}</p>
         </div>
       </nav>
 

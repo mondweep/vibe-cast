@@ -1,49 +1,54 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { mockApplications } from '../services/mockData';
 import type { ApplicationStatus } from '../types';
 import './PropertyRegistration.css';
 
-const statusConfig: Record<ApplicationStatus, { label: string; badge: string }> = {
-  draft: { label: 'Draft', badge: 'badge--gray' },
-  submitted: { label: 'Submitted', badge: 'badge--blue' },
-  documents_under_review: { label: 'Under Review', badge: 'badge--yellow' },
-  verification_complete: { label: 'Verified', badge: 'badge--green' },
-  awaiting_signature: { label: 'Awaiting Signature', badge: 'badge--blue' },
-  registered: { label: 'Registered', badge: 'badge--green' },
-  rejected: { label: 'Rejected', badge: 'badge--red' },
-};
-
 export function PropertyRegistrationList() {
+  const { t, i18n } = useTranslation();
+
+  const statusConfig: Record<ApplicationStatus, { label: string; badge: string }> = {
+    draft: { label: t('property.statusLabels.draft'), badge: 'badge--gray' },
+    submitted: { label: t('property.statusLabels.submitted'), badge: 'badge--blue' },
+    documents_under_review: { label: t('property.statusLabels.documents_under_review'), badge: 'badge--yellow' },
+    verification_complete: { label: t('property.statusLabels.verification_complete'), badge: 'badge--green' },
+    awaiting_signature: { label: t('property.statusLabels.awaiting_signature'), badge: 'badge--blue' },
+    registered: { label: t('property.statusLabels.registered'), badge: 'badge--green' },
+    rejected: { label: t('property.statusLabels.rejected'), badge: 'badge--red' },
+  };
+
+  const dateLocale = i18n.language === 'as' ? 'as-IN' : i18n.language === 'hi' ? 'hi-IN' : 'en-IN';
+
   return (
     <div className="pr-list">
       <div className="pr-list__header">
         <div>
-          <h2>Property Registration</h2>
+          <h2>{t('property.heading')}</h2>
           <p className="pr-list__subtitle">
-            Digital property registration applications for Assam state
+            {t('property.subtitle')}
           </p>
         </div>
         <Link to="/property/new" className="btn btn--primary">
-          + New Application
+          {t('property.newApplication')}
         </Link>
       </div>
 
       <div className="pr-list__summary">
         <div className="pr-list__summary-item">
           <span className="pr-list__summary-count">{mockApplications.length}</span>
-          <span>Total</span>
+          <span>{t('property.total')}</span>
         </div>
         <div className="pr-list__summary-item">
           <span className="pr-list__summary-count">
             {mockApplications.filter((a) => a.status === 'documents_under_review').length}
           </span>
-          <span>Under Review</span>
+          <span>{t('property.underReview')}</span>
         </div>
         <div className="pr-list__summary-item">
           <span className="pr-list__summary-count">
             {mockApplications.filter((a) => a.status === 'registered').length}
           </span>
-          <span>Registered</span>
+          <span>{t('property.registered')}</span>
         </div>
       </div>
 
@@ -51,13 +56,13 @@ export function PropertyRegistrationList() {
         <table aria-label="Property registration applications">
           <thead>
             <tr>
-              <th scope="col">Application #</th>
-              <th scope="col">Property</th>
-              <th scope="col">District</th>
-              <th scope="col">Buyer</th>
-              <th scope="col">Status</th>
-              <th scope="col">Submitted</th>
-              <th scope="col">Action</th>
+              <th scope="col">{t('property.applicationNum')}</th>
+              <th scope="col">{t('property.propertyCol')}</th>
+              <th scope="col">{t('property.district')}</th>
+              <th scope="col">{t('property.buyer')}</th>
+              <th scope="col">{t('property.status')}</th>
+              <th scope="col">{t('property.submitted')}</th>
+              <th scope="col">{t('property.action')}</th>
             </tr>
           </thead>
           <tbody>
@@ -70,7 +75,7 @@ export function PropertyRegistrationList() {
                   </td>
                   <td>
                     <div className="pr-list__property">
-                      <strong>{app.property.type === 'flat' ? 'Flat' : 'Apartment'}</strong>
+                      <strong>{app.property.type === 'flat' ? t('property.flat') : t('property.apartment')}</strong>
                       <span>{app.property.address}</span>
                     </div>
                   </td>
@@ -79,10 +84,10 @@ export function PropertyRegistrationList() {
                   <td>
                     <span className={`badge ${status.badge}`}>{status.label}</span>
                   </td>
-                  <td>{new Date(app.submittedAt).toLocaleDateString('en-IN')}</td>
+                  <td>{new Date(app.submittedAt).toLocaleDateString(dateLocale)}</td>
                   <td>
                     <Link to={`/property/${app.id}`} className="btn btn--secondary" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>
-                      View
+                      {t('property.view')}
                     </Link>
                   </td>
                 </tr>

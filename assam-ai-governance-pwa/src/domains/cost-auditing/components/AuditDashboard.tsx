@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { mockEstimates, mockHistoricalProjects } from '../services/mockData';
 import type { RiskLevel } from '../types';
 import './CostAuditing.css';
 
-const riskConfig: Record<RiskLevel, { label: string; badge: string; desc: string }> = {
-  green: { label: 'Green', badge: 'badge--green', desc: '< 1.2x baseline' },
-  yellow: { label: 'Yellow', badge: 'badge--yellow', desc: '1.2x - 1.5x baseline' },
-  red: { label: 'Red', badge: 'badge--red', desc: '> 1.5x baseline' },
-};
-
 export function CostAuditingDashboard() {
+  const { t } = useTranslation();
   const [filterRisk, setFilterRisk] = useState<RiskLevel | 'all'>('all');
+
+  const riskConfig: Record<RiskLevel, { label: string; badge: string; desc: string }> = {
+    green: { label: t('auditing.green'), badge: 'badge--green', desc: t('auditing.greenDesc') },
+    yellow: { label: t('auditing.yellow'), badge: 'badge--yellow', desc: t('auditing.yellowDesc') },
+    red: { label: t('auditing.red'), badge: 'badge--red', desc: t('auditing.redDesc') },
+  };
 
   const filtered = filterRisk === 'all'
     ? mockEstimates
@@ -25,51 +27,51 @@ export function CostAuditingDashboard() {
     <div className="ca-dashboard">
       <div className="ca-dashboard__header">
         <div>
-          <h2>Infrastructure Cost Auditing</h2>
+          <h2>{t('auditing.heading')}</h2>
           <p className="ca-dashboard__subtitle">
-            AI-powered estimate validation for Assam PWD road projects
+            {t('auditing.subtitle')}
           </p>
         </div>
         <Link to="/auditing/new" className="btn btn--primary">
-          + Submit Estimate
+          {t('auditing.submitEstimate')}
         </Link>
       </div>
 
       {/* Summary Cards */}
       <div className="ca-dashboard__summary">
         <div className="ca-summary-card">
-          <span className="ca-summary-card__label">Total Estimates</span>
+          <span className="ca-summary-card__label">{t('auditing.totalEstimates')}</span>
           <span className="ca-summary-card__value">{mockEstimates.length}</span>
         </div>
         <div className="ca-summary-card ca-summary-card--green">
-          <span className="ca-summary-card__label">Green (Auto-Approved)</span>
+          <span className="ca-summary-card__label">{t('auditing.greenAutoApproved')}</span>
           <span className="ca-summary-card__value">
             {mockEstimates.filter((e) => e.riskLevel === 'green').length}
           </span>
         </div>
         <div className="ca-summary-card ca-summary-card--yellow">
-          <span className="ca-summary-card__label">Yellow (Review)</span>
+          <span className="ca-summary-card__label">{t('auditing.yellowReview')}</span>
           <span className="ca-summary-card__value">
             {mockEstimates.filter((e) => e.riskLevel === 'yellow').length}
           </span>
         </div>
         <div className="ca-summary-card ca-summary-card--red">
-          <span className="ca-summary-card__label">Red (Investigation)</span>
+          <span className="ca-summary-card__label">{t('auditing.redInvestigation')}</span>
           <span className="ca-summary-card__value">
             {mockEstimates.filter((e) => e.riskLevel === 'red').length}
           </span>
         </div>
         <div className="ca-summary-card ca-summary-card--savings">
-          <span className="ca-summary-card__label">Potential Savings</span>
+          <span className="ca-summary-card__label">{t('auditing.potentialSavings')}</span>
           <span className="ca-summary-card__value">
-            ₹{(potentialSavings / 10000000).toFixed(1)} Cr
+            ₹{(potentialSavings / 10000000).toFixed(1)} {t('auditing.cr')}
           </span>
         </div>
       </div>
 
       {/* Risk Legend */}
-      <div className="ca-risk-legend" role="note" aria-label="Risk level explanation">
-        <h4>Risk Level Thresholds</h4>
+      <div className="ca-risk-legend" role="note" aria-label={t('auditing.riskLevelThresholds')}>
+        <h4>{t('auditing.riskLevelThresholds')}</h4>
         <div className="ca-risk-legend__items">
           {Object.entries(riskConfig).map(([key, config]) => (
             <div key={key} className="ca-risk-legend__item">
@@ -82,16 +84,16 @@ export function CostAuditingDashboard() {
 
       {/* Filter */}
       <div className="ca-dashboard__filter">
-        <label htmlFor="risk-filter">Filter by risk:</label>
+        <label htmlFor="risk-filter">{t('auditing.filterByRisk')}</label>
         <select
           id="risk-filter"
           value={filterRisk}
           onChange={(e) => setFilterRisk(e.target.value as RiskLevel | 'all')}
         >
-          <option value="all">All Estimates</option>
-          <option value="green">Green Only</option>
-          <option value="yellow">Yellow Only</option>
-          <option value="red">Red Only</option>
+          <option value="all">{t('auditing.allEstimates')}</option>
+          <option value="green">{t('auditing.greenOnly')}</option>
+          <option value="yellow">{t('auditing.yellowOnly')}</option>
+          <option value="red">{t('auditing.redOnly')}</option>
         </select>
       </div>
 
@@ -100,16 +102,16 @@ export function CostAuditingDashboard() {
         <table aria-label="Cost estimates for review">
           <thead>
             <tr>
-              <th scope="col">Project</th>
-              <th scope="col">District</th>
-              <th scope="col">Type</th>
-              <th scope="col">Length</th>
-              <th scope="col">Estimated Cost</th>
-              <th scope="col">Baseline</th>
-              <th scope="col">Ratio</th>
-              <th scope="col">Risk</th>
-              <th scope="col">Status</th>
-              <th scope="col">Action</th>
+              <th scope="col">{t('auditing.project')}</th>
+              <th scope="col">{t('auditing.district')}</th>
+              <th scope="col">{t('auditing.type')}</th>
+              <th scope="col">{t('auditing.length')}</th>
+              <th scope="col">{t('auditing.estimatedCost')}</th>
+              <th scope="col">{t('auditing.baseline')}</th>
+              <th scope="col">{t('auditing.ratio')}</th>
+              <th scope="col">{t('auditing.risk')}</th>
+              <th scope="col">{t('auditing.status')}</th>
+              <th scope="col">{t('auditing.action')}</th>
             </tr>
           </thead>
           <tbody>
@@ -121,14 +123,14 @@ export function CostAuditingDashboard() {
                     <strong>{est.projectName}</strong>
                     <br />
                     <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-                      by {est.submittedBy}
+                      {t('auditing.by')} {est.submittedBy}
                     </span>
                   </td>
                   <td>{est.district}</td>
                   <td style={{ fontSize: '0.8125rem' }}>{est.projectType}</td>
                   <td>{est.lengthKm} km</td>
-                  <td>₹{(est.estimatedCost_inr / 10000000).toFixed(1)} Cr</td>
-                  <td>₹{(est.baselineCost_inr / 10000000).toFixed(1)} Cr</td>
+                  <td>₹{(est.estimatedCost_inr / 10000000).toFixed(1)} {t('auditing.cr')}</td>
+                  <td>₹{(est.baselineCost_inr / 10000000).toFixed(1)} {t('auditing.cr')}</td>
                   <td>
                     <strong
                       style={{
@@ -152,7 +154,7 @@ export function CostAuditingDashboard() {
                       className="btn btn--secondary"
                       style={{ padding: '4px 12px', fontSize: '0.75rem' }}
                     >
-                      Details
+                      {t('auditing.details')}
                     </Link>
                   </td>
                 </tr>
@@ -164,22 +166,22 @@ export function CostAuditingDashboard() {
 
       {/* Historical Projects Reference */}
       <section className="ca-dashboard__historical" aria-labelledby="historical-heading">
-        <h3 id="historical-heading">Historical Cost Reference (Baseline Data)</h3>
+        <h3 id="historical-heading">{t('auditing.historicalHeading')}</h3>
         <p className="ca-dashboard__historical-desc">
-          Historical road project costs used by the AI model for baseline calculations
+          {t('auditing.historicalDesc')}
         </p>
         <div className="table-wrap">
           <table aria-label="Historical road project costs">
             <thead>
               <tr>
-                <th scope="col">Project</th>
-                <th scope="col">Type</th>
-                <th scope="col">District</th>
-                <th scope="col">Length</th>
-                <th scope="col">Estimated</th>
-                <th scope="col">Actual</th>
-                <th scope="col">Cost/km</th>
-                <th scope="col">Year</th>
+                <th scope="col">{t('auditing.project')}</th>
+                <th scope="col">{t('auditing.type')}</th>
+                <th scope="col">{t('auditing.district')}</th>
+                <th scope="col">{t('auditing.length')}</th>
+                <th scope="col">{t('auditing.estimated')}</th>
+                <th scope="col">{t('auditing.actual')}</th>
+                <th scope="col">{t('auditing.costPerKm')}</th>
+                <th scope="col">{t('auditing.year')}</th>
               </tr>
             </thead>
             <tbody>
@@ -189,8 +191,8 @@ export function CostAuditingDashboard() {
                   <td style={{ fontSize: '0.8125rem' }}>{hp.type}</td>
                   <td>{hp.district}</td>
                   <td>{hp.lengthKm} km</td>
-                  <td>₹{(hp.estimatedCost_inr / 10000000).toFixed(1)} Cr</td>
-                  <td>₹{(hp.actualCost_inr / 10000000).toFixed(1)} Cr</td>
+                  <td>₹{(hp.estimatedCost_inr / 10000000).toFixed(1)} {t('auditing.cr')}</td>
+                  <td>₹{(hp.actualCost_inr / 10000000).toFixed(1)} {t('auditing.cr')}</td>
                   <td>₹{(hp.costPerKm / 100000).toFixed(1)} L/km</td>
                   <td>{hp.completionYear}</td>
                 </tr>

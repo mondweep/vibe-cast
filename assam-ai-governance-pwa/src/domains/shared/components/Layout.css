@@ -77,11 +77,30 @@
   display: inline-block;
 }
 
+.header__lang-switcher {
+  display: flex;
+  gap: 2px;
+}
+
 .header__lang {
   padding: 2px 8px;
   border: 1px solid rgba(255,255,255,0.4);
   border-radius: var(--radius-sm);
   font-weight: 600;
+  background: none;
+  color: white;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.header__lang:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.header__lang--active {
+  background: rgba(255,255,255,0.25);
+  border-color: white;
 }
 
 /* Sidebar */

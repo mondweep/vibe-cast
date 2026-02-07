@@ -11,9 +11,14 @@ test.describe('Navigation & Layout', () => {
     await expect(page.locator('.header__status')).toContainText('Online');
   });
 
-  test('should_show_language_indicator_when_page_loads', async ({ page }) => {
+  test('should_show_language_switcher_when_page_loads', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.header__lang')).toContainText('EN');
+    const switcher = page.locator('.header__lang-switcher');
+    await expect(switcher).toBeVisible();
+    await expect(switcher.locator('.header__lang')).toHaveCount(3);
+    await expect(switcher.getByRole('button', { name: 'EN', exact: true })).toBeVisible();
+    await expect(switcher.getByRole('button', { name: 'অস' })).toBeVisible();
+    await expect(switcher.getByRole('button', { name: 'हि' })).toBeVisible();
   });
 
   test('should_have_sidebar_with_nav_links_when_desktop', async ({ page, isMobile }) => {
