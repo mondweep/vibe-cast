@@ -17,11 +17,17 @@ The CM's approach stands out because AI flags the anomalies — but humans make 
 
 210 automated tests. Works offline. Works on mobile. Built for Assam's reality.
 
+But technology is only half the story. The CM also directed AI training for top officials — and that's where @AgenticsFoundation (agentics.org) comes in. As a global non-profit focused on agentic AI capacity building, Agentics Foundation has now launched an **Assam Chapter** to support exactly this kind of institutional transformation.
+
+Our **first in-person meetup** is this Wednesday, 11th Feb, 4:30-6:30 PM at Vantage Circle, Six Mile, Guwahati. Hands-on agentic AI training, community building, and a conversation about how we can contribute to Assam's AI governance journey. Free and open to all.
+
+Register: https://luma.com/t59lmdbt
+
 Read the full article below for the technical breakdown, demo metrics, and the CM's original announcement in Assamese.
 
 সেয়া গৌৰৱৰ কথা। This could be a model for the entire country.
 
-#AIGovernance #Assam #HimantaBiswaSarma #DigitalIndia #GovTech #AntiCorruption #SmartGovernance #BuildInPublic #TechForGood
+#AIGovernance #Assam #HimantaBiswaSarma #DigitalIndia #GovTech #AntiCorruption #SmartGovernance #BuildInPublic #TechForGood #AgenticsFoundation #AgenticAI #Guwahati
 
 ---
 
@@ -101,11 +107,50 @@ The full source code and PRD are available on GitHub for anyone interested in co
 
 ---
 
+## Building Institutional Capacity: Agentics Foundation's Role
+
+The CM's directive to CS Ravi Kota to arrange AI training for top government officials highlights a critical truth — technology alone isn't enough. The people who will operate, oversee, and govern these AI systems need to understand them deeply. This is where **Agentics Foundation** (agentics.org) can play a meaningful role.
+
+Agentics Foundation is a **global non-profit organisation** dedicated to advancing agentic AI literacy, capability building, and responsible adoption. Its mission aligns directly with what Assam needs right now: bridging the gap between AI ambition and institutional readiness.
+
+Here's how Agentics Foundation can contribute to the CM's vision:
+
+**1. AI Skill Development for Government Officials**
+Training programmes tailored for senior bureaucrats and department heads — not just theoretical awareness, but hands-on understanding of how agentic AI systems work, how to evaluate their outputs, and how to govern them responsibly. The goal is to create informed decision-makers who can confidently oversee AI-powered systems like property registration verification and cost auditing.
+
+**2. Agentic AI Capacity Building**
+Moving beyond basic AI literacy to practical training in agentic workflows — how AI agents can autonomously process documents, flag anomalies, and assist in decision-making while maintaining human oversight. This is precisely the paradigm the CM described: AI does the surveillance, humans make the calls.
+
+**3. Responsible AI Governance Frameworks**
+Helping the state develop governance frameworks that ensure AI systems remain transparent, accountable, and fair. This includes bias detection, audit trail standards, and citizen redressal mechanisms — all critical for public trust in AI-governed services.
+
+**4. Community-Driven Knowledge Sharing**
+Connecting Assam's officials and technologists with a global network of AI practitioners, researchers, and policy experts through the Foundation's chapters worldwide.
+
+### Agentics Foundation Assam Chapter — Launching This Week
+
+I'm proud to share that **Agentics Foundation now has an Assam Chapter**, bringing this global non-profit's mission directly to Guwahati.
+
+We are hosting our **first in-person meetup** this Wednesday:
+
+**Agentics Foundation - Assam Chapter: First In-Person Meetup**
+- **Date:** Wednesday, 11th February 2026
+- **Time:** 4:30 PM to 6:30 PM IST
+- **Venue:** Vantage Circle, Tulsi Path, Behind Punjab National Bank, Six Mile, Guwahati, Assam 781022
+- **Admission:** Free
+- **Register:** https://luma.com/t59lmdbt
+
+The agenda includes an introduction to the Assam Chapter's principles and strategy, hands-on training in agentic AI techniques, community Q&A, and a discussion on how we can contribute to Assam's AI governance journey. We are grateful to **Vantage Circle Foundation** for hosting and sponsoring this inaugural event.
+
+Whether you are a government official looking to understand AI, a technologist wanting to contribute to public good, or simply someone who believes in Assam's potential — you are welcome. This is the beginning of building the institutional capacity that the CM's vision demands.
+
+---
+
 ## A Call to Action
 
-Assam has the political will. The technology exists. The ROI is compelling — the PRD estimates ₹50+ crore in savings in Year 1 against a ₹3.2 crore implementation cost, yielding a payback period of approximately 2 months.
+Assam has the political will. The technology exists. The ROI is compelling — the PRD estimates ₹50+ crore in savings in Year 1 against a ₹3.2 crore implementation cost, yielding a payback period of approximately 2 months. And now, with Agentics Foundation's Assam Chapter, the skill development ecosystem to support this transformation is taking shape right here in Guwahati.
 
-I would be honoured if this prototype could serve as a useful reference point as Assam moves forward with its AI governance agenda. If there are officials, technologists, or domain experts working on this initiative, I'd welcome the opportunity to collaborate.
+I would be honoured if this prototype could serve as a useful reference point as Assam moves forward with its AI governance agenda. If there are officials, technologists, or domain experts working on this initiative, I'd welcome the opportunity to collaborate — and I invite you to join us at our meetup this Wednesday.
 
 To the people of Assam: your government is building something that could become a model for the entire country. সেয়া গৌৰৱৰ কথা।
 
