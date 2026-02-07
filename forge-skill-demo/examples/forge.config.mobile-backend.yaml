@@ -1,0 +1,52 @@
+# =============================================================================
+# Forge Configuration — Mobile + Backend Example (Flutter + Rust)
+# =============================================================================
+# Demonstrates Forge configuration for a mobile app with backend API.
+# This is an alternative architecture to the default microservices example.
+# =============================================================================
+
+architecture: mobile-backend
+
+backend:
+  technology: rust
+  services:
+    - name: api-server
+      port: 8080
+      healthEndpoint: /health
+      buildCommand: cargo build --release --features test-endpoints
+      runCommand: cargo run --release
+      migrationCommand: cargo sqlx migrate run
+      seedCommand: cargo run --bin seed
+
+frontend:
+  technology: flutter
+  testCommand: flutter drive --driver=test_driver/integration_test.dart --target={target}
+  testDir: integration_test/e2e/
+  specDir: integration_test/e2e/specs/
+
+testDataSeeding:
+  method: api
+  endpoint: /api/v1/test/seed
+  authHeader: X-Test-Key
+
+model_routing:
+  bug-fixer: opus
+  failure-analyzer: sonnet
+  test-runner: haiku
+
+visual_regression:
+  enabled: true
+  threshold: 0.001
+  # Flutter golden tests for visual regression
+  goldenTestCommand: flutter test --update-goldens
+
+# Mobile-specific chaos scenarios
+chaos:
+  enabled: true
+  scenarios:
+    - timeout_injection
+    - network_flap           # Critical for mobile
+    - airplane_mode          # Mobile-only
+    - low_bandwidth          # 2G/3G simulation
+    - app_backgrounding      # State preservation
+    - memory_pressure        # Low memory conditions

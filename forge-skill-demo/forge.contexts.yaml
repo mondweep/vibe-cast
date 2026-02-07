@@ -1,0 +1,121 @@
+# =============================================================================
+# Forge Contexts — Bounded Context & Dependency Configuration
+# =============================================================================
+# Each context maps to a domain, its test files, specs, and inter-dependencies.
+# Created by: Ikenna N. Okpala (https://github.com/ikennaokpala/forge)
+# Demo curated by: Mondweep Chakravorty (https://www.linkedin.com/in/mondweepchakravorty/)
+# =============================================================================
+
+contexts:
+  # -------------------------------------------------------------------------
+  # Identity Context — Authentication, Profiles, Verification
+  # -------------------------------------------------------------------------
+  - name: identity
+    testFile: cypress/e2e/identity.cy.ts
+    specFile: cypress/e2e/specs/identity.feature
+    paths: 42
+    subdomains:
+      - Authentication       # Login, logout, session management
+      - Registration         # Sign-up, email verification
+      - Profiles             # View/edit profile, avatar upload
+      - PasswordManagement   # Reset, change, strength validation
+    criticalPaths:
+      - user-login
+      - user-registration
+      - password-reset
+    service: identity-service
+    port: 8081
+
+  # -------------------------------------------------------------------------
+  # Catalog Context — Products, Search, Categories
+  # -------------------------------------------------------------------------
+  - name: catalog
+    testFile: cypress/e2e/catalog.cy.ts
+    specFile: cypress/e2e/specs/catalog.feature
+    paths: 56
+    subdomains:
+      - ProductListing       # Browse, filter, sort
+      - ProductDetail        # View product, images, reviews
+      - Search               # Full-text search, autocomplete
+      - Categories           # Category tree, navigation
+    criticalPaths:
+      - product-search
+      - product-detail-view
+      - category-navigation
+    service: catalog-service
+    port: 8082
+
+  # -------------------------------------------------------------------------
+  # Payments Context — Wallet, Cards, Transactions
+  # -------------------------------------------------------------------------
+  - name: payments
+    testFile: cypress/e2e/payments.cy.ts
+    specFile: cypress/e2e/specs/payments.feature
+    paths: 89
+    subdomains:
+      - CardManagement       # Add/remove cards, set default
+      - WalletOperations     # Balance, top-up, withdrawal
+      - TransactionHistory   # View past transactions, receipts
+      - PaymentProcessing    # Charge, refund, dispute
+    criticalPaths:
+      - add-payment-method
+      - process-payment
+      - refund-transaction
+    service: payments-service
+    port: 8083
+
+  # -------------------------------------------------------------------------
+  # Orders Context — Cart, Checkout, Order Management
+  # -------------------------------------------------------------------------
+  - name: orders
+    testFile: cypress/e2e/orders.cy.ts
+    specFile: cypress/e2e/specs/orders.feature
+    paths: 73
+    subdomains:
+      - ShoppingCart          # Add/remove items, quantity update
+      - Checkout              # Address, shipping, payment selection
+      - OrderTracking         # Status updates, delivery tracking
+      - OrderHistory          # Past orders, re-order
+    criticalPaths:
+      - add-to-cart
+      - complete-checkout
+      - track-order
+    service: orders-service
+    port: 8084
+
+# =============================================================================
+# Dependency Graph — Cascade Re-Testing Rules
+# =============================================================================
+# When a context is fixed, all contexts in its "blocks" list are re-tested.
+# This ensures upstream fixes don't break downstream consumers.
+# =============================================================================
+
+dependencies:
+  identity:
+    blocks:
+      - catalog      # Authenticated users can review products
+      - payments     # Must be logged in to manage payment methods
+      - orders       # Must be logged in to place orders
+    cascade_priority: 1   # Fixed first — everything depends on it
+
+  catalog:
+    depends_on:
+      - identity     # Product reviews require authentication
+    blocks:
+      - orders       # Can't order products that don't exist
+    cascade_priority: 2
+
+  payments:
+    depends_on:
+      - identity     # Payment methods tied to user accounts
+    blocks:
+      - orders       # Can't checkout without payment
+    cascade_priority: 3
+
+  orders:
+    depends_on:
+      - identity     # Order placement requires login
+      - catalog      # Orders reference product IDs
+      - payments     # Checkout requires payment method
+    blocks: []       # Terminal context — nothing depends on orders
+    cascade_priority: 4

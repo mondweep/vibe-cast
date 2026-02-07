@@ -1,0 +1,55 @@
+# =============================================================================
+# Forge Configuration — Monolith Example (Node.js + React)
+# =============================================================================
+# Demonstrates Forge configuration for a traditional monolithic application.
+# Simpler than microservices — single backend, single frontend.
+# =============================================================================
+
+architecture: monolith
+
+backend:
+  services:
+    - name: app-server
+      port: 3001
+      healthEndpoint: /api/health
+      buildCommand: npm run build
+      runCommand: npm start
+      migrationCommand: npx prisma migrate deploy
+      seedCommand: npm run db:seed
+      envFile: .env.test
+
+frontend:
+  technology: react
+  port: 3000
+  buildCommand: npm run build:client
+  devCommand: npm run dev
+  testCommand: npx playwright test {target}
+  testDir: e2e/
+  specDir: e2e/specs/
+
+# Simpler seeding for monolith — single endpoint
+testDataSeeding:
+  method: api
+  endpoint: /api/test/seed-all
+  authHeader: X-Test-Key
+
+# Cost-conscious model routing for smaller projects
+model_routing:
+  bug-fixer: sonnet          # Sonnet is sufficient for simpler fixes
+  failure-analyzer: sonnet
+  test-runner: haiku
+  specification-verifier: haiku  # Cheaper for small spec sets
+  quality-gate-enforcer: haiku
+  accessibility-auditor: haiku   # Basic checks don't need sonnet
+  auto-committer: haiku
+  learning-optimizer: haiku
+
+quality_gates:
+  functional:
+    threshold: 100
+    blocking: true
+  coverage:
+    overall: 80              # Lower threshold for monoliths
+    critical_paths: 90
+  accessibility:
+    blocking: true           # Example: government project requires this

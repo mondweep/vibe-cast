@@ -1,0 +1,160 @@
+# =============================================================================
+# Forge Configuration — Sample E-Commerce Platform
+# =============================================================================
+# This file configures the Forge autonomous quality engineering swarm.
+# Created by: Ikenna N. Okpala (https://github.com/ikennaokpala/forge)
+# Demo curated by: Mondweep Chakravorty (https://www.linkedin.com/in/mondweepchakravorty/)
+# =============================================================================
+
+# Architecture type: monolith | microservices | modular-monolith | mobile-backend
+architecture: microservices
+
+# ---------------------------------------------------------------------------
+# Backend Services Configuration
+# ---------------------------------------------------------------------------
+backend:
+  services:
+    - name: identity-service
+      port: 8081
+      healthEndpoint: /health
+      buildCommand: npm run build
+      runCommand: npm start
+      migrationCommand: npx prisma migrate deploy
+      seedCommand: npm run seed
+      envFile: .env.test
+
+    - name: catalog-service
+      port: 8082
+      healthEndpoint: /api/health
+      buildCommand: npm run build
+      runCommand: npm start
+      migrationCommand: npx prisma migrate deploy
+      seedCommand: npm run seed:catalog
+
+    - name: payments-service
+      port: 8083
+      healthEndpoint: /health
+      buildCommand: npm run build
+      runCommand: npm start
+      migrationCommand: npx prisma migrate deploy
+
+    - name: orders-service
+      port: 8084
+      healthEndpoint: /health
+      buildCommand: npm run build
+      runCommand: npm start
+      migrationCommand: npx prisma migrate deploy
+
+# ---------------------------------------------------------------------------
+# Frontend Configuration
+# ---------------------------------------------------------------------------
+frontend:
+  technology: react
+  port: 3000
+  buildCommand: npm run build
+  devCommand: npm run dev
+  testCommand: npx cypress run --spec {target}
+  testDir: cypress/e2e/
+  specDir: cypress/e2e/specs/
+
+# ---------------------------------------------------------------------------
+# Test Data Seeding (No Mocking — Real API Calls Only)
+# ---------------------------------------------------------------------------
+testDataSeeding:
+  method: api
+  endpoint: /api/v1/test/seed
+  authHeader: X-Test-Key
+  seedOrder:
+    - identity-service    # Users must exist first
+    - catalog-service     # Products before orders
+    - payments-service    # Payment methods before checkout
+    - orders-service      # Orders depend on everything
+
+# ---------------------------------------------------------------------------
+# Model Routing — Cost-Optimized Agent Assignment
+# ---------------------------------------------------------------------------
+# Available models: opus | sonnet | haiku
+# Opus  = highest reasoning (complex fixes)
+# Sonnet = balanced (analysis, specs, audits)
+# Haiku  = fastest/cheapest (test running, gate checks, commits)
+model_routing:
+  specification-verifier: sonnet
+  test-runner: haiku
+  failure-analyzer: sonnet
+  bug-fixer: opus
+  quality-gate-enforcer: haiku
+  accessibility-auditor: sonnet
+  auto-committer: haiku
+  learning-optimizer: sonnet
+
+# ---------------------------------------------------------------------------
+# Quality Gate Thresholds (Customizable)
+# ---------------------------------------------------------------------------
+quality_gates:
+  functional:
+    threshold: 100       # Percentage of tests that must pass
+    blocking: true
+  behavioral:
+    threshold: 100       # Percentage of Gherkin scenarios satisfied
+    blocking: true
+  coverage:
+    overall: 85          # Minimum overall path coverage
+    critical_paths: 95   # Minimum for critical user flows
+    blocking_on_critical: true
+  security:
+    max_critical: 0      # Zero tolerance for critical/high vulns
+    max_high: 0
+    blocking: true
+  accessibility:
+    standard: WCAG-AA
+    blocking: false      # Warning only — upgrade to true for gov projects
+  resilience:
+    offline_tested: true
+    timeout_tested: true
+    error_handling_tested: true
+    blocking: false      # Warning only
+  contract:
+    max_mismatches: 0
+    blocking: true
+
+# ---------------------------------------------------------------------------
+# Visual Regression Testing
+# ---------------------------------------------------------------------------
+visual_regression:
+  enabled: true
+  threshold: 0.001       # Pixel difference tolerance (lower = stricter)
+  screenshot_dir: .forge/screenshots
+  golden_dir: .forge/golden
+
+# ---------------------------------------------------------------------------
+# Chaos / Resilience Testing
+# ---------------------------------------------------------------------------
+chaos:
+  enabled: true
+  scenarios:
+    - timeout_injection     # Inject random timeouts into API calls
+    - partial_responses     # Return truncated API responses
+    - concurrent_mutations  # Simultaneous state changes
+    - session_expiry        # Expire auth tokens mid-flow
+    - network_flap          # Intermittent connectivity
+
+# ---------------------------------------------------------------------------
+# Autonomous Loop Settings
+# ---------------------------------------------------------------------------
+autonomous:
+  max_iterations: 10       # Maximum fix cycles before stopping
+  max_reverts_per_test: 2  # Max rollbacks per failing test
+  commit_on_gate_pass: true
+  parallel_agents: true
+
+# ---------------------------------------------------------------------------
+# Optional: Agentic QE Integration (Enhanced Capabilities)
+# ---------------------------------------------------------------------------
+integrations:
+  agentic-qe:
+    enabled: false          # Set to true if AQE MCP server is available
+    domains:
+      - defect-intelligence
+      - security-compliance
+      - visual-accessibility
+      - contract-testing

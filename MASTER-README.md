@@ -286,6 +286,40 @@ npm run build
 
 ---
 
+### 🔨 Quality Engineering & DevOps
+
+#### **`claude/ikenna-forge-YbUEZ`**
+**Forge Skill Demo — Autonomous Quality Engineering Swarm**
+
+A comprehensive, end-to-end demonstration of the [Forge](https://github.com/ikennaokpala/forge) Claude Code skill, created by [Ikenna N. Okpala](https://github.com/ikennaokpala). Forge spawns eight specialized AI agents that autonomously generate behavioral specs, run E2E tests against real backends, analyze failures, apply confidence-tiered fixes, audit accessibility, enforce seven quality gates, and learn from outcomes.
+
+This demo, curated by [Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty/), includes:
+- Complete `forge.config.yaml` and `forge.contexts.yaml` configuration examples
+- Sample e-commerce microservices project (identity, catalog, payments, orders)
+- Gherkin/BDD specifications for all four bounded contexts
+- Cypress E2E test suites demonstrating the no-mocking philosophy
+- Example configurations for microservices, monolith, mobile+backend, and AQE integration
+- Comprehensive guide covering all 10 invocation modes with simulated outputs
+
+**Tech Stack**: Claude Code, Forge Skill, Cypress, Gherkin/BDD, YAML configuration
+**Location**: `forge-skill-demo/` folder
+
+**Get Started**:
+```bash
+git checkout claude/ikenna-forge-YbUEZ
+cd forge-skill-demo
+# Read the comprehensive guide
+cat FORGE-DEMO-GUIDE.md
+# Install the Forge skill
+cp .claude/skills/forge.md ~/.claude/skills/forge.md
+# Try it on your own project
+/forge --autonomous --all
+```
+
+**Perfect For**: Learning autonomous QE, setting up quality gates, understanding BDD/Gherkin workflows, CI/CD quality automation
+
+---
+
 ### 🏠 Repository Base
 
 #### **`main`**
@@ -344,6 +378,9 @@ Simply connect the branch to Netlify for automatic deployment!
 
 ### 🛡️ AI Security
 - AIDMS Demo (AI Manipulation Defense System)
+
+### 🔨 Quality Engineering
+- Forge Skill Demo (Autonomous QE with 8 AI agents)
 
 ### 🎨 Multimedia
 - Song Translation (Voice cloning & translation)
@@ -409,6 +446,7 @@ For questions about specific projects, please refer to the documentation in each
 | `aidms-tinkering` | AI security and defense demos |
 | `tribe-knowledgeGraph` | Collaborative knowledge graph |
 | `exploring-*` | Research and experimental features |
+| `claude/ikenna-forge-*` | Forge autonomous QE skill demos |
 | `*-working` | Stable working implementations |
 
 ---

@@ -1,0 +1,35 @@
+{
+  "name": "forge-ecommerce-demo",
+  "version": "1.0.0",
+  "description": "Sample e-commerce project demonstrating Forge autonomous QE skill",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "concurrently \"npm run dev:identity\" \"npm run dev:catalog\" \"npm run dev:payments\" \"npm run dev:orders\"",
+    "dev:identity": "cd backend/src/identity && npm start",
+    "dev:catalog": "cd backend/src/catalog && npm start",
+    "dev:payments": "cd backend/src/payments && npm start",
+    "dev:orders": "cd backend/src/orders && npm start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "concurrently \"cd backend/src/identity && npm run build\" \"cd backend/src/catalog && npm run build\" \"cd backend/src/payments && npm run build\" \"cd backend/src/orders && npm run build\"",
+    "build:frontend": "cd frontend && npm run build",
+    "test:e2e": "npx cypress run",
+    "test:e2e:identity": "npx cypress run --spec cypress/e2e/identity.cy.ts",
+    "test:e2e:payments": "npx cypress run --spec cypress/e2e/payments.cy.ts",
+    "test:e2e:orders": "npx cypress run --spec cypress/e2e/orders.cy.ts",
+    "test:e2e:catalog": "npx cypress run --spec cypress/e2e/catalog.cy.ts",
+    "seed": "npm run seed:identity && npm run seed:catalog && npm run seed:payments",
+    "seed:identity": "cd backend/src/identity && npm run seed",
+    "seed:catalog": "cd backend/src/catalog && npm run seed",
+    "seed:payments": "cd backend/src/payments && npm run seed",
+    "migrate": "concurrently \"cd backend/src/identity && npx prisma migrate deploy\" \"cd backend/src/catalog && npx prisma migrate deploy\" \"cd backend/src/payments && npx prisma migrate deploy\" \"cd backend/src/orders && npx prisma migrate deploy\""
+  },
+  "keywords": ["forge", "quality-engineering", "e2e-testing", "bdd", "gherkin"],
+  "author": "Forge Skill Demo",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "cypress": "^13.6.0"
+  }
+}

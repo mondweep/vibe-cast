@@ -1,0 +1,64 @@
+# =============================================================================
+# Forge Configuration — With Agentic QE Integration
+# =============================================================================
+# Demonstrates Forge with optional Agentic QE (AQE) MCP server enabled.
+# AQE enhances pattern storage, defect prediction, security scanning,
+# accessibility auditing, and provides real-time AG-UI streaming.
+#
+# Without AQE: Forge uses built-in defaults. All features still work.
+# With AQE:    Enhanced capabilities across all domains.
+# =============================================================================
+
+architecture: microservices
+
+backend:
+  services:
+    - name: api-gateway
+      port: 8080
+      healthEndpoint: /health
+      buildCommand: npm run build
+      runCommand: npm start
+
+frontend:
+  technology: react
+  testCommand: npx cypress run --spec {target}
+  testDir: cypress/e2e/
+  specDir: cypress/e2e/specs/
+
+# Full AQE integration — all enhanced capabilities enabled
+integrations:
+  agentic-qe:
+    enabled: true
+    domains:
+      # Enhanced pattern storage: ReasoningBank (vector-indexed, 150x faster)
+      # Instead of flat file storage, patterns are stored in vector space
+      # for semantic similarity matching
+      - defect-intelligence
+
+      # Full SAST/DAST security analysis
+      # Goes beyond Gate 4's basic static checks
+      - security-compliance
+
+      # Specialized visual-accessibility domain agents
+      # More thorough than built-in WCAG AA checker
+      - visual-accessibility
+
+      # Contract-testing domain agents
+      # Validates GraphQL schemas, REST contracts, gRPC protos
+      - contract-testing
+
+    # AG-UI streaming for real-time progress in IDE
+    streaming:
+      protocol: ag-ui
+      enabled: true
+
+# Comparison of capabilities (for reference):
+#
+# | Feature           | Without AQE              | With AQE                         |
+# |-------------------|--------------------------|----------------------------------|
+# | Pattern Storage   | .forge/ flat files       | ReasoningBank (vector-indexed)   |
+# | Defect Prediction | File changes + history   | Specialized defect-intelligence  |
+# | Security          | Static checks (Gate 4)   | Full SAST/DAST analysis          |
+# | Accessibility     | Built-in auditor         | visual-tester + accessibility    |
+# | Contract Testing  | Schema validation        | contract-validator + graphql     |
+# | Progress          | .forge/progress.jsonl    | AG-UI real-time streaming        |
