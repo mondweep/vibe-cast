@@ -1,0 +1,9 @@
+# Forge quality engineering files — not needed in production
+.forge/
+cypress/
+forge.config.yaml
+forge.contexts.yaml
+
+# Git
+.git/
+.gitignore

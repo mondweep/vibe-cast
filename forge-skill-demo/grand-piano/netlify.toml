@@ -1,0 +1,20 @@
+[build]
+  base = "forge-skill-demo/grand-piano"
+  publish = "."
+  command = "echo 'Static site — no build required'"
+
+# SPA-style redirect so index.html serves all routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Cache static assets aggressively
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "autoplay=(*), microphone=()"
