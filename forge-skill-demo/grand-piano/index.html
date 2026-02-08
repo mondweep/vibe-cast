@@ -267,6 +267,33 @@
       box-shadow: 0 0 20px var(--accent-glow);
     }
 
+    /* ===== FOOTER ===== */
+    #footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      background: var(--piano-bg);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      flex-shrink: 0;
+      gap: 4px;
+      flex-wrap: wrap;
+      text-align: center;
+    }
+    #footer span {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+    #footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    #footer a:hover, #footer a:active {
+      text-decoration: underline;
+    }
+
     /* ===== LANDSCAPE ADJUSTMENTS ===== */
     @media (orientation: landscape) {
       :root {
@@ -337,6 +364,13 @@
     <!-- Sustain Pedal -->
     <div id="sustain-bar">
       <button id="sustain-pedal" aria-label="Sustain pedal">SUSTAIN</button>
+    </div>
+
+    <!-- Footer -->
+    <div id="footer">
+      <span>Powered by <a href="https://github.com/ikennaokpala/forge" target="_blank" rel="noopener">Forge</a> by Ikenna N. Okpala</span>
+      <span>&middot;</span>
+      <span>Questions? Contact <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank" rel="noopener">Mondweep Chakravorty</a></span>
     </div>
   </div>
 
