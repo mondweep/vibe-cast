@@ -326,14 +326,27 @@
     /* ===== LANDSCAPE ADJUSTMENTS ===== */
     @media (orientation: landscape) {
       :root {
-        --white-key-height: 180px;
-        --black-key-height: 112px;
+        --white-key-height: 55vh;
+        --black-key-height: 34vh;
+        --white-key-width: 44px;
+        --black-key-width: 30px;
       }
-      #controls { padding: 4px 12px; }
-      #chord-strip { padding: 4px 12px; }
-      #note-display { padding: 2px; min-height: 28px; font-size: 16px; }
-      #sustain-bar { padding: 6px; }
-      #sustain-pedal { height: 36px; }
+      #controls { padding: 2px 10px; }
+      #controls h1 { font-size: 14px; }
+      .ctrl-group label { font-size: 10px; }
+      .btn { padding: 4px 10px; font-size: 12px; }
+      .btn-icon { width: 30px; height: 30px; font-size: 14px; }
+      #chord-strip { padding: 3px 10px; gap: 4px; }
+      .chord-btn { min-width: 46px; padding: 4px 6px; }
+      .chord-btn .chord-name { font-size: 12px; }
+      .chord-btn .chord-type { font-size: 9px; }
+      #note-display { padding: 1px; min-height: 20px; font-size: 14px; }
+      #sustain-bar { padding: 3px; }
+      #sustain-pedal { height: 28px; font-size: 12px; max-width: 200px; }
+      #footer { display: none; }
+      .scroll-arrow { width: 28px; font-size: 14px; }
+      .white-key .key-label { font-size: 9px; }
+      .black-key .key-label { font-size: 8px; }
     }
 
     /* ===== SMALL SCREENS ===== */
@@ -761,10 +774,14 @@
       display.textContent = midiNotes.map(m => midiToDisplay(m)).join('  ');
     }
 
+    let displayClearTimer = null;
+
     function handleNoteStart(midi) {
       AudioEngine.noteOn(midi);
       activateKey(midi);
-      // Collect all currently playing notes for display
+      // Clear any pending display-clear so it stays visible
+      clearTimeout(displayClearTimer);
+      // Show all currently playing notes
       const playing = [];
       touchMap.forEach(n => playing.push(n));
       if (!playing.includes(midi)) playing.push(midi);
@@ -776,7 +793,13 @@
       deactivateKey(midi);
       const playing = [];
       touchMap.forEach(n => playing.push(n));
-      updateNoteDisplay(playing.length > 0 ? playing : null);
+      if (playing.length > 0) {
+        updateNoteDisplay(playing);
+      } else {
+        // Keep display visible for 800ms after last note released
+        clearTimeout(displayClearTimer);
+        displayClearTimer = setTimeout(() => updateNoteDisplay(null), 800);
+      }
     }
 
     // Touch event handling for multi-touch chords on keys
@@ -795,88 +818,62 @@
         return null;
       }
 
+      // Play notes IMMEDIATELY on touchstart for instant feedback.
+      // If finger moves horizontally, switch to scroll mode and release note.
       piano.addEventListener('touchstart', (e) => {
         AudioEngine.init();
         for (const touch of e.changedTouches) {
+          const midi = getMidiFromTouch(touch);
           touchStarts.set(touch.identifier, {
             x: touch.clientX,
             y: touch.clientY,
             scrolling: false,
-            started: false,
           });
+          if (midi !== null) {
+            touchMap.set(touch.identifier, midi);
+            handleNoteStart(midi);
+          }
         }
-        // Don't preventDefault here — allow the browser to decide scroll vs tap
       }, { passive: true });
 
       piano.addEventListener('touchmove', (e) => {
+        let anyPlaying = false;
         for (const touch of e.changedTouches) {
           const start = touchStarts.get(touch.identifier);
           if (!start) continue;
 
-          const dx = touch.clientX - start.x;
-          const dy = touch.clientY - start.y;
+          const dx = Math.abs(touch.clientX - start.x);
+          const dy = Math.abs(touch.clientY - start.y);
 
-          if (!start.scrolling && !start.started) {
-            // Decide: is this a scroll or a play gesture?
-            if (Math.abs(dx) > SCROLL_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
-              // Horizontal swipe → scroll mode
-              start.scrolling = true;
-              // Release any note that might have started
-              const midi = touchMap.get(touch.identifier);
-              if (midi !== null && midi !== undefined) handleNoteEnd(midi);
-              touchMap.delete(touch.identifier);
-              continue; // Let native scroll handle it
-            } else if (Math.abs(dx) <= SCROLL_THRESHOLD) {
-              // Still within threshold — start playing the note
-              if (!start.started) {
-                start.started = true;
-                const midi = getMidiFromTouch(touch);
-                if (midi !== null) {
-                  touchMap.set(touch.identifier, midi);
-                  handleNoteStart(midi);
-                  e.preventDefault(); // Prevent scroll for this play gesture
-                }
-              }
-            }
-          }
-
-          if (start.scrolling) {
-            // Let native scroll handle it — don't interfere
+          if (!start.scrolling && dx > SCROLL_THRESHOLD && dx > dy) {
+            // Horizontal swipe detected → switch to scroll mode
+            start.scrolling = true;
+            const midi = touchMap.get(touch.identifier);
+            if (midi !== null && midi !== undefined) handleNoteEnd(midi);
+            touchMap.delete(touch.identifier);
             continue;
           }
 
-          if (start.started) {
-            // Playing mode — handle glissando
-            e.preventDefault();
-            const oldMidi = touchMap.get(touch.identifier);
-            const newMidi = getMidiFromTouch(touch);
-            if (newMidi !== null && newMidi !== oldMidi) {
-              if (oldMidi !== null && oldMidi !== undefined) handleNoteEnd(oldMidi);
-              touchMap.set(touch.identifier, newMidi);
-              handleNoteStart(newMidi);
-            }
+          if (start.scrolling) continue;
+
+          // Still playing — handle glissando
+          anyPlaying = true;
+          const oldMidi = touchMap.get(touch.identifier);
+          const newMidi = getMidiFromTouch(touch);
+          if (newMidi !== null && newMidi !== oldMidi) {
+            if (oldMidi !== null && oldMidi !== undefined) handleNoteEnd(oldMidi);
+            touchMap.set(touch.identifier, newMidi);
+            handleNoteStart(newMidi);
           }
         }
+        // Only prevent default if at least one finger is playing (not scrolling)
+        if (anyPlaying) e.preventDefault();
       }, { passive: false });
 
       piano.addEventListener('touchend', (e) => {
         for (const touch of e.changedTouches) {
-          const start = touchStarts.get(touch.identifier);
-
-          if (start && !start.scrolling && !start.started) {
-            // Quick tap — never moved far enough to trigger either mode
-            // Play the note briefly
-            const midi = getMidiFromTouch(touch);
-            if (midi !== null) {
-              handleNoteStart(midi);
-              // Short tap — immediately schedule release
-              setTimeout(() => handleNoteEnd(midi), 150);
-            }
-          } else {
-            // Release held note
-            const midi = touchMap.get(touch.identifier);
-            if (midi !== null && midi !== undefined) handleNoteEnd(midi);
-          }
+          const midi = touchMap.get(touch.identifier);
+          if (midi !== null && midi !== undefined) handleNoteEnd(midi);
           touchMap.delete(touch.identifier);
           touchStarts.delete(touch.identifier);
         }
