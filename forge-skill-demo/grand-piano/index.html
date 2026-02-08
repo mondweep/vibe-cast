@@ -159,7 +159,32 @@
       transition: opacity 0.2s;
     }
 
-    /* ===== PIANO CONTAINER ===== */
+    /* ===== PIANO WRAPPER WITH SCROLL ARROWS ===== */
+    #piano-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scroll-arrow {
+      width: 36px;
+      flex-shrink: 0;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: rgba(255,255,255,0.7);
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .scroll-arrow:active { background: rgba(233, 69, 96, 0.4); color: #fff; }
+
     #piano-container {
       flex: 1;
       overflow-x: auto;
@@ -361,8 +386,12 @@
     <div id="note-display" aria-live="polite">&nbsp;</div>
 
     <!-- Piano Keys -->
-    <div id="piano-container">
-      <div id="piano" role="group" aria-label="Piano keys"></div>
+    <div id="piano-wrapper">
+      <button id="scroll-left" class="scroll-arrow" aria-label="Scroll piano left">&#9664;</button>
+      <div id="piano-container">
+        <div id="piano" role="group" aria-label="Piano keys"></div>
+      </div>
+      <button id="scroll-right" class="scroll-arrow" aria-label="Scroll piano right">&#9654;</button>
     </div>
 
     <!-- Sustain Pedal -->
@@ -931,52 +960,67 @@
         updateNoteDisplay(null);
       }
 
-      // Track whether touch moved (scroll) or stayed (chord tap)
-      let chordTouchStartX = 0;
-      let chordTouchMoved = false;
-      let chordTouchBtn = null;
+      // Chord strip: scroll vs tap detection
+      // Sound only plays AFTER we confirm the finger didn't scroll
+      let chordStartX = 0;
+      let chordStartY = 0;
+      let chordScrolled = false;
+      let chordTarget = null;
+      let chordHoldTimer = null;
+      let chordIsPlaying = false;
+      const CHORD_SCROLL_THRESHOLD = 10;
+      const CHORD_HOLD_DELAY = 200; // ms before hold-to-play kicks in
 
-      strip.addEventListener('touchstart', (e) => {
-        AudioEngine.init();
-        const touch = e.touches[0];
-        chordTouchStartX = touch.clientX;
-        chordTouchMoved = false;
-        chordTouchBtn = e.target.closest('.chord-btn');
-      }, { passive: true });
-
-      strip.addEventListener('touchmove', (e) => {
-        const touch = e.touches[0];
-        if (Math.abs(touch.clientX - chordTouchStartX) > 10) {
-          chordTouchMoved = true;
-          // If we started a chord during scroll, stop it
-          stopChord();
-        }
-      }, { passive: true });
-
-      strip.addEventListener('touchend', (e) => {
-        if (!chordTouchMoved && chordTouchBtn) {
-          // It was a tap, not a scroll — play the chord briefly
-          playChord(chordTouchBtn.dataset.chordId);
-          // Stop after a hold; user can also long-press via separate logic below
-        }
-        // Always stop chord on finger lift
-        setTimeout(() => stopChord(), 50);
-        chordTouchBtn = null;
-      }, { passive: true });
-
-      strip.addEventListener('touchcancel', () => { stopChord(); chordTouchBtn = null; });
-
-      // Long-press: use pointerdown/up for reliable hold-to-play on mobile
       strip.addEventListener('pointerdown', (e) => {
         AudioEngine.init();
-        const btn = e.target.closest('.chord-btn');
-        if (btn) {
-          e.preventDefault();
-          playChord(btn.dataset.chordId);
+        chordStartX = e.clientX;
+        chordStartY = e.clientY;
+        chordScrolled = false;
+        chordIsPlaying = false;
+        chordTarget = e.target.closest('.chord-btn');
+
+        // Start a hold timer — if finger doesn't move for 200ms, start playing
+        if (chordTarget) {
+          chordHoldTimer = setTimeout(() => {
+            if (!chordScrolled && chordTarget) {
+              playChord(chordTarget.dataset.chordId);
+              chordIsPlaying = true;
+            }
+          }, CHORD_HOLD_DELAY);
         }
       });
-      strip.addEventListener('pointerup', () => stopChord());
-      strip.addEventListener('pointerleave', () => stopChord());
+
+      strip.addEventListener('pointermove', (e) => {
+        if (chordScrolled) return;
+        const dx = Math.abs(e.clientX - chordStartX);
+        const dy = Math.abs(e.clientY - chordStartY);
+        if (dx > CHORD_SCROLL_THRESHOLD || dy > CHORD_SCROLL_THRESHOLD) {
+          chordScrolled = true;
+          clearTimeout(chordHoldTimer);
+          if (chordIsPlaying) { stopChord(); chordIsPlaying = false; }
+        }
+      });
+
+      strip.addEventListener('pointerup', () => {
+        clearTimeout(chordHoldTimer);
+        if (!chordScrolled && chordTarget && !chordIsPlaying) {
+          // Quick tap — play chord briefly
+          playChord(chordTarget.dataset.chordId);
+          setTimeout(() => stopChord(), 400);
+        } else if (chordIsPlaying) {
+          // Was holding — stop on release
+          stopChord();
+        }
+        chordTarget = null;
+        chordIsPlaying = false;
+      });
+
+      strip.addEventListener('pointercancel', () => {
+        clearTimeout(chordHoldTimer);
+        stopChord();
+        chordTarget = null;
+        chordIsPlaying = false;
+      });
 
     }
 
@@ -1080,8 +1124,13 @@
       });
 
       const toggleLabelsBtn = document.getElementById('toggle-labels');
-      let labelTouchFired = false;
+      let labelLastToggle = 0;
       function doToggleLabels() {
+        // Debounce — ignore if fired within 300ms (prevents double-fire)
+        const now = Date.now();
+        if (now - labelLastToggle < 300) return;
+        labelLastToggle = now;
+
         showLabels = !showLabels;
         toggleLabelsBtn.classList.toggle('active', showLabels);
         document.querySelectorAll('.key-label').forEach(l => {
@@ -1093,16 +1142,42 @@
           }
         });
       }
-      // touchend fires reliably on mobile; preventDefault stops duplicate click
-      toggleLabelsBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        labelTouchFired = true;
-        doToggleLabels();
-      });
-      toggleLabelsBtn.addEventListener('click', () => {
-        if (labelTouchFired) { labelTouchFired = false; return; }
-        doToggleLabels();
-      });
+      // Use both — the 300ms debounce prevents double-fire
+      toggleLabelsBtn.addEventListener('touchend', (e) => { e.preventDefault(); doToggleLabels(); });
+      toggleLabelsBtn.addEventListener('click', doToggleLabels);
+    }
+
+    // Scroll arrow buttons for piano — always accessible in any orientation
+    function setupScrollButtons() {
+      const container = document.getElementById('piano-container');
+      const SCROLL_STEP = 200; // px per tap
+      let scrollInterval = null;
+
+      function startScroll(direction) {
+        container.scrollBy({ left: direction * SCROLL_STEP, behavior: 'smooth' });
+        // Hold to keep scrolling
+        scrollInterval = setInterval(() => {
+          container.scrollBy({ left: direction * SCROLL_STEP, behavior: 'smooth' });
+        }, 300);
+      }
+
+      function stopScroll() {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+      }
+
+      const leftBtn = document.getElementById('scroll-left');
+      const rightBtn = document.getElementById('scroll-right');
+
+      leftBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); startScroll(-1); });
+      leftBtn.addEventListener('pointerup', stopScroll);
+      leftBtn.addEventListener('pointerleave', stopScroll);
+      leftBtn.addEventListener('pointercancel', stopScroll);
+
+      rightBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); startScroll(1); });
+      rightBtn.addEventListener('pointerup', stopScroll);
+      rightBtn.addEventListener('pointerleave', stopScroll);
+      rightBtn.addEventListener('pointercancel', stopScroll);
     }
 
     function init() {
@@ -1113,6 +1188,7 @@
       setupSustain();
       setupKeyboard();
       setupControls();
+      setupScrollButtons();
       // Set initial label button state
       document.getElementById('toggle-labels').classList.add('active');
     }
