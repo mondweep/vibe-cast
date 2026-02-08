@@ -658,17 +658,73 @@
   // PIANO UI — Key rendering, touch handling, visual feedback
   // =========================================================================
   const Piano = (() => {
-    let startOctave = 3;
-    const NUM_OCTAVES = 3;
+    const FIRST_OCTAVE = 1;
+    const LAST_OCTAVE = 7; // C1 to B7 — full piano range
+    const TOTAL_OCTAVES = LAST_OCTAVE - FIRST_OCTAVE + 1;
     let showLabels = true;
     const touchMap = new Map(); // touchId -> midiNote
     let chordPlaying = null; // { notes, timeoutId }
     let allChords = [];
+    let currentCenterOctave = 4; // tracks the visible center for chords
 
     function midiRange() {
-      const first = startOctave * 12 + 12; // C of start octave (MIDI)
-      const last = (startOctave + NUM_OCTAVES) * 12 + 12; // C of end+1
+      const first = FIRST_OCTAVE * 12 + 12; // C1
+      const last = (LAST_OCTAVE + 1) * 12 + 12; // C8 (exclusive)
       return { first, last };
+    }
+
+    function getWkWidth() {
+      return parseInt(getComputedStyle(document.documentElement).getPropertyValue('--white-key-width'));
+    }
+
+    function getBkWidth() {
+      return parseInt(getComputedStyle(document.documentElement).getPropertyValue('--black-key-width'));
+    }
+
+    // Calculate scroll position to center a given octave
+    function scrollPositionForOctave(octave) {
+      const container = document.getElementById('piano-container');
+      const wkWidth = getWkWidth();
+      // Count white keys from C1 to the start of target octave
+      const { first } = midiRange();
+      let whitesBefore = 0;
+      const targetMidi = octave * 12 + 12;
+      for (let m = first; m < targetMidi; m++) {
+        if (!isBlackKey(m)) whitesBefore++;
+      }
+      // Center the target octave (7 white keys) in the viewport
+      const octaveCenter = (whitesBefore + 3.5) * wkWidth;
+      return octaveCenter - container.clientWidth / 2;
+    }
+
+    // Determine which octave is currently centered based on scroll position
+    function getVisibleCenterOctave() {
+      const container = document.getElementById('piano-container');
+      const wkWidth = getWkWidth();
+      const centerX = container.scrollLeft + container.clientWidth / 2;
+      const whiteIndex = Math.floor(centerX / wkWidth);
+      // Map white key index back to octave
+      const { first } = midiRange();
+      let wIdx = 0;
+      for (let m = first; m < first + TOTAL_OCTAVES * 12; m++) {
+        if (!isBlackKey(m)) {
+          if (wIdx === whiteIndex) {
+            return Math.floor(m / 12) - 1;
+          }
+          wIdx++;
+        }
+      }
+      return 4; // fallback
+    }
+
+    function updateOctaveDisplay() {
+      const oct = getVisibleCenterOctave();
+      if (oct !== currentCenterOctave) {
+        currentCenterOctave = oct;
+        document.getElementById('oct-display').textContent = oct;
+        // Update chords to match visible octave
+        renderChordStrip();
+      }
     }
 
     function renderKeys() {
@@ -729,16 +785,15 @@
       const totalWhites = piano.querySelectorAll('.white-key').length;
       piano.style.width = `${totalWhites * wkWidth}px`;
 
-      // Scroll to middle
+      // Scroll to center on octave 4 (or current center octave)
       const container = document.getElementById('piano-container');
-      const scrollTarget = (piano.offsetWidth - container.offsetWidth) / 2;
-      container.scrollLeft = Math.max(0, scrollTarget);
+      container.scrollLeft = scrollPositionForOctave(currentCenterOctave);
     }
 
     function renderChordStrip() {
       const strip = document.getElementById('chord-strip');
       strip.innerHTML = '';
-      allChords = buildChords(startOctave + 1); // Chords in middle octave
+      allChords = buildChords(currentCenterOctave); // Chords in visible octave
 
       // Show a curated set: major and minor for each root, plus common 7ths
       const curatedTypes = ['maj', 'min', '7', 'M7', 'm7'];
@@ -1069,7 +1124,7 @@
 
         if (QWERTY_MAP[key] !== undefined && !keyboardActive.has(key)) {
           AudioEngine.init();
-          const midi = (startOctave + 1) * 12 + 12 + QWERTY_MAP[key];
+          const midi = currentCenterOctave * 12 + 12 + QWERTY_MAP[key];
           keyboardActive.add(key);
           handleNoteStart(midi);
           // Store midi for release
@@ -1099,19 +1154,21 @@
       const octDisplay = document.getElementById('oct-display');
 
       document.getElementById('oct-down').addEventListener('click', () => {
-        if (startOctave > 1) {
-          startOctave--;
-          octDisplay.textContent = startOctave + 1; // Show middle octave
-          renderKeys();
+        if (currentCenterOctave > FIRST_OCTAVE) {
+          currentCenterOctave--;
+          octDisplay.textContent = currentCenterOctave;
+          const container = document.getElementById('piano-container');
+          container.scrollTo({ left: scrollPositionForOctave(currentCenterOctave), behavior: 'smooth' });
           renderChordStrip();
         }
       });
 
       document.getElementById('oct-up').addEventListener('click', () => {
-        if (startOctave < 6) {
-          startOctave++;
-          octDisplay.textContent = startOctave + 1;
-          renderKeys();
+        if (currentCenterOctave < LAST_OCTAVE) {
+          currentCenterOctave++;
+          octDisplay.textContent = currentCenterOctave;
+          const container = document.getElementById('piano-container');
+          container.scrollTo({ left: scrollPositionForOctave(currentCenterOctave), behavior: 'smooth' });
           renderChordStrip();
         }
       });
@@ -1177,6 +1234,16 @@
       rightBtn.addEventListener('pointercancel', stopScroll);
     }
 
+    // Track scroll position to update octave display + chord strip
+    function setupScrollTracking() {
+      const container = document.getElementById('piano-container');
+      let scrollTrackTimer = null;
+      container.addEventListener('scroll', () => {
+        clearTimeout(scrollTrackTimer);
+        scrollTrackTimer = setTimeout(updateOctaveDisplay, 120);
+      }, { passive: true });
+    }
+
     function init() {
       renderKeys();
       renderChordStrip();
@@ -1186,8 +1253,11 @@
       setupKeyboard();
       setupControls();
       setupScrollButtons();
+      setupScrollTracking();
       // Set initial label button state
       document.getElementById('toggle-labels').classList.add('active');
+      // Set initial octave display
+      document.getElementById('oct-display').textContent = currentCenterOctave;
     }
 
     function rerender() {
