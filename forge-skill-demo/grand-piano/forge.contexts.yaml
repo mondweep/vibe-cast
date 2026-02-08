@@ -1,0 +1,97 @@
+# =============================================================================
+# Forge Contexts — Grand Piano Bounded Contexts
+# =============================================================================
+# A single-page app split into logical bounded contexts for testing.
+# =============================================================================
+
+contexts:
+  # -------------------------------------------------------------------------
+  # Audio Engine Context — Web Audio API, synthesis, voices
+  # -------------------------------------------------------------------------
+  - name: audio-engine
+    testFile: cypress/e2e/audio-engine.cy.ts
+    specFile: cypress/e2e/specs/audio-engine.feature
+    paths: 18
+    subdomains:
+      - NotePlayback         # noteOn, noteOff, frequency mapping
+      - VoiceSelection       # Grand, Bright, Warm, Electric, Organ
+      - SustainPedal         # Hold and release behavior
+      - Polyphony            # Multiple simultaneous notes
+    criticalPaths:
+      - play-single-note
+      - play-chord
+      - sustain-hold-and-release
+      - voice-switching
+
+  # -------------------------------------------------------------------------
+  # Piano Keys Context — Visual keyboard, touch handling, glissando
+  # -------------------------------------------------------------------------
+  - name: piano-keys
+    testFile: cypress/e2e/piano-keys.cy.ts
+    specFile: cypress/e2e/specs/piano-keys.feature
+    paths: 22
+    subdomains:
+      - KeyRendering         # White/black key layout, labels
+      - TouchInteraction     # Single touch, multi-touch, glissando
+      - VisualFeedback       # Key highlighting, note display
+      - OctaveNavigation     # Shift octaves up/down, scroll
+    criticalPaths:
+      - touch-single-key
+      - touch-multi-keys-chord
+      - glissando-slide
+      - octave-shift
+
+  # -------------------------------------------------------------------------
+  # Chord Strip Context — One-tap chord playing
+  # -------------------------------------------------------------------------
+  - name: chord-strip
+    testFile: cypress/e2e/chord-strip.cy.ts
+    specFile: cypress/e2e/specs/chord-strip.feature
+    paths: 14
+    subdomains:
+      - ChordPlayback        # Tap to play, release to stop
+      - ChordVarieties       # Major, minor, 7th, M7, m7
+      - ChordKeyHighlight    # Piano keys light up with chord
+      - ChordScrolling       # Horizontal scroll through chords
+    criticalPaths:
+      - tap-chord-plays-notes
+      - chord-highlights-keys
+      - scroll-to-chord
+
+  # -------------------------------------------------------------------------
+  # Controls Context — Settings, voice selection, labels
+  # -------------------------------------------------------------------------
+  - name: controls
+    testFile: cypress/e2e/controls.cy.ts
+    specFile: cypress/e2e/specs/controls.feature
+    paths: 10
+    subdomains:
+      - VoiceSelector        # Dropdown voice change
+      - OctaveControls       # Up/down buttons, display
+      - LabelToggle          # Show/hide note labels
+    criticalPaths:
+      - change-voice
+      - shift-octave
+
+# =============================================================================
+# Dependency Graph
+# =============================================================================
+dependencies:
+  audio-engine:
+    blocks: [piano-keys, chord-strip]
+    cascade_priority: 1     # Audio must work before anything else
+
+  piano-keys:
+    depends_on: [audio-engine]
+    blocks: []
+    cascade_priority: 2
+
+  chord-strip:
+    depends_on: [audio-engine]
+    blocks: []
+    cascade_priority: 2
+
+  controls:
+    depends_on: []
+    blocks: [piano-keys, chord-strip, audio-engine]
+    cascade_priority: 3     # Controls affect all other contexts

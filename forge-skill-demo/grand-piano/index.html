@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Grand Piano</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white-key-width: 48px;
+      --white-key-height: 220px;
+      --black-key-width: 32px;
+      --black-key-height: 140px;
+      --piano-bg: #1a1a2e;
+      --panel-bg: #16213e;
+      --accent: #e94560;
+      --accent-glow: rgba(233, 69, 96, 0.4);
+      --text: #eee;
+      --text-dim: #888;
+      --white-key-bg: linear-gradient(to bottom, #fafafa 0%, #e8e8e8 92%, #d0d0d0 100%);
+      --white-key-active: linear-gradient(to bottom, #ffe0e6 0%, #ffc8d4 92%, #ffb0c0 100%);
+      --black-key-bg: linear-gradient(to bottom, #333 0%, #111 85%, #000 100%);
+      --black-key-active: linear-gradient(to bottom, #7a2030 0%, #4a1020 85%, #2a0510 100%);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--piano-bg);
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* ===== APP LAYOUT ===== */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      height: 100dvh;
+    }
+
+    /* ===== TOP CONTROLS BAR ===== */
+    #controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--panel-bg);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #controls h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ctrl-group label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active, .btn.active { background: var(--accent); border-color: var(--accent); }
+
+    .btn-icon {
+      width: 36px; height: 36px;
+      padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+
+    select.btn {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 22px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+
+    /* ===== CHORD STRIP ===== */
+    #chord-strip {
+      display: flex;
+      gap: 6px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.3);
+      overflow-x: auto;
+      flex-shrink: 0;
+      scrollbar-width: none;
+    }
+    #chord-strip::-webkit-scrollbar { display: none; }
+
+    .chord-btn {
+      flex-shrink: 0;
+      min-width: 54px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chord-btn:active, .chord-btn.playing {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+      transform: scale(0.95);
+    }
+    .chord-btn .chord-name { display: block; font-size: 14px; }
+    .chord-btn .chord-type { display: block; font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+    .chord-btn:active .chord-type, .chord-btn.playing .chord-type { color: rgba(255,255,255,0.8); }
+
+    /* ===== NOTE DISPLAY ===== */
+    #note-display {
+      text-align: center;
+      padding: 6px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      min-height: 36px;
+      flex-shrink: 0;
+      text-shadow: 0 0 20px var(--accent-glow);
+      transition: opacity 0.2s;
+    }
+
+    /* ===== PIANO CONTAINER ===== */
+    #piano-container {
+      flex: 1;
+      overflow-x: auto;
+      overflow-y: hidden;
+      display: flex;
+      align-items: flex-start;
+      padding: 4px 0 0;
+      scrollbar-width: none;
+    }
+    #piano-container::-webkit-scrollbar { display: none; }
+
+    #piano {
+      position: relative;
+      display: flex;
+      margin: 0 auto;
+      height: var(--white-key-height);
+      flex-shrink: 0;
+    }
+
+    /* ===== WHITE KEYS ===== */
+    .white-key {
+      width: var(--white-key-width);
+      height: var(--white-key-height);
+      background: var(--white-key-bg);
+      border: 1px solid #bbb;
+      border-radius: 0 0 6px 6px;
+      position: relative;
+      z-index: 1;
+      cursor: pointer;
+      transition: background 0.06s;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 8px;
+    }
+    .white-key .key-label {
+      font-size: 10px;
+      color: #999;
+      pointer-events: none;
+    }
+    .white-key.active {
+      background: var(--white-key-active);
+      box-shadow: inset 0 -4px 8px rgba(233, 69, 96, 0.15), 0 0 12px var(--accent-glow);
+    }
+    .white-key.active .key-label { color: var(--accent); font-weight: 700; }
+
+    /* ===== BLACK KEYS ===== */
+    .black-key {
+      width: var(--black-key-width);
+      height: var(--black-key-height);
+      background: var(--black-key-bg);
+      border: 1px solid #000;
+      border-radius: 0 0 4px 4px;
+      position: absolute;
+      z-index: 2;
+      cursor: pointer;
+      transition: background 0.06s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 -1px 2px rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 8px;
+    }
+    .black-key .key-label {
+      font-size: 9px;
+      color: #666;
+      pointer-events: none;
+    }
+    .black-key.active {
+      background: var(--black-key-active);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5), 0 0 16px var(--accent-glow);
+    }
+    .black-key.active .key-label { color: #ffb0c0; font-weight: 700; }
+
+    /* ===== SUSTAIN PEDAL ===== */
+    #sustain-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      background: var(--panel-bg);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    #sustain-pedal {
+      width: 100%;
+      max-width: 300px;
+      height: 44px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(255,255,255,0.12);
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #sustain-pedal.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ===== LANDSCAPE ADJUSTMENTS ===== */
+    @media (orientation: landscape) {
+      :root {
+        --white-key-height: 180px;
+        --black-key-height: 112px;
+      }
+      #controls { padding: 4px 12px; }
+      #chord-strip { padding: 4px 12px; }
+      #note-display { padding: 2px; min-height: 28px; font-size: 16px; }
+      #sustain-bar { padding: 6px; }
+      #sustain-pedal { height: 36px; }
+    }
+
+    /* ===== SMALL SCREENS ===== */
+    @media (max-width: 480px) {
+      :root {
+        --white-key-width: 40px;
+        --black-key-width: 28px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      :root {
+        --white-key-width: 36px;
+        --black-key-width: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Top Controls -->
+    <div id="controls">
+      <h1>GRAND PIANO</h1>
+      <div class="ctrl-group">
+        <label>Octave</label>
+        <button class="btn btn-icon" id="oct-down" aria-label="Lower octave">&#9664;</button>
+        <span id="oct-display" style="min-width:24px;text-align:center;font-weight:700">4</span>
+        <button class="btn btn-icon" id="oct-up" aria-label="Raise octave">&#9654;</button>
+      </div>
+      <div class="ctrl-group">
+        <label>Sound</label>
+        <select class="btn" id="voice-select" aria-label="Select piano voice">
+          <option value="grand">Grand</option>
+          <option value="bright">Bright</option>
+          <option value="warm">Warm</option>
+          <option value="electric">Electric</option>
+          <option value="organ">Organ</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>Keys</label>
+        <button class="btn" id="toggle-labels">ABC</button>
+      </div>
+    </div>
+
+    <!-- Chord Strip -->
+    <div id="chord-strip" role="group" aria-label="Chord buttons"></div>
+
+    <!-- Active Note Display -->
+    <div id="note-display" aria-live="polite">&nbsp;</div>
+
+    <!-- Piano Keys -->
+    <div id="piano-container">
+      <div id="piano" role="group" aria-label="Piano keys"></div>
+    </div>
+
+    <!-- Sustain Pedal -->
+    <div id="sustain-bar">
+      <button id="sustain-pedal" aria-label="Sustain pedal">SUSTAIN</button>
+    </div>
+  </div>
+
+  <script>
+  // =========================================================================
+  // AUDIO ENGINE — Web Audio API with multi-voice piano synthesis
+  // =========================================================================
+  const AudioEngine = (() => {
+    let ctx = null;
+    let masterGain = null;
+    let compressor = null;
+    let reverb = null;
+    const activeNotes = new Map(); // note -> { oscillators, gainNode }
+    let sustainActive = false;
+    const sustainedNotes = new Set();
+
+    const VOICES = {
+      grand: {
+        harmonics: [1, 2, 3, 4, 5, 6, 8],
+        gains:     [1, 0.5, 0.25, 0.15, 0.08, 0.05, 0.02],
+        attack: 0.005, decay: 0.3, sustain: 0.4, release: 0.8,
+        type: 'triangle',
+      },
+      bright: {
+        harmonics: [1, 2, 3, 4, 5, 6, 7, 8],
+        gains:     [1, 0.6, 0.4, 0.3, 0.2, 0.15, 0.1, 0.08],
+        attack: 0.002, decay: 0.2, sustain: 0.5, release: 0.6,
+        type: 'sawtooth',
+      },
+      warm: {
+        harmonics: [1, 2, 3],
+        gains:     [1, 0.3, 0.1],
+        attack: 0.01, decay: 0.5, sustain: 0.6, release: 1.2,
+        type: 'sine',
+      },
+      electric: {
+        harmonics: [1, 2, 3, 4, 5, 6],
+        gains:     [1, 0.7, 0.5, 0.35, 0.2, 0.1],
+        attack: 0.001, decay: 0.15, sustain: 0.3, release: 0.4,
+        type: 'square',
+      },
+      organ: {
+        harmonics: [1, 2, 3, 4, 5, 6, 8],
+        gains:     [1, 0.8, 0.6, 0.5, 0.4, 0.3, 0.2],
+        attack: 0.01, decay: 0.05, sustain: 0.9, release: 0.1,
+        type: 'sine',
+      },
+    };
+
+    let currentVoice = 'grand';
+
+    function init() {
+      if (ctx) return;
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+      compressor = ctx.createDynamicsCompressor();
+      compressor.threshold.value = -24;
+      compressor.knee.value = 10;
+      compressor.ratio.value = 4;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.15;
+
+      // Simple convolution reverb via delay feedback
+      reverb = createReverb();
+
+      masterGain = ctx.createGain();
+      masterGain.gain.value = 0.7;
+      masterGain.connect(compressor);
+      compressor.connect(reverb);
+      reverb.connect(ctx.destination);
+      // Dry path
+      compressor.connect(ctx.destination);
+    }
+
+    function createReverb() {
+      const convolver = ctx.createGain();
+      const delay = ctx.createDelay();
+      delay.delayTime.value = 0.03;
+      const feedback = ctx.createGain();
+      feedback.gain.value = 0.15;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 3500;
+      const reverbGain = ctx.createGain();
+      reverbGain.gain.value = 0.2;
+
+      convolver.connect(delay);
+      delay.connect(filter);
+      filter.connect(feedback);
+      feedback.connect(delay);
+      filter.connect(reverbGain);
+      reverbGain.connect(ctx.destination);
+
+      return convolver;
+    }
+
+    function noteFrequency(note) {
+      // note is MIDI number; A4 = 69 = 440Hz
+      return 440 * Math.pow(2, (note - 69) / 12);
+    }
+
+    function noteOn(midiNote) {
+      init();
+      if (ctx.state === 'suspended') ctx.resume();
+      if (activeNotes.has(midiNote)) return;
+
+      const voice = VOICES[currentVoice];
+      const freq = noteFrequency(midiNote);
+      const now = ctx.currentTime;
+
+      const noteGain = ctx.createGain();
+      noteGain.gain.setValueAtTime(0, now);
+      noteGain.gain.linearRampToValueAtTime(0.6, now + voice.attack);
+      noteGain.gain.exponentialRampToValueAtTime(
+        Math.max(0.001, 0.6 * voice.sustain),
+        now + voice.attack + voice.decay
+      );
+      noteGain.connect(masterGain);
+
+      const oscillators = voice.harmonics.map((h, i) => {
+        const osc = ctx.createOscillator();
+        osc.type = voice.type;
+        osc.frequency.setValueAtTime(freq * h, now);
+        // Slight detuning for richness
+        if (i > 0) osc.detune.setValueAtTime((Math.random() - 0.5) * 4, now);
+
+        const harmGain = ctx.createGain();
+        harmGain.gain.value = voice.gains[i] || 0.05;
+        osc.connect(harmGain);
+        harmGain.connect(noteGain);
+        osc.start(now);
+        return { osc, harmGain };
+      });
+
+      activeNotes.set(midiNote, { oscillators, noteGain, startTime: now });
+    }
+
+    function noteOff(midiNote) {
+      if (!ctx) return;
+      if (sustainActive) {
+        sustainedNotes.add(midiNote);
+        return;
+      }
+      releaseNote(midiNote);
+    }
+
+    function releaseNote(midiNote) {
+      const note = activeNotes.get(midiNote);
+      if (!note) return;
+      activeNotes.delete(midiNote);
+      sustainedNotes.delete(midiNote);
+
+      const voice = VOICES[currentVoice];
+      const now = ctx.currentTime;
+
+      note.noteGain.gain.cancelScheduledValues(now);
+      note.noteGain.gain.setValueAtTime(note.noteGain.gain.value, now);
+      note.noteGain.gain.exponentialRampToValueAtTime(0.001, now + voice.release);
+
+      note.oscillators.forEach(({ osc }) => {
+        osc.stop(now + voice.release + 0.05);
+      });
+    }
+
+    function setSustain(active) {
+      sustainActive = active;
+      if (!active) {
+        // Release all sustained notes
+        sustainedNotes.forEach(note => releaseNote(note));
+        sustainedNotes.clear();
+      }
+    }
+
+    function setVoice(v) { currentVoice = v; }
+    function isSustain() { return sustainActive; }
+
+    return { init, noteOn, noteOff, setSustain, setVoice, isSustain };
+  })();
+
+  // =========================================================================
+  // MUSIC THEORY — Note names, MIDI mapping, chords
+  // =========================================================================
+  const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const FLAT_NAMES = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+  function midiToName(midi) {
+    const octave = Math.floor(midi / 12) - 1;
+    const name = NOTE_NAMES[midi % 12];
+    return `${name}${octave}`;
+  }
+
+  function midiToDisplay(midi) {
+    const octave = Math.floor(midi / 12) - 1;
+    const idx = midi % 12;
+    const name = NOTE_NAMES[idx];
+    const flat = FLAT_NAMES[idx];
+    return name === flat ? `${name}${octave}` : `${name}${octave} / ${flat}${octave}`;
+  }
+
+  function isBlackKey(midi) {
+    return [1, 3, 6, 8, 10].includes(midi % 12);
+  }
+
+  // Chord definitions (semitone intervals from root)
+  const CHORD_TYPES = {
+    major:    { intervals: [0, 4, 7],       label: 'maj' },
+    minor:    { intervals: [0, 3, 7],       label: 'min' },
+    seventh:  { intervals: [0, 4, 7, 10],   label: '7' },
+    maj7:     { intervals: [0, 4, 7, 11],   label: 'M7' },
+    min7:     { intervals: [0, 3, 7, 10],   label: 'm7' },
+    dim:      { intervals: [0, 3, 6],       label: 'dim' },
+    aug:      { intervals: [0, 4, 8],       label: 'aug' },
+    sus2:     { intervals: [0, 2, 7],       label: 'sus2' },
+    sus4:     { intervals: [0, 5, 7],       label: 'sus4' },
+  };
+
+  function buildChords(rootOctave) {
+    const chords = [];
+    const roots = [0, 2, 4, 5, 7, 9, 11]; // C D E F G A B
+    const types = ['major', 'minor', 'seventh', 'maj7', 'min7'];
+
+    roots.forEach(rootOffset => {
+      const rootMidi = rootOctave * 12 + rootOffset + 12; // +12 for MIDI offset
+      const rootName = NOTE_NAMES[rootOffset];
+      types.forEach(type => {
+        const chord = CHORD_TYPES[type];
+        chords.push({
+          name: rootName,
+          type: chord.label,
+          notes: chord.intervals.map(i => rootMidi + i),
+          id: `${rootName}-${type}`,
+        });
+      });
+    });
+    return chords;
+  }
+
+  // =========================================================================
+  // PIANO UI — Key rendering, touch handling, visual feedback
+  // =========================================================================
+  const Piano = (() => {
+    let startOctave = 3;
+    const NUM_OCTAVES = 3;
+    let showLabels = true;
+    const touchMap = new Map(); // touchId -> midiNote
+    let chordPlaying = null; // { notes, timeoutId }
+    let allChords = [];
+
+    function midiRange() {
+      const first = startOctave * 12 + 12; // C of start octave (MIDI)
+      const last = (startOctave + NUM_OCTAVES) * 12 + 12; // C of end+1
+      return { first, last };
+    }
+
+    function renderKeys() {
+      const piano = document.getElementById('piano');
+      piano.innerHTML = '';
+
+      const { first, last } = midiRange();
+      let whiteKeyIndex = 0;
+
+      for (let midi = first; midi < last; midi++) {
+        if (isBlackKey(midi)) continue;
+
+        const key = document.createElement('div');
+        key.className = 'white-key';
+        key.dataset.midi = midi;
+        key.dataset.note = midiToName(midi);
+        key.setAttribute('role', 'button');
+        key.setAttribute('aria-label', `Piano key ${midiToName(midi)}`);
+
+        const label = document.createElement('span');
+        label.className = 'key-label';
+        label.textContent = showLabels ? midiToName(midi) : '';
+        key.appendChild(label);
+
+        piano.appendChild(key);
+        whiteKeyIndex++;
+      }
+
+      // Position black keys absolutely
+      const whiteKeys = piano.querySelectorAll('.white-key');
+      const wkWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--white-key-width'));
+
+      let wIdx = 0;
+      for (let midi = first; midi < last; midi++) {
+        if (isBlackKey(midi)) {
+          const key = document.createElement('div');
+          key.className = 'black-key';
+          key.dataset.midi = midi;
+          key.dataset.note = midiToName(midi);
+          key.setAttribute('role', 'button');
+          key.setAttribute('aria-label', `Piano key ${midiToName(midi)}`);
+
+          const label = document.createElement('span');
+          label.className = 'key-label';
+          label.textContent = showLabels ? NOTE_NAMES[midi % 12] : '';
+          key.appendChild(label);
+
+          // Black key sits between previous and current white key
+          const bkWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--black-key-width'));
+          key.style.left = `${wIdx * wkWidth - bkWidth / 2}px`;
+          piano.appendChild(key);
+        } else {
+          wIdx++;
+        }
+      }
+
+      // Set piano width
+      const totalWhites = piano.querySelectorAll('.white-key').length;
+      piano.style.width = `${totalWhites * wkWidth}px`;
+
+      // Scroll to middle
+      const container = document.getElementById('piano-container');
+      const scrollTarget = (piano.offsetWidth - container.offsetWidth) / 2;
+      container.scrollLeft = Math.max(0, scrollTarget);
+    }
+
+    function renderChordStrip() {
+      const strip = document.getElementById('chord-strip');
+      strip.innerHTML = '';
+      allChords = buildChords(startOctave + 1); // Chords in middle octave
+
+      // Show a curated set: major and minor for each root, plus common 7ths
+      const curatedTypes = ['maj', 'min', '7', 'M7', 'm7'];
+      const shown = allChords.filter(c => curatedTypes.includes(c.type));
+
+      shown.forEach(chord => {
+        const btn = document.createElement('div');
+        btn.className = 'chord-btn';
+        btn.dataset.chordId = chord.id;
+        btn.setAttribute('role', 'button');
+        btn.setAttribute('aria-label', `${chord.name} ${chord.type} chord`);
+        btn.innerHTML = `<span class="chord-name">${chord.name}</span><span class="chord-type">${chord.type}</span>`;
+        strip.appendChild(btn);
+      });
+    }
+
+    function activateKey(midi) {
+      const el = document.querySelector(`[data-midi="${midi}"]`);
+      if (el) el.classList.add('active');
+    }
+
+    function deactivateKey(midi) {
+      const el = document.querySelector(`[data-midi="${midi}"]`);
+      if (el) el.classList.remove('active');
+    }
+
+    function updateNoteDisplay(midiNotes) {
+      const display = document.getElementById('note-display');
+      if (!midiNotes || midiNotes.length === 0) {
+        display.innerHTML = '&nbsp;';
+        return;
+      }
+      display.textContent = midiNotes.map(m => midiToDisplay(m)).join('  ');
+    }
+
+    function handleNoteStart(midi) {
+      AudioEngine.noteOn(midi);
+      activateKey(midi);
+      // Collect all currently playing notes for display
+      const playing = [];
+      touchMap.forEach(n => playing.push(n));
+      if (!playing.includes(midi)) playing.push(midi);
+      updateNoteDisplay(playing);
+    }
+
+    function handleNoteEnd(midi) {
+      AudioEngine.noteOff(midi);
+      deactivateKey(midi);
+      const playing = [];
+      touchMap.forEach(n => playing.push(n));
+      updateNoteDisplay(playing.length > 0 ? playing : null);
+    }
+
+    // Touch event handling for multi-touch chords on keys
+    function setupTouchHandlers() {
+      const piano = document.getElementById('piano');
+
+      function getMidiFromTouch(touch) {
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (el && el.dataset && el.dataset.midi) return parseInt(el.dataset.midi);
+        if (el && el.parentElement && el.parentElement.dataset && el.parentElement.dataset.midi)
+          return parseInt(el.parentElement.dataset.midi);
+        return null;
+      }
+
+      piano.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        AudioEngine.init();
+        for (const touch of e.changedTouches) {
+          const midi = getMidiFromTouch(touch);
+          if (midi !== null) {
+            touchMap.set(touch.identifier, midi);
+            handleNoteStart(midi);
+          }
+        }
+      }, { passive: false });
+
+      piano.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        for (const touch of e.changedTouches) {
+          const oldMidi = touchMap.get(touch.identifier);
+          const newMidi = getMidiFromTouch(touch);
+          if (newMidi !== null && newMidi !== oldMidi) {
+            if (oldMidi !== null && oldMidi !== undefined) handleNoteEnd(oldMidi);
+            touchMap.set(touch.identifier, newMidi);
+            handleNoteStart(newMidi);
+          }
+        }
+      }, { passive: false });
+
+      piano.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        for (const touch of e.changedTouches) {
+          const midi = touchMap.get(touch.identifier);
+          if (midi !== null && midi !== undefined) handleNoteEnd(midi);
+          touchMap.delete(touch.identifier);
+        }
+      }, { passive: false });
+
+      piano.addEventListener('touchcancel', (e) => {
+        for (const touch of e.changedTouches) {
+          const midi = touchMap.get(touch.identifier);
+          if (midi !== null && midi !== undefined) handleNoteEnd(midi);
+          touchMap.delete(touch.identifier);
+        }
+      });
+
+      // Mouse support for desktop testing
+      let mouseDown = false;
+      let mouseMidi = null;
+
+      piano.addEventListener('mousedown', (e) => {
+        AudioEngine.init();
+        mouseDown = true;
+        const el = e.target.closest('[data-midi]');
+        if (el) {
+          mouseMidi = parseInt(el.dataset.midi);
+          handleNoteStart(mouseMidi);
+        }
+      });
+
+      piano.addEventListener('mouseover', (e) => {
+        if (!mouseDown) return;
+        const el = e.target.closest('[data-midi]');
+        if (el) {
+          const midi = parseInt(el.dataset.midi);
+          if (midi !== mouseMidi) {
+            if (mouseMidi !== null) handleNoteEnd(mouseMidi);
+            mouseMidi = midi;
+            handleNoteStart(midi);
+          }
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (mouseMidi !== null) handleNoteEnd(mouseMidi);
+        mouseDown = false;
+        mouseMidi = null;
+      });
+    }
+
+    // Chord strip touch handlers
+    function setupChordHandlers() {
+      const strip = document.getElementById('chord-strip');
+
+      function playChord(chordId) {
+        const chord = allChords.find(c => c.id === chordId);
+        if (!chord) return;
+
+        // Stop previous chord if any
+        stopChord();
+
+        chord.notes.forEach(midi => {
+          AudioEngine.noteOn(midi);
+          activateKey(midi);
+        });
+
+        const btn = strip.querySelector(`[data-chord-id="${chordId}"]`);
+        if (btn) btn.classList.add('playing');
+
+        updateNoteDisplay(chord.notes);
+        chordPlaying = { notes: chord.notes, chordId };
+      }
+
+      function stopChord() {
+        if (!chordPlaying) return;
+        chordPlaying.notes.forEach(midi => {
+          AudioEngine.noteOff(midi);
+          deactivateKey(midi);
+        });
+        const btn = strip.querySelector(`[data-chord-id="${chordPlaying.chordId}"]`);
+        if (btn) btn.classList.remove('playing');
+        chordPlaying = null;
+        updateNoteDisplay(null);
+      }
+
+      strip.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        AudioEngine.init();
+        const btn = e.target.closest('.chord-btn');
+        if (btn) playChord(btn.dataset.chordId);
+      }, { passive: false });
+
+      strip.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        stopChord();
+      }, { passive: false });
+
+      strip.addEventListener('touchcancel', () => stopChord());
+
+      // Mouse for desktop
+      strip.addEventListener('mousedown', (e) => {
+        AudioEngine.init();
+        const btn = e.target.closest('.chord-btn');
+        if (btn) playChord(btn.dataset.chordId);
+      });
+      strip.addEventListener('mouseup', () => stopChord());
+      strip.addEventListener('mouseleave', () => stopChord());
+    }
+
+    // Sustain pedal
+    function setupSustain() {
+      const pedal = document.getElementById('sustain-pedal');
+
+      function pedalOn() {
+        AudioEngine.setSustain(true);
+        pedal.classList.add('active');
+        pedal.textContent = 'SUSTAIN ON';
+      }
+
+      function pedalOff() {
+        AudioEngine.setSustain(false);
+        pedal.classList.remove('active');
+        pedal.textContent = 'SUSTAIN';
+      }
+
+      pedal.addEventListener('touchstart', (e) => { e.preventDefault(); pedalOn(); }, { passive: false });
+      pedal.addEventListener('touchend', (e) => { e.preventDefault(); pedalOff(); }, { passive: false });
+      pedal.addEventListener('touchcancel', () => pedalOff());
+      pedal.addEventListener('mousedown', () => pedalOn());
+      pedal.addEventListener('mouseup', () => pedalOff());
+      pedal.addEventListener('mouseleave', () => pedalOff());
+    }
+
+    // Keyboard support (QWERTY mapping)
+    function setupKeyboard() {
+      const QWERTY_MAP = {
+        'a': 0, 'w': 1, 's': 2, 'e': 3, 'd': 4, 'f': 5,
+        't': 6, 'g': 7, 'y': 8, 'h': 9, 'u': 10, 'j': 11,
+        'k': 12, 'o': 13, 'l': 14, 'p': 15, ';': 16,
+      };
+      const keyboardActive = new Set();
+
+      document.addEventListener('keydown', (e) => {
+        if (e.repeat) return;
+        const key = e.key.toLowerCase();
+
+        // Spacebar = sustain
+        if (key === ' ') {
+          e.preventDefault();
+          AudioEngine.setSustain(true);
+          document.getElementById('sustain-pedal').classList.add('active');
+          document.getElementById('sustain-pedal').textContent = 'SUSTAIN ON';
+          return;
+        }
+
+        if (QWERTY_MAP[key] !== undefined && !keyboardActive.has(key)) {
+          AudioEngine.init();
+          const midi = (startOctave + 1) * 12 + 12 + QWERTY_MAP[key];
+          keyboardActive.add(key);
+          handleNoteStart(midi);
+          // Store midi for release
+          keyboardActive[key] = midi;
+        }
+      });
+
+      document.addEventListener('keyup', (e) => {
+        const key = e.key.toLowerCase();
+        if (key === ' ') {
+          AudioEngine.setSustain(false);
+          document.getElementById('sustain-pedal').classList.remove('active');
+          document.getElementById('sustain-pedal').textContent = 'SUSTAIN';
+          return;
+        }
+        if (keyboardActive.has(key)) {
+          const midi = keyboardActive[key];
+          handleNoteEnd(midi);
+          keyboardActive.delete(key);
+          delete keyboardActive[key];
+        }
+      });
+    }
+
+    // Controls
+    function setupControls() {
+      const octDisplay = document.getElementById('oct-display');
+
+      document.getElementById('oct-down').addEventListener('click', () => {
+        if (startOctave > 1) {
+          startOctave--;
+          octDisplay.textContent = startOctave + 1; // Show middle octave
+          renderKeys();
+          renderChordStrip();
+        }
+      });
+
+      document.getElementById('oct-up').addEventListener('click', () => {
+        if (startOctave < 6) {
+          startOctave++;
+          octDisplay.textContent = startOctave + 1;
+          renderKeys();
+          renderChordStrip();
+        }
+      });
+
+      document.getElementById('voice-select').addEventListener('change', (e) => {
+        AudioEngine.setVoice(e.target.value);
+      });
+
+      document.getElementById('toggle-labels').addEventListener('click', () => {
+        showLabels = !showLabels;
+        const btn = document.getElementById('toggle-labels');
+        btn.classList.toggle('active', showLabels);
+        document.querySelectorAll('.key-label').forEach(l => {
+          const key = l.parentElement;
+          if (showLabels) {
+            l.textContent = key.dataset.note || NOTE_NAMES[parseInt(key.dataset.midi) % 12];
+          } else {
+            l.textContent = '';
+          }
+        });
+      });
+    }
+
+    function init() {
+      renderKeys();
+      renderChordStrip();
+      setupTouchHandlers();
+      setupChordHandlers();
+      setupSustain();
+      setupKeyboard();
+      setupControls();
+      // Set initial label button state
+      document.getElementById('toggle-labels').classList.add('active');
+    }
+
+    return { init };
+  })();
+
+  // =========================================================================
+  // BOOT
+  // =========================================================================
+  document.addEventListener('DOMContentLoaded', Piano.init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+# =============================================================================
+# Forge Configuration — Grand Piano (Mobile-First Web App)
+# =============================================================================
+# Autonomous quality engineering for a Web Audio API piano application.
+# Backend: None (client-side only) — Forge adapts to frontend-only projects.
+# =============================================================================
+
+architecture: monolith
+
+# No backend — Forge skips Phase 0 health checks when no services are defined
+backend:
+  services: []
+
+frontend:
+  technology: vanilla-js       # Vanilla HTML/CSS/JS — no framework
+  port: 5500                   # Live server port
+  buildCommand: "echo 'No build step — static HTML'"
+  devCommand: npx serve -l 5500 .
+  testCommand: npx cypress run --spec {target}
+  testDir: cypress/e2e/
+  specDir: cypress/e2e/specs/
+
+# No API seeding needed — all state is client-side
+testDataSeeding:
+  method: none
+
+# Cost-conscious routing for a small frontend-only project
+model_routing:
+  specification-verifier: haiku
+  test-runner: haiku
+  failure-analyzer: sonnet
+  bug-fixer: sonnet           # Sonnet sufficient — no backend complexity
+  quality-gate-enforcer: haiku
+  accessibility-auditor: sonnet  # Accessibility is critical for a music app
+  auto-committer: haiku
+  learning-optimizer: haiku
+
+quality_gates:
+  functional:
+    threshold: 100
+    blocking: true
+  behavioral:
+    threshold: 100
+    blocking: true
+  coverage:
+    overall: 80
+    critical_paths: 95      # Touch, audio, chords are critical
+    blocking_on_critical: true
+  security:
+    max_critical: 0
+    blocking: true
+  accessibility:
+    standard: WCAG-AA
+    blocking: true          # Music apps MUST be accessible
+  resilience:
+    offline_tested: false   # Not applicable — no network calls
+    blocking: false
+  contract:
+    max_mismatches: 0
+    blocking: false         # No API contracts to validate
+
+# Chaos testing scenarios relevant to a client-side audio app
+chaos:
+  enabled: true
+  scenarios:
+    - cpu_throttling         # Test audio under CPU pressure
+    - memory_pressure        # Many simultaneous notes
+    - rapid_interaction      # Fast repeated taps
+    - orientation_change     # Portrait <-> Landscape mid-play
+
+autonomous:
+  max_iterations: 8
+  max_reverts_per_test: 2
+  commit_on_gate_pass: true
