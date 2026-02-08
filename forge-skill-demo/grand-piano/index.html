@@ -323,6 +323,129 @@
       text-decoration: underline;
     }
 
+    /* ===== ABOUT MODAL ===== */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .overlay.hidden { display: none; }
+
+    #about-modal {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    }
+
+    #about-close {
+      position: absolute;
+      top: 10px; right: 14px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 2;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    #about-close:active { background: rgba(255,255,255,0.1); }
+
+    #about-content {
+      overflow-y: auto;
+      padding: 24px 20px 20px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+
+    #about-content h2 {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 2px;
+      color: var(--accent);
+    }
+    .about-tagline {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 18px;
+    }
+    #about-content h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 16px 0 6px;
+      color: var(--text);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 4px;
+    }
+    #about-content ul {
+      list-style: none;
+      padding: 0;
+    }
+    #about-content li {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      padding: 2px 0 2px 14px;
+      position: relative;
+    }
+    #about-content li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 10px;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    #about-content li b { color: var(--text); }
+
+    .shortcut-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6px 0;
+    }
+    .shortcut-table td {
+      font-size: 12px;
+      padding: 5px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .shortcut-table td:first-child {
+      color: var(--text);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-weight: 600;
+      white-space: nowrap;
+      width: 1%;
+    }
+    .shortcut-table td:last-child { color: var(--text-dim); }
+
+    .about-credits {
+      margin-top: 20px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+    .about-credits p {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .about-credits a { color: var(--accent); text-decoration: none; }
+    .about-credits a:hover { text-decoration: underline; }
+
     /* ===== LANDSCAPE ADJUSTMENTS ===== */
     @media (orientation: landscape) {
       :root {
@@ -390,6 +513,9 @@
         <label>Keys</label>
         <button class="btn" id="toggle-labels">ABC</button>
       </div>
+      <div class="ctrl-group">
+        <button class="btn" id="about-btn" aria-label="About this app">?</button>
+      </div>
     </div>
 
     <!-- Chord Strip -->
@@ -417,6 +543,76 @@
       <span>Powered by <a href="https://github.com/ikennaokpala/forge" target="_blank" rel="noopener">Forge</a> by Ikenna N. Okpala</span>
       <span>&middot;</span>
       <span>Questions? Contact <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank" rel="noopener">Mondweep Chakravorty</a></span>
+    </div>
+
+    <!-- About / Help Modal -->
+    <div id="about-overlay" class="overlay hidden" role="dialog" aria-label="About Grand Piano">
+      <div id="about-modal">
+        <button id="about-close" aria-label="Close">&times;</button>
+        <div id="about-content">
+          <h2>Grand Piano</h2>
+          <p class="about-tagline">A mobile-first piano with 7 octaves, multi-touch chords, and 5 voices.</p>
+
+          <h3>Playing Notes</h3>
+          <ul>
+            <li><b>Tap</b> any key to play a note. The note name appears above the keyboard.</li>
+            <li><b>Hold</b> a key for a sustained tone; lift your finger to stop.</li>
+            <li><b>Slide</b> your finger across keys for a glissando sweep.</li>
+            <li><b>Multi-touch</b> &mdash; press several keys at once with multiple fingers to play chords directly on the keyboard.</li>
+          </ul>
+
+          <h3>Chord Strip</h3>
+          <ul>
+            <li>The row of buttons above the keyboard provides <b>one-tap chords</b>.</li>
+            <li><b>Tap</b> a chord button for a quick strum. <b>Hold</b> (200 ms+) to sustain the chord; release to stop.</li>
+            <li><b>Swipe left/right</b> on the strip to scroll through all chords: major, minor, 7th, M7, m7 for every root note.</li>
+            <li>Chords automatically update to match the octave visible on the keyboard.</li>
+          </ul>
+
+          <h3>Scrolling the Keyboard</h3>
+          <ul>
+            <li>The full piano spans <b>7 octaves (C1 &ndash; B7)</b>. Swipe left/right on the keys to scroll freely.</li>
+            <li>Use the <b>&#9664; &#9654; arrow buttons</b> on either side of the keyboard to scroll. Hold an arrow to keep scrolling.</li>
+            <li>The <b>Octave &#9664; 4 &#9654;</b> control in the top bar jumps directly to a specific octave.</li>
+            <li>The octave number and chord strip update automatically as you scroll.</li>
+          </ul>
+
+          <h3>Sustain Pedal</h3>
+          <ul>
+            <li><b>Press and hold</b> the SUSTAIN bar at the bottom. While held, any notes you play will keep ringing after you lift your finger off the key.</li>
+            <li><b>Release</b> the pedal to fade out all sustained notes.</li>
+            <li>On a desktop keyboard, hold the <b>Spacebar</b> for sustain.</li>
+          </ul>
+
+          <h3>Sound Voices</h3>
+          <ul>
+            <li>Use the <b>Sound</b> dropdown to switch between five timbres:</li>
+            <li><b>Grand</b> &mdash; rich harmonics with natural decay (default)</li>
+            <li><b>Bright</b> &mdash; sharp, present tone</li>
+            <li><b>Warm</b> &mdash; soft, mellow sine-wave sound</li>
+            <li><b>Electric</b> &mdash; punchy square-wave character</li>
+            <li><b>Organ</b> &mdash; sustained, layered harmonics</li>
+          </ul>
+
+          <h3>Other Controls</h3>
+          <ul>
+            <li><b>ABC</b> &mdash; toggle note labels on/off on every key.</li>
+            <li><b>?</b> &mdash; open this help screen.</li>
+          </ul>
+
+          <h3>Desktop Keyboard Shortcuts</h3>
+          <table class="shortcut-table">
+            <tr><td>A S D F G H J K L</td><td>White keys (C to E, one octave)</td></tr>
+            <tr><td>W E T Y U O P</td><td>Black keys (sharps/flats)</td></tr>
+            <tr><td>Spacebar</td><td>Sustain pedal (hold)</td></tr>
+          </table>
+
+          <div class="about-credits">
+            <p>Quality-engineered with <a href="https://github.com/ikennaokpala/forge" target="_blank" rel="noopener">Forge</a> by <b>Ikenna N. Okpala</b></p>
+            <p>App curated by <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank" rel="noopener"><b>Mondweep Chakravorty</b></a></p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1199,6 +1395,20 @@
       // Use both — the 300ms debounce prevents double-fire
       toggleLabelsBtn.addEventListener('touchend', (e) => { e.preventDefault(); doToggleLabels(); });
       toggleLabelsBtn.addEventListener('click', doToggleLabels);
+
+      // About modal
+      const overlay = document.getElementById('about-overlay');
+      const aboutBtn = document.getElementById('about-btn');
+      const closeBtn = document.getElementById('about-close');
+
+      function openAbout() { overlay.classList.remove('hidden'); }
+      function closeAbout() { overlay.classList.add('hidden'); }
+
+      aboutBtn.addEventListener('click', openAbout);
+      closeBtn.addEventListener('click', closeAbout);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeAbout();
+      });
     }
 
     // Scroll arrow buttons for piano — always accessible in any orientation
