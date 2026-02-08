@@ -32,7 +32,7 @@
       background: var(--piano-bg);
       font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       color: var(--text);
-      touch-action: none;
+      touch-action: manipulation;
       -webkit-user-select: none;
       user-select: none;
     }
@@ -116,6 +116,8 @@
       overflow-x: auto;
       flex-shrink: 0;
       scrollbar-width: none;
+      touch-action: pan-x;
+      -webkit-overflow-scrolling: touch;
     }
     #chord-strip::-webkit-scrollbar { display: none; }
 
@@ -166,6 +168,7 @@
       align-items: flex-start;
       padding: 4px 0 0;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
     #piano-container::-webkit-scrollbar { display: none; }
 
@@ -748,8 +751,12 @@
     }
 
     // Touch event handling for multi-touch chords on keys
+    // Distinguishes between horizontal swipes (scroll) and taps (play notes)
     function setupTouchHandlers() {
       const piano = document.getElementById('piano');
+      const container = document.getElementById('piano-container');
+      const SCROLL_THRESHOLD = 12; // px horizontal movement to switch to scroll mode
+      const touchStarts = new Map(); // touchId -> { x, y, scrolling }
 
       function getMidiFromTouch(touch) {
         const el = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -760,44 +767,98 @@
       }
 
       piano.addEventListener('touchstart', (e) => {
-        e.preventDefault();
         AudioEngine.init();
         for (const touch of e.changedTouches) {
-          const midi = getMidiFromTouch(touch);
-          if (midi !== null) {
-            touchMap.set(touch.identifier, midi);
-            handleNoteStart(midi);
-          }
+          touchStarts.set(touch.identifier, {
+            x: touch.clientX,
+            y: touch.clientY,
+            scrolling: false,
+            started: false,
+          });
         }
-      }, { passive: false });
+        // Don't preventDefault here — allow the browser to decide scroll vs tap
+      }, { passive: true });
 
       piano.addEventListener('touchmove', (e) => {
-        e.preventDefault();
         for (const touch of e.changedTouches) {
-          const oldMidi = touchMap.get(touch.identifier);
-          const newMidi = getMidiFromTouch(touch);
-          if (newMidi !== null && newMidi !== oldMidi) {
-            if (oldMidi !== null && oldMidi !== undefined) handleNoteEnd(oldMidi);
-            touchMap.set(touch.identifier, newMidi);
-            handleNoteStart(newMidi);
+          const start = touchStarts.get(touch.identifier);
+          if (!start) continue;
+
+          const dx = touch.clientX - start.x;
+          const dy = touch.clientY - start.y;
+
+          if (!start.scrolling && !start.started) {
+            // Decide: is this a scroll or a play gesture?
+            if (Math.abs(dx) > SCROLL_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+              // Horizontal swipe → scroll mode
+              start.scrolling = true;
+              // Release any note that might have started
+              const midi = touchMap.get(touch.identifier);
+              if (midi !== null && midi !== undefined) handleNoteEnd(midi);
+              touchMap.delete(touch.identifier);
+              continue; // Let native scroll handle it
+            } else if (Math.abs(dx) <= SCROLL_THRESHOLD) {
+              // Still within threshold — start playing the note
+              if (!start.started) {
+                start.started = true;
+                const midi = getMidiFromTouch(touch);
+                if (midi !== null) {
+                  touchMap.set(touch.identifier, midi);
+                  handleNoteStart(midi);
+                  e.preventDefault(); // Prevent scroll for this play gesture
+                }
+              }
+            }
+          }
+
+          if (start.scrolling) {
+            // Let native scroll handle it — don't interfere
+            continue;
+          }
+
+          if (start.started) {
+            // Playing mode — handle glissando
+            e.preventDefault();
+            const oldMidi = touchMap.get(touch.identifier);
+            const newMidi = getMidiFromTouch(touch);
+            if (newMidi !== null && newMidi !== oldMidi) {
+              if (oldMidi !== null && oldMidi !== undefined) handleNoteEnd(oldMidi);
+              touchMap.set(touch.identifier, newMidi);
+              handleNoteStart(newMidi);
+            }
           }
         }
       }, { passive: false });
 
       piano.addEventListener('touchend', (e) => {
-        e.preventDefault();
         for (const touch of e.changedTouches) {
-          const midi = touchMap.get(touch.identifier);
-          if (midi !== null && midi !== undefined) handleNoteEnd(midi);
+          const start = touchStarts.get(touch.identifier);
+
+          if (start && !start.scrolling && !start.started) {
+            // Quick tap — never moved far enough to trigger either mode
+            // Play the note briefly
+            const midi = getMidiFromTouch(touch);
+            if (midi !== null) {
+              handleNoteStart(midi);
+              // Short tap — immediately schedule release
+              setTimeout(() => handleNoteEnd(midi), 150);
+            }
+          } else {
+            // Release held note
+            const midi = touchMap.get(touch.identifier);
+            if (midi !== null && midi !== undefined) handleNoteEnd(midi);
+          }
           touchMap.delete(touch.identifier);
+          touchStarts.delete(touch.identifier);
         }
-      }, { passive: false });
+      }, { passive: true });
 
       piano.addEventListener('touchcancel', (e) => {
         for (const touch of e.changedTouches) {
           const midi = touchMap.get(touch.identifier);
           if (midi !== null && midi !== undefined) handleNoteEnd(midi);
           touchMap.delete(touch.identifier);
+          touchStarts.delete(touch.identifier);
         }
       });
 
@@ -870,28 +931,53 @@
         updateNoteDisplay(null);
       }
 
+      // Track whether touch moved (scroll) or stayed (chord tap)
+      let chordTouchStartX = 0;
+      let chordTouchMoved = false;
+      let chordTouchBtn = null;
+
       strip.addEventListener('touchstart', (e) => {
-        e.preventDefault();
         AudioEngine.init();
-        const btn = e.target.closest('.chord-btn');
-        if (btn) playChord(btn.dataset.chordId);
-      }, { passive: false });
+        const touch = e.touches[0];
+        chordTouchStartX = touch.clientX;
+        chordTouchMoved = false;
+        chordTouchBtn = e.target.closest('.chord-btn');
+      }, { passive: true });
+
+      strip.addEventListener('touchmove', (e) => {
+        const touch = e.touches[0];
+        if (Math.abs(touch.clientX - chordTouchStartX) > 10) {
+          chordTouchMoved = true;
+          // If we started a chord during scroll, stop it
+          stopChord();
+        }
+      }, { passive: true });
 
       strip.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        stopChord();
-      }, { passive: false });
+        if (!chordTouchMoved && chordTouchBtn) {
+          // It was a tap, not a scroll — play the chord briefly
+          playChord(chordTouchBtn.dataset.chordId);
+          // Stop after a hold; user can also long-press via separate logic below
+        }
+        // Always stop chord on finger lift
+        setTimeout(() => stopChord(), 50);
+        chordTouchBtn = null;
+      }, { passive: true });
 
-      strip.addEventListener('touchcancel', () => stopChord());
+      strip.addEventListener('touchcancel', () => { stopChord(); chordTouchBtn = null; });
 
-      // Mouse for desktop
-      strip.addEventListener('mousedown', (e) => {
+      // Long-press: use pointerdown/up for reliable hold-to-play on mobile
+      strip.addEventListener('pointerdown', (e) => {
         AudioEngine.init();
         const btn = e.target.closest('.chord-btn');
-        if (btn) playChord(btn.dataset.chordId);
+        if (btn) {
+          e.preventDefault();
+          playChord(btn.dataset.chordId);
+        }
       });
-      strip.addEventListener('mouseup', () => stopChord());
-      strip.addEventListener('mouseleave', () => stopChord());
+      strip.addEventListener('pointerup', () => stopChord());
+      strip.addEventListener('pointerleave', () => stopChord());
+
     }
 
     // Sustain pedal
@@ -993,10 +1079,11 @@
         AudioEngine.setVoice(e.target.value);
       });
 
-      document.getElementById('toggle-labels').addEventListener('click', () => {
+      const toggleLabelsBtn = document.getElementById('toggle-labels');
+      let labelTouchFired = false;
+      function doToggleLabels() {
         showLabels = !showLabels;
-        const btn = document.getElementById('toggle-labels');
-        btn.classList.toggle('active', showLabels);
+        toggleLabelsBtn.classList.toggle('active', showLabels);
         document.querySelectorAll('.key-label').forEach(l => {
           const key = l.parentElement;
           if (showLabels) {
@@ -1005,6 +1092,16 @@
             l.textContent = '';
           }
         });
+      }
+      // touchend fires reliably on mobile; preventDefault stops duplicate click
+      toggleLabelsBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        labelTouchFired = true;
+        doToggleLabels();
+      });
+      toggleLabelsBtn.addEventListener('click', () => {
+        if (labelTouchFired) { labelTouchFired = false; return; }
+        doToggleLabels();
       });
     }
 
