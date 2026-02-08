@@ -165,7 +165,7 @@
       display: flex;
       align-items: stretch;
       position: relative;
-      overflow: hidden;
+      min-height: 0;
     }
 
     .scroll-arrow {
@@ -344,7 +344,7 @@
       #sustain-bar { padding: 3px; }
       #sustain-pedal { height: 28px; font-size: 12px; max-width: 200px; }
       #footer { display: none; }
-      .scroll-arrow { width: 28px; font-size: 14px; }
+      .scroll-arrow { width: 40px; font-size: 16px; }
       .white-key .key-label { font-size: 9px; }
       .black-key .key-label { font-size: 8px; }
     }
@@ -1190,13 +1190,27 @@
       document.getElementById('toggle-labels').classList.add('active');
     }
 
-    return { init };
+    function rerender() {
+      renderKeys();
+      renderChordStrip();
+    }
+
+    return { init, rerender };
   })();
 
   // =========================================================================
   // BOOT
   // =========================================================================
   document.addEventListener('DOMContentLoaded', Piano.init);
+
+  // Re-render keys on orientation change so widths/positions recalculate
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      Piano.rerender();
+    }, 150);
+  });
   </script>
 </body>
 </html>
