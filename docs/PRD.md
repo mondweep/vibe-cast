@@ -137,8 +137,21 @@ Students on the MSc Data Analytics & Management programme have covered machine l
 | D3 | AI-Powered Analytics | Auto-Analyst | 5-7 min | Real-time pricing intelligence |
 | D4 | University Knowledge Graph | LBS Semantic KG | 5 min | 3,963 nodes enriched for $14 |
 
+#### Live Vibe-Cast Demo Apps (Netlify)
+
+These are live, deployable apps built with agentic AI tools within the vibe-cast repository. They can be opened in the browser during the lecture for hands-on visual demonstrations — no coding or setup required.
+
+| # | Demo | Live URL | Branch | Duration | Key Theme |
+|---|------|----------|--------|----------|-----------|
+| D5 | WASM Image Filters | [wasm-tinkering.netlify.app](https://wasm-tinkering.netlify.app/) | `claude/wasm-tinkering-l5Rmh` | 3-5 min | Privacy-first processing; 10-50x WASM vs JS speedup benchmark |
+| D6 | LuitPlayer (Grand Piano) | [grand-piano-thisismon.netlify.app](https://grand-piano-thisismon.netlify.app/) | `claude/sheet-music-player-w1UAI` | 3-5 min | 7-agent swarm built a 7-octave piano + sheet music OMR |
+| D7 | Kumno (Khasi Travel) | [kumno.netlify.app](https://kumno.netlify.app/) | `claude/khasi-travel-companion-2N6mJ` | 3-5 min | Offline-first PWA; AI translation; cultural sensitivity |
+| D8 | Assam AI Governance | [assam-ai-usecase-governance-pwa.netlify.app](https://assam-ai-usecase-governance-pwa.netlify.app/) | `claude/assam-use-case-01KyUJCwyzb371Ck5PogDXgm` | 5-7 min | Government AI for property registration + cost audit fraud detection |
+| D9 | Driftwise | [driftwise-discover-interesting-facts.netlify.app](https://driftwise-discover-interesting-facts.netlify.app/) | `claude/init-driftwise-pwa-UF1It` | 3-5 min | Voice-first, GPS-triggered historical fact discovery |
+
 **Demo Constraints**:
 - All demos must be visual (screenshots, recorded walkthroughs, or live if connectivity allows)
+- Live Netlify apps (D5-D9) can be opened directly in the browser — no setup needed
 - No audience coding required
 - Each demo must have a clear "business takeaway" slide
 
@@ -173,13 +186,18 @@ Students on the MSc Data Analytics & Management programme have covered machine l
 | 2.2 | Claude-Flow architecture (visual) | Real system at scale (500K downloads) |
 | 2.3 | Agent specialization (Forge's 8 agents) | Like a team of analysts with different roles |
 
-### Part 3: Live Demonstrations (30 min)
+### Part 3: Live Demonstrations (30-40 min)
 | Section | Content | Audience Connection |
 |---------|---------|-------------------|
 | 3.1 | Demo D1: 40-Minute App | "What would take weeks, done in under an hour" |
 | 3.2 | Demo D2: Security Audit | "Governance at speed and scale" |
 | 3.3 | Demo D3: Analytics Platform | "This is YOUR domain - data analytics transformed" |
 | 3.4 | Demo D4: Knowledge Graph | "AI applied to a university - like Greenwich" |
+| 3.5 | Demo D5: WASM Image Filters (live) | "Privacy by design — your data never leaves the browser" |
+| 3.6 | Demo D8: Assam AI Governance (live) | "AI for government transparency and anti-fraud" |
+| 3.7 | Demo D9: Driftwise (live) | "Voice-first AI — no screen, no hands, just discovery" |
+
+**Note**: Demos D5, D8, D9 are live Netlify apps that can be opened in the browser during the lecture. Select 2-3 based on time available. D6 (LuitPlayer) and D7 (Kumno) are available as backup or can be shown as screenshots.
 
 ### Part 4: Governance & Responsible AI (20 min)
 | Section | Content | Audience Connection |
@@ -228,7 +246,7 @@ Students on the MSc Data Analytics & Management programme have covered machine l
 | Agentic QE Framework | agentic-qe.dev | PACT framework, 13 bounded contexts |
 | Agentic QE Repo | github.com/proffesor-for-testing/agentic-qe | 59 agents, 75 skills, implementation |
 
-### Demo Application Sources
+### Demo Application Sources (Standalone Repos)
 
 | Demo | Source Repo |
 |------|------------|
@@ -240,6 +258,17 @@ Students on the MSc Data Analytics & Management programme have covered machine l
 | Guild Hall | github.com/mondweep/guild-hall |
 | Hackathon TV5 | github.com/mondweep/hackathon-tv5 |
 | AI Maturity Assessment | github.com/mondweep/ai-maturity-assessment |
+
+### Live Vibe-Cast Demo Apps (Netlify-deployed, from vibe-cast branches)
+
+| App | Live URL | Vibe-Cast Branch |
+|-----|----------|-----------------|
+| WASM Image Filters | [wasm-tinkering.netlify.app](https://wasm-tinkering.netlify.app/) | `claude/wasm-tinkering-l5Rmh` |
+| LuitPlayer (Grand Piano) | [grand-piano-thisismon.netlify.app](https://grand-piano-thisismon.netlify.app/) | `claude/sheet-music-player-w1UAI` |
+| Kumno (Khasi Travel) | [kumno.netlify.app](https://kumno.netlify.app/) | `claude/khasi-travel-companion-2N6mJ` |
+| Assam AI Governance | [assam-ai-usecase-governance-pwa.netlify.app](https://assam-ai-usecase-governance-pwa.netlify.app/) | `claude/assam-use-case-01KyUJCwyzb371Ck5PogDXgm` |
+| Driftwise | [driftwise-discover-interesting-facts.netlify.app](https://driftwise-discover-interesting-facts.netlify.app/) | `claude/init-driftwise-pwa-UF1It` |
+| Axomiya (Assamese Travel) | *(not yet deployed)* | `claude/assamese-travel-companion-uRp3j` |
 
 ### Governance & Industry Sources
 

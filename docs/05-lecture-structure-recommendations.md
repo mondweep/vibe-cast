@@ -74,6 +74,45 @@
 - Sentiment analysis, topic extraction, persona classification
 - Business takeaway: AI-driven content intelligence at minimal cost
 
+### Demo 5-9: Live Vibe-Cast Apps (select 2-3 based on time)
+
+All of these are live on Netlify and can be opened in the browser during the lecture. No setup required.
+
+**Demo 5: WASM Image Filters** — [wasm-tinkering.netlify.app](https://wasm-tinkering.netlify.app/)
+- Upload an image, apply filters, see JS vs WASM benchmark side-by-side
+- 10-50x performance improvement with Rust/WASM over JavaScript
+- All processing happens locally — data never leaves the browser
+- Business takeaway: privacy-by-design and performance optimization are not mutually exclusive
+
+**Demo 6: LuitPlayer / Grand Piano** — [grand-piano-thisismon.netlify.app](https://grand-piano-thisismon.netlify.app/)
+- Play a 7-octave piano in the browser with 5 different timbres
+- Built by a 7-agent Claude Flow swarm (coordinator, frontend, audio, OMR, test agents)
+- Includes Optical Music Recognition for Assamese sheet music
+- Business takeaway: multi-agent collaboration can produce sophisticated creative applications
+
+**Demo 7: Kumno (Khasi Travel Companion)** — [kumno.netlify.app](https://kumno.netlify.app/)
+- 80+ Khasi phrases with phonetic guides, organized by travel scenario
+- AI-powered real-time translation with offline-first caching
+- Cultural sensitivity: Bah/Kong honorific toggle
+- Business takeaway: AI translation enabling cultural preservation and tourism
+
+**Demo 8: Assam AI Governance** — [assam-ai-usecase-governance-pwa.netlify.app](https://assam-ai-usecase-governance-pwa.netlify.app/)
+- Property registration digitalization (20-30 days → 5-7 days)
+- Infrastructure cost auditing with AI anomaly detection
+- Trilingual UI (English, Assamese, Hindi)
+- Business takeaway: AI applied directly to government governance and transparency; 50+ crore INR savings target
+
+**Demo 9: Driftwise** — [driftwise-discover-interesting-facts.netlify.app](https://driftwise-discover-interesting-facts.netlify.app/)
+- Voice-first PWA that delivers GPS-triggered historical facts while driving
+- Anti-generic filtering: rejects tourism clichés, surfaces named individuals and unusual events
+- Gemini Live API for real-time bidirectional voice
+- Business takeaway: voice-first design pattern; responsible AI (driver safety); creative consumer application
+
+**Recommended selection for time-limited lectures**:
+- D5 (WASM) — quick, visual, universally understandable
+- D8 (Assam AI Governance) — directly demonstrates governance theme
+- D9 (Driftwise) — shows voice-first, location-aware AI innovation
+
 ---
 
 ## Part 4: Governance & Responsible AI (20 min)

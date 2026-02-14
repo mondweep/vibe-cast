@@ -109,6 +109,95 @@ Mondweep Chakravorty's GitHub portfolio (107 repositories) provides a rich set o
 
 ---
 
-## Note on scan.page/p/6tvWrH
+## Vibe-Cast Demo Apps (Live on Netlify)
 
-The scan.page URL requires JavaScript rendering and could not be directly accessed. The links likely point to many of the repositories and demo apps catalogued above. If additional specific links are available from that page, they should be cross-referenced with this inventory.
+These apps live within the **vibe-cast** repository on dedicated branches and are deployed to Netlify. They were built using agentic AI tools and represent a diverse showcase of what can be created with AI agent assistance — from privacy-first WASM to voice-driven GPS discovery.
+
+**Source page**: [scan.page/p/6tvWrH](https://scan.page/p/6tvWrH)
+
+### WASM Image Filters
+- **Live URL**: [wasm-tinkering.netlify.app](https://wasm-tinkering.netlify.app/)
+- **Branch**: `claude/wasm-tinkering-l5Rmh`
+- **What**: Browser-based image processing using Rust compiled to WebAssembly. All processing runs locally — no data leaves the device.
+- **Tech**: Rust, wasm-pack, wasm-bindgen, static HTML/JS
+- **Features**:
+  - Filters: Grayscale, brightness, contrast, invert, box blur, Gaussian blur, sharpen, emboss, edge detection, pixelation
+  - Side-by-side original vs filtered canvas views
+  - JS vs WASM performance benchmark — demonstrates **10-50x speedup** over JavaScript for convolution operations
+  - Drag-and-drop image upload; large images auto-scaled to 400px
+- **Lecture Value**: Privacy-by-design (no cloud); tangible performance benchmark showing why WASM matters; accessible demo that any audience can understand without code
+
+### LuitPlayer (Grand Piano / Sheet Music Player)
+- **Live URL**: [grand-piano-thisismon.netlify.app](https://grand-piano-thisismon.netlify.app/)
+- **Branch**: `claude/sheet-music-player-w1UAI`
+- **What**: Interactive 7-octave digital piano with multi-voice synthesis and a sheet music digitization system (Optical Music Recognition) for Assamese compositions
+- **Tech**: React 19, TypeScript, Vite, Web Audio API, Tri-worker WASM architecture (C++/Emscripten/OpenCV for OMR, AudioWorklet WASM synthesizer)
+- **Built with**: Claude Flow V3 — 7-agent hierarchical-mesh swarm
+- **Features**:
+  - 88 keys (C1-B7), 5 timbres (Grand, Bright, Warm, Electric, Organ)
+  - Multi-touch support, glissando, chord strip with one-tap playback
+  - Sustain pedal, QWERTY keyboard mapping on desktop
+  - PDF score OMR identifying 11 instrumental/vocal staves
+  - Assamese OCR via Tesseract WASM for lyric alignment
+  - Per-instrument mixer (volume/mute/solo), tempo scaling 0.5x-1.5x
+- **Lecture Value**: Shows complex multi-agent development (7 agents coordinating); demonstrates WASM for real-time audio; cultural computing angle (Assamese music preservation)
+
+### Kumno — Khasi Travel Companion
+- **Live URL**: [kumno.netlify.app](https://kumno.netlify.app/)
+- **Branch**: `claude/khasi-travel-companion-2N6mJ`
+- **What**: Mobile-first PWA helping travelers in Shillong (Meghalaya) communicate using Khasi language phrases and real-time AI translation
+- **Tech**: React 19, Vite, Tailwind CSS 4, IndexedDB, Google Cloud Translation API, Netlify Functions, Workbox PWA
+- **Features**:
+  - **Street-Verified Vault (offline)**: 80+ essential Khasi phrases across 8 categories (Greetings, Taxis, Markets, Food, Directions, Tourist Spots, Emergency, Numbers/Time)
+  - **Respect Toggle**: Switch between Bah (male) and Kong (female) honorifics
+  - **Live-Talk AI Bridge (online)**: Real-time English-to-Khasi translation with intelligent caching
+  - Phonetic pronunciation guides, one-tap copy
+  - Fully offline-capable PWA
+- **Lecture Value**: AI translation bridging language barriers; offline-first PWA design; cultural sensitivity built into the UX (honorific system); relatable consumer app
+
+### Assam AI Governance
+- **Live URL**: [assam-ai-usecase-governance-pwa.netlify.app](https://assam-ai-usecase-governance-pwa.netlify.app/)
+- **Branch**: `claude/assam-use-case-01KyUJCwyzb371Ck5PogDXgm`
+- **What**: Two interconnected AI governance prototypes for Assam State Government — Property Registration Digitalization and Infrastructure Cost Auditing
+- **Tech**: React 18, TypeScript, Vite, React Router v6, Chart.js, i18next (trilingual: English, Assamese, Hindi)
+- **Features**:
+  - **Property Registration**: Remote registration with AI document verification; reduces processing from 20-30 days to 5-7 days; 80% remote completion target
+  - **Infrastructure Cost Auditing**: AI anomaly detection (Isolation Forest) against historical baselines to catch inflated estimates (3x inflation); targeting 50+ crore INR annual savings
+  - Trilingual UI support (English, Assamese, Hindi)
+  - Social media promotion materials included (LinkedIn articles, Instagram posts)
+- **Lecture Value**: **Directly demonstrates governance** — AI applied to government transparency and anti-fraud; measurable cost savings; trilingual accessibility; shows how AI governance prototypes can be rapidly built
+
+### Driftwise — Discover Interesting Facts
+- **Live URL**: [driftwise-discover-interesting-facts.netlify.app](https://driftwise-discover-interesting-facts.netlify.app/)
+- **Branch**: `claude/init-driftwise-pwa-UF1It`
+- **What**: Voice-first PWA that transforms driving commutes into historical discovery. Uses GPS to detect location and delivers non-obvious local history facts via voice — like a navigation announcement that ducks your music
+- **Tech**: SvelteKit, TypeScript, Vite, Gemini Live API (real-time bidirectional voice), Web Search Grounding, Netlify Functions
+- **Features**:
+  - **Auto-discovery**: GPS-triggered fact delivery with no user interaction required
+  - **Voice-first, driver-safe**: No screen glancing; 5-second voice command window for follow-ups
+  - **Anti-generic filtering**: Rejects tourism clichés; prioritizes named individuals, specific dates, unusual events, engineering/scientific history
+  - Fact history and export functionality
+  - Countdown timer for next fact delivery
+  - Also includes experimental branches for multi-model switching and Claude Flow V3 integration
+- **Lecture Value**: Voice-first AI interaction pattern; real-time grounding with web search; location-aware intelligence; demonstrates responsible design (driver safety first); creative consumer AI application
+
+---
+
+### Vibe-Cast Demo Apps — Summary Table
+
+| App | Live URL | Branch | Core Tech | Key Theme |
+|-----|----------|--------|-----------|-----------|
+| WASM Image Filters | [wasm-tinkering.netlify.app](https://wasm-tinkering.netlify.app/) | `claude/wasm-tinkering-l5Rmh` | Rust + WASM | Privacy-first, 10-50x performance |
+| LuitPlayer | [grand-piano-thisismon.netlify.app](https://grand-piano-thisismon.netlify.app/) | `claude/sheet-music-player-w1UAI` | React + Tri-WASM | Cultural computing, multi-agent build |
+| Kumno | [kumno.netlify.app](https://kumno.netlify.app/) | `claude/khasi-travel-companion-2N6mJ` | React + PWA | Language preservation, offline-first |
+| Assam AI Governance | [assam-ai-usecase-governance-pwa.netlify.app](https://assam-ai-usecase-governance-pwa.netlify.app/) | `claude/assam-use-case-01KyUJCwyzb371Ck5PogDXgm` | React + i18next | Government transparency, anti-fraud |
+| Driftwise | [driftwise-discover-interesting-facts.netlify.app](https://driftwise-discover-interesting-facts.netlify.app/) | `claude/init-driftwise-pwa-UF1It` | SvelteKit + Gemini | Voice-first, location-aware AI |
+
+---
+
+### Also in Vibe-Cast: Axomiya (Assamese Travel Companion)
+- **Branch**: `claude/assamese-travel-companion-uRp3j`
+- **What**: Sibling app to Kumno — same architecture adapted for Assamese language
+- **Tech**: React 19, Vite, Tailwind CSS 4, IndexedDB, Google Translate API
+- **Features**: 80+ Assamese phrases, Deuta/Maa honorific toggle, 8 categories including Kaziranga, Majuli, Kamakhya, Tea Gardens
+- **Lecture Value**: Shows how agent-built apps can be adapted for different cultural contexts with the same architecture
