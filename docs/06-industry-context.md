@@ -29,7 +29,7 @@
 ## Agentics Foundation & Community
 
 ### Global Presence
-- UK chapter co-hosted by Mondweep Chakravorty, Thibault Jaigu, Robert Ranson, Rocky Verma
+- London chapter co-founded by Mondweep Chakravorty and Bence Csernak
 - Chapters in Serbia (founded by Dragan Spiridonov), India (Assam), New Zealand
 - Partnership with University of Greenwich for IC-ETSI 2025 conference
 - Regular meetups including hands-on workshops on Agentic Engineering Practices
