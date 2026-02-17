@@ -1,0 +1,22 @@
+# Claude Flow runtime data
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/
+.claude-flow/metrics/
+.claude-flow/security/
+.claude-flow/learning/
+.claude-flow/hooks/
+.claude-flow/agents/
+
+# Claude Code agents/settings (generated)
+.claude/agents/
+.claude/commands/
+.claude/helpers/
+.claude/skills/
+.claude/settings.json
+.mcp.json
+
+# Node
+node_modules/
+dist/
+coverage/

@@ -1,0 +1,176 @@
+# LecturePulse Build Swarm — 7 Agents (odd & prime)
+# Implements PRD: docs/PRD-lecture-pulse.md
+# Skill references:
+#   - Forge (SKILL.md): DDD + ADR + TDD methodology, quality gates, autonomous fix loops
+#   - Claude Code V3 QE: hierarchical-mesh swarm, quality engineering, DDD
+
+name: lecture-pulse-build
+version: "1.0.0"
+description: "Build LecturePulse + DeskBreak app from PRD using 7-agent swarm"
+
+swarm:
+  topology: hierarchical-mesh
+  maxAgents: 7
+  coordinationStrategy: consensus
+
+agents:
+  # Agent 1: Architect — plans project structure, sets up scaffolding
+  - id: architect
+    role: architect
+    model: opus
+    description: >
+      Project architect. Read docs/PRD-lecture-pulse.md. Scaffold the
+      lecture-pulse/ directory with package.json (React 18, TypeScript, Vite,
+      Tailwind, ws, Express, @mediapipe/tasks-vision, recharts, qrcode.react),
+      tsconfig.json, vite.config.ts, tailwind.config.ts, index.html, and the
+      full directory tree from PRD section 9. Create stub files for every
+      component, hook, lib, type, and server module. Run npm install.
+      All code lives under /home/user/vibe-cast/lecture-pulse/.
+    dependencies: []
+    priority: 1
+
+  # Agent 2: Backend — server, WebSocket, session, aggregation
+  - id: backend
+    role: developer
+    model: opus
+    description: >
+      Backend developer. Implement the Node.js server in lecture-pulse/server/:
+      - server/index.ts: Express server + WebSocket (ws) on port 3000
+      - server/session.ts: Session management — create session (4-char room code),
+        join session, track participants by anonymous nickname, end session
+      - server/aggregator.ts: Receive posture_update messages, compute rolling
+        average, distribution (good/fair/poor), top-5 leaderboard, timeline data.
+        Broadcast dashboard_state to presenter every 2 seconds.
+      Follow the WebSocket protocol from PRD section 6. Use TypeScript.
+      Import shared types from src/types/index.ts.
+    dependencies: [architect]
+    priority: 2
+
+  # Agent 3: Posture Engine — MediaPipe integration + scoring algorithm
+  - id: posture-engine
+    role: developer
+    model: opus
+    description: >
+      ML/Pose developer. Implement the posture detection and scoring system:
+      - src/hooks/usePoseDetection.ts: Hook that initialises MediaPipe Pose
+        (PoseLandmarker from @mediapipe/tasks-vision), connects to camera,
+        runs detection every 3 seconds, returns landmarks array
+      - src/hooks/usePostureScore.ts: Hook that takes landmarks, calls scoring fn
+      - src/lib/posture.ts: Scoring algorithm per PRD section 7 — head tilt,
+        shoulder asymmetry, torso lean, neck forward penalties. Score 0-100.
+        Thresholds: good ≥70, fair 40-69, poor <40.
+      - src/lib/constants.ts: All thresholds, intervals, config values
+      - src/types/index.ts: All shared TypeScript interfaces (StudentUpdate,
+        DashboardState, StretchBreak, PostureData, etc.) from PRD section 6
+      Use @mediapipe/tasks-vision package. All processing on-device.
+    dependencies: [architect]
+    priority: 2
+
+  # Agent 4: Student UI — mobile student-facing React components
+  - id: student-ui
+    role: frontend-developer
+    model: opus
+    description: >
+      Frontend developer for the student mobile view. Implement:
+      - src/components/student/JoinSession.tsx: Room code input + join button,
+        also parse ?room= from URL query. Anonymous nickname assignment.
+      - src/components/student/CameraView.tsx: Camera feed with optional
+        skeleton overlay using landmarks from usePoseDetection hook.
+      - src/components/student/PostureScore.tsx: Colour arc indicator
+        (green/amber/red) showing current score 0-100.
+      - src/components/student/PostureNudge.tsx: Overlay notification when
+        score < 40 for > 120 seconds. Dismissible.
+      - src/components/student/StretchMode.tsx: Full-screen stretch break UI
+        with timer and guided prompts when stretch_break message received.
+      - src/hooks/useWebSocket.ts: WebSocket connection hook — connect to server,
+        send posture updates, receive stretch break signals.
+      - src/lib/nicknames.ts: Random adjective+animal nickname generator.
+      Mobile-first, portrait layout, Tailwind CSS. Min width 320px.
+    dependencies: [architect, posture-engine]
+    priority: 3
+
+  # Agent 5: Dashboard UI — presenter dashboard React components
+  - id: dashboard-ui
+    role: frontend-developer
+    model: opus
+    description: >
+      Frontend developer for the presenter dashboard. Implement:
+      - src/components/dashboard/DashboardLayout.tsx: Main grid layout, dark
+        theme, projector-optimised (large fonts, high contrast).
+      - src/components/dashboard/EngagementChart.tsx: Timeline line chart of
+        average posture score over time using Recharts.
+      - src/components/dashboard/PosturePie.tsx: Donut chart showing
+        good/fair/poor distribution using Recharts.
+      - src/components/dashboard/Leaderboard.tsx: Top 5 anonymous scores.
+      - src/components/dashboard/QRDisplay.tsx: QR code (qrcode.react) showing
+        the join URL with room code.
+      - src/components/dashboard/RoomStats.tsx: Participant count, avg score,
+        session timer.
+      - src/components/dashboard/SessionControls.tsx: Create session, start,
+        pause, end, trigger stretch break buttons.
+      - src/components/shared/ScoreBadge.tsx: Reusable score colour badge.
+      - src/components/shared/SkeletonOverlay.tsx: Canvas overlay drawing pose landmarks.
+      Dark theme with Tailwind. WCAG AA contrast.
+    dependencies: [architect, posture-engine]
+    priority: 3
+
+  # Agent 6: Integration — App.tsx routing, end-to-end wiring
+  - id: integrator
+    role: developer
+    model: opus
+    description: >
+      Integration developer. Wire everything together:
+      - src/main.tsx: React entry point, render App
+      - src/App.tsx: React Router with routes:
+        / → JoinSession (student view)
+        /session → student camera + posture tracking view
+        /dashboard → presenter dashboard
+      - Ensure WebSocket connects student view to server and dashboard to server
+      - Ensure posture updates flow: camera → MediaPipe → score → WS → server → dashboard
+      - Ensure stretch break flows: dashboard button → server → all students
+      - index.html: proper meta tags for mobile, viewport, theme-color
+      - vite.config.ts: configure proxy for WS in dev, build config
+      - Verify the full end-to-end flow compiles with no TypeScript errors
+    dependencies: [backend, student-ui, dashboard-ui]
+    priority: 4
+
+  # Agent 7: Quality Engineer — tests, linting, accessibility, verification
+  - id: quality-engineer
+    role: quality-engineer
+    model: opus
+    description: >
+      Quality engineer following Forge methodology (DDD+TDD, 7 quality gates).
+      - Write unit tests for src/lib/posture.ts (scoring edge cases)
+      - Write unit tests for server/aggregator.ts (aggregation logic)
+      - Write unit tests for server/session.ts (session lifecycle)
+      - Write component tests for JoinSession, PostureScore, DashboardLayout
+      - Verify TypeScript compiles cleanly (npx tsc --noEmit)
+      - Verify the build succeeds (npx vite build)
+      - Check WCAG AA contrast on dashboard dark theme
+      - Run all tests and fix any failures
+      Quality gates: functional 100%, coverage ≥85% on lib/ and server/,
+      security (no hardcoded secrets), accessibility (WCAG AA).
+      All work in lecture-pulse/tests/.
+    dependencies: [integrator]
+    priority: 5
+
+phases:
+  - name: scaffold
+    agents: [architect]
+    description: "Project scaffolding and dependency installation"
+
+  - name: core
+    agents: [backend, posture-engine]
+    description: "Server infrastructure and pose detection engine (parallel)"
+
+  - name: ui
+    agents: [student-ui, dashboard-ui]
+    description: "Student and presenter UIs (parallel)"
+
+  - name: integration
+    agents: [integrator]
+    description: "End-to-end wiring and route configuration"
+
+  - name: quality
+    agents: [quality-engineer]
+    description: "Testing, verification, and quality gates"
