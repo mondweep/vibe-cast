@@ -132,7 +132,7 @@ export function useDashboardSocket(): UseDashboardSocketReturn {
 
   const triggerStretch = useCallback(
     (duration = 30) => {
-      send({ type: "trigger_stretch", roomCode, duration });
+      send({ type: "trigger_stretch_break", roomCode, duration });
     },
     [send, roomCode],
   );
