@@ -6,6 +6,7 @@ import EngagementChart from "./EngagementChart";
 import Leaderboard from "./Leaderboard";
 import PosturePie from "./PosturePie";
 import SessionControls from "./SessionControls";
+import Footer from "../shared/Footer";
 
 /** Format elapsed seconds as MM:SS. */
 function formatDuration(totalSeconds: number): string {
@@ -118,6 +119,8 @@ export default function DashboardLayout() {
           </div>
         </div>
       )}
+
+      <Footer className="text-slate-600" />
     </div>
   );
 }

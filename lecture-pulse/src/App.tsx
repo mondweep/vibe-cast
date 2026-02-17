@@ -9,6 +9,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { usePoseDetection } from "@/hooks/usePoseDetection";
 import { usePostureScore } from "@/hooks/usePostureScore";
+import Footer from "@/components/shared/Footer";
 
 // ─── Join Page (route: /) ────────────────────────────────────────
 
@@ -140,6 +141,8 @@ function SessionView({ roomCode, nickname }: { roomCode: string; nickname: strin
       {showStretch && stretchBreak && (
         <StretchMode duration={stretchBreak.duration} onComplete={handleStretchComplete} />
       )}
+
+      <Footer />
     </div>
   );
 }

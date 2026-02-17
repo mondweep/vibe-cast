@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { generateNickname } from "@/lib/nicknames";
+import Footer from "@/components/shared/Footer";
 
 interface JoinSessionProps {
   onJoin: (roomCode: string, nickname: string) => void;
@@ -114,6 +115,8 @@ export default function JoinSession({ onJoin }: JoinSessionProps) {
           No account needed. Your camera data never leaves your device.
         </p>
       </div>
+
+      <Footer />
     </div>
   );
 }
