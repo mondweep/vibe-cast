@@ -1,0 +1,15 @@
+# Render Blueprint — LecturePulse
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: lecture-pulse
+    runtime: node
+    region: frankfurt          # closest to London/Greenwich
+    plan: free
+    rootDir: lecture-pulse
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production

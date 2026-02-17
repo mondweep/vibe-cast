@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import type { DashboardState } from "../types";
-import { SERVER_PORT } from "../lib/constants";
 
 const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 2000;
@@ -58,8 +57,8 @@ export function useDashboardSocket(): UseDashboardSocketReturn {
     if (unmountedRef.current) return;
 
     const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.hostname;
-    const url = `${proto}//${host}:${SERVER_PORT}`;
+    const host = window.location.host; // includes port in dev, omits in production
+    const url = `${proto}//${host}/ws`;
 
     try {
       const ws = new WebSocket(url);
