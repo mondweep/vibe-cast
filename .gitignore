@@ -1,4 +1,4 @@
-# Claude Flow runtime data
+# Claude Flow runtime data (keep config.yaml and workflows/)
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
@@ -7,14 +7,13 @@
 .claude-flow/learning/
 .claude-flow/hooks/
 .claude-flow/agents/
+.claude-flow/.gitignore
+.claude-flow/CAPABILITIES.md
 
-# Claude Code agents/settings (generated)
-.claude/agents/
-.claude/commands/
-.claude/helpers/
-.claude/skills/
-.claude/settings.json
+# Claude Code (generated)
+.claude/
 .mcp.json
+CLAUDE.md
 
 # Node
 node_modules/
