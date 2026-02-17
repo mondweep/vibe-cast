@@ -8,6 +8,7 @@ export interface UseWebSocketReturn {
   isConnected: boolean;
   sendPostureUpdate: (score: number, headTilt: number, shoulderDelta: number) => void;
   stretchBreak: StretchBreak | null;
+  sessionEnded: boolean;
   error: string | null;
 }
 
@@ -31,7 +32,11 @@ export function useWebSocket(
 
   const [isConnected, setIsConnected] = useState(false);
   const [stretchBreak, setStretchBreak] = useState<StretchBreak | null>(null);
+  const [sessionEnded, setSessionEnded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // When set to true, prevents reconnection attempts (e.g. after session_ended)
+  const noReconnectRef = useRef(false);
 
   const roomCodeRef = useRef(roomCode);
   const nicknameRef = useRef(nickname);
@@ -68,6 +73,12 @@ export function useWebSocket(
           const data = JSON.parse(event.data as string) as { type: string; duration?: number };
           if (data.type === "stretch_break") {
             setStretchBreak(data as StretchBreak);
+          } else if (data.type === "session_ended") {
+            // Presenter ended the session — stop reconnecting and notify UI
+            noReconnectRef.current = true;
+            setSessionEnded(true);
+            setIsConnected(false);
+            ws.close();
           }
         } catch {
           // Ignore malformed messages
@@ -82,12 +93,15 @@ export function useWebSocket(
         setIsConnected(false);
         wsRef.current = null;
 
-        if (!unmountedRef.current && retriesRef.current < MAX_RETRIES) {
+        // Don't reconnect if session ended gracefully or component unmounted
+        if (noReconnectRef.current || unmountedRef.current) return;
+
+        if (retriesRef.current < MAX_RETRIES) {
           retriesRef.current += 1;
           setTimeout(() => {
             connect();
           }, RETRY_DELAY_MS);
-        } else if (!unmountedRef.current && retriesRef.current >= MAX_RETRIES) {
+        } else {
           setError("Unable to connect after multiple attempts");
         }
       };
@@ -132,5 +146,5 @@ export function useWebSocket(
     };
   }, [roomCode, nickname, connect]);
 
-  return { isConnected, sendPostureUpdate, stretchBreak, error };
+  return { isConnected, sendPostureUpdate, stretchBreak, sessionEnded, error };
 }

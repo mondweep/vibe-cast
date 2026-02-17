@@ -47,12 +47,18 @@ function SessionPage() {
 
 function SessionView({ roomCode, nickname }: { roomCode: string; nickname: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const navigate = useNavigate();
 
   // 1. WebSocket connection
-  const { isConnected, sendPostureUpdate, stretchBreak, error: wsError } = useWebSocket(
-    roomCode,
-    nickname,
-  );
+  const { isConnected, sendPostureUpdate, stretchBreak, sessionEnded, error: wsError } =
+    useWebSocket(roomCode, nickname);
+
+  // Redirect to join page after session ends (short delay so user sees the message)
+  useEffect(() => {
+    if (!sessionEnded) return;
+    const timer = setTimeout(() => navigate("/", { replace: true }), 3000);
+    return () => clearTimeout(timer);
+  }, [sessionEnded, navigate]);
 
   // 2. Pose detection on camera feed
   const { landmarks, isLoading: poseLoading, error: poseError } = usePoseDetection(videoRef);
@@ -140,6 +146,30 @@ function SessionView({ roomCode, nickname }: { roomCode: string; nickname: strin
       {/* Stretch break overlay */}
       {showStretch && stretchBreak && (
         <StretchMode duration={stretchBreak.duration} onComplete={handleStretchComplete} />
+      )}
+
+      {/* Session ended overlay */}
+      {sessionEnded && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-dark-950/95 backdrop-blur-md">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent-blue/20">
+            <svg
+              className="h-8 w-8 text-accent-blue"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h2 className="mb-2 text-2xl font-bold text-white">Session Ended</h2>
+          <p className="text-dark-400">The presenter has ended this session.</p>
+          <p className="mt-4 text-sm text-dark-500">Returning to home screen...</p>
+        </div>
       )}
 
       <Footer />
