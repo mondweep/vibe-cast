@@ -5,9 +5,11 @@ services:
   - type: web
     name: lecture-pulse
     runtime: node
-    nodeVersion: "20"
     region: frankfurt
     plan: free
     rootDir: lecture-pulse
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
