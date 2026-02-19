@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Graph API Guide | Microsoft Integration Guide</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/guide-page.css">
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">&#9670;</span>
+                <span class="logo-text">Microsoft Integration Guide</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html#home">Home</a>
+                <a href="../index.html#technologies">Technologies</a>
+                <a href="../index.html#patterns">Patterns</a>
+                <a href="../index.html#guides" class="active">Guides</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="guide-content">
+        <div class="guide-header">
+            <div class="container">
+                <a href="../index.html#guides" class="back-link">← Back to Guides</a>
+                <h1>Microsoft Graph API Guide</h1>
+                <p class="guide-intro">A single API to access everything in Microsoft 365 - emails, calendar, files, SharePoint, Teams, and more.</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#overview">Overview</a></li>
+                        <li><a href="#getting-started">Getting Started</a></li>
+                        <li><a href="#common-queries">Common Queries</a></li>
+                        <li><a href="#query-parameters">Query Parameters</a></li>
+                        <li><a href="#code-examples">Code Examples</a></li>
+                        <li><a href="#permissions">Permissions</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="overview">
+                        <h2>What is Microsoft Graph?</h2>
+                        <p>Microsoft Graph is a <strong>unified REST API</strong> that provides a single endpoint to access data across the entire Microsoft 365 ecosystem.</p>
+
+                        <div class="highlight-box">
+                            <strong>Single Endpoint:</strong> <code>https://graph.microsoft.com</code>
+                        </div>
+
+                        <p>Instead of learning separate APIs for Outlook, SharePoint, Teams, OneDrive, and Azure AD, you learn one API that gives you access to all of them.</p>
+
+                        <h3>What You Can Access</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>What You Can Do</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Mail</td><td>Read, send, search emails</td></tr>
+                                <tr><td>Calendar</td><td>Read, create events, check availability</td></tr>
+                                <tr><td>Files</td><td>Access OneDrive and SharePoint documents</td></tr>
+                                <tr><td>Teams</td><td>Send messages, manage channels</td></tr>
+                                <tr><td>Users</td><td>Read profiles, manage groups</td></tr>
+                                <tr><td>Search</td><td>Search across all M365 content</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="getting-started">
+                        <h2>Getting Started with Graph Explorer</h2>
+                        <p>The easiest way to explore Graph API is the official <strong>Graph Explorer</strong> - no code required.</p>
+
+                        <ol class="steps-list">
+                            <li>Go to <a href="https://developer.microsoft.com/en-us/graph/graph-explorer" target="_blank">Graph Explorer</a></li>
+                            <li>Sign in with your Microsoft account</li>
+                            <li>Try your first query: <code>https://graph.microsoft.com/v1.0/me</code></li>
+                            <li>Click "Run query" to see your profile data</li>
+                        </ol>
+
+                        <div class="warning-box">
+                            <strong>Important:</strong> Don't type "GET" in the query box - it's already there. Just paste the URL.
+                        </div>
+                    </section>
+
+                    <section id="common-queries">
+                        <h2>Common Queries</h2>
+
+                        <h3>Your Profile</h3>
+                        <pre><code>https://graph.microsoft.com/v1.0/me</code></pre>
+
+                        <h3>Your Emails (Top 5)</h3>
+                        <pre><code>https://graph.microsoft.com/v1.0/me/messages?$top=5&$select=subject,from,receivedDateTime</code></pre>
+
+                        <h3>Your Calendar Events</h3>
+                        <pre><code>https://graph.microsoft.com/v1.0/me/events</code></pre>
+
+                        <h3>Your OneDrive Files</h3>
+                        <pre><code>https://graph.microsoft.com/v1.0/me/drive/root/children</code></pre>
+
+                        <h3>Search Emails</h3>
+                        <pre><code>https://graph.microsoft.com/v1.0/me/messages?$search="project"</code></pre>
+
+                        <h3>Your Teams</h3>
+                        <pre><code>https://graph.microsoft.com/v1.0/me/joinedTeams</code></pre>
+                    </section>
+
+                    <section id="query-parameters">
+                        <h2>Query Parameters (OData)</h2>
+                        <p>Use these to filter and shape your API responses:</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Description</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>$select</code></td>
+                                    <td>Choose specific fields</td>
+                                    <td><code>?$select=displayName,mail</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>$top</code></td>
+                                    <td>Limit results</td>
+                                    <td><code>?$top=5</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>$filter</code></td>
+                                    <td>Filter results</td>
+                                    <td><code>?$filter=startswith(displayName,'John')</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>$search</code></td>
+                                    <td>Search content</td>
+                                    <td><code>?$search="budget"</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>$orderby</code></td>
+                                    <td>Sort results</td>
+                                    <td><code>?$orderby=receivedDateTime desc</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="code-examples">
+                        <h2>Code Examples</h2>
+
+                        <h3>Python</h3>
+                        <pre><code>import requests
+
+def get_my_emails(token):
+    response = requests.get(
+        "https://graph.microsoft.com/v1.0/me/messages",
+        headers={"Authorization": f"Bearer {token}"},
+        params={"$top": 10, "$select": "subject,from,receivedDateTime"}
+    )
+    return response.json()
+
+emails = get_my_emails(access_token)
+for email in emails["value"]:
+    print(f"{email['subject']} - {email['from']['emailAddress']['address']}")</code></pre>
+
+                        <h3>JavaScript (Node.js)</h3>
+                        <pre><code>const axios = require('axios');
+
+async function getMyEmails(token) {
+    const response = await axios.get(
+        'https://graph.microsoft.com/v1.0/me/messages',
+        {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { $top: 10, $select: 'subject,from,receivedDateTime' }
+        }
+    );
+    return response.data;
+}
+
+const emails = await getMyEmails(accessToken);
+emails.value.forEach(email => {
+    console.log(`${email.subject} - ${email.from.emailAddress.address}`);
+});</code></pre>
+                    </section>
+
+                    <section id="permissions">
+                        <h2>Common Permissions</h2>
+                        <p>When your queries fail with 403, you need to grant permissions:</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Permission</th>
+                                    <th>What It Allows</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>User.Read</code></td><td>Read your profile</td></tr>
+                                <tr><td><code>Mail.Read</code></td><td>Read your emails</td></tr>
+                                <tr><td><code>Mail.Send</code></td><td>Send emails</td></tr>
+                                <tr><td><code>Calendars.Read</code></td><td>Read your calendar</td></tr>
+                                <tr><td><code>Files.Read</code></td><td>Read your OneDrive files</td></tr>
+                            </tbody>
+                        </table>
+
+                        <p>In Graph Explorer, click "Modify permissions" tab to grant these.</p>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>This is a summary. For the complete guide with more examples, see the full documentation:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/microsoft-graph-api-guide.md" target="_blank" class="btn btn-primary">View on GitHub →</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">&#9670;</span>
+                    <span>Microsoft Integration Guide</span>
+                </div>
+                <div class="footer-credit">
+                    <p>Created by <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Mondweep Chakravorty</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

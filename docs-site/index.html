@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Integration Guide | Unified Business Experiences</title>
+    <meta name="description" content="Learn how to create unified experiences across Microsoft 365, Dynamics 365, Business Central, SharePoint, and more. Practical guides for technical and non-technical users.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">&#9670;</span>
+                <span class="logo-text">Microsoft Integration Guide</span>
+            </div>
+            <div class="nav-links">
+                <a href="#home" class="active">Home</a>
+                <a href="#problems">Problems</a>
+                <a href="#technologies">Technologies</a>
+                <a href="#patterns">Patterns</a>
+                <a href="#guides">Guides</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Unified Microsoft Experiences</h1>
+            <p class="hero-subtitle">Break down silos between Dynamics 365, Business Central, SharePoint, and Microsoft 365</p>
+            <p class="hero-description">Practical guidance for creating integrated business solutions - from quick wins to enterprise architecture</p>
+            <div class="hero-cta">
+                <a href="#problems" class="btn btn-primary">See Common Problems</a>
+                <a href="#patterns" class="btn btn-secondary">View Solutions</a>
+            </div>
+            <div class="hero-badges">
+                <span class="badge">For Technical Users</span>
+                <span class="badge">For Business Users</span>
+                <span class="badge">Implementation Ready</span>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="architecture-preview">
+                <div class="arch-layer layer-experience">
+                    <span>D365</span>
+                    <span>Power Apps</span>
+                    <span>Teams</span>
+                    <span>Copilot</span>
+                </div>
+                <div class="arch-connector"></div>
+                <div class="arch-layer layer-platform">
+                    <span>Dataverse</span>
+                    <span>Graph API</span>
+                </div>
+                <div class="arch-connector"></div>
+                <div class="arch-layer layer-data">
+                    <span>Business Central</span>
+                    <span>SharePoint</span>
+                    <span>Fabric</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problems Section -->
+    <section id="problems" class="problems-section">
+        <div class="container">
+            <h2>Sound Familiar?</h2>
+            <p class="section-subtitle">Common challenges organisations face with disconnected Microsoft systems</p>
+
+            <div class="problems-grid">
+                <div class="problem-card" data-category="data">
+                    <div class="problem-icon">&#128269;</div>
+                    <h3>"I can't find the document I need"</h3>
+                    <p>SharePoint has become a maze of folders. No one knows where anything is stored.</p>
+                    <div class="problem-impact">
+                        <span class="impact-label">Impact:</span>
+                        <span class="impact-value">Hours lost daily searching for content</span>
+                    </div>
+                    <a href="#pattern-sharepoint" class="problem-solution">See Solution →</a>
+                </div>
+
+                <div class="problem-card" data-category="integration">
+                    <div class="problem-icon">&#128274;</div>
+                    <h3>"Sales keeps selling to customers on credit hold"</h3>
+                    <p>Credit status in Business Central doesn't reflect in Dynamics 365 CRM.</p>
+                    <div class="problem-impact">
+                        <span class="impact-label">Impact:</span>
+                        <span class="impact-value">Bad debt, finance team frustration</span>
+                    </div>
+                    <a href="#pattern-credit" class="problem-solution">See Solution →</a>
+                </div>
+
+                <div class="problem-card" data-category="integration">
+                    <div class="problem-icon">&#128200;</div>
+                    <h3>"I can't see if my deal's invoice was paid"</h3>
+                    <p>Sales closes deals in D365 but has no visibility into BC payment status.</p>
+                    <div class="problem-impact">
+                        <span class="impact-label">Impact:</span>
+                        <span class="impact-value">Poor customer follow-up, commission disputes</span>
+                    </div>
+                    <a href="#pattern-360" class="problem-solution">See Solution →</a>
+                </div>
+
+                <div class="problem-card" data-category="data">
+                    <div class="problem-icon">&#128193;</div>
+                    <h3>"Everyone tags and stores things differently"</h3>
+                    <p>No consistent metadata, content types, or folder structures across departments.</p>
+                    <div class="problem-impact">
+                        <span class="impact-label">Impact:</span>
+                        <span class="impact-value">Duplicate content, compliance risks</span>
+                    </div>
+                    <a href="#pattern-taxonomy" class="problem-solution">See Solution →</a>
+                </div>
+
+                <div class="problem-card" data-category="reporting">
+                    <div class="problem-icon">&#128202;</div>
+                    <h3>"Marketing can't track actual revenue from campaigns"</h3>
+                    <p>Campaign data in D365 Marketing doesn't connect to paid invoices in BC.</p>
+                    <div class="problem-impact">
+                        <span class="impact-label">Impact:</span>
+                        <span class="impact-value">Unknown ROI, poor budget decisions</span>
+                    </div>
+                    <a href="#pattern-roi" class="problem-solution">See Solution →</a>
+                </div>
+
+                <div class="problem-card" data-category="process">
+                    <div class="problem-icon">&#128221;</div>
+                    <h3>"We re-enter quotes from CRM into the ERP"</h3>
+                    <p>No automation from D365 quote to BC sales order - manual re-entry.</p>
+                    <div class="problem-impact">
+                        <span class="impact-label">Impact:</span>
+                        <span class="impact-value">Errors, delays, double work</span>
+                    </div>
+                    <a href="#pattern-quote" class="problem-solution">See Solution →</a>
+                </div>
+            </div>
+
+            <div class="problems-filter">
+                <button class="filter-btn active" data-filter="all">All Problems</button>
+                <button class="filter-btn" data-filter="integration">Integration</button>
+                <button class="filter-btn" data-filter="data">Data Management</button>
+                <button class="filter-btn" data-filter="reporting">Reporting</button>
+                <button class="filter-btn" data-filter="process">Process</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technologies Section -->
+    <section id="technologies" class="technologies-section">
+        <div class="container">
+            <h2>The Microsoft Stack</h2>
+            <p class="section-subtitle">Understanding what each technology does and how they connect</p>
+
+            <div class="tech-diagram">
+                <div class="tech-layer" id="layer-experience">
+                    <h3>Experience Layer</h3>
+                    <p>What users interact with</p>
+                    <div class="tech-items">
+                        <div class="tech-item" data-tech="d365">
+                            <div class="tech-icon">D365</div>
+                            <span>Dynamics 365</span>
+                        </div>
+                        <div class="tech-item" data-tech="powerapps">
+                            <div class="tech-icon">PA</div>
+                            <span>Power Apps</span>
+                        </div>
+                        <div class="tech-item" data-tech="teams">
+                            <div class="tech-icon">T</div>
+                            <span>Teams</span>
+                        </div>
+                        <div class="tech-item" data-tech="powerbi">
+                            <div class="tech-icon">PBI</div>
+                            <span>Power BI</span>
+                        </div>
+                        <div class="tech-item" data-tech="copilot">
+                            <div class="tech-icon">&#10024;</div>
+                            <span>Copilot</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-connector">
+                    <div class="connector-line"></div>
+                    <div class="connector-label">APIs & Connectors</div>
+                </div>
+
+                <div class="tech-layer" id="layer-platform">
+                    <h3>Platform Layer</h3>
+                    <p>Where data is unified and accessed</p>
+                    <div class="tech-items">
+                        <div class="tech-item featured" data-tech="dataverse">
+                            <div class="tech-icon">DV</div>
+                            <span>Dataverse</span>
+                            <span class="tech-badge">Central Hub</span>
+                        </div>
+                        <div class="tech-item featured" data-tech="graph">
+                            <div class="tech-icon">G</div>
+                            <span>Microsoft Graph</span>
+                            <span class="tech-badge">M365 API</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-connector">
+                    <div class="connector-line"></div>
+                    <div class="connector-label">Data Sources</div>
+                </div>
+
+                <div class="tech-layer" id="layer-data">
+                    <h3>Data Layer</h3>
+                    <p>Where data originates and lives</p>
+                    <div class="tech-items">
+                        <div class="tech-item" data-tech="bc">
+                            <div class="tech-icon">BC</div>
+                            <span>Business Central</span>
+                            <span class="tech-role">Finance & ERP</span>
+                        </div>
+                        <div class="tech-item" data-tech="sharepoint">
+                            <div class="tech-icon">SP</div>
+                            <span>SharePoint</span>
+                            <span class="tech-role">Documents</span>
+                        </div>
+                        <div class="tech-item" data-tech="fabric">
+                            <div class="tech-icon">F</div>
+                            <span>Fabric</span>
+                            <span class="tech-role">Analytics</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technology Detail Cards -->
+            <div class="tech-details">
+                <div class="tech-detail-card" id="detail-dataverse">
+                    <div class="detail-header">
+                        <h3>Dataverse</h3>
+                        <span class="detail-type">Platform</span>
+                    </div>
+                    <div class="detail-content">
+                        <p><strong>What it is:</strong> The unified data platform that Dynamics 365 is built on. Think of it as a managed database with built-in security, relationships, and business logic.</p>
+                        <p><strong>Key insight:</strong> When you use Dynamics 365, you're already using Dataverse. It's not a separate thing to set up.</p>
+                        <div class="detail-uses">
+                            <h4>Use it to:</h4>
+                            <ul>
+                                <li>Store operational business data</li>
+                                <li>Create Virtual Tables to access BC data</li>
+                                <li>Build Power Apps and automations</li>
+                                <li>Apply row-level security</li>
+                            </ul>
+                        </div>
+                        <a href="guides/dataverse.html" class="detail-link">Read Full Guide →</a>
+                    </div>
+                </div>
+
+                <div class="tech-detail-card" id="detail-graph">
+                    <div class="detail-header">
+                        <h3>Microsoft Graph</h3>
+                        <span class="detail-type">API</span>
+                    </div>
+                    <div class="detail-content">
+                        <p><strong>What it is:</strong> A single API endpoint to access everything in Microsoft 365 - emails, calendar, files, SharePoint, Teams, and more.</p>
+                        <p><strong>Key insight:</strong> One API to rule them all. Instead of learning 10 different APIs, learn Graph.</p>
+                        <div class="detail-uses">
+                            <h4>Use it to:</h4>
+                            <ul>
+                                <li>Read/send emails programmatically</li>
+                                <li>Access SharePoint documents</li>
+                                <li>Search across all M365 content</li>
+                                <li>Manage users and groups</li>
+                            </ul>
+                        </div>
+                        <a href="guides/graph.html" class="detail-link">Read Full Guide →</a>
+                    </div>
+                </div>
+
+                <div class="tech-detail-card" id="detail-bc">
+                    <div class="detail-header">
+                        <h3>Business Central</h3>
+                        <span class="detail-type">ERP System</span>
+                    </div>
+                    <div class="detail-content">
+                        <p><strong>What it is:</strong> Microsoft's cloud ERP for finance, supply chain, and operations. It has its own database and API - separate from Dataverse.</p>
+                        <p><strong>Key insight:</strong> BC data doesn't automatically appear in D365 CRM. You need Virtual Tables or sync to connect them.</p>
+                        <div class="detail-uses">
+                            <h4>Contains:</h4>
+                            <ul>
+                                <li>Customers, vendors, items</li>
+                                <li>Sales orders and invoices</li>
+                                <li>Payments and financial data</li>
+                                <li>Inventory and purchasing</li>
+                            </ul>
+                        </div>
+                        <a href="guides/bc-integration.html" class="detail-link">Read Full Guide →</a>
+                    </div>
+                </div>
+
+                <div class="tech-detail-card" id="detail-fabric">
+                    <div class="detail-header">
+                        <h3>Microsoft Fabric</h3>
+                        <span class="detail-type">Analytics Platform</span>
+                    </div>
+                    <div class="detail-content">
+                        <p><strong>What it is:</strong> A unified analytics platform for big data, data warehousing, and machine learning. For analyzing your business, not running it.</p>
+                        <p><strong>Key insight:</strong> Dataverse = operational (run the business). Fabric = analytical (analyze the business).</p>
+                        <div class="detail-uses">
+                            <h4>Use it to:</h4>
+                            <ul>
+                                <li>Analyze years of historical data</li>
+                                <li>Build ML prediction models</li>
+                                <li>Create unified data views across systems</li>
+                                <li>Enable Copilot across all data</li>
+                            </ul>
+                        </div>
+                        <a href="guides/fabric.html" class="detail-link">Read Full Guide →</a>
+                    </div>
+                </div>
+
+                <div class="tech-detail-card" id="detail-sharepoint">
+                    <div class="detail-header">
+                        <h3>SharePoint + Syntex</h3>
+                        <span class="detail-type">Content Platform</span>
+                    </div>
+                    <div class="detail-content">
+                        <p><strong>What it is:</strong> Document management and collaboration platform. Syntex adds AI to auto-classify and extract metadata from documents.</p>
+                        <p><strong>Key insight:</strong> SharePoint is accessed via Graph API. Syntex + Search + Purview make it actually usable at scale.</p>
+                        <div class="detail-uses">
+                            <h4>Use it to:</h4>
+                            <ul>
+                                <li>Store and collaborate on documents</li>
+                                <li>Auto-classify content with AI</li>
+                                <li>Apply governance and compliance</li>
+                                <li>Link documents to D365 records</li>
+                            </ul>
+                        </div>
+                        <a href="guides/sharepoint.html" class="detail-link">Read Full Guide →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Patterns Section -->
+    <section id="patterns" class="patterns-section">
+        <div class="container">
+            <h2>Solution Patterns</h2>
+            <p class="section-subtitle">Proven architectural approaches to solve common integration challenges</p>
+
+            <div class="pattern-tabs">
+                <button class="pattern-tab active" data-pattern="quick">Quick Wins</button>
+                <button class="pattern-tab" data-pattern="intermediate">Intermediate</button>
+                <button class="pattern-tab" data-pattern="advanced">Advanced (Fabric)</button>
+            </div>
+
+            <div class="patterns-container">
+                <!-- Quick Wins -->
+                <div class="pattern-group active" id="patterns-quick">
+                    <div class="pattern-intro">
+                        <h3>Phase 1: Quick Wins</h3>
+                        <p>These solutions use existing licenses and can be implemented in days, not months.</p>
+                    </div>
+
+                    <div class="pattern-card" id="pattern-360">
+                        <div class="pattern-header">
+                            <h4>360° Customer View</h4>
+                            <span class="pattern-effort">1-2 days</span>
+                        </div>
+                        <div class="pattern-problem">
+                            <strong>Problem:</strong> Sales can't see BC financial data (balance, credit limit, invoices) in D365 CRM.
+                        </div>
+                        <div class="pattern-solution">
+                            <strong>Solution:</strong> Enable Virtual Tables for BC data in Dataverse
+                            <div class="pattern-diagram">
+                                <div class="diagram-box">D365 Account Form</div>
+                                <div class="diagram-arrow">←</div>
+                                <div class="diagram-box highlight">Virtual Table</div>
+                                <div class="diagram-arrow">←</div>
+                                <div class="diagram-box">BC Customer</div>
+                            </div>
+                        </div>
+                        <div class="pattern-steps">
+                            <h5>Steps:</h5>
+                            <ol>
+                                <li>Enable BC Virtual Table Provider in Power Platform Admin</li>
+                                <li>Connect to your BC environment</li>
+                                <li>Add BC fields (balance, credit limit) to D365 Account form</li>
+                                <li>Sales now sees BC data without leaving D365</li>
+                            </ol>
+                        </div>
+                        <div class="pattern-meta">
+                            <span class="meta-item"><strong>Cost:</strong> Included in D365 license</span>
+                            <span class="meta-item"><strong>Skills:</strong> Power Platform admin</span>
+                        </div>
+                    </div>
+
+                    <div class="pattern-card" id="pattern-credit">
+                        <div class="pattern-header">
+                            <h4>Credit Alert System</h4>
+                            <span class="pattern-effort">2-3 days</span>
+                        </div>
+                        <div class="pattern-problem">
+                            <strong>Problem:</strong> Sales creates opportunities for customers who are blocked or over credit limit in BC.
+                        </div>
+                        <div class="pattern-solution">
+                            <strong>Solution:</strong> Sync credit status + Business Rule + Teams alert
+                            <div class="pattern-diagram">
+                                <div class="diagram-box">BC Credit Status</div>
+                                <div class="diagram-arrow">→</div>
+                                <div class="diagram-box highlight">Power Automate</div>
+                                <div class="diagram-arrow">→</div>
+                                <div class="diagram-box">D365 + Teams</div>
+                            </div>
+                        </div>
+                        <div class="pattern-steps">
+                            <h5>Steps:</h5>
+                            <ol>
+                                <li>Add bc_creditstatus field to Account in Dataverse</li>
+                                <li>Create Power Automate flow to sync BC blocked status</li>
+                                <li>Add Business Rule: Show warning when blocked</li>
+                                <li>Send Teams notification when status changes</li>
+                            </ol>
+                        </div>
+                        <div class="pattern-meta">
+                            <span class="meta-item"><strong>Cost:</strong> Included in licenses</span>
+                            <span class="meta-item"><strong>Skills:</strong> Power Automate, D365 customization</span>
+                        </div>
+                    </div>
+
+                    <div class="pattern-card" id="pattern-taxonomy">
+                        <div class="pattern-header">
+                            <h4>SharePoint Information Architecture</h4>
+                            <span class="pattern-effort">1-2 weeks</span>
+                        </div>
+                        <div class="pattern-problem">
+                            <strong>Problem:</strong> Documents are scattered, inconsistently tagged, and impossible to find.
+                        </div>
+                        <div class="pattern-solution">
+                            <strong>Solution:</strong> Hub sites + Content Types + Search configuration
+                            <div class="pattern-diagram">
+                                <div class="diagram-box">Hub Sites</div>
+                                <div class="diagram-arrow">+</div>
+                                <div class="diagram-box highlight">Content Types</div>
+                                <div class="diagram-arrow">+</div>
+                                <div class="diagram-box">Search Bookmarks</div>
+                            </div>
+                        </div>
+                        <div class="pattern-steps">
+                            <h5>Steps:</h5>
+                            <ol>
+                                <li>Define taxonomy (departments, doc types, status)</li>
+                                <li>Create hub site structure per department</li>
+                                <li>Create standardized content types with required metadata</li>
+                                <li>Configure Search bookmarks for common queries</li>
+                            </ol>
+                        </div>
+                        <div class="pattern-meta">
+                            <span class="meta-item"><strong>Cost:</strong> Included in M365 license</span>
+                            <span class="meta-item"><strong>Skills:</strong> SharePoint admin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intermediate -->
+                <div class="pattern-group" id="patterns-intermediate">
+                    <div class="pattern-intro">
+                        <h3>Phase 2: Enhanced Integration</h3>
+                        <p>More sophisticated solutions requiring some development effort.</p>
+                    </div>
+
+                    <div class="pattern-card" id="pattern-quote">
+                        <div class="pattern-header">
+                            <h4>Quote-to-Cash Automation</h4>
+                            <span class="pattern-effort">1-2 weeks</span>
+                        </div>
+                        <div class="pattern-problem">
+                            <strong>Problem:</strong> Won quotes in D365 are manually re-entered as sales orders in BC.
+                        </div>
+                        <div class="pattern-solution">
+                            <strong>Solution:</strong> Power Automate flow triggered on quote win
+                            <div class="pattern-diagram">
+                                <div class="diagram-box">D365 Quote Won</div>
+                                <div class="diagram-arrow">→</div>
+                                <div class="diagram-box highlight">Power Automate</div>
+                                <div class="diagram-arrow">→</div>
+                                <div class="diagram-box">BC Sales Order</div>
+                            </div>
+                        </div>
+                        <div class="pattern-steps">
+                            <h5>Flow logic:</h5>
+                            <ol>
+                                <li>Trigger: Quote status changes to "Won"</li>
+                                <li>Find/create customer in BC</li>
+                                <li>Create sales order with line items</li>
+                                <li>Update D365 with BC order number</li>
+                                <li>Notify finance team via Teams</li>
+                            </ol>
+                        </div>
+                        <div class="pattern-meta">
+                            <span class="meta-item"><strong>Cost:</strong> Power Automate Premium</span>
+                            <span class="meta-item"><strong>Skills:</strong> Power Automate, BC API</span>
+                        </div>
+                    </div>
+
+                    <div class="pattern-card" id="pattern-syntex">
+                        <div class="pattern-header">
+                            <h4>AI Document Classification</h4>
+                            <span class="pattern-effort">2-3 weeks</span>
+                        </div>
+                        <div class="pattern-problem">
+                            <strong>Problem:</strong> Users don't fill in metadata. Documents have no context.
+                        </div>
+                        <div class="pattern-solution">
+                            <strong>Solution:</strong> Train Syntex models to auto-extract metadata
+                            <div class="pattern-diagram">
+                                <div class="diagram-box">Document Upload</div>
+                                <div class="diagram-arrow">→</div>
+                                <div class="diagram-box highlight">Syntex AI</div>
+                                <div class="diagram-arrow">→</div>
+                                <div class="diagram-box">Auto-tagged</div>
+                            </div>
+                        </div>
+                        <div class="pattern-steps">
+                            <h5>Steps:</h5>
+                            <ol>
+                                <li>Identify high-volume document types (contracts, invoices)</li>
+                                <li>Train document understanding model with examples</li>
+                                <li>Define extraction rules (vendor, amount, date)</li>
+                                <li>Apply model to libraries</li>
+                                <li>Documents now auto-tagged on upload</li>
+                            </ol>
+                        </div>
+                        <div class="pattern-meta">
+                            <span class="meta-item"><strong>Cost:</strong> Syntex license</span>
+                            <span class="meta-item"><strong>Skills:</strong> Syntex model training</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced -->
+                <div class="pattern-group" id="patterns-advanced">
+                    <div class="pattern-intro">
+                        <h3>Phase 3: Fabric + Copilot</h3>
+                        <p>Enterprise-scale analytics and AI-powered experiences.</p>
+                    </div>
+
+                    <div class="pattern-card" id="pattern-roi">
+                        <div class="pattern-header">
+                            <h4>Campaign ROI with Fabric</h4>
+                            <span class="pattern-effort">3-4 weeks</span>
+                        </div>
+                        <div class="pattern-problem">
+                            <strong>Problem:</strong> Marketing can't trace campaigns to actual paid revenue in BC.
+                        </div>
+                        <div class="pattern-solution">
+                            <strong>Solution:</strong> Fabric Lakehouse unifies D365 + BC data
+                            <div class="pattern-diagram">
+                                <div class="diagram-box">D365 Campaigns</div>
+                                <div class="diagram-arrow">→</div>
+                                <div class="diagram-box highlight">Fabric OneLake</div>
+                                <div class="diagram-arrow">←</div>
+                                <div class="diagram-box">BC Payments</div>
+                            </div>
+                        </div>
+                        <div class="pattern-steps">
+                            <h5>Architecture:</h5>
+                            <ol>
+                                <li>Sync D365 campaigns, leads, opportunities to Fabric</li>
+                                <li>Sync BC invoices and payments to Fabric</li>
+                                <li>Create unified view joining campaign → lead → opportunity → invoice → payment</li>
+                                <li>Build Power BI dashboard showing true ROI</li>
+                                <li>Enable Copilot: "Which campaign had the best ROI?"</li>
+                            </ol>
+                        </div>
+                        <div class="pattern-meta">
+                            <span class="meta-item"><strong>Cost:</strong> Fabric capacity (~$300+/mo)</span>
+                            <span class="meta-item"><strong>Skills:</strong> Data engineering, SQL, PySpark</span>
+                        </div>
+                    </div>
+
+                    <div class="pattern-card" id="pattern-copilot">
+                        <div class="pattern-header">
+                            <h4>Copilot Across All Data</h4>
+                            <span class="pattern-effort">4-6 weeks</span>
+                        </div>
+                        <div class="pattern-problem">
+                            <strong>Problem:</strong> Users need to query data across D365, BC, and SharePoint using natural language.
+                        </div>
+                        <div class="pattern-solution">
+                            <strong>Solution:</strong> Fabric semantic model + Copilot
+                            <div class="pattern-diagram">
+                                <div class="diagram-box">Natural Language</div>
+                                <div class="diagram-arrow">→</div>
+                                <div class="diagram-box highlight">Copilot</div>
+                                <div class="diagram-arrow">→</div>
+                                <div class="diagram-box">Fabric Semantic Model</div>
+                            </div>
+                        </div>
+                        <div class="pattern-steps">
+                            <h5>Capabilities:</h5>
+                            <ul>
+                                <li>"Show me customers with overdue invoices and open opportunities"</li>
+                                <li>"What's our quote-to-cash cycle time by product?"</li>
+                                <li>"Predict which deals will close this month"</li>
+                                <li>"Find contracts expiring in the next 30 days"</li>
+                            </ul>
+                        </div>
+                        <div class="pattern-meta">
+                            <span class="meta-item"><strong>Cost:</strong> Fabric + Copilot licenses</span>
+                            <span class="meta-item"><strong>Skills:</strong> Semantic modeling, data architecture</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Guides Section -->
+    <section id="guides" class="guides-section">
+        <div class="container">
+            <h2>In-Depth Guides</h2>
+            <p class="section-subtitle">Comprehensive documentation for each technology</p>
+
+            <div class="guides-grid">
+                <a href="guides/graph.html" class="guide-card">
+                    <div class="guide-icon">G</div>
+                    <h3>Microsoft Graph API</h3>
+                    <p>Access M365 data - emails, calendar, files, SharePoint, and more through one unified API.</p>
+                    <ul class="guide-topics">
+                        <li>Graph Explorer walkthrough</li>
+                        <li>Python & Node.js examples</li>
+                        <li>Query parameters (OData)</li>
+                        <li>Authentication setup</li>
+                    </ul>
+                    <span class="guide-link">Read Guide →</span>
+                </a>
+
+                <a href="guides/dataverse.html" class="guide-card">
+                    <div class="guide-icon">DV</div>
+                    <h3>Dataverse Explained</h3>
+                    <p>The unified data platform underneath Dynamics 365. Understand how it ties everything together.</p>
+                    <ul class="guide-topics">
+                        <li>What Dataverse actually is</li>
+                        <li>Virtual Tables for BC</li>
+                        <li>Relationships and security</li>
+                        <li>API access patterns</li>
+                    </ul>
+                    <span class="guide-link">Read Guide →</span>
+                </a>
+
+                <a href="guides/bc-integration.html" class="guide-card">
+                    <div class="guide-icon">BC</div>
+                    <h3>Business Central Integration</h3>
+                    <p>Connect BC (finance/ERP) with D365 (CRM) and other Microsoft services.</p>
+                    <ul class="guide-topics">
+                        <li>BC API endpoints</li>
+                        <li>Virtual Tables setup</li>
+                        <li>Power Automate connectors</li>
+                        <li>Cross-system code examples</li>
+                    </ul>
+                    <span class="guide-link">Read Guide →</span>
+                </a>
+
+                <a href="guides/fabric.html" class="guide-card">
+                    <div class="guide-icon">F</div>
+                    <h3>Microsoft Fabric</h3>
+                    <p>When and how to use Fabric for analytics, ML, and unified data views.</p>
+                    <ul class="guide-topics">
+                        <li>Operational vs Analytical</li>
+                        <li>OneLake and Lakehouse</li>
+                        <li>When you need Fabric</li>
+                        <li>Cost considerations</li>
+                    </ul>
+                    <span class="guide-link">Read Guide →</span>
+                </a>
+
+                <a href="guides/sharepoint.html" class="guide-card">
+                    <div class="guide-icon">SP</div>
+                    <h3>SharePoint Optimization</h3>
+                    <p>Make documents findable, consistent, and governed across your organization.</p>
+                    <ul class="guide-topics">
+                        <li>Information architecture</li>
+                        <li>Syntex AI classification</li>
+                        <li>Microsoft Search config</li>
+                        <li>Purview governance</li>
+                    </ul>
+                    <span class="guide-link">Read Guide →</span>
+                </a>
+
+                <a href="guides/use-cases.html" class="guide-card">
+                    <div class="guide-icon">&#128736;</div>
+                    <h3>Integrated Experiences</h3>
+                    <p>End-to-end use cases with complete implementation details.</p>
+                    <ul class="guide-topics">
+                        <li>360° Customer View</li>
+                        <li>Quote-to-Cash</li>
+                        <li>Campaign ROI tracking</li>
+                        <li>Credit management</li>
+                    </ul>
+                    <span class="guide-link">Read Guide →</span>
+                </a>
+            </div>
+
+            <div class="github-callout">
+                <div class="github-icon">
+                    <svg viewBox="0 0 24 24" width="40" height="40">
+                        <path fill="currentColor" d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/>
+                    </svg>
+                </div>
+                <div class="github-content">
+                    <h3>Full Documentation on GitHub</h3>
+                    <p>All guides are available as Markdown files in our GitHub repository. Clone, fork, or contribute!</p>
+                    <a href="https://github.com/mondweep/vibe-cast/tree/microsoft-graph-exploration" class="btn btn-secondary" target="_blank">View on GitHub →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Decision Tree Section -->
+    <section id="decision" class="decision-section">
+        <div class="container">
+            <h2>Where Should I Start?</h2>
+            <p class="section-subtitle">Answer a few questions to get a personalized recommendation</p>
+
+            <div class="decision-tree">
+                <div class="decision-step active" id="step-1">
+                    <h3>What's your primary challenge?</h3>
+                    <div class="decision-options">
+                        <button class="decision-btn" data-next="step-2a">Sales can't see finance data</button>
+                        <button class="decision-btn" data-next="step-2b">Can't find documents</button>
+                        <button class="decision-btn" data-next="step-2c">Manual data re-entry</button>
+                        <button class="decision-btn" data-next="step-2d">Need better reporting</button>
+                    </div>
+                </div>
+
+                <div class="decision-step" id="step-2a">
+                    <h3>What finance data do they need?</h3>
+                    <div class="decision-options">
+                        <button class="decision-btn" data-result="virtual-tables">Credit status / balance</button>
+                        <button class="decision-btn" data-result="invoice-sync">Invoice and payment status</button>
+                        <button class="decision-btn" data-result="full-360">Complete financial history</button>
+                    </div>
+                    <button class="decision-back">← Back</button>
+                </div>
+
+                <div class="decision-step" id="step-2b">
+                    <h3>What type of documents?</h3>
+                    <div class="decision-options">
+                        <button class="decision-btn" data-result="search-config">Policies and templates</button>
+                        <button class="decision-btn" data-result="syntex">Contracts and invoices</button>
+                        <button class="decision-btn" data-result="full-ia">Everything is a mess</button>
+                    </div>
+                    <button class="decision-back">← Back</button>
+                </div>
+
+                <div class="decision-step" id="step-2c">
+                    <h3>What process needs automation?</h3>
+                    <div class="decision-options">
+                        <button class="decision-btn" data-result="quote-to-cash">Quotes to orders</button>
+                        <button class="decision-btn" data-result="approval-flow">Approval workflows</button>
+                        <button class="decision-btn" data-result="document-gen">Document generation</button>
+                    </div>
+                    <button class="decision-back">← Back</button>
+                </div>
+
+                <div class="decision-step" id="step-2d">
+                    <h3>What kind of reporting?</h3>
+                    <div class="decision-options">
+                        <button class="decision-btn" data-result="powerbi">Dashboards from D365/BC</button>
+                        <button class="decision-btn" data-result="fabric-analytics">Cross-system analysis</button>
+                        <button class="decision-btn" data-result="copilot-analytics">Natural language queries</button>
+                    </div>
+                    <button class="decision-back">← Back</button>
+                </div>
+
+                <!-- Results -->
+                <div class="decision-result" id="result-virtual-tables">
+                    <h3>Recommendation: Virtual Tables</h3>
+                    <p>Enable BC Virtual Tables in Dataverse to show credit status and balance directly on D365 Account forms.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 1-2 days</span>
+                        <span><strong>Cost:</strong> Included in license</span>
+                    </div>
+                    <a href="#pattern-360" class="btn btn-primary">See Implementation →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+
+                <div class="decision-result" id="result-invoice-sync">
+                    <h3>Recommendation: Invoice Sync Flow</h3>
+                    <p>Create a Power Automate flow to sync invoice status from BC to D365, with Teams notifications on payment.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 3-5 days</span>
+                        <span><strong>Cost:</strong> Power Automate Premium</span>
+                    </div>
+                    <a href="guides/use-cases.html#invoice-sync" class="btn btn-primary">See Implementation →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+
+                <div class="decision-result" id="result-full-360">
+                    <h3>Recommendation: Fabric Unified View</h3>
+                    <p>For complete financial history with historical analysis, use Fabric to create a unified customer data model.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 2-4 weeks</span>
+                        <span><strong>Cost:</strong> Fabric capacity</span>
+                    </div>
+                    <a href="guides/fabric.html" class="btn btn-primary">See Fabric Guide →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+
+                <div class="decision-result" id="result-search-config">
+                    <h3>Recommendation: Search Configuration</h3>
+                    <p>Configure Microsoft Search with bookmarks, Q&A, and custom verticals to make content instantly findable.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 2-3 days</span>
+                        <span><strong>Cost:</strong> Included in M365</span>
+                    </div>
+                    <a href="guides/sharepoint.html#search" class="btn btn-primary">See Implementation →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+
+                <div class="decision-result" id="result-syntex">
+                    <h3>Recommendation: Syntex AI Classification</h3>
+                    <p>Train Syntex models to auto-extract metadata from contracts and invoices on upload.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 2-3 weeks</span>
+                        <span><strong>Cost:</strong> Syntex license</span>
+                    </div>
+                    <a href="guides/sharepoint.html#syntex" class="btn btn-primary">See Implementation →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+
+                <div class="decision-result" id="result-full-ia">
+                    <h3>Recommendation: Full Information Architecture</h3>
+                    <p>Start with taxonomy design, hub sites, content types, then layer on Search and Syntex.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 4-8 weeks</span>
+                        <span><strong>Cost:</strong> M365 + Syntex</span>
+                    </div>
+                    <a href="guides/sharepoint.html" class="btn btn-primary">See Full Guide →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+
+                <div class="decision-result" id="result-quote-to-cash">
+                    <h3>Recommendation: Quote-to-Cash Flow</h3>
+                    <p>Automate the flow from D365 won quote to BC sales order with Power Automate.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 1-2 weeks</span>
+                        <span><strong>Cost:</strong> Power Automate Premium</span>
+                    </div>
+                    <a href="#pattern-quote" class="btn btn-primary">See Implementation →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+
+                <div class="decision-result" id="result-powerbi">
+                    <h3>Recommendation: Power BI Dashboards</h3>
+                    <p>Connect Power BI directly to Dataverse and BC for unified dashboards.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 1-2 weeks</span>
+                        <span><strong>Cost:</strong> Power BI Pro</span>
+                    </div>
+                    <a href="guides/use-cases.html#powerbi" class="btn btn-primary">See Implementation →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+
+                <div class="decision-result" id="result-fabric-analytics">
+                    <h3>Recommendation: Fabric Analytics</h3>
+                    <p>Use Fabric Lakehouse to combine data from all systems for advanced cross-system analysis.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 3-4 weeks</span>
+                        <span><strong>Cost:</strong> Fabric capacity</span>
+                    </div>
+                    <a href="guides/fabric.html" class="btn btn-primary">See Fabric Guide →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+
+                <div class="decision-result" id="result-copilot-analytics">
+                    <h3>Recommendation: Copilot + Fabric</h3>
+                    <p>Build a Fabric semantic model and enable Copilot for natural language queries across all data.</p>
+                    <div class="result-meta">
+                        <span><strong>Effort:</strong> 4-6 weeks</span>
+                        <span><strong>Cost:</strong> Fabric + Copilot</span>
+                    </div>
+                    <a href="#pattern-copilot" class="btn btn-primary">See Implementation →</a>
+                    <button class="decision-restart">Start Over</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h2>Get in Touch</h2>
+                    <p>Have questions about implementing these patterns in your organisation? Want to discuss opportunities?</p>
+
+                    <div class="author-card">
+                        <div class="author-avatar">MC</div>
+                        <div class="author-details">
+                            <h3>Mondweep Chakravorty</h3>
+                            <p>Microsoft Integration & Architecture</p>
+                            <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank" class="author-link">
+                                <svg viewBox="0 0 24 24" width="20" height="20">
+                                    <path fill="currentColor" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                                </svg>
+                                Connect on LinkedIn
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="contact-reasons">
+                        <h4>Reach out if you:</h4>
+                        <ul>
+                            <li>Need help implementing these patterns</li>
+                            <li>Have questions about the architecture</li>
+                            <li>Want to discuss consulting opportunities</li>
+                            <li>Have suggestions for improving these guides</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="resources-box">
+                    <h3>Additional Resources</h3>
+                    <ul class="resource-links">
+                        <li>
+                            <a href="https://github.com/mondweep/vibe-cast/tree/microsoft-graph-exploration" target="_blank">
+                                <span class="resource-icon">&#128193;</span>
+                                GitHub Repository
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://developer.microsoft.com/en-us/graph/graph-explorer" target="_blank">
+                                <span class="resource-icon">&#128269;</span>
+                                Graph Explorer
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://learn.microsoft.com/en-us/graph/" target="_blank">
+                                <span class="resource-icon">&#128214;</span>
+                                Microsoft Graph Docs
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://learn.microsoft.com/en-us/power-apps/maker/data-platform/" target="_blank">
+                                <span class="resource-icon">&#128214;</span>
+                                Dataverse Docs
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://learn.microsoft.com/en-us/fabric/" target="_blank">
+                                <span class="resource-icon">&#128214;</span>
+                                Microsoft Fabric Docs
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">&#9670;</span>
+                    <span>Microsoft Integration Guide</span>
+                </div>
+                <div class="footer-credit">
+                    <p>Created by <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Mondweep Chakravorty</a></p>
+                    <p>Documentation: <a href="https://github.com/mondweep/vibe-cast/tree/microsoft-graph-exploration" target="_blank">GitHub</a></p>
+                </div>
+                <div class="footer-links">
+                    <a href="#home">Home</a>
+                    <a href="#technologies">Technologies</a>
+                    <a href="#patterns">Patterns</a>
+                    <a href="#guides">Guides</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Microsoft Integration Guide. For educational purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
