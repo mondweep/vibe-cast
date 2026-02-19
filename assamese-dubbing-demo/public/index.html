@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assamese Video Dubbing Pipeline</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1>Assamese Video Dubbing</h1>
+        <p class="subtitle">AI-powered pipeline: Transcribe, Translate, Speak, Sync</p>
+        <div class="mode-badge" id="modeBadge">DEMO MODE</div>
+      </div>
+    </header>
+
+    <!-- Pipeline Visualization -->
+    <section class="pipeline-visual">
+      <div class="pipeline-step" data-stage="0" id="step-transcribe">
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </div>
+        <span class="step-label">Transcribe</span>
+        <span class="step-provider" id="prov-transcribe">Whisper / Sarvam</span>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step" data-stage="1" id="step-translate">
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
+        </div>
+        <span class="step-label">Translate</span>
+        <span class="step-provider" id="prov-translate">IndicTrans2 / Sarvam</span>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step" data-stage="2" id="step-synthesize">
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        </div>
+        <span class="step-label">Speak (TTS)</span>
+        <span class="step-provider" id="prov-synthesize">AI4Bharat / Sarvam</span>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step" data-stage="3" id="step-lipsync">
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <span class="step-label">Lip Sync</span>
+        <span class="step-provider" id="prov-lipsync">Wav2Lip</span>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step" data-stage="4" id="step-mix">
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <span class="step-label">Mix & Export</span>
+        <span class="step-provider" id="prov-mix">Demucs + FFmpeg</span>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls">
+      <div class="control-row">
+        <div class="control-group">
+          <label for="sourceLanguage">Source Language</label>
+          <select id="sourceLanguage">
+            <option value="en">English</option>
+            <option value="hi">Hindi (हिन्दी)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Target Language</label>
+          <div class="target-lang">Assamese (অসমীয়া)</div>
+        </div>
+        <div class="control-group">
+          <label for="ttsVoice">TTS Voice</label>
+          <select id="ttsVoice">
+            <option value="ai4bharat-parler">AI4Bharat Parler-TTS</option>
+            <option value="ai4bharat-f5">AI4Bharat IndicF5 (clone)</option>
+            <option value="azure-yashica">Azure Yashica</option>
+            <option value="elevenlabs">ElevenLabs</option>
+          </select>
+        </div>
+        <button class="btn-primary" id="btnRun" onclick="runPipeline()">
+          Run Dubbing Pipeline
+        </button>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="results" id="results" style="display:none;">
+      <div class="results-header">
+        <h2>Pipeline Results</h2>
+        <span class="results-time" id="resultsTime"></span>
+      </div>
+
+      <!-- Stage cards rendered dynamically -->
+      <div id="stageCards"></div>
+    </section>
+
+    <!-- Provider Reference -->
+    <section class="reference">
+      <h2>Available Providers for Assamese</h2>
+      <div class="ref-grid" id="refGrid"></div>
+    </section>
+
+    <!-- DCOA Context -->
+    <section class="dcoa-section">
+      <h2>Connection to MK3 / DCOA</h2>
+      <div class="dcoa-content">
+        <p>This dubbing pipeline demonstrates the kind of <strong>multilingual orchestration</strong> that MK3's Dynamic Context Orchestration Algorithm (DCOA) targets. The pipeline mirrors DCOA's core components:</p>
+        <div class="dcoa-grid">
+          <div class="dcoa-card">
+            <h3>Context Graph</h3>
+            <p>DCOA's multi-dimensional context graph maps to the pipeline's <strong>ASR + timing alignment</strong> &mdash; maintaining coherence across segment boundaries.</p>
+          </div>
+          <div class="dcoa-card">
+            <h3>Probabilistic Orchestration</h3>
+            <p>Selecting the optimal provider per stage (Sarvam for STT, AI4Bharat for TTS, etc.) mirrors DCOA's <strong>dynamic engine selection</strong>.</p>
+          </div>
+          <div class="dcoa-card">
+            <h3>Language-Agnostic Embeddings</h3>
+            <p>The translation stage uses <strong>language-agnostic semantic representations</strong> (IndicTrans2 / Sarvam Translate) to preserve meaning across language boundaries.</p>
+          </div>
+          <div class="dcoa-card">
+            <h3>Affective Tone Control</h3>
+            <p>TTS synthesis with <strong>pitch, pace, and emotion parameters</strong> maps to DCOA's affective space navigation for tonal consistency.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
