@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skillsmith MCP Guide | Microsoft Integration Guide</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/guide-page.css">
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">&#9670;</span>
+                <span class="logo-text">Microsoft Integration Guide</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html#home">Home</a>
+                <a href="../index.html#technologies">Technologies</a>
+                <a href="../index.html#patterns">Patterns</a>
+                <a href="../index.html#guides" class="active">Guides</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="guide-content">
+        <div class="guide-header">
+            <div class="container">
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>Skillsmith MCP Guide</h1>
+                <p class="guide-intro">Skill discovery and management for AI coding agents - find skills from 20,000+ indexed options using semantic search.</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#overview">What is Skillsmith?</a></li>
+                        <li><a href="#setup">Setup</a></li>
+                        <li><a href="#tools">Available Tools</a></li>
+                        <li><a href="#practical">Practical Examples</a></li>
+                        <li><a href="#benefits">Benefits</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="overview">
+                        <h2>What is Skillsmith?</h2>
+                        <p><strong>Skillsmith</strong> is an MCP (Model Context Protocol) server that acts as a skill discovery and management system for AI coding agents.</p>
+
+                        <div class="highlight-box">
+                            <strong>Key Features:</strong>
+                            <ul style="margin: 10px 0 0 20px;">
+                                <li><strong>Indexes 20,000+ skills</strong> from GitHub (including microsoft/skills) in a vector database</li>
+                                <li><strong>Recommends skills</strong> based on your project context using semantic search</li>
+                                <li><strong>Can help write new skills</strong> where gaps exist</li>
+                            </ul>
+                        </div>
+
+                        <h3>How It Works</h3>
+                        <div class="diagram-box" style="background: #f5f5f5; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 14px;">
+<pre>Your Project (e.g., D365 + BC integration)
+        |
+        v
++-------------------------------------------+
+|        Skillsmith MCP Server              |
+|                                           |
+|  1. Analyzes your project context         |
+|  2. Searches 20,000+ indexed skills       |
+|  3. Recommends relevant skills            |
+|  4. Helps create new skills for gaps      |
++-------------------------------------------+
+        |
+        v
++-------------------------------------------+
+|  Skill Sources (Indexed)                  |
+|  - microsoft/skills (130+ Azure/M365)     |
+|  - Community skills from GitHub           |
+|  - Verified/curated skills                |
++-------------------------------------------+</pre>
+                        </div>
+                    </section>
+
+                    <section id="setup">
+                        <h2>Setup</h2>
+
+                        <h3>Add Skillsmith MCP to Claude Code</h3>
+                        <p>Add this to your Claude Code MCP settings:</p>
+
+                        <pre><code>{
+  "mcpServers": {
+    "skillsmith": {
+      "command": "npx",
+      "args": ["-y", "@skillsmith/mcp-server"]
+    }
+  }
+}</code></pre>
+
+                        <p>Or via Claude Code CLI:</p>
+                        <pre><code>claude mcp add skillsmith npx -y @skillsmith/mcp-server</code></pre>
+
+                        <h3>Restart Claude Code</h3>
+                        <p>After adding the MCP server, restart Claude Code for the changes to take effect.</p>
+
+                        <h3>Use Skillsmith Tools</h3>
+                        <p>Once configured, you can ask Claude Code to:</p>
+                        <pre><code>"Search for Microsoft Graph skills"
+"Recommend skills for this project"
+"Find skills for Dynamics 365 integration"
+"Show me Business Central API skills"</code></pre>
+                    </section>
+
+                    <section id="tools">
+                        <h2>Skillsmith MCP Tools</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tool</th>
+                                    <th>What It Does</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>search</code></td><td>Search skills using semantic search (not just keywords)</td></tr>
+                                <tr><td><code>recommend</code></td><td>Get contextual recommendations based on your open project</td></tr>
+                                <tr><td><code>get_skill</code></td><td>Get detailed information about a specific skill</td></tr>
+                                <tr><td><code>install_skill</code></td><td>Install a skill to <code>~/.claude/skills/</code></td></tr>
+                                <tr><td><code>uninstall_skill</code></td><td>Remove an installed skill</td></tr>
+                                <tr><td><code>validate</code></td><td>Check a skill's quality and structure</td></tr>
+                                <tr><td><code>compare</code></td><td>Compare multiple skills side-by-side</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="practical">
+                        <h2>Practical Examples</h2>
+
+                        <h3>Scenario 1: Finding Existing Skills</h3>
+                        <pre><code>User: "Search for skills related to Dynamics 365 Dataverse"
+
+Skillsmith Response:
++-----------------------------------------------------------+
+| Search Results: "Dynamics 365 Dataverse"                   |
++-----------------------------------------------------------+
+| 1. azure-identity-py (microsoft/skills)                    |
+|    Score: 92 | Trust: Official                             |
+|    Relevance: Authentication for Dataverse                 |
+|                                                            |
+| 2. m365-agents-py (microsoft/skills)                       |
+|    Score: 88 | Trust: Official                             |
+|    Relevance: M365 agent patterns                          |
+|                                                            |
+| 3. community/dynamics-crm-helper                           |
+|    Score: 71 | Trust: Community                            |
+|    Relevance: Dataverse API patterns                       |
+|                                                            |
+| No direct Dataverse SDK skill found - consider creating    |
++-----------------------------------------------------------+</code></pre>
+
+                        <h3>Scenario 2: Getting Project Recommendations</h3>
+                        <p>With your integration project open:</p>
+                        <pre><code>User: "Recommend skills for this project"
+
+Skillsmith will:
+1. Analyze your project files (package.json, imports, etc.)
+2. Understand you're working with Microsoft integrations
+3. Recommend relevant skills like:
+   - azure-identity-py for authentication
+   - m365-agents-py for Teams integration
+   - mcp-builder for creating custom tools</code></pre>
+
+                        <h3>Scenario 3: Creating Missing Skills</h3>
+                        <pre><code>User: "Help me create a skill for Microsoft Graph API"
+
+Skillsmith Response:
+I'll help you create a SKILL.md for Microsoft Graph.
+
+---
+name: msgraph-py
+description: |
+  Microsoft Graph API patterns for Python. Access M365 data
+  including emails, calendar, files, SharePoint, and users.
+  Triggers: "Microsoft Graph", "Graph API", "/me", "msgraph"
+---
+
+# Microsoft Graph API (Python)
+
+## Installation
+pip install msgraph-sdk azure-identity
+
+## Authentication
+[Code patterns...]
+
+## Common Operations
+[Code patterns...]</code></pre>
+                    </section>
+
+                    <section id="benefits">
+                        <h2>Benefits for Our Microsoft Integration Project</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Our Challenge</th>
+                                    <th>How Skillsmith Helps</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Finding relevant skills</td><td>Semantic search across 20,000+ skills</td></tr>
+                                <tr><td>Gaps in microsoft/skills</td><td>Identifies gaps and helps create new skills</td></tr>
+                                <tr><td>Learning best practices</td><td>Skills contain proven patterns and examples</td></tr>
+                                <tr><td>Context-aware recommendations</td><td>Analyzes your project to suggest relevant skills</td></tr>
+                                <tr><td>Quality assurance</td><td>Trust tiers and quality scores (0-100)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Comparison: Manual vs Skillsmith</h3>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div class="warning-box">
+                                <strong>Manual Approach:</strong>
+                                <ol style="margin: 10px 0 0 20px;">
+                                    <li>Go to github.com/microsoft/skills</li>
+                                    <li>Manually browse 130+ skills</li>
+                                    <li>Read READMEs to understand each</li>
+                                    <li>Identify gaps (no Graph, D365, BC)</li>
+                                    <li>Decide to build custom MCP servers</li>
+                                </ol>
+                            </div>
+                            <div class="highlight-box">
+                                <strong>Skillsmith Approach:</strong>
+                                <ol style="margin: 10px 0 0 20px;">
+                                    <li>Open project with Skillsmith MCP</li>
+                                    <li>Ask: "Recommend skills"</li>
+                                    <li>Get ranked results with scores</li>
+                                    <li>Install with one command</li>
+                                    <li>For gaps, Skillsmith helps create</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <h3>Quick Start Workflow</h3>
+                        <ol class="steps-list">
+                            <li><strong>Install Skillsmith MCP</strong> in your Claude Code setup</li>
+                            <li><strong>Open your project</strong> and ask for recommendations</li>
+                            <li><strong>Search</strong> for skills related to your problem areas</li>
+                            <li><strong>Install</strong> useful skills (azure-identity, mcp-builder)</li>
+                            <li><strong>Create</strong> new skills for gaps (Graph, BC, D365)</li>
+                            <li><strong>Contribute</strong> created skills back to the community</li>
+                        </ol>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete guide with more examples, see:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/skillsmith-mcp-guide.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://skillsmith.app" target="_blank" class="btn btn-secondary">Skillsmith Website &rarr;</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">&#9670;</span>
+                    <span>Microsoft Integration Guide</span>
+                </div>
+                <div class="footer-credit">
+                    <p>Created by <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Mondweep Chakravorty</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

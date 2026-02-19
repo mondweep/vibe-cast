@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Skills Evaluation | Microsoft Integration Guide</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/guide-page.css">
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">&#9670;</span>
+                <span class="logo-text">Microsoft Integration Guide</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html#home">Home</a>
+                <a href="../index.html#technologies">Technologies</a>
+                <a href="../index.html#patterns">Patterns</a>
+                <a href="../index.html#guides" class="active">Guides</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="guide-content">
+        <div class="guide-header">
+            <div class="container">
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>Microsoft Skills Evaluation</h1>
+                <p class="guide-intro">Evaluating <a href="https://github.com/microsoft/skills" target="_blank">microsoft/skills</a> - 130+ AI coding skills for Azure SDKs and Microsoft services.</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#overview">What are Skills?</a></li>
+                        <li><a href="#gap-analysis">Gap Analysis</a></li>
+                        <li><a href="#useful-skills">Useful Skills</a></li>
+                        <li><a href="#mcp-servers">Building MCP Servers</a></li>
+                        <li><a href="#recommendation">Recommendation</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="overview">
+                        <h2>What is microsoft/skills?</h2>
+                        <p><strong>Microsoft Skills</strong> is a repository of domain-specific knowledge files designed to enhance AI coding agents (like GitHub Copilot, Claude, etc.) when working with Azure SDKs and Microsoft services.</p>
+
+                        <div class="highlight-box">
+                            <strong>Key Concept:</strong> These are not traditional APIs or libraries - they are <strong>context files</strong> that teach AI agents about SDK patterns, best practices, and implementation approaches.
+                        </div>
+
+                        <p>Skills are stored as <code>SKILL.md</code> files in structured folders, containing:</p>
+                        <ul>
+                            <li>SDK installation commands</li>
+                            <li>Authentication patterns</li>
+                            <li>Common code examples</li>
+                            <li>Best practices and gotchas</li>
+                        </ul>
+                    </section>
+
+                    <section id="gap-analysis">
+                        <h2>Gap Analysis for Our Needs</h2>
+                        <p>After evaluating the 130+ skills, here's how they map to our Microsoft integration challenges:</p>
+
+                        <h3>What's Covered (Azure-focused)</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Skills Available</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Azure AI Services</td><td>OpenAI, Vision, Speech, Search</td></tr>
+                                <tr><td>Azure Data</td><td>Cosmos DB, Storage, Event Hubs</td></tr>
+                                <tr><td>Azure Identity</td><td>Authentication patterns</td></tr>
+                                <tr><td>Azure Monitoring</td><td>Application Insights, Log Analytics</td></tr>
+                                <tr><td>M365 Agents SDK</td><td>Teams/Copilot bots</td></tr>
+                                <tr><td>MCP Server Building</td><td>Custom tool creation</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>What's NOT Covered (Our Focus Areas)</h3>
+                        <div class="warning-box">
+                            <strong>Gaps Identified:</strong>
+                            <ul style="margin: 10px 0 0 20px;">
+                                <li>Microsoft Graph API</li>
+                                <li>Dynamics 365 CRM / Dataverse</li>
+                                <li>Business Central API</li>
+                                <li>SharePoint / Syntex</li>
+                                <li>Power Platform</li>
+                                <li>Microsoft Fabric</li>
+                                <li>Microsoft Purview</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section id="useful-skills">
+                        <h2>Skills That ARE Useful</h2>
+
+                        <h3>1. Azure Identity (azure-identity-py/ts/dotnet)</h3>
+                        <p><strong>Relevance: HIGH</strong> - All our integrations need authentication.</p>
+                        <pre><code>from azure.identity import DefaultAzureCredential
+
+credential = DefaultAzureCredential()
+
+# Use same credential for all services
+graph_token = credential.get_token("https://graph.microsoft.com/.default")
+bc_token = credential.get_token("https://api.businesscentral.dynamics.com/.default")
+d365_token = credential.get_token("https://org.crm.dynamics.com/.default")</code></pre>
+
+                        <h3>2. MCP Builder (mcp-builder)</h3>
+                        <p><strong>Relevance: HIGH</strong> - Build custom MCP servers that let AI agents interact with ANY external API.</p>
+                        <pre><code>from fastmcp import FastMCP
+
+mcp = FastMCP("Microsoft Graph")
+
+@mcp.tool()
+async def search_emails(query: str, top: int = 10) -> dict:
+    """Search emails in user's mailbox"""
+    async with get_graph_client() as client:
+        results = await client.get(f"/me/messages?$search=\"{query}\"&$top={top}")
+        return {"emails": [{"subject": m["subject"]} for m in results["value"]]}</code></pre>
+
+                        <h3>3. Azure AI Search (azure-search-documents-py/ts)</h3>
+                        <p><strong>Relevance: HIGH</strong> - For SharePoint optimization with unified search.</p>
+                        <pre><code>from azure.search.documents import SearchClient
+from azure.search.documents.models import VectorizedQuery
+
+results = client.search(
+    search_text="customer contract",
+    vector_queries=[VectorizedQuery(vector=embedding, k_nearest_neighbors=50)],
+    select=["title", "content", "source_system"]
+)</code></pre>
+
+                        <h3>4. M365 Agents SDK (m365-agents-py/ts)</h3>
+                        <p><strong>Relevance: MEDIUM</strong> - Build Teams bots that query D365 and BC data.</p>
+                    </section>
+
+                    <section id="mcp-servers">
+                        <h2>Building Custom MCP Servers</h2>
+                        <p>Since microsoft/skills lacks Graph, BC, and D365 skills, use <code>mcp-builder</code> to create custom MCP servers:</p>
+
+                        <h3>Graph API MCP Server Example</h3>
+                        <pre><code>from fastmcp import FastMCP
+
+mcp = FastMCP("Microsoft Graph")
+
+@mcp.tool()
+async def get_sharepoint_files(site: str, query: str) -> dict:
+    """Search files in a SharePoint site"""
+    async with get_graph_client() as client:
+        results = await client.post("/search/query", json={
+            "requests": [{
+                "entityTypes": ["driveItem"],
+                "query": {"queryString": f"site:{site} {query}"}
+            }]
+        })
+        return format_search_results(results)</code></pre>
+
+                        <h3>Business Central MCP Server Example</h3>
+                        <pre><code>from fastmcp import FastMCP
+
+mcp = FastMCP("Business Central")
+
+@mcp.tool()
+async def check_credit_status(email: str) -> dict:
+    """Check if customer has credit issues"""
+    async with get_bc_client() as client:
+        customer = await client.get(
+            f"/companies({COMPANY_ID})/customers?$filter=email eq '{email}'"
+        )
+        if customer["value"]:
+            c = customer["value"][0]
+            return {
+                "customer": c["displayName"],
+                "balance": c["balance"],
+                "creditLimit": c["creditLimit"],
+                "blocked": c["blocked"]
+            }
+        return {"error": "Customer not found"}</code></pre>
+                    </section>
+
+                    <section id="recommendation">
+                        <h2>Recommendation Summary</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Scenario</th>
+                                    <th>Use microsoft/skills?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Building Teams/Copilot bots</td><td><strong>Yes</strong> - Use m365-agents-* skills</td></tr>
+                                <tr><td>Implementing Azure AI Search</td><td><strong>Yes</strong> - Use azure-search-documents-* skills</td></tr>
+                                <tr><td>Building MCP servers</td><td><strong>Yes</strong> - Use mcp-builder skill</td></tr>
+                                <tr><td>Authentication patterns</td><td><strong>Yes</strong> - Use azure-identity-* skills</td></tr>
+                                <tr><td>Graph/D365/BC/SharePoint</td><td><strong>No</strong> - Not covered, build MCP servers</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="highlight-box">
+                            <strong>Best Strategy:</strong> Use the <code>mcp-builder</code> skill to create your own MCP servers that wrap Graph, BC, and D365 APIs. This fills the gap and enables AI agents to query all your business systems.
+                        </div>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete evaluation with more examples, see:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/microsoft-skills-evaluation.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://github.com/microsoft/skills" target="_blank" class="btn btn-secondary">microsoft/skills Repository &rarr;</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">&#9670;</span>
+                    <span>Microsoft Integration Guide</span>
+                </div>
+                <div class="footer-credit">
+                    <p>Created by <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Mondweep Chakravorty</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

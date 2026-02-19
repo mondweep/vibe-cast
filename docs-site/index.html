@@ -241,8 +241,68 @@
                 </div>
             </div>
 
+            <!-- AI Agent Development Layer -->
+            <div class="tech-layer" id="layer-ai" style="margin-top: 40px; border-top: 2px dashed var(--border-color); padding-top: 40px;">
+                <h3>AI Agent Development</h3>
+                <p>Tools for enhancing AI coding agents with Microsoft expertise</p>
+                <div class="tech-items">
+                    <div class="tech-item" data-tech="skills">
+                        <div class="tech-icon">SK</div>
+                        <span>Microsoft Skills</span>
+                        <span class="tech-role">AI Knowledge</span>
+                    </div>
+                    <div class="tech-item" data-tech="skillsmith">
+                        <div class="tech-icon">SS</div>
+                        <span>Skillsmith MCP</span>
+                        <span class="tech-role">Skill Discovery</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Technology Detail Cards -->
             <div class="tech-details">
+                <div class="tech-detail-card" id="detail-skills">
+                    <div class="detail-header">
+                        <h3>Microsoft Skills</h3>
+                        <span class="detail-type">AI Knowledge</span>
+                    </div>
+                    <div class="detail-content">
+                        <p><strong>What it is:</strong> A repository of 130+ domain-specific knowledge files that enhance AI coding agents when working with Azure SDKs and Microsoft services.</p>
+                        <p><strong>Key insight:</strong> Skills teach AI agents about SDK patterns, not APIs themselves. Great for Azure, but gaps exist for Graph, D365, BC.</p>
+                        <div class="detail-uses">
+                            <h4>Useful skills:</h4>
+                            <ul>
+                                <li>azure-identity - Authentication patterns</li>
+                                <li>mcp-builder - Build custom MCP servers</li>
+                                <li>azure-search-documents - AI Search</li>
+                                <li>m365-agents - Teams/Copilot bots</li>
+                            </ul>
+                        </div>
+                        <a href="guides/skills.html" class="detail-link">Read Full Guide &rarr;</a>
+                    </div>
+                </div>
+
+                <div class="tech-detail-card" id="detail-skillsmith">
+                    <div class="detail-header">
+                        <h3>Skillsmith MCP</h3>
+                        <span class="detail-type">Skill Discovery</span>
+                    </div>
+                    <div class="detail-content">
+                        <p><strong>What it is:</strong> An MCP server that indexes 20,000+ skills in a vector database, enabling semantic search and project-aware recommendations.</p>
+                        <p><strong>Key insight:</strong> Instead of manually browsing repos, ask Skillsmith to recommend skills for your project context.</p>
+                        <div class="detail-uses">
+                            <h4>Use it to:</h4>
+                            <ul>
+                                <li>Search skills semantically</li>
+                                <li>Get project recommendations</li>
+                                <li>Install skills with one command</li>
+                                <li>Create new skills for gaps</li>
+                            </ul>
+                        </div>
+                        <a href="guides/skillsmith.html" class="detail-link">Read Full Guide &rarr;</a>
+                    </div>
+                </div>
+
                 <div class="tech-detail-card" id="detail-dataverse">
                     <div class="detail-header">
                         <h3>Dataverse</h3>
@@ -706,6 +766,32 @@
                         <li>Quote-to-Cash</li>
                         <li>Campaign ROI tracking</li>
                         <li>Credit management</li>
+                    </ul>
+                    <span class="guide-link">Read Guide →</span>
+                </a>
+
+                <a href="guides/skills.html" class="guide-card">
+                    <div class="guide-icon">&#129302;</div>
+                    <h3>Microsoft Skills</h3>
+                    <p>AI coding skills from microsoft/skills repository - enhance AI agents with Microsoft SDK knowledge.</p>
+                    <ul class="guide-topics">
+                        <li>130+ skills evaluated</li>
+                        <li>Gap analysis for our needs</li>
+                        <li>MCP server building</li>
+                        <li>Custom skill creation</li>
+                    </ul>
+                    <span class="guide-link">Read Guide →</span>
+                </a>
+
+                <a href="guides/skillsmith.html" class="guide-card">
+                    <div class="guide-icon">&#128270;</div>
+                    <h3>Skillsmith MCP</h3>
+                    <p>Skill discovery and management for AI agents - find and create skills from 20,000+ indexed options.</p>
+                    <ul class="guide-topics">
+                        <li>Semantic skill search</li>
+                        <li>Project recommendations</li>
+                        <li>Skill installation</li>
+                        <li>Creating new skills</li>
                     </ul>
                     <span class="guide-link">Read Guide →</span>
                 </a>

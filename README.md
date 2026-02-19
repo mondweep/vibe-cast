@@ -64,6 +64,20 @@ How BC, D365, and Graph APIs relate to each other.
 - Credit Management Alerts
 - Solutions with and without Fabric/Copilot
 
+### 7. [Microsoft Skills Evaluation](./microsoft-skills-evaluation.md)
+**AI coding skills** - Evaluation of microsoft/skills repository for our use cases.
+- 130+ skills analyzed for relevance
+- Gap analysis: What's covered vs missing
+- Useful skills: mcp-builder, azure-identity, azure-search-documents
+- Strategy for building custom MCP servers
+
+### 8. [Skillsmith MCP Guide](./skillsmith-mcp-guide.md)
+**Skill discovery** - Using Skillsmith to find and create skills for AI agents.
+- What Skillsmith MCP is and how it works
+- Setup instructions for Claude Code
+- Available tools: search, recommend, install_skill, validate
+- Practical examples for Microsoft integration projects
+
 ## Architecture Overview
 
 ```
@@ -119,6 +133,8 @@ How BC, D365, and Graph APIs relate to each other.
 | **Fabric** | Analytics, big data, ML | [Explained](./microsoft-fabric-explained.md) |
 | **SharePoint** | Document management, content collaboration | [Optimization Guide](./sharepoint-optimization-guide.md) |
 | **Copilot** | AI-powered natural language queries | [Use Cases](./integrated-experiences-m365-bc-dynamics.md) |
+| **Microsoft Skills** | AI coding agent knowledge files | [Evaluation](./microsoft-skills-evaluation.md) |
+| **Skillsmith MCP** | Skill discovery for AI agents | [Guide](./skillsmith-mcp-guide.md) |
 
 ## Quick Start
 
@@ -146,6 +162,8 @@ How BC, D365, and Graph APIs relate to each other.
 4. **[Microsoft Fabric Explained](./microsoft-fabric-explained.md)** - Understand the analytics layer
 5. **[SharePoint Optimization Guide](./sharepoint-optimization-guide.md)** - Manage content effectively
 6. **[Integrated Experiences](./integrated-experiences-m365-bc-dynamics.md)** - Build solutions
+7. **[Microsoft Skills Evaluation](./microsoft-skills-evaluation.md)** - Evaluate AI coding skills
+8. **[Skillsmith MCP Guide](./skillsmith-mcp-guide.md)** - Find and create skills for AI agents
 
 ## Implementation Phases
 
@@ -179,6 +197,11 @@ How BC, D365, and Graph APIs relate to each other.
 - [Microsoft Syntex](https://learn.microsoft.com/en-us/microsoft-365/syntex/)
 - [Microsoft Search](https://learn.microsoft.com/en-us/microsoftsearch/)
 - [Microsoft Purview](https://learn.microsoft.com/en-us/purview/)
+
+### AI Agent Development
+- [Microsoft Skills Repository](https://github.com/microsoft/skills) - AI coding skills for Azure SDKs
+- [Skillsmith](https://skillsmith.app) - Skill discovery and management for AI agents
+- [MCP Protocol](https://modelcontextprotocol.io) - Model Context Protocol for AI tools
 
 ### Tools
 - [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)
