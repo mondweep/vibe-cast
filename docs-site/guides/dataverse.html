@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide | Microsoft Integration Guide</title>
+    <title>Dataverse Explained | Microsoft Integration Guide</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/guide-page.css">
 </head>
@@ -27,20 +27,221 @@
     <main class="guide-content">
         <div class="guide-header">
             <div class="container">
-                <a href="../index.html#guides" class="back-link">← Back to Guides</a>
-                <h1>Full Guide Coming Soon</h1>
-                <p class="guide-intro">This detailed guide is available in the GitHub repository.</p>
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>Dataverse: The Central Data Platform</h1>
+                <p class="guide-intro">Understanding how Dataverse connects Microsoft 365, Dynamics 365, Business Central, and Power Platform</p>
             </div>
         </div>
 
         <div class="container">
-            <div class="guide-body" style="display: block; max-width: 700px; margin: 0 auto; text-align: center; padding: 80px 0;">
-                <h2>View the Full Documentation</h2>
-                <p style="margin-bottom: 32px;">The complete guide with code examples, diagrams, and implementation steps is available on GitHub.</p>
-                <a href="https://github.com/mondweep/vibe-cast/tree/microsoft-graph-exploration" target="_blank" class="btn btn-primary">View on GitHub →</a>
-                <p style="margin-top: 32px; color: var(--medium-gray);">
-                    Have questions? <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Contact Mondweep Chakravorty</a>
-                </p>
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#overview">What is Dataverse?</a></li>
+                        <li><a href="#key-insight">Key Insight</a></li>
+                        <li><a href="#features">What Dataverse Provides</a></li>
+                        <li><a href="#bc-connection">Connecting Business Central</a></li>
+                        <li><a href="#api">API Access</a></li>
+                        <li><a href="#virtual-tables">Virtual Tables Setup</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="overview">
+                        <h2>What is Dataverse?</h2>
+                        <p><strong>Dataverse</strong> (formerly Common Data Service / CDS) is Microsoft's <strong>unified data platform</strong> that sits at the heart of the Power Platform and Dynamics 365.</p>
+
+                        <div class="highlight-box">
+                            Think of it as a <strong>managed database-as-a-service</strong> with built-in business logic, security, and integration capabilities.
+                        </div>
+
+                        <h3>Where Dataverse Fits</h3>
+                        <div class="diagram-box" style="background: #f5f5f5; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 13px; overflow-x: auto;">
+<pre>Microsoft 365 (Graph)     Dynamics 365           Power Platform
++-----------------+    +-----------------+    +-----------------+
+| Outlook, Teams  |    |  Sales, Service |    | Power Apps      |
+| SharePoint      |    |  Marketing, F&O |    | Power Automate  |
+| OneDrive        |    |  Field Service  |    | Power BI        |
++--------+--------+    +--------+--------+    +--------+--------+
+         |                      |                      |
+         |             +--------v--------+             |
+         |             |                 |             |
+         +------------>|   DATAVERSE     |<------------+
+                       |  - Tables       |
+                       |  - Relationships|
+                       |  - Security     |
+                       |  - Business     |
+                       |    Logic        |
+                       +--------+--------+
+                                |
+               +----------------+----------------+
+               v                v                v
+        Business Central  External APIs    Azure Services
+        (via Virtual Tables)</pre>
+                        </div>
+                    </section>
+
+                    <section id="key-insight">
+                        <h2>Key Insight: Dynamics 365 IS Dataverse</h2>
+                        <p><strong>Dynamics 365 Sales/Service/Marketing is built ON TOP of Dataverse.</strong></p>
+
+                        <div class="highlight-box">
+<pre style="margin: 0;">Dynamics 365 Sales   = Dataverse + Sales App   + Account/Contact/Opportunity tables
+Dynamics 365 Service = Dataverse + Service App + Case/Entitlement tables
+Custom Power App     = Dataverse + Your custom tables + Your app</pre>
+                        </div>
+
+                        <p>When you use Dynamics 365, you're already using Dataverse.</p>
+
+                        <h3>Dataverse vs Other Systems</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>System</th>
+                                    <th>What It Is</th>
+                                    <th>Relationship to Dataverse</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Microsoft Graph</td><td>API to access M365 data</td><td>Separate - connects via APIs</td></tr>
+                                <tr><td>Business Central</td><td>ERP system with own database</td><td>Separate - connects via Virtual Tables</td></tr>
+                                <tr><td>Dynamics 365 CRM</td><td>CRM built ON Dataverse</td><td><strong>IS Dataverse</strong></td></tr>
+                                <tr><td>Fabric</td><td>Analytics platform</td><td>Consumes data from Dataverse</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="features">
+                        <h2>What Dataverse Provides</h2>
+
+                        <h3>Standard Tables (Pre-built)</h3>
+                        <p>These tables come out-of-the-box with Dynamics 365:</p>
+                        <pre><code>Account, Contact, Lead, Opportunity, Case, Activity,
+Product, Quote, Order, Invoice, Campaign, Team, User</code></pre>
+
+                        <h3>Built-in Features</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Security</td><td>Row-level, field-level, role-based access</td></tr>
+                                <tr><td>Relationships</td><td>1:N, N:N, lookups between tables</td></tr>
+                                <tr><td>Business Rules</td><td>No-code validation and automation</td></tr>
+                                <tr><td>Calculated Fields</td><td>Formulas that auto-calculate</td></tr>
+                                <tr><td>Rollup Fields</td><td>Aggregations from related records</td></tr>
+                                <tr><td>Auditing</td><td>Track all changes automatically</td></tr>
+                                <tr><td>Web API</td><td>REST/OData access to all data</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="bc-connection">
+                        <h2>Three Ways to Connect Business Central</h2>
+
+                        <h3>Option 1: Virtual Tables (Read-Only, Real-Time)</h3>
+                        <p>Virtual Tables make BC data appear as if it's in Dataverse, but data stays in BC.</p>
+
+                        <div class="highlight-box">
+                            <strong>Pros:</strong> Always up-to-date, no data duplication, no sync logic<br>
+                            <strong>Cons:</strong> Read-only, performance depends on BC API
+                        </div>
+
+                        <h3>Option 2: Data Sync (Read/Write, Near Real-Time)</h3>
+                        <p>Copy BC data to Dataverse tables, keep in sync via Power Automate or Azure.</p>
+
+                        <div class="highlight-box">
+                            <strong>Pros:</strong> Full read/write, can add custom columns, works offline<br>
+                            <strong>Cons:</strong> Data can be stale, sync logic to maintain
+                        </div>
+
+                        <h3>Option 3: Dual-Write (D365 Finance & Operations Only)</h3>
+                        <p>Real-time bidirectional sync. <strong>Note:</strong> This is specifically for D365 F&O, not Business Central.</p>
+                    </section>
+
+                    <section id="api">
+                        <h2>Dataverse API Access</h2>
+
+                        <h3>Web API Endpoint</h3>
+                        <pre><code>https://{org}.crm.dynamics.com/api/data/v9.2</code></pre>
+
+                        <h3>Example Queries</h3>
+                        <pre><code># Get all accounts
+GET /accounts
+
+# Get account with related contacts
+GET /accounts({id})?$expand=contact_customer_accounts
+
+# Get accounts with BC data (if virtual table enabled)
+GET /accounts?$select=name,emailaddress1,bc_balance,bc_creditlimit
+
+# Create a new account
+POST /accounts
+{
+    "name": "New Customer",
+    "emailaddress1": "contact@newcustomer.com"
+}</code></pre>
+
+                        <h3>Python Example</h3>
+                        <pre><code>import requests
+
+DATAVERSE_URL = "https://{org}.crm.dynamics.com/api/data/v9.2"
+
+def get_unified_customer(account_id, token):
+    """Get account with BC financial data via virtual table"""
+    response = requests.get(
+        f"{DATAVERSE_URL}/accounts({account_id})",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "OData-MaxVersion": "4.0",
+            "OData-Version": "4.0"
+        },
+        params={
+            "$select": "name,emailaddress1,revenue,bc_balance,bc_creditlimit",
+            "$expand": "contact_customer_accounts($select=fullname)"
+        }
+    )
+    return response.json()
+
+# Result includes both CRM and BC data in one call
+customer = get_unified_customer("account-guid", token)
+print(f"Customer: {customer['name']}")
+print(f"BC Balance: {customer['bc_balance']}")</code></pre>
+                    </section>
+
+                    <section id="virtual-tables">
+                        <h2>Setting Up Virtual Tables for BC</h2>
+
+                        <ol class="steps-list">
+                            <li><strong>Power Platform Admin Center</strong>
+                                <p>Go to admin.powerplatform.microsoft.com &rarr; Select environment &rarr; Settings &rarr; Features &rarr; Enable "Business Central Virtual Table"</p>
+                            </li>
+                            <li><strong>Create Connection</strong>
+                                <p>Data &rarr; Connections &rarr; Add "Business Central" &rarr; Authenticate &rarr; Select BC environment and company</p>
+                            </li>
+                            <li><strong>Enable Virtual Tables</strong>
+                                <p>Tables &rarr; Virtual Table category &rarr; Enable: bc_customers, bc_salesInvoices, bc_salesOrders, bc_items</p>
+                            </li>
+                            <li><strong>Add to D365 Forms</strong>
+                                <p>D365 Sales &rarr; Settings &rarr; Customizations &rarr; Edit Account form &rarr; Add fields: bc_balance, bc_creditlimit, bc_blocked</p>
+                            </li>
+                            <li><strong>Create Business Rule</strong>
+                                <p>On Account table: Condition: bc_blocked is not empty &rarr; Action: Show error "Customer is blocked in Business Central"</p>
+                            </li>
+                        </ol>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete guide with architecture diagrams:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/dataverse-explained.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://learn.microsoft.com/en-us/power-apps/maker/data-platform/" target="_blank" class="btn btn-secondary">Microsoft Docs &rarr;</a>
+                    </div>
+                </article>
             </div>
         </div>
     </main>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide | Microsoft Integration Guide</title>
+    <title>Integrated Experiences: M365, BC & D365 | Microsoft Integration Guide</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/guide-page.css">
 </head>
@@ -27,20 +27,597 @@
     <main class="guide-content">
         <div class="guide-header">
             <div class="container">
-                <a href="../index.html#guides" class="back-link">← Back to Guides</a>
-                <h1>Full Guide Coming Soon</h1>
-                <p class="guide-intro">This detailed guide is available in the GitHub repository.</p>
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>Integrated Experiences: M365, BC & D365</h1>
+                <p class="guide-intro">Solving the reconciliation problem between Sales/Marketing (Dynamics) and Finance (Business Central)</p>
             </div>
         </div>
 
         <div class="container">
-            <div class="guide-body" style="display: block; max-width: 700px; margin: 0 auto; text-align: center; padding: 80px 0;">
-                <h2>View the Full Documentation</h2>
-                <p style="margin-bottom: 32px;">The complete guide with code examples, diagrams, and implementation steps is available on GitHub.</p>
-                <a href="https://github.com/mondweep/vibe-cast/tree/microsoft-graph-exploration" target="_blank" class="btn btn-primary">View on GitHub →</a>
-                <p style="margin-top: 32px; color: var(--medium-gray);">
-                    Have questions? <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Contact Mondweep Chakravorty</a>
-                </p>
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#problem">The Problem</a></li>
+                        <li><a href="#architecture">Architecture Overview</a></li>
+                        <li><a href="#use-case-1">360° Customer View</a></li>
+                        <li><a href="#use-case-2">Quote-to-Cash Process</a></li>
+                        <li><a href="#use-case-3">Marketing Campaign ROI</a></li>
+                        <li><a href="#use-case-4">Credit Management</a></li>
+                        <li><a href="#comparison">With vs Without Fabric</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="problem">
+                        <h2>The Problem</h2>
+                        <p><strong>Common complaints from Sales & Marketing teams:</strong></p>
+                        <ul>
+                            <li>"I closed a deal in Dynamics but can't see if the invoice was paid in Business Central"</li>
+                            <li>"Customer credit limits in BC don't reflect in Dynamics - we keep selling to customers on hold"</li>
+                            <li>"I have to log into two systems to get a complete customer picture"</li>
+                            <li>"Marketing campaigns in Dynamics can't see actual revenue data from BC"</li>
+                            <li>"Our customer records are duplicated and out of sync"</li>
+                        </ul>
+
+                        <div class="warning-box">
+                            <strong>Root Cause:</strong> Business Central (Finance/ERP) and Dynamics 365 (Sales/CRM) are separate systems with separate databases.
+                        </div>
+                    </section>
+
+                    <section id="architecture">
+                        <h2>Architecture Overview</h2>
+                        <div class="diagram-box" style="background: #f5f5f5; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+<pre>┌─────────────────────────────────────────────────────────────────────────┐
+│                         USER EXPERIENCE LAYER                           │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
+│  │   Teams     │  │   Outlook   │  │  Power BI   │  │   Copilot   │   │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         INTEGRATION LAYER                               │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐        │
+│  │  Power Automate │  │   Logic Apps    │  │  Azure Functions │        │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘        │
+│                              OR                                         │
+│  ┌─────────────────────────────────────────────────────────────┐       │
+│  │              Microsoft Fabric (Unified Data Layer)           │       │
+│  └─────────────────────────────────────────────────────────────┘       │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           DATA SOURCES                                  │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐        │
+│  │ Microsoft Graph │  │ Business Central│  │  Dynamics 365   │        │
+│  │  (M365 Data)    │  │   (Finance)     │  │    (CRM)        │        │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘        │
+└─────────────────────────────────────────────────────────────────────────┘</pre>
+                        </div>
+                    </section>
+
+                    <section id="use-case-1">
+                        <h2>Use Case 1: 360° Customer View</h2>
+
+                        <h3>The Problem</h3>
+                        <p>Sales rep in Dynamics can't see:</p>
+                        <ul>
+                            <li>Outstanding invoices (BC)</li>
+                            <li>Payment history (BC)</li>
+                            <li>Credit status (BC)</li>
+                            <li>Recent email conversations (M365)</li>
+                        </ul>
+
+                        <h3>Solution WITHOUT Fabric/Copilot</h3>
+                        <pre><code>Dynamics 365 CRM
+       │
+       ├── Virtual Table ──────────► Business Central (Customer financials)
+       │
+       └── Server-Side Sync ───────► Microsoft Graph (Emails, meetings)</code></pre>
+
+                        <h4>Step 1: Create Virtual Table in Dataverse for BC Customer Data</h4>
+                        <pre><code>// Power Platform solution - Virtual Table definition
+{
+  "name": "bc_customer_financials",
+  "displayName": "BC Customer Financials",
+  "externalName": "customers",
+  "dataSource": "BusinessCentral",
+  "columns": [
+    { "name": "balance", "type": "Currency" },
+    { "name": "creditLimit", "type": "Currency" },
+    { "name": "blocked", "type": "String" },
+    { "name": "paymentTermsCode", "type": "String" }
+  ]
+}</code></pre>
+
+                        <h4>Step 2: Power Automate Flow - Sync Customer Data</h4>
+                        <pre><code>Trigger: When a record is created or updated (Dataverse - Account)
+
+Actions:
+  1. Get customer from Business Central:
+     - Filter: email eq '{Account.emailaddress1}'
+
+  2. If BC customer found:
+     - Update Account in Dataverse:
+       - bc_balance: BC.balance
+       - bc_creditlimit: BC.creditLimit
+       - bc_blocked: BC.blocked
+       - bc_lastupdated: utcNow()
+
+  3. Get recent emails from Graph:
+     - Search: Account.emailaddress1
+     - Top: 5
+
+  4. Create Timeline activities for emails</code></pre>
+
+                        <h4>Step 3: Azure Function for Real-time Data Aggregation</h4>
+                        <pre><code>import azure.functions as func
+import requests
+from concurrent.futures import ThreadPoolExecutor
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    account_id = req.params.get('accountId')
+    email = req.params.get('email')
+
+    # Fetch from all sources in parallel
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        d365_future = executor.submit(get_d365_account, account_id)
+        bc_future = executor.submit(get_bc_customer, email)
+        graph_future = executor.submit(get_graph_communications, email)
+
+    unified_view = {
+        "crm": d365_future.result(),
+        "financials": bc_future.result(),
+        "communications": graph_future.result(),
+        "lastUpdated": datetime.utcnow().isoformat()
+    }
+
+    return func.HttpResponse(
+        json.dumps(unified_view),
+        mimetype="application/json"
+    )</code></pre>
+
+                        <h3>Solution WITH Fabric + Copilot</h3>
+                        <div class="diagram-box" style="background: #f5f5f5; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 11px; overflow-x: auto;">
+<pre>┌─────────────────────────────────────────────────────────────────┐
+│                     Microsoft Copilot                            │
+│         "Show me customers with overdue invoices who have       │
+│          open opportunities worth more than £50k"                │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Microsoft Fabric                              │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │                    OneLake (Unified Storage)                │ │
+│  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐       │ │
+│  │  │ BC Lakehouse │ │D365 Lakehouse│ │Graph Lakehouse│       │ │
+│  │  │  Customers   │ │   Accounts   │ │   Emails     │       │ │
+│  │  │  Invoices    │ │ Opportunities│ │  Meetings    │       │ │
+│  │  │  Payments    │ │    Leads     │ │  Contacts    │       │ │
+│  │  └──────────────┘ └──────────────┘ └──────────────┘       │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                              │                                   │
+│                              ▼                                   │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │              Unified Semantic Model                         │ │
+│  │         (Customer = BC.Customer + D365.Account)             │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘</pre>
+                        </div>
+
+                        <h4>Unified Customer Model (SQL)</h4>
+                        <pre><code>-- Fabric SQL endpoint - Unified customer view
+CREATE OR ALTER VIEW unified_customer AS
+SELECT
+    -- Identity (match on email or name)
+    COALESCE(d.accountid, bc.systemId) AS unified_customer_id,
+    COALESCE(d.name, bc.displayName) AS customer_name,
+    COALESCE(d.emailaddress1, bc.email) AS email,
+
+    -- CRM Data (Dynamics 365)
+    d.accountid AS d365_account_id,
+    d.name AS d365_name,
+    d.revenue AS d365_annual_revenue,
+
+    -- Finance Data (Business Central)
+    bc.number AS bc_customer_number,
+    bc.balance AS bc_balance,
+    bc.creditLimit AS bc_credit_limit,
+    bc.blocked AS bc_blocked,
+
+    -- Calculated fields
+    CASE
+        WHEN bc.balance > bc.creditLimit THEN 'Over Credit Limit'
+        WHEN bc.blocked IS NOT NULL THEN 'Blocked: ' + bc.blocked
+        ELSE 'Good Standing'
+    END AS credit_status
+
+FROM d365_accounts d
+FULL OUTER JOIN bc_customers bc
+    ON LOWER(d.emailaddress1) = LOWER(bc.email);</code></pre>
+
+                        <h4>Copilot Natural Language Queries</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>What Copilot Does</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>"Which customers have overdue invoices?"</td><td>Queries unified model, filters by invoice due date</td></tr>
+                                <tr><td>"Show me the pipeline for customers over their credit limit"</td><td>Joins opportunities with BC credit data</td></tr>
+                                <tr><td>"What's the total outstanding balance by sales rep?"</td><td>Joins BC balance with D365 owner field</td></tr>
+                                <tr><td>"Summarize the payment history for Contoso"</td><td>Retrieves BC payment data, generates narrative</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="use-case-2">
+                        <h2>Use Case 2: Quote-to-Cash Process</h2>
+
+                        <h3>The Problem</h3>
+                        <ul>
+                            <li>Sales creates quote in Dynamics → manually re-enters as Sales Order in BC</li>
+                            <li>No visibility of order status in CRM</li>
+                            <li>Invoice sent from BC → sales rep doesn't know if paid</li>
+                        </ul>
+
+                        <h3>Solution: Power Automate Flow</h3>
+                        <pre><code>Flow: Quote to Cash Integration
+
+Trigger: When Quote status changes to "Won" (Dataverse)
+
+Actions:
+  1. Get Quote details:
+     - Quote lines
+     - Customer info
+     - Pricing
+
+  2. Find or Create BC Customer:
+     - Search BC by email
+     - If not found, create customer in BC
+
+  3. Create Sales Order in BC:
+     POST to BC API: /companies({id})/salesOrders
+     Body:
+       customerNumber: {BC Customer Number}
+       externalDocumentNumber: {D365 Quote Number}
+
+  4. For each Quote Line:
+     POST to BC API: /companies({id})/salesOrderLines
+     Body:
+       documentId: {Sales Order ID}
+       itemId: {Map D365 Product to BC Item}
+       quantity: {Quote Line Quantity}
+       unitPrice: {Quote Line Price}
+
+  5. Update D365 Quote:
+     - Set BC Sales Order Number
+     - Set integration status = "Synced"
+
+  6. Send notification via Graph:
+     - Email to finance team
+     - Teams message to sales rep</code></pre>
+
+                        <h3>Webhook: BC Invoice Posted → Update D365</h3>
+                        <pre><code># Azure Function triggered by BC webhook
+import azure.functions as func
+import requests
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    webhook_data = req.get_json()
+
+    # BC sends notification when invoice is posted
+    if webhook_data["eventType"] == "salesInvoice.posted":
+        invoice = webhook_data["data"]
+
+        # Find the original D365 opportunity/quote
+        external_doc = invoice["externalDocumentNumber"]  # D365 Quote number
+
+        # Update D365 Opportunity
+        d365_response = requests.patch(
+            f"{D365_URL}/api/data/v9.2/opportunities({opportunity_id})",
+            headers={
+                "Authorization": f"Bearer {d365_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "bc_invoicenumber": invoice["number"],
+                "bc_invoicedate": invoice["invoiceDate"],
+                "bc_invoiceamount": invoice["totalAmountIncludingTax"],
+                "bc_integrationstatus": "Invoiced"
+            }
+        )
+
+        # Send email notification via Graph
+        send_notification(
+            to=invoice["sellToContact"],
+            subject=f"Invoice {invoice['number']} has been sent",
+            body=f"Invoice for £{invoice['totalAmountIncludingTax']} is now available."
+        )
+
+    return func.HttpResponse("OK", status_code=200)</code></pre>
+
+                        <h3>Copilot for Quote-to-Cash</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>What Happens</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>"What's the status of the Contoso quote?"</td><td>Shows quote, order, invoice, payment status</td></tr>
+                                <tr><td>"Why is the ABC Corp order stuck?"</td><td>Analyzes integration logs, identifies BC credit block</td></tr>
+                                <tr><td>"Show me all quotes won this month that aren't invoiced yet"</td><td>Queries unified model, highlights gaps</td></tr>
+                                <tr><td>"What's our quote-to-cash cycle time by product category?"</td><td>Analyzes timestamps across systems</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="use-case-3">
+                        <h2>Use Case 3: Marketing Campaign ROI</h2>
+
+                        <h3>The Problem</h3>
+                        <ul>
+                            <li>Marketing runs campaigns in D365 Marketing</li>
+                            <li>Can't see actual revenue generated (BC data)</li>
+                            <li>No connection between campaign leads and paid invoices</li>
+                        </ul>
+
+                        <h3>Data Integration Architecture</h3>
+                        <pre><code>D365 Marketing Campaigns
+         │
+         ├── Leads
+         │      │
+         │      ▼
+         ├── Opportunities (attributed to campaign)
+         │      │
+         │      ▼
+         └── Won Opportunities
+                │
+                ▼ (Integration layer)
+         BC Sales Orders
+                │
+                ▼
+         BC Invoices
+                │
+                ▼
+         BC Payments ─────► Campaign ROI</code></pre>
+
+                        <h3>SQL View for Campaign ROI</h3>
+                        <pre><code>CREATE VIEW marketing_campaign_roi AS
+SELECT
+    c.name AS campaign_name,
+    c.actualStart AS campaign_start,
+    c.actualEnd AS campaign_end,
+    c.budgetedCost AS budget,
+
+    -- Lead metrics
+    COUNT(DISTINCT l.leadid) AS total_leads,
+    COUNT(DISTINCT CASE WHEN l.statecode = 1 THEN l.leadid END) AS qualified_leads,
+
+    -- Opportunity metrics
+    COUNT(DISTINCT o.opportunityid) AS opportunities_created,
+    SUM(CASE WHEN o.statecode = 1 THEN o.actualvalue ELSE 0 END) AS won_value,
+
+    -- Revenue metrics (from BC)
+    SUM(p.amount) AS actual_revenue,
+
+    -- ROI calculation
+    CASE
+        WHEN c.budgetedCost > 0
+        THEN ((SUM(p.amount) - c.budgetedCost) / c.budgetedCost) * 100
+        ELSE 0
+    END AS roi_percentage
+
+FROM d365_campaigns c
+LEFT JOIN d365_leads l ON l.campaignid = c.campaignid
+LEFT JOIN d365_opportunities o ON o.originatingleadid = l.leadid
+LEFT JOIN bc_salesorders so ON so.externalDocumentNumber = o.opportunityid
+LEFT JOIN bc_payments p ON p.documentNumber = so.number
+GROUP BY c.campaignid, c.name, c.actualStart, c.actualEnd, c.budgetedCost;</code></pre>
+
+                        <h3>Copilot Marketing Queries</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>Response</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>"Which campaign had the best ROI this quarter?"</td><td>Analyzes all campaigns, ranks by ROI</td></tr>
+                                <tr><td>"How long does it take for a lead to become revenue?"</td><td>Calculates lead-to-cash cycle time</td></tr>
+                                <tr><td>"Show me campaigns where spend exceeds revenue"</td><td>Identifies underperforming campaigns</td></tr>
+                                <tr><td>"What's the revenue attribution for the trade show?"</td><td>Traces all leads → opportunities → orders → payments</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="use-case-4">
+                        <h2>Use Case 4: Credit Management Alerts</h2>
+
+                        <h3>The Problem</h3>
+                        <ul>
+                            <li>Sales keeps selling to customers on credit hold in BC</li>
+                            <li>No real-time visibility of credit status in CRM</li>
+                            <li>Finance manually emails sales about credit issues</li>
+                        </ul>
+
+                        <h3>Real-time Credit Status Sync</h3>
+                        <pre><code>Power Automate Flow: BC Credit Status → D365
+
+Trigger: Scheduled (every 15 minutes)
+
+Actions:
+  1. Get all BC customers with credit issues:
+     GET /customers?$filter=blocked ne '' or balance gt creditLimit
+
+  2. For each customer:
+     a. Find matching D365 Account (by email or name)
+
+     b. Update D365 Account:
+        - bc_creditstatus: "Blocked" or "Over Limit"
+        - bc_balance: {current balance}
+        - bc_creditlimit: {credit limit}
+
+     c. If status changed to blocked:
+        - Get Account Owner from D365
+        - Send Teams notification via Graph
+        - Create Task for account review
+
+  3. Update accounts no longer blocked:
+     - Set bc_creditstatus: "Good Standing"
+     - Send "cleared" notification</code></pre>
+
+                        <h3>Teams Notification via Graph</h3>
+                        <pre><code>def send_credit_alert(customer_name, account_owner_email, credit_status, balance, limit):
+    """Send Teams notification when credit status changes"""
+
+    # Create adaptive card
+    card = {
+        "type": "AdaptiveCard",
+        "body": [
+            {
+                "type": "TextBlock",
+                "size": "Large",
+                "weight": "Bolder",
+                "text": f"⚠️ Credit Alert: {customer_name}",
+                "color": "Attention"
+            },
+            {
+                "type": "FactSet",
+                "facts": [
+                    {"title": "Status", "value": credit_status},
+                    {"title": "Balance", "value": f"£{balance:,.2f}"},
+                    {"title": "Credit Limit", "value": f"£{limit:,.2f}"},
+                    {"title": "Over by", "value": f"£{max(0, balance - limit):,.2f}"}
+                ]
+            }
+        ],
+        "actions": [
+            {
+                "type": "Action.OpenUrl",
+                "title": "View in D365",
+                "url": f"{D365_URL}/main.aspx?etn=account&id={account_id}"
+            },
+            {
+                "type": "Action.OpenUrl",
+                "title": "View in BC",
+                "url": f"{BC_URL}/CustomerCard?customerNo={bc_customer_no}"
+            }
+        ]
+    }
+
+    # Send via Graph
+    requests.post(
+        f"https://graph.microsoft.com/v1.0/users/{user_id}/chats/{chat_id}/messages",
+        headers={"Authorization": f"Bearer {graph_token}"},
+        json={
+            "body": {
+                "contentType": "html",
+                "content": f"&lt;attachment id='card'&gt;&lt;/attachment&gt;"
+            },
+            "attachments": [{
+                "id": "card",
+                "contentType": "application/vnd.microsoft.card.adaptive",
+                "content": json.dumps(card)
+            }]
+        }
+    )</code></pre>
+
+                        <h3>D365 Business Rule: Block Opportunity Creation</h3>
+                        <pre><code>// D365 JavaScript web resource
+function onOpportunityCreate(executionContext) {
+    var formContext = executionContext.getFormContext();
+    var accountId = formContext.getAttribute("parentaccountid").getValue();
+
+    if (accountId) {
+        // Check BC credit status (stored on Account)
+        Xrm.WebApi.retrieveRecord("account", accountId[0].id,
+            "?$select=bc_creditstatus,bc_balance,bc_creditlimit")
+        .then(function(account) {
+            if (account.bc_creditstatus === "Blocked" ||
+                account.bc_creditstatus === "Over Limit") {
+
+                // Show warning
+                formContext.ui.setFormNotification(
+                    `⚠️ This customer has credit issues: ${account.bc_creditstatus}. ` +
+                    `Balance: £${account.bc_balance}, Limit: £${account.bc_creditlimit}. ` +
+                    `Please contact Finance before proceeding.`,
+                    "WARNING",
+                    "creditWarning"
+                );
+            }
+        });
+    }
+}</code></pre>
+                    </section>
+
+                    <section id="comparison">
+                        <h2>Comparison: With vs Without Fabric/Copilot</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Aspect</th>
+                                    <th>Without Fabric/Copilot</th>
+                                    <th>With Fabric/Copilot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Setup Complexity</td><td>Moderate - Power Automate, custom code</td><td>Higher initial - Fabric workspace setup</td></tr>
+                                <tr><td>Real-time Capability</td><td>Near real-time (polling/webhooks)</td><td>True real-time (streaming)</td></tr>
+                                <tr><td>Query Flexibility</td><td>Pre-built reports and views</td><td>Natural language, ad-hoc queries</td></tr>
+                                <tr><td>Data Volume</td><td>Limited by API throttling</td><td>Handles large datasets efficiently</td></tr>
+                                <tr><td>User Experience</td><td>Dashboards, forms, notifications</td><td>Conversational, self-service</td></tr>
+                                <tr><td>Maintenance</td><td>Multiple flows to maintain</td><td>Centralized data model</td></tr>
+                                <tr><td>Cost</td><td>Lower (included in licenses)</td><td>Additional Fabric licensing</td></tr>
+                                <tr><td>AI Capabilities</td><td>Limited to built-in features</td><td>Full AI/ML integration</td></tr>
+                                <tr><td>Cross-system Joins</td><td>Complex, often manual</td><td>Native unified queries</td></tr>
+                                <tr><td>Historical Analysis</td><td>Limited by source retention</td><td>Full data lake history</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="recommendations">
+                        <h2>Recommended Approach</h2>
+
+                        <h3>Phase 1: Quick Wins (Without Fabric)</h3>
+                        <ol>
+                            <li><strong>Virtual Tables:</strong> Enable BC data visibility in D365 forms</li>
+                            <li><strong>Power Automate Sync:</strong> Keep customer data synchronized</li>
+                            <li><strong>Teams Alerts:</strong> Notify sales of credit issues via Graph</li>
+                            <li><strong>Power BI Dashboard:</strong> Embed unified view in D365</li>
+                        </ol>
+
+                        <h3>Phase 2: Enhanced Integration</h3>
+                        <ol>
+                            <li><strong>Webhooks:</strong> Real-time sync for critical data</li>
+                            <li><strong>Azure Functions:</strong> Custom logic for complex scenarios</li>
+                            <li><strong>PCF Controls:</strong> Rich embedded experiences in D365</li>
+                        </ol>
+
+                        <h3>Phase 3: Fabric + Copilot (When Ready)</h3>
+                        <ol>
+                            <li><strong>Fabric Lakehouse:</strong> Unified data storage</li>
+                            <li><strong>Semantic Model:</strong> Business-friendly data layer</li>
+                            <li><strong>Copilot:</strong> Natural language access for all users</li>
+                        </ol>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete guide with more architecture diagrams and code examples:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/integrated-experiences-m365-bc-dynamics.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://learn.microsoft.com/en-us/dynamics365/business-central/admin-common-data-service" target="_blank" class="btn btn-secondary">Microsoft Integration Docs &rarr;</a>
+                    </div>
+                </article>
             </div>
         </div>
     </main>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide | Microsoft Integration Guide</title>
+    <title>Microsoft Fabric Explained | Microsoft Integration Guide</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/guide-page.css">
 </head>
@@ -27,20 +27,266 @@
     <main class="guide-content">
         <div class="guide-header">
             <div class="container">
-                <a href="../index.html#guides" class="back-link">← Back to Guides</a>
-                <h1>Full Guide Coming Soon</h1>
-                <p class="guide-intro">This detailed guide is available in the GitHub repository.</p>
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>Microsoft Fabric: The Analytics Layer</h1>
+                <p class="guide-intro">Understanding how Fabric fits alongside Graph, Dataverse, Business Central, and Dynamics 365</p>
             </div>
         </div>
 
         <div class="container">
-            <div class="guide-body" style="display: block; max-width: 700px; margin: 0 auto; text-align: center; padding: 80px 0;">
-                <h2>View the Full Documentation</h2>
-                <p style="margin-bottom: 32px;">The complete guide with code examples, diagrams, and implementation steps is available on GitHub.</p>
-                <a href="https://github.com/mondweep/vibe-cast/tree/microsoft-graph-exploration" target="_blank" class="btn btn-primary">View on GitHub →</a>
-                <p style="margin-top: 32px; color: var(--medium-gray);">
-                    Have questions? <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Contact Mondweep Chakravorty</a>
-                </p>
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#key-concept">Key Concept</a></li>
+                        <li><a href="#what-is-fabric">What is Fabric?</a></li>
+                        <li><a href="#when-to-use">When to Use Which</a></li>
+                        <li><a href="#features">Fabric Features</a></li>
+                        <li><a href="#copilot">Copilot + Fabric</a></li>
+                        <li><a href="#implementation">Implementation</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="key-concept">
+                        <h2>Key Concept</h2>
+                        <div class="highlight-box">
+                            <strong>Fabric is NOT for running your business day-to-day. It's for ANALYZING your business.</strong>
+                        </div>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>OPERATIONAL (Run the business)</th>
+                                    <th>ANALYTICAL (Analyze the business)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Dataverse / D365 / BC</strong></td>
+                                    <td><strong>Microsoft Fabric</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Create a quote</td>
+                                    <td>What's our win rate?</td>
+                                </tr>
+                                <tr>
+                                    <td>Process an invoice</td>
+                                    <td>Revenue trends over 3yrs</td>
+                                </tr>
+                                <tr>
+                                    <td>Update customer record</td>
+                                    <td>Predict next quarter</td>
+                                </tr>
+                                <tr>
+                                    <td>Real-time, transactional</td>
+                                    <td>Historical, analytical</td>
+                                </tr>
+                                <tr>
+                                    <td>Millions of records</td>
+                                    <td>Billions of records</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="what-is-fabric">
+                        <h2>What is Fabric?</h2>
+                        <p><strong>Microsoft Fabric</strong> is a unified analytics platform that combines:</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>What It Does</th>
+                                    <th>Replaces</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>OneLake</td><td>Single data lake for everything</td><td>Azure Data Lake</td></tr>
+                                <tr><td>Data Factory</td><td>Data pipelines, ETL</td><td>Azure Data Factory</td></tr>
+                                <tr><td>Data Engineering</td><td>Spark, big data processing</td><td>Azure Synapse</td></tr>
+                                <tr><td>Data Warehouse</td><td>SQL analytics at scale</td><td>Azure Synapse DW</td></tr>
+                                <tr><td>Data Science</td><td>ML, notebooks, experiments</td><td>Azure ML</td></tr>
+                                <tr><td>Real-Time Analytics</td><td>Streaming data, KQL</td><td>Azure Data Explorer</td></tr>
+                                <tr><td>Power BI</td><td>Visualization, dashboards</td><td>Power BI (same)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="highlight-box">
+                            <strong>Key Point:</strong> Fabric unifies all these into ONE platform with ONE license and ONE data copy.
+                        </div>
+                    </section>
+
+                    <section id="when-to-use">
+                        <h2>When to Use Dataverse vs Fabric</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>Dataverse</th>
+                                    <th>Fabric</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>"What's this customer's current balance?"</td><td>&#10004;</td><td></td></tr>
+                                <tr><td>"What was our revenue trend over 3 years?"</td><td></td><td>&#10004;</td></tr>
+                                <tr><td>"Create a new sales order"</td><td>&#10004;</td><td></td></tr>
+                                <tr><td>"Which products have declining sales?"</td><td></td><td>&#10004;</td></tr>
+                                <tr><td>"Update the customer's address"</td><td>&#10004;</td><td></td></tr>
+                                <tr><td>"Predict which deals will close this quarter"</td><td></td><td>&#10004;</td></tr>
+                                <tr><td>"Train ML model on sales patterns"</td><td></td><td>&#10004;</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>You DON'T Need Fabric If:</h3>
+                        <ul>
+                            <li>Dataverse Virtual Tables solve your visibility problem</li>
+                            <li>Power BI with direct connectors meets your needs</li>
+                            <li>Your data volumes are moderate (millions, not billions)</li>
+                            <li>You don't need ML/AI capabilities</li>
+                        </ul>
+
+                        <h3>You DO Need Fabric If:</h3>
+                        <ul>
+                            <li>You need to analyze years of historical data</li>
+                            <li>You're combining data from 5+ sources</li>
+                            <li>You need ML predictions (deal scoring, churn)</li>
+                            <li>You have billions of rows</li>
+                            <li>You want Copilot to query across all business data</li>
+                        </ul>
+                    </section>
+
+                    <section id="features">
+                        <h2>Fabric Features</h2>
+
+                        <h3>OneLake (The Foundation)</h3>
+                        <p><strong>One copy of data, many uses.</strong></p>
+                        <pre><code>Traditional (Before Fabric):
+Source (BC) --Copy--> DW (Synapse) --Copy--> Power BI Dataset
+  3 copies of data = 3x storage cost, sync issues
+
+With Fabric OneLake:
+Source (BC) -------> OneLake (single copy)
+                       |        |        |
+                   Warehouse  Lakehouse  Power BI
+                   (same data, different views)</code></pre>
+
+                        <h3>Lakehouse (PySpark Example)</h3>
+                        <pre><code># Fabric Notebook - Create unified customer table
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.getOrCreate()
+
+# Read from Dataverse (D365)
+d365_accounts = spark.read.format("dataverse").load("accounts")
+
+# Read from Business Central
+bc_customers = spark.read.format("businesscentral").load("customers")
+
+# Join them
+unified_customers = d365_accounts.join(
+    bc_customers,
+    d365_accounts.emailaddress1 == bc_customers.email,
+    "full_outer"
+).select(
+    d365_accounts.accountid,
+    d365_accounts.name,
+    d365_accounts.revenue.alias("crm_revenue"),
+    bc_customers.balance.alias("bc_balance"),
+    bc_customers.creditLimit.alias("bc_credit_limit")
+)
+
+# Save as Delta table
+unified_customers.write.format("delta").saveAsTable("unified_customers")</code></pre>
+
+                        <h3>Data Warehouse (SQL Example)</h3>
+                        <pre><code>-- Query across D365 and BC data in one statement
+SELECT
+    c.name AS customer_name,
+    c.crm_revenue,
+    c.bc_balance,
+    COUNT(DISTINCT o.opportunityid) AS open_opportunities,
+    SUM(o.estimatedvalue) AS pipeline_value,
+    AVG(DATEDIFF(day, i.invoicedate, i.paymentdate)) AS avg_days_to_pay,
+    CASE
+        WHEN c.bc_balance > c.bc_credit_limit THEN 'Credit Risk'
+        ELSE 'Normal'
+    END AS risk_status
+FROM unified_customers c
+LEFT JOIN d365_opportunities o ON c.accountid = o.parentaccountid
+LEFT JOIN bc_invoices i ON c.bc_customer_number = i.customernumber
+GROUP BY c.name, c.crm_revenue, c.bc_balance, c.bc_credit_limit</code></pre>
+                    </section>
+
+                    <section id="copilot">
+                        <h2>Copilot + Fabric</h2>
+                        <p>With Fabric's semantic model, Copilot can answer natural language questions:</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User Asks</th>
+                                    <th>Copilot Does</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>"Which customers have overdue invoices and open opportunities over 50k?"</td><td>Queries unified_customers + bc_invoices + d365_opportunities</td></tr>
+                                <tr><td>"Show me average days-to-pay by customer segment"</td><td>Time-series analysis on bc_payments joined with d365_accounts</td></tr>
+                                <tr><td>"Predict which deals will close this month"</td><td>Runs ML model on current pipeline</td></tr>
+                                <tr><td>"Why did revenue drop in March?"</td><td>Analyzes invoices, payments, opportunities, identifies patterns</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="implementation">
+                        <h2>Recommended Implementation</h2>
+
+                        <h3>Phase 1: Solve Immediate Problem (No Fabric)</h3>
+                        <pre><code>Dataverse Virtual Tables + Power BI
+- Sales sees BC data in D365
+- Basic dashboards work
+- Cost: Included in D365 license</code></pre>
+
+                        <h3>Phase 2: Enhanced Analytics (Power BI Premium)</h3>
+                        <pre><code>Power BI with Dataflows
+- Pull BC and D365 data into datasets
+- Build unified reports
+- Cost: ~$20/user/month</code></pre>
+
+                        <h3>Phase 3: Full Analytics Platform (Fabric)</h3>
+                        <pre><code>Microsoft Fabric
+- OneLake with all data sources
+- ML predictions
+- Copilot natural language
+- Cost: Fabric capacity (~$300+/month for F2)</code></pre>
+
+                        <h3>Cost Comparison</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Approach</th>
+                                    <th>Monthly Cost</th>
+                                    <th>Capabilities</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Dataverse + Power BI Pro</td><td>~$10-20/user</td><td>Basic reporting</td></tr>
+                                <tr><td>Power BI Premium Per User</td><td>~$20/user</td><td>Dataflows, larger datasets</td></tr>
+                                <tr><td>Fabric F2</td><td>~$300/month</td><td>Full Fabric, small workloads</td></tr>
+                                <tr><td>Fabric F64</td><td>~$5,000/month</td><td>Production workloads, ML</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete guide with architecture diagrams:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/microsoft-fabric-explained.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://learn.microsoft.com/en-us/fabric/" target="_blank" class="btn btn-secondary">Microsoft Fabric Docs &rarr;</a>
+                    </div>
+                </article>
             </div>
         </div>
     </main>

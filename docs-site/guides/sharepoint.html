@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide | Microsoft Integration Guide</title>
+    <title>SharePoint Optimization Guide | Microsoft Integration Guide</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/guide-page.css">
 </head>
@@ -27,20 +27,556 @@
     <main class="guide-content">
         <div class="guide-header">
             <div class="container">
-                <a href="../index.html#guides" class="back-link">← Back to Guides</a>
-                <h1>Full Guide Coming Soon</h1>
-                <p class="guide-intro">This detailed guide is available in the GitHub repository.</p>
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>SharePoint Optimization Guide</h1>
+                <p class="guide-intro">How to catalog, discover, utilize and update information across departments using Microsoft technologies</p>
             </div>
         </div>
 
         <div class="container">
-            <div class="guide-body" style="display: block; max-width: 700px; margin: 0 auto; text-align: center; padding: 80px 0;">
-                <h2>View the Full Documentation</h2>
-                <p style="margin-bottom: 32px;">The complete guide with code examples, diagrams, and implementation steps is available on GitHub.</p>
-                <a href="https://github.com/mondweep/vibe-cast/tree/microsoft-graph-exploration" target="_blank" class="btn btn-primary">View on GitHub →</a>
-                <p style="margin-top: 32px; color: var(--medium-gray);">
-                    Have questions? <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Contact Mondweep Chakravorty</a>
-                </p>
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#challenge">The SharePoint Challenge</a></li>
+                        <li><a href="#ecosystem">SharePoint Ecosystem</a></li>
+                        <li><a href="#technologies">Optimization Technologies</a></li>
+                        <li><a href="#architecture">Optimized Architecture</a></li>
+                        <li><a href="#implementation">Implementation Guide</a></li>
+                        <li><a href="#graph-api">Graph API Examples</a></li>
+                        <li><a href="#copilot">Copilot + SharePoint</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="challenge">
+                        <h2>The SharePoint Challenge</h2>
+                        <p><strong>Common problems organisations face:</strong></p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Problem</th>
+                                    <th>Symptom</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Can't find documents</td><td>"I know it exists somewhere..."</td></tr>
+                                <tr><td>Duplicate content</td><td>Same doc in 5 different sites</td></tr>
+                                <tr><td>Inconsistent metadata</td><td>Everyone tags differently (or not at all)</td></tr>
+                                <tr><td>Outdated information</td><td>No one knows what's current</td></tr>
+                                <tr><td>Siloed departments</td><td>Marketing can't find Sales templates</td></tr>
+                                <tr><td>No governance</td><td>Sensitive docs in wrong locations</td></tr>
+                                <tr><td>Poor structure</td><td>Flat folders, no taxonomy</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="ecosystem">
+                        <h2>SharePoint in the Microsoft Ecosystem</h2>
+                        <p>SharePoint is accessed via <strong>Microsoft Graph</strong> and can be enhanced with <strong>Syntex</strong>, <strong>Search</strong>, <strong>Purview</strong>, and <strong>Copilot</strong>.</p>
+
+                        <div class="diagram-box" style="background: #f5f5f5; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+<pre>┌─────────────────────────────────────────────────────────────────────────┐
+│                    SHAREPOINT ECOSYSTEM                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                     USER EXPERIENCE                              │   │
+│  │  SharePoint Sites │ Teams Files │ OneDrive │ Search │ Copilot   │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                    │                                    │
+│                                    ▼                                    │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                    MICROSOFT GRAPH API                           │   │
+│  │              /sites  /drives  /lists  /search                    │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                    │                                    │
+│       ┌────────────────────────────┼────────────────────────────┐      │
+│       ▼                            ▼                            ▼      │
+│  ┌──────────┐              ┌──────────────┐              ┌──────────┐ │
+│  │SharePoint│              │   Syntex /   │              │ Purview  │ │
+│  │ Online   │              │   AI Builder │              │(Governance│ │
+│  │          │              │              │              │& Compliance│
+│  │• Sites   │              │• Auto-classify│             │• Labels   │ │
+│  │• Lists   │              │• Extract data │             │• Retention│ │
+│  │• Libraries│             │• Content types│             │• DLP      │ │
+│  │• Pages   │              │• AI tagging   │             │• eDiscovery│
+│  └──────────┘              └──────────────┘              └──────────┘ │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘</pre>
+                        </div>
+                    </section>
+
+                    <section id="technologies">
+                        <h2>Technologies That Optimize SharePoint</h2>
+
+                        <h3>1. Microsoft Graph (Access & Integration)</h3>
+                        <p><strong>What:</strong> API to access all SharePoint data programmatically.</p>
+
+                        <h4>Graph API Endpoints for SharePoint</h4>
+                        <pre><code>/sites                      → All sites
+/sites/{site-id}/lists      → Lists in a site
+/sites/{site-id}/drive      → Document library
+/sites/{site-id}/items      → List items
+/search/query               → Search across everything</code></pre>
+
+                        <h4>Example - Search across all SharePoint</h4>
+                        <pre><code>POST https://graph.microsoft.com/v1.0/search/query
+
+{
+  "requests": [{
+    "entityTypes": ["driveItem", "listItem", "site"],
+    "query": { "queryString": "budget report 2024" }
+  }]
+}</code></pre>
+
+                        <h3>2. Microsoft Syntex (AI-Powered Content)</h3>
+                        <p><strong>What:</strong> AI that automatically classifies, tags, and extracts data from documents.</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>What It Does</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Document Understanding</td><td>AI reads documents and extracts metadata</td></tr>
+                                <tr><td>Content Classification</td><td>Automatically applies content types</td></tr>
+                                <tr><td>Form Processing</td><td>Extracts data from invoices, contracts</td></tr>
+                                <tr><td>Taxonomy Tagging</td><td>Auto-applies managed metadata</td></tr>
+                                <tr><td>Content Assembly</td><td>Generate documents from templates</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="highlight-box">
+                            <strong>Example Use Case:</strong>
+                            <pre style="margin: 10px 0 0 0;">BEFORE Syntex:
+User uploads contract → No metadata → Lost in folder structure
+
+AFTER Syntex:
+User uploads contract → AI reads it → Auto-extracts:
+  • Contract Type: Service Agreement
+  • Vendor: Acme Corp
+  • Value: £50,000
+  • Expiry Date: 2025-03-15
+→ Automatically filed, searchable, alerts set</pre>
+                        </div>
+
+                        <h3>3. Microsoft Search (Discovery)</h3>
+                        <p><strong>What:</strong> Unified search across M365 (SharePoint, OneDrive, Teams, Outlook, etc.)</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Connectors</td><td>Index external systems (BC, D365, custom apps)</td></tr>
+                                <tr><td>Bookmarks</td><td>Promoted results for common queries</td></tr>
+                                <tr><td>Q&A</td><td>Direct answers to common questions</td></tr>
+                                <tr><td>Acronyms</td><td>Define company-specific terms</td></tr>
+                                <tr><td>Floor Plans</td><td>Find people and rooms</td></tr>
+                                <tr><td>Verticals</td><td>Custom search categories</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>4. Microsoft Purview (Governance & Compliance)</h3>
+                        <p><strong>What:</strong> Data governance, compliance, and protection.</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>What It Does</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Sensitivity Labels</td><td>Classify & protect sensitive content</td></tr>
+                                <tr><td>Retention Policies</td><td>Auto-delete or retain based on rules</td></tr>
+                                <tr><td>Data Loss Prevention</td><td>Prevent sharing of sensitive data</td></tr>
+                                <tr><td>Information Barriers</td><td>Prevent certain groups from sharing</td></tr>
+                                <tr><td>eDiscovery</td><td>Legal hold and search</td></tr>
+                                <tr><td>Data Lifecycle</td><td>Manage content through its lifecycle</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="architecture">
+                        <h2>Optimized SharePoint Architecture</h2>
+
+                        <div class="diagram-box" style="background: #f5f5f5; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 11px; overflow-x: auto;">
+<pre>┌─────────────────────────────────────────────────────────────────────────┐
+│                 OPTIMIZED SHAREPOINT ARCHITECTURE                       │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  DISCOVERY LAYER                                                        │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                    Microsoft Search                              │   │
+│  │  • Unified search across all content                            │   │
+│  │  • Custom verticals (Policies, Templates, Products)             │   │
+│  │  • Connectors to BC, D365, external systems                     │   │
+│  │  • Bookmarks and Q&A for common queries                         │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                    │                                    │
+│  INTELLIGENCE LAYER                │                                    │
+│  ┌─────────────────────────────────┼───────────────────────────────┐   │
+│  │                    Microsoft Syntex                              │   │
+│  │  • Auto-classify documents on upload                            │   │
+│  │  • Extract metadata (dates, amounts, names)                     │   │
+│  │  • Apply content types automatically                            │   │
+│  │  • Tag with managed metadata                                    │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                    │                                    │
+│  STRUCTURE LAYER                   │                                    │
+│  ┌─────────────────────────────────┼───────────────────────────────┐   │
+│  │              SharePoint Information Architecture                 │   │
+│  │                                                                  │   │
+│  │  Hub Sites (Departments)                                        │   │
+│  │  ├── Sales Hub                                                  │   │
+│  │  │   ├── Sales Team Site                                        │   │
+│  │  │   ├── Sales Resources                                        │   │
+│  │  │   └── Customer Proposals                                     │   │
+│  │  ├── Marketing Hub                                              │   │
+│  │  │   ├── Brand Assets                                           │   │
+│  │  │   ├── Campaigns                                              │   │
+│  │  │   └── Content Calendar                                       │   │
+│  │  └── Finance Hub                                                │   │
+│  │      ├── Policies                                               │   │
+│  │      ├── Reports                                                │   │
+│  │      └── Templates                                              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                    │                                    │
+│  GOVERNANCE LAYER                  │                                    │
+│  ┌─────────────────────────────────┼───────────────────────────────┐   │
+│  │                   Microsoft Purview                              │   │
+│  │  • Sensitivity labels (Confidential, Internal, Public)          │   │
+│  │  • Retention policies (keep 7 years, delete after 1 year)       │   │
+│  │  • DLP policies (block external sharing of financials)          │   │
+│  │  • Compliance reporting                                         │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘</pre>
+                        </div>
+                    </section>
+
+                    <section id="implementation">
+                        <h2>Practical Implementation Guide</h2>
+
+                        <h3>Step 1: Information Architecture (Foundation)</h3>
+                        <pre><code>TAXONOMY (What categories exist?)
+─────────────────────────────────
+Department:     [Sales, Marketing, Finance, HR, Operations, IT]
+Document Type:  [Policy, Procedure, Template, Report, Contract, Proposal]
+Status:         [Draft, Under Review, Approved, Archived]
+Confidentiality:[Public, Internal, Confidential, Restricted]
+
+SITE STRUCTURE (Where does content live?)
+─────────────────────────────────────────
+Hub Site: Company Intranet
+├── Hub: Sales
+│   ├── Team Site: Sales Team
+│   ├── Document Library: Proposals
+│   └── List: Opportunities (or link to D365)
+├── Hub: Finance
+│   ├── Team Site: Finance Team
+│   ├── Document Library: Policies
+│   └── Document Library: Templates
+└── Hub: Shared Resources
+    ├── Document Library: Company Templates
+    ├── Document Library: Brand Assets
+    └── List: Company Directory</code></pre>
+
+                        <h3>Step 2: Content Types (Standardisation)</h3>
+                        <pre><code>Content Type: Contract
+─────────────────────
+Columns:
+  • Contract Type (Choice: Service, License, Employment, NDA)
+  • Vendor/Client (Text)
+  • Value (Currency)
+  • Start Date (Date)
+  • End Date (Date)
+  • Status (Choice: Active, Expired, Terminated)
+  • Owner (Person)
+  • Department (Managed Metadata)
+
+Behaviour:
+  • Retention: Keep 7 years after end date
+  • Sensitivity: Confidential
+  • Workflow: Notify owner 30 days before expiry</code></pre>
+
+                        <h3>Step 3: Syntex Models (Automation)</h3>
+                        <pre><code>Document uploaded: "Acme_ServiceAgreement_2024.pdf"
+                            │
+                            ▼
+Syntex Document Understanding Model
+                            │
+                            ▼
+Extracted metadata:
+  • Contract Type: Service Agreement
+  • Vendor: Acme Corporation
+  • Value: £75,000
+  • Start Date: 2024-01-01
+  • End Date: 2024-12-31
+                            │
+                            ▼
+Applied:
+  • Content Type: Contract
+  • Sensitivity Label: Confidential
+  • Retention Label: Contract-7Years
+  • Filed to: /sites/finance/contracts/2024/</code></pre>
+
+                        <h3>Step 4: Search Configuration (Discovery)</h3>
+                        <pre><code>BOOKMARKS (Promoted results)
+────────────────────────────
+Query: "expense policy"
+→ Promoted: Expense Policy 2024 (Finance Hub)
+
+Query: "logo"
+→ Promoted: Brand Assets Library (Marketing Hub)
+
+CUSTOM VERTICALS
+────────────────
+[Policies]  → Filters: ContentType = Policy
+[Templates] → Filters: ContentType = Template
+[Contracts] → Filters: ContentType = Contract
+
+Q&A
+───
+Q: "What is the expense limit?"
+A: "The expense limit without approval is £100. See the full policy here: [link]"</code></pre>
+
+                        <h3>Step 5: Governance (Purview)</h3>
+                        <pre><code>SENSITIVITY LABELS
+──────────────────
+• Public: Can be shared externally
+• Internal: M365 users only
+• Confidential: Specific groups + encryption
+• Restricted: Named individuals only + no download
+
+RETENTION POLICIES
+──────────────────
+• HR Documents: Keep 7 years
+• Contracts: Keep 10 years after expiry
+• Marketing Content: Keep 3 years
+• Draft Documents: Delete after 1 year if not modified
+
+DLP POLICIES
+────────────
+• Block external sharing of documents with:
+  - Credit card numbers
+  - National Insurance numbers
+  - Financial data marked "Confidential"</code></pre>
+                    </section>
+
+                    <section id="graph-api">
+                        <h2>Graph API Examples for SharePoint</h2>
+
+                        <h3>Search Across All SharePoint</h3>
+                        <pre><code>import requests
+
+def search_sharepoint(query, token):
+    """Search across all SharePoint content"""
+    response = requests.post(
+        "https://graph.microsoft.com/v1.0/search/query",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "requests": [{
+                "entityTypes": ["driveItem", "listItem", "site"],
+                "query": {"queryString": query},
+                "from": 0,
+                "size": 25
+            }]
+        }
+    )
+    return response.json()
+
+# Search for budget reports
+results = search_sharepoint("budget report 2024", token)
+for hit in results["value"][0]["hitsContainers"][0]["hits"]:
+    print(f"Found: {hit['resource']['name']}")
+    print(f"  Location: {hit['resource']['webUrl']}")</code></pre>
+
+                        <h3>Get Documents from a Library</h3>
+                        <pre><code>def get_library_contents(site_id, library_name, token):
+    """Get all documents from a SharePoint library"""
+    # First, get the drive (library) ID
+    drives = requests.get(
+        f"https://graph.microsoft.com/v1.0/sites/{site_id}/drives",
+        headers={"Authorization": f"Bearer {token}"}
+    ).json()
+
+    drive_id = next(d["id"] for d in drives["value"] if d["name"] == library_name)
+
+    # Get all items
+    items = requests.get(
+        f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root/children",
+        headers={"Authorization": f"Bearer {token}"}
+    ).json()
+
+    return items["value"]
+
+# Get all documents from Policies library
+policies = get_library_contents("site-id", "Policies", token)
+for doc in policies:
+    print(f"{doc['name']} - Modified: {doc['lastModifiedDateTime']}")</code></pre>
+
+                        <h3>Upload Document with Metadata</h3>
+                        <pre><code>def upload_with_metadata(site_id, library_name, filename, content, metadata, token):
+    """Upload document and set metadata"""
+
+    # Upload file
+    upload_url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/drive/root:/{library_name}/{filename}:/content"
+    upload_response = requests.put(
+        upload_url,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/octet-stream"
+        },
+        data=content
+    )
+
+    item_id = upload_response.json()["id"]
+
+    # Update metadata (list item fields)
+    fields_url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/drive/items/{item_id}/listItem/fields"
+    requests.patch(
+        fields_url,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        },
+        json=metadata
+    )
+
+# Upload contract with metadata
+upload_with_metadata(
+    site_id="site-guid",
+    library_name="Contracts",
+    filename="Acme_Agreement_2024.pdf",
+    content=pdf_bytes,
+    metadata={
+        "ContractType": "Service Agreement",
+        "Vendor": "Acme Corp",
+        "Value": 75000,
+        "ExpiryDate": "2024-12-31"
+    },
+    token=token
+)</code></pre>
+                    </section>
+
+                    <section id="copilot">
+                        <h2>Copilot + SharePoint</h2>
+                        <p>With Microsoft 365 Copilot, users can interact with SharePoint content naturally:</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User Asks</th>
+                                    <th>Copilot Does</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>"Find the latest expense policy"</td><td>Searches SharePoint, returns current version</td></tr>
+                                <tr><td>"Summarise this contract"</td><td>Reads document, extracts key terms</td></tr>
+                                <tr><td>"What documents do I need for onboarding?"</td><td>Finds HR checklist, lists requirements</td></tr>
+                                <tr><td>"Create a proposal based on the Acme template"</td><td>Finds template, generates draft</td></tr>
+                                <tr><td>"Who last edited the Q3 budget report?"</td><td>Checks version history, returns author</td></tr>
+                                <tr><td>"Are there any contracts expiring this month?"</td><td>Queries metadata, lists expiring contracts</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>SharePoint + Fabric Integration</h3>
+                        <p>For advanced analytics on SharePoint content:</p>
+
+                        <pre><code>-- Fabric Query: Analyze SharePoint content usage
+SELECT
+    site_name,
+    library_name,
+    content_type,
+    COUNT(*) AS document_count,
+    AVG(DATEDIFF(day, last_modified, GETDATE())) AS avg_days_since_update,
+    SUM(CASE WHEN last_modified &lt; DATEADD(year, -1, GETDATE()) THEN 1 ELSE 0 END) AS stale_documents,
+    SUM(view_count) AS total_views
+
+FROM sharepoint_documents
+GROUP BY site_name, library_name, content_type
+ORDER BY stale_documents DESC</code></pre>
+                    </section>
+
+                    <section id="implementation-phases">
+                        <h2>Recommended Implementation Approach</h2>
+
+                        <h3>Phase 1: Foundation (Weeks 1-4)</h3>
+                        <ul>
+                            <li>Audit current SharePoint structure</li>
+                            <li>Define taxonomy (departments, document types)</li>
+                            <li>Create hub site structure</li>
+                            <li>Standardise content types</li>
+                            <li>Configure basic search bookmarks</li>
+                        </ul>
+
+                        <h3>Phase 2: Intelligence (Weeks 5-8)</h3>
+                        <ul>
+                            <li>Train Syntex models for key document types</li>
+                            <li>Configure auto-tagging rules</li>
+                            <li>Set up custom search verticals</li>
+                            <li>Create Q&A entries for common questions</li>
+                        </ul>
+
+                        <h3>Phase 3: Governance (Weeks 9-12)</h3>
+                        <ul>
+                            <li>Define sensitivity labels</li>
+                            <li>Configure retention policies</li>
+                            <li>Implement DLP rules</li>
+                            <li>Set up compliance reporting</li>
+                        </ul>
+
+                        <h3>Phase 4: Integration (Ongoing)</h3>
+                        <ul>
+                            <li>Connect SharePoint to D365 records</li>
+                            <li>Link BC documents to SharePoint</li>
+                            <li>Index external systems via Search connectors</li>
+                            <li>Enable Copilot for content</li>
+                        </ul>
+                    </section>
+
+                    <section id="technology-summary">
+                        <h2>Technology Summary</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Technology</th>
+                                    <th>Purpose</th>
+                                    <th>Key Benefit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Microsoft Graph</td><td>API access to SharePoint</td><td>Programmatic control, integration</td></tr>
+                                <tr><td>SharePoint Online</td><td>Core content platform</td><td>Storage, collaboration, sites</td></tr>
+                                <tr><td>Syntex</td><td>AI content processing</td><td>Auto-classify, extract metadata</td></tr>
+                                <tr><td>Microsoft Search</td><td>Discovery</td><td>Find content across M365</td></tr>
+                                <tr><td>Purview</td><td>Governance</td><td>Labels, retention, DLP, compliance</td></tr>
+                                <tr><td>Power Automate</td><td>Workflows</td><td>Automate document processes</td></tr>
+                                <tr><td>Copilot</td><td>AI assistant</td><td>Natural language content interaction</td></tr>
+                                <tr><td>Fabric</td><td>Analytics</td><td>Content usage insights, reporting</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete guide with more code examples:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/sharepoint-optimization-guide.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://learn.microsoft.com/en-us/sharepoint/" target="_blank" class="btn btn-secondary">Microsoft SharePoint Docs &rarr;</a>
+                    </div>
+                </article>
             </div>
         </div>
     </main>

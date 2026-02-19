@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide | Microsoft Integration Guide</title>
+    <title>Business Central &amp; Dynamics 365 Integration | Microsoft Integration Guide</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/guide-page.css">
 </head>
@@ -27,20 +27,263 @@
     <main class="guide-content">
         <div class="guide-header">
             <div class="container">
-                <a href="../index.html#guides" class="back-link">← Back to Guides</a>
-                <h1>Full Guide Coming Soon</h1>
-                <p class="guide-intro">This detailed guide is available in the GitHub repository.</p>
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>Business Central &amp; Dynamics 365 Integration</h1>
+                <p class="guide-intro">Understanding how Business Central, Dynamics 365, and Microsoft Graph work together</p>
             </div>
         </div>
 
         <div class="container">
-            <div class="guide-body" style="display: block; max-width: 700px; margin: 0 auto; text-align: center; padding: 80px 0;">
-                <h2>View the Full Documentation</h2>
-                <p style="margin-bottom: 32px;">The complete guide with code examples, diagrams, and implementation steps is available on GitHub.</p>
-                <a href="https://github.com/mondweep/vibe-cast/tree/microsoft-graph-exploration" target="_blank" class="btn btn-primary">View on GitHub →</a>
-                <p style="margin-top: 32px; color: var(--medium-gray);">
-                    Have questions? <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Contact Mondweep Chakravorty</a>
-                </p>
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#architecture">Architecture Overview</a></li>
+                        <li><a href="#bc-api">Business Central API</a></li>
+                        <li><a href="#d365-api">Dynamics 365 API</a></li>
+                        <li><a href="#integration">Integration Options</a></li>
+                        <li><a href="#code-examples">Code Examples</a></li>
+                        <li><a href="#authentication">Authentication</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="architecture">
+                        <h2>Architecture Overview</h2>
+                        <p><strong>Business Central and Dynamics 365 have their own APIs</strong> - they're not directly accessed through Microsoft Graph. However, they can <strong>connect to Graph</strong> for M365 data.</p>
+
+                        <div class="diagram-box" style="background: #f5f5f5; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 13px; overflow-x: auto;">
+<pre>+----------------------------------------------------------+
+|                    Microsoft Graph                        |
+|         (M365: Mail, Calendar, Teams, OneDrive)           |
++-----------------------------+----------------------------+
+                              | Can connect to
+                              v
++----------------------------------------------------------+
+|              Dynamics 365 / Business Central              |
+|                    (Their own APIs)                       |
+|                                                           |
+|  +----------------+  +----------------+  +--------------+ |
+|  |Business Central|  |  Dynamics 365  |  |  Dataverse   | |
+|  |      API       |  |      API       |  |    (CDS)     | |
+|  +----------------+  +----------------+  +--------------+ |
++----------------------------------------------------------+</pre>
+                        </div>
+                    </section>
+
+                    <section id="bc-api">
+                        <h2>Business Central API</h2>
+                        <p>Business Central has its <strong>own REST API</strong>, not Graph.</p>
+
+                        <h3>Base URL</h3>
+                        <pre><code>https://api.businesscentral.dynamics.com/v2.0/{environment}/api/v2.0</code></pre>
+
+                        <h3>Common BC Endpoints</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Entity</th>
+                                    <th>Endpoint</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Companies</td><td><code>/companies</code></td><td>List of companies</td></tr>
+                                <tr><td>Customers</td><td><code>/companies({id})/customers</code></td><td>Customer master data</td></tr>
+                                <tr><td>Vendors</td><td><code>/companies({id})/vendors</code></td><td>Supplier/vendor data</td></tr>
+                                <tr><td>Items</td><td><code>/companies({id})/items</code></td><td>Inventory items</td></tr>
+                                <tr><td>Sales Orders</td><td><code>/companies({id})/salesOrders</code></td><td>Sales order headers</td></tr>
+                                <tr><td>Sales Invoices</td><td><code>/companies({id})/salesInvoices</code></td><td>Posted invoices</td></tr>
+                                <tr><td>Purchase Orders</td><td><code>/companies({id})/purchaseOrders</code></td><td>Purchase orders</td></tr>
+                                <tr><td>Employees</td><td><code>/companies({id})/employees</code></td><td>Employee records</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="d365-api">
+                        <h2>Dynamics 365 API</h2>
+                        <p>Dynamics 365 uses <strong>Dataverse (Common Data Service)</strong> Web API.</p>
+
+                        <h3>Base URL</h3>
+                        <pre><code>https://{org}.crm.dynamics.com/api/data/v9.2</code></pre>
+
+                        <h3>Common D365 Endpoints</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Entity</th>
+                                    <th>Endpoint</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Accounts</td><td><code>/accounts</code></td><td>Company records</td></tr>
+                                <tr><td>Contacts</td><td><code>/contacts</code></td><td>Individual people</td></tr>
+                                <tr><td>Leads</td><td><code>/leads</code></td><td>Potential customers</td></tr>
+                                <tr><td>Opportunities</td><td><code>/opportunities</code></td><td>Sales opportunities</td></tr>
+                                <tr><td>Cases</td><td><code>/incidents</code></td><td>Service cases</td></tr>
+                                <tr><td>Products</td><td><code>/products</code></td><td>Product catalog</td></tr>
+                                <tr><td>Quotes</td><td><code>/quotes</code></td><td>Sales quotes</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="integration">
+                        <h2>Integration Options</h2>
+
+                        <h3>Option A: Use Each API Separately</h3>
+                        <pre><code>Your App
+   +-- Microsoft Graph API  -> M365 data (emails, calendar, files)
+   +-- Business Central API -> Financial data (invoices, orders)
+   +-- Dynamics 365 API     -> CRM data (contacts, opportunities)</code></pre>
+
+                        <h3>Option B: Use Power Platform as Middleware</h3>
+                        <pre><code>Your App -> Power Automate -> Business Central
+                            -> Dynamics 365
+                            -> Microsoft Graph</code></pre>
+                        <p><strong>Benefits:</strong> Pre-built connectors, no-code/low-code, built-in error handling</p>
+
+                        <h3>Option C: Use Dataverse as Central Hub</h3>
+                        <pre><code>                    Dataverse
+                        |
+        +---------------+---------------+
+        v               v               v
+Business Central   Dynamics 365   Microsoft Graph
+(Virtual Tables)   (Native)       (Via connectors)</code></pre>
+                        <p><strong>Benefits:</strong> Single data model, virtual tables for BC, unified security</p>
+                    </section>
+
+                    <section id="code-examples">
+                        <h2>Code Examples</h2>
+
+                        <h3>Get BC Customer + Their Emails from Graph</h3>
+                        <pre><code>import requests
+
+BC_BASE_URL = "https://api.businesscentral.dynamics.com/v2.0/production/api/v2.0"
+GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0"
+
+# Step 1: Get customer from Business Central
+bc_response = requests.get(
+    f"{BC_BASE_URL}/companies({{companyId}})/customers?$filter=displayName eq 'Contoso'",
+    headers={"Authorization": f"Bearer {bc_token}"}
+)
+customer = bc_response.json()["value"][0]
+customer_email = customer["email"]
+
+print(f"Customer: {customer['displayName']}")
+print(f"Email: {customer_email}")
+
+# Step 2: Get their emails from Graph
+graph_response = requests.get(
+    f"{GRAPH_BASE_URL}/me/messages?$search='{customer_email}'&$top=10",
+    headers={"Authorization": f"Bearer {graph_token}"}
+)
+emails = graph_response.json()["value"]
+
+print(f"\nRecent emails with {customer['displayName']}:")
+for email in emails:
+    print(f"  - {email['subject']} ({email['receivedDateTime']})")</code></pre>
+
+                        <h3>Create D365 Contact from Outlook Contact</h3>
+                        <pre><code># Step 1: Get contact from Graph
+graph_contact = requests.get(
+    "https://graph.microsoft.com/v1.0/me/contacts/{contactId}",
+    headers={"Authorization": f"Bearer {graph_token}"}
+).json()
+
+# Step 2: Create in Dynamics 365
+d365_response = requests.post(
+    "https://{org}.crm.dynamics.com/api/data/v9.2/contacts",
+    headers={
+        "Authorization": f"Bearer {d365_token}",
+        "Content-Type": "application/json",
+        "OData-Version": "4.0"
+    },
+    json={
+        "firstname": graph_contact["givenName"],
+        "lastname": graph_contact["surname"],
+        "emailaddress1": graph_contact["emailAddresses"][0]["address"],
+        "telephone1": graph_contact.get("mobilePhone", ""),
+        "description": "Imported from Outlook via Graph API"
+    }
+)
+
+if d365_response.status_code == 204:
+    print("Contact created successfully in Dynamics 365!")</code></pre>
+
+                        <h3>Send Email with BC Invoice Details</h3>
+                        <pre><code># Step 1: Get invoice from Business Central
+invoice = requests.get(
+    f"{BC_BASE_URL}/companies({{companyId}})/salesInvoices({{invoiceId}})",
+    headers={"Authorization": f"Bearer {bc_token}"}
+).json()
+
+# Step 2: Send email via Graph
+email = {
+    "message": {
+        "subject": f"Invoice {invoice['number']} - Payment Reminder",
+        "body": {
+            "contentType": "HTML",
+            "content": f"""
+                &lt;h2&gt;Payment Reminder&lt;/h2&gt;
+                &lt;p&gt;Invoice: &lt;strong&gt;{invoice['number']}&lt;/strong&gt;&lt;/p&gt;
+                &lt;p&gt;Amount: {invoice['totalAmountIncludingTax']}&lt;/p&gt;
+                &lt;p&gt;Due Date: {invoice['dueDate']}&lt;/p&gt;
+            """
+        },
+        "toRecipients": [{"emailAddress": {"address": invoice["email"]}}]
+    },
+    "saveToSentItems": "true"
+}
+
+response = requests.post(
+    "https://graph.microsoft.com/v1.0/me/sendMail",
+    headers={"Authorization": f"Bearer {graph_token}", "Content-Type": "application/json"},
+    json=email
+)</code></pre>
+                    </section>
+
+                    <section id="authentication">
+                        <h2>Authentication</h2>
+                        <p>All three systems use <strong>Azure AD / Microsoft Entra ID</strong>, but require different scopes:</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>System</th>
+                                    <th>Auth Scope</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Microsoft Graph</td><td><code>https://graph.microsoft.com/.default</code></td></tr>
+                                <tr><td>Business Central</td><td><code>https://api.businesscentral.dynamics.com/.default</code></td></tr>
+                                <tr><td>Dynamics 365</td><td><code>https://{org}.crm.dynamics.com/.default</code></td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Multi-API Authentication</h3>
+                        <pre><code>from azure.identity import ClientSecretCredential
+
+# Single credential, multiple scopes
+credential = ClientSecretCredential(
+    tenant_id="your-tenant-id",
+    client_id="your-client-id",
+    client_secret="your-client-secret"
+)
+
+# Get tokens for each service
+graph_token = credential.get_token("https://graph.microsoft.com/.default")
+bc_token = credential.get_token("https://api.businesscentral.dynamics.com/.default")
+d365_token = credential.get_token("https://{org}.crm.dynamics.com/.default")</code></pre>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete guide with Power Automate examples:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/business-central-dynamics-graph-integration.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/" target="_blank" class="btn btn-secondary">BC API Docs &rarr;</a>
+                    </div>
+                </article>
             </div>
         </div>
     </main>
