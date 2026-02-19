@@ -38,7 +38,15 @@ How BC, D365, and Graph APIs relate to each other.
 - Virtual Tables for BC integration
 - Step-by-step setup guide
 
-### 4. [Integrated Experiences Guide](./integrated-experiences-m365-bc-dynamics.md)
+### 4. [Microsoft Fabric Explained](./microsoft-fabric-explained.md)
+**Analytics layer** - When and how to use Fabric.
+- Operational vs Analytical data
+- OneLake, Lakehouse, Data Warehouse
+- ML and Data Science capabilities
+- When you need Fabric vs when you don't
+- Cost comparison and implementation phases
+
+### 5. [Integrated Experiences Guide](./integrated-experiences-m365-bc-dynamics.md)
 **Practical solutions** - Real-world use cases with implementations.
 - 360° Customer View
 - Quote-to-Cash Process
@@ -49,26 +57,44 @@ How BC, D365, and Graph APIs relate to each other.
 ## Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      USER EXPERIENCE                            │
-│  Dynamics 365 │ Power Apps │ Teams │ Copilot │ Power BI        │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │
-                                ▼
-┌───────────────────────────────────────────────────────────────┐
-│                        DATAVERSE                               │
-│  Native Tables: Account, Contact, Opportunity, Lead, Case      │
-│  Virtual Tables: bc_customers, bc_invoices, bc_payments        │
-│  Custom Tables: Your business-specific data                    │
-└───────────────────────────────┬───────────────────────────────┘
-                                │
-        ┌───────────────────────┼───────────────────────┐
-        ▼                       ▼                       ▼
-┌───────────────┐      ┌───────────────┐      ┌───────────────┐
-│ Business      │      │ Microsoft     │      │ Fabric        │
-│ Central       │      │ Graph         │      │ (Analytics)   │
-│ (Finance)     │      │ (M365)        │      │               │
-└───────────────┘      └───────────────┘      └───────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      COMPLETE MICROSOFT STACK                           │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  EXPERIENCE LAYER                                                       │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐          │
+│  │ D365    │ │ Power   │ │ Teams   │ │ Power   │ │ Copilot │          │
+│  │ Apps    │ │ Apps    │ │         │ │ BI      │ │         │          │
+│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘          │
+│       │          │          │          │          │                    │
+│  OPERATIONAL     │     COMMUNICATION   │     ANALYTICAL                │
+│       │          │          │          │          │                    │
+│       ▼          ▼          ▼          │          │                    │
+│  ┌──────────────────────┐ ┌─────┐     │          │                    │
+│  │      DATAVERSE       │ │Graph│     │          │                    │
+│  │ • D365 native tables │ │ API │     │          │                    │
+│  │ • BC virtual tables  │ └─────┘     │          │                    │
+│  │ • Custom tables      │             │          │                    │
+│  └──────────┬───────────┘             │          │                    │
+│             │                         │          │                    │
+│             │    Sync to Fabric       │          ▼                    │
+│             │                         │    ┌───────────┐              │
+│             └─────────────────────────┼───►│  FABRIC   │              │
+│                                       │    │ • OneLake │              │
+│  ┌──────────────────────┐            │    │ • ML      │              │
+│  │   BUSINESS CENTRAL   │────────────┼───►│ • History │              │
+│  │   (Own database)     │            │    └───────────┘              │
+│  └──────────────────────┘            │          │                    │
+│                                       └──────────┘                    │
+│                                                                         │
+│  SUMMARY:                                                               │
+│  • Graph     = M365 data (emails, calendar, files)                     │
+│  • Dataverse = Operational data (run the business)                     │
+│  • BC        = Finance data (connects via Virtual Tables)              │
+│  • Fabric    = Analytics data (analyze the business, ML, history)      │
+│  • Copilot   = Works with ALL of them via natural language             │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Key Technologies
@@ -79,7 +105,7 @@ How BC, D365, and Graph APIs relate to each other.
 | **Business Central** | ERP - Finance, inventory, orders | [Integration Guide](./business-central-dynamics-graph-integration.md) |
 | **Dynamics 365** | CRM - Sales, service, marketing | [Integration Guide](./business-central-dynamics-graph-integration.md) |
 | **Dataverse** | Unified data platform (D365 is built on this) | [Explained](./dataverse-explained.md) |
-| **Fabric** | Analytics, big data, ML | [Use Cases](./integrated-experiences-m365-bc-dynamics.md) |
+| **Fabric** | Analytics, big data, ML | [Explained](./microsoft-fabric-explained.md) |
 | **Copilot** | AI-powered natural language queries | [Use Cases](./integrated-experiences-m365-bc-dynamics.md) |
 
 ## Quick Start
@@ -105,7 +131,8 @@ How BC, D365, and Graph APIs relate to each other.
 1. **[Microsoft Graph API Guide](./microsoft-graph-api-guide.md)** - Understand the M365 API
 2. **[Dataverse Explained](./dataverse-explained.md)** - Understand the central platform
 3. **[BC & D365 Integration](./business-central-dynamics-graph-integration.md)** - Understand the APIs
-4. **[Integrated Experiences](./integrated-experiences-m365-bc-dynamics.md)** - Build solutions
+4. **[Microsoft Fabric Explained](./microsoft-fabric-explained.md)** - Understand the analytics layer
+5. **[Integrated Experiences](./integrated-experiences-m365-bc-dynamics.md)** - Build solutions
 
 ## Implementation Phases
 
