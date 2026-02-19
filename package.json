@@ -1,0 +1,25 @@
+{
+  "name": "vibe-cast",
+  "version": "1.0.0",
+  "description": "Microsoft Graph Explorer - Connect and explore Microsoft 365 data via OAuth",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:23070/git/mondweep/vibe-cast"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@azure/msal-node": "^5.0.4",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "isomorphic-fetch": "^3.0.0"
+  }
+}
