@@ -86,6 +86,15 @@ How BC, D365, and Graph APIs relate to each other.
 - Building multi-agent orchestration with Azure
 - Comparison: Claude Flow V3 vs Microsoft options
 
+### 10. [Copilot Deep Dive](./copilot-microsoft-com-deep-dive.md)
+**Maximizing value** - Understanding what copilot.microsoft.com can and cannot do.
+- Free vs Copilot Pro vs M365 Copilot comparison
+- Why web Copilot can't match Claude Code
+- GitHub Copilot CLI for terminal-based development
+- VS Code Agent Mode with MCP support
+- Programmatic access options and limitations
+- Cost-benefit analysis and recommendations
+
 ## Architecture Overview
 
 ```
@@ -144,6 +153,7 @@ How BC, D365, and Graph APIs relate to each other.
 | **Microsoft Skills** | AI coding agent knowledge files | [Evaluation](./microsoft-skills-evaluation.md) |
 | **Skillsmith MCP** | Skill discovery for AI agents | [Guide](./skillsmith-mcp-guide.md) |
 | **Copilot + MCP** | Agentic engineering with Microsoft | [Guide](./copilot-mcp-agentic-guide.md) |
+| **Copilot Deep Dive** | Maximize value from copilot.microsoft.com | [Guide](./copilot-microsoft-com-deep-dive.md) |
 
 ## Quick Start
 
@@ -174,6 +184,7 @@ How BC, D365, and Graph APIs relate to each other.
 7. **[Microsoft Skills Evaluation](./microsoft-skills-evaluation.md)** - Evaluate AI coding skills
 8. **[Skillsmith MCP Guide](./skillsmith-mcp-guide.md)** - Find and create skills for AI agents
 9. **[Copilot MCP Agentic Guide](./copilot-mcp-agentic-guide.md)** - Agentic engineering with Microsoft Copilot
+10. **[Copilot Deep Dive](./copilot-microsoft-com-deep-dive.md)** - Maximize value from copilot.microsoft.com
 
 ## Implementation Phases
 

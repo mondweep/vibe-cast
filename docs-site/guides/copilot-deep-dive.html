@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot Deep Dive | Microsoft Integration Guide</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/guide-page.css">
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">&#9670;</span>
+                <span class="logo-text">Microsoft Integration Guide</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html#home">Home</a>
+                <a href="../index.html#technologies">Technologies</a>
+                <a href="../index.html#patterns">Patterns</a>
+                <a href="../index.html#guides" class="active">Guides</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="guide-content">
+        <div class="guide-header">
+            <div class="container">
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>Microsoft Copilot Deep Dive</h1>
+                <p class="guide-intro">Maximizing value from copilot.microsoft.com for coding, MCP integration, and programmatic access</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#truth">The Hard Truth</a></li>
+                        <li><a href="#capabilities">What It Can Do</a></li>
+                        <li><a href="#alternatives">Better Alternatives</a></li>
+                        <li><a href="#github-cli">GitHub Copilot CLI</a></li>
+                        <li><a href="#agent-mode">VS Code Agent Mode</a></li>
+                        <li><a href="#programmatic">Programmatic Access</a></li>
+                        <li><a href="#strategy">Best Strategy</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="truth">
+                        <h2>The Hard Truth About copilot.microsoft.com</h2>
+
+                        <div class="warning-box">
+                            <strong>Key Finding:</strong> copilot.microsoft.com (the web chat interface) is fundamentally NOT designed for coding or integration tasks. It's a consumer chat interface for general-purpose AI assistance.
+                        </div>
+
+                        <p>If you're looking to match Claude Code's capabilities with Microsoft tools, <strong>you need to look elsewhere in the Microsoft ecosystem</strong>.</p>
+
+                        <h3>What copilot.microsoft.com Actually Is</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>What It CAN Do</th>
+                                    <th>What It CANNOT Do</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Answer questions</td><td>Execute code</td></tr>
+                                <tr><td>Analyze uploaded documents</td><td>Access your file system</td></tr>
+                                <tr><td>Generate text suggestions</td><td>Run terminal commands</td></tr>
+                                <tr><td>Create images (limited)</td><td>Edit files directly</td></tr>
+                                <tr><td>Web-grounded research</td><td>Connect to MCP servers</td></tr>
+                                <tr><td>Think through problems</td><td>Maintain persistent state</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="capabilities">
+                        <h2>Tier Comparison</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Free</th>
+                                    <th>Copilot Pro ($20/mo)</th>
+                                    <th>M365 Copilot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Daily Messages</td><td>Limited</td><td>Higher limits</td><td>Highest</td></tr>
+                                <tr><td>Model Access</td><td>GPT-4o</td><td>Priority GPT-4o/Turbo</td><td>Newest models</td></tr>
+                                <tr><td>Image Generation</td><td>~15/day</td><td>100+/day</td><td>Unlimited</td></tr>
+                                <tr><td>Office Integration</td><td>No</td><td>No</td><td>Yes</td></tr>
+                                <tr><td><strong>Code Execution</strong></td><td><strong>No</strong></td><td><strong>No</strong></td><td><strong>No</strong></td></tr>
+                                <tr><td><strong>Terminal Access</strong></td><td><strong>No</strong></td><td><strong>No</strong></td><td><strong>No</strong></td></tr>
+                                <tr><td><strong>MCP Support</strong></td><td><strong>No</strong></td><td><strong>No</strong></td><td><strong>No</strong></td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="highlight-box">
+                            <strong>Bottom Line:</strong> Paying for Copilot Pro does NOT unlock coding or integration capabilities on copilot.microsoft.com.
+                        </div>
+                    </section>
+
+                    <section id="alternatives">
+                        <h2>Microsoft Tools That CAN Match Claude Code</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tool</th>
+                                    <th>Capability</th>
+                                    <th>MCP</th>
+                                    <th>Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>GitHub Copilot CLI</strong></td>
+                                    <td>Terminal agent, file ops, commands</td>
+                                    <td>Coming</td>
+                                    <td>$10-19/mo</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>VS Code Agent Mode</strong></td>
+                                    <td>Full IDE agent, multi-file edits</td>
+                                    <td>&#10004;</td>
+                                    <td>$10-19/mo</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Copilot Studio</strong></td>
+                                    <td>Custom agents, M365 integration</td>
+                                    <td>&#10004; GA</td>
+                                    <td>Power Platform</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Azure AI Shell</strong></td>
+                                    <td>Azure CLI suggestions</td>
+                                    <td>&#10008;</td>
+                                    <td>Azure sub</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="github-cli">
+                        <h2>GitHub Copilot CLI (Best Terminal Option)</h2>
+                        <p>This is your <strong>closest equivalent to Claude Code</strong> for terminal-based development.</p>
+
+                        <h3>Installation</h3>
+                        <pre><code># Install GitHub Copilot CLI
+npm install -g @github/copilot
+
+# Or via gh extension
+gh extension install github/gh-copilot
+
+# Authenticate (uses your GitHub Copilot subscription)
+gh auth login</code></pre>
+
+                        <h3>Capabilities</h3>
+                        <ul>
+                            <li>Read, write, and execute code</li>
+                            <li>Create and modify files</li>
+                            <li>Multi-step workflow automation</li>
+                            <li>PR creation and management</li>
+                            <li>Terminal command execution</li>
+                            <li>GitHub integration (issues, PRs, repos)</li>
+                        </ul>
+
+                        <h3>Usage Examples</h3>
+                        <pre><code># Explain a command
+gh copilot explain "git rebase -i HEAD~5"
+
+# Suggest a command
+gh copilot suggest "find all TypeScript files modified in the last week"
+
+# Execute with agent mode (2026 feature)
+gh copilot agent "Create a REST API with authentication"</code></pre>
+
+                        <h3>2026 Enhancements</h3>
+                        <ul>
+                            <li>4 built-in autonomous agents (Explore, Task, Plan, Code-review)</li>
+                            <li>GPT-4.1 and GPT-4o mini model support</li>
+                            <li>Parallel execution capabilities</li>
+                            <li>Full agentic workflow support</li>
+                        </ul>
+                    </section>
+
+                    <section id="agent-mode">
+                        <h2>GitHub Copilot in VS Code (Agent Mode)</h2>
+                        <p>The <strong>most powerful option</strong> for IDE-based development with full MCP support.</p>
+
+                        <h3>Setup</h3>
+                        <ol>
+                            <li>Install VS Code 1.99+</li>
+                            <li>Install GitHub Copilot extension</li>
+                            <li>Enable Agent Mode in Copilot Chat</li>
+                        </ol>
+
+                        <h3>Agent Mode Workflow</h3>
+                        <pre><code>1. Open Copilot Chat (Ctrl+Shift+I)
+2. Select "Agent" from mode dropdown
+3. Give high-level task: "Refactor auth module and add tests"
+4. Agent autonomously:
+   - Creates/edits files
+   - Runs terminal commands
+   - Installs dependencies
+   - Writes and executes tests
+   - Fixes errors automatically</code></pre>
+
+                        <h3>MCP Configuration</h3>
+                        <p>Create <code>.vscode/mcp.json</code>:</p>
+                        <pre><code>{
+  "servers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_TOKEN}"
+      }
+    },
+    "microsoft-graph": {
+      "command": "npx",
+      "args": ["-y", "mcp-server-microsoft-graph"],
+      "env": {
+        "AZURE_CLIENT_ID": "${env:AZURE_CLIENT_ID}",
+        "AZURE_TENANT_ID": "${env:AZURE_TENANT_ID}"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/filesystem-mcp-server", "/path/to/project"]
+    }
+  }
+}</code></pre>
+                    </section>
+
+                    <section id="programmatic">
+                        <h2>Programmatic Access Options</h2>
+
+                        <h3>What's Available</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Access To</th>
+                                    <th>Capability</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>GitHub Copilot CLI</td><td>Copilot coding</td><td>Full terminal agent</td></tr>
+                                <tr><td>Azure AI Shell</td><td>Azure Copilot</td><td>Azure command suggestions</td></tr>
+                                <tr><td>Work IQ CLI</td><td>M365 Copilot</td><td>M365 data access</td></tr>
+                                <tr><td>Copilot Studio API</td><td>Custom agents</td><td>Agent invocation</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="warning-box">
+                            <strong>Critical Limitation:</strong> There is NO REST API for copilot.microsoft.com chat. The web interface has no programmatic access.
+                        </div>
+
+                        <h3>Microsoft Graph Copilot APIs (NOT What You Think)</h3>
+                        <p>These APIs are for <strong>enterprise data access</strong>, not chat:</p>
+                        <ul>
+                            <li>Interactions Export API (audit/compliance)</li>
+                            <li>Meeting Insights API (Teams summaries)</li>
+                            <li>Retrieval API (SharePoint search grounding)</li>
+                        </ul>
+
+                        <pre><code># This is NOT programmatic chat access
+# This is enterprise data extraction
+
+import requests
+
+# Get meeting insights (NOT chat with Copilot)
+response = requests.get(
+    "https://graph.microsoft.com/v1.0/copilot/meetings/{meeting-id}/insights",
+    headers={"Authorization": f"Bearer {token}"}
+)</code></pre>
+                    </section>
+
+                    <section id="strategy">
+                        <h2>Recommended Strategy</h2>
+
+                        <h3>Scenario 1: You Want Claude Code Capabilities</h3>
+                        <div class="highlight-box">
+                            <strong>Best Choice:</strong> GitHub Copilot CLI + VS Code Agent Mode
+                            <pre style="margin-top: 10px;">Investment:
+- GitHub Copilot subscription: $10-19/month
+- VS Code: Free
+
+You Get:
+✓ Terminal-based development (CLI)
+✓ IDE-based development (VS Code Agent Mode)
+✓ MCP server support
+✓ File editing and creation
+✓ Command execution
+✓ Multi-step automation
+✓ GitHub integration</pre>
+                        </div>
+
+                        <h3>Scenario 2: You Need Microsoft 365 Integration</h3>
+                        <div class="highlight-box">
+                            <strong>Best Choice:</strong> Copilot Studio + MCP
+                            <pre style="margin-top: 10px;">Investment:
+- Power Platform license
+
+You Get:
+✓ Custom agents with MCP
+✓ Microsoft 365 data access
+✓ SharePoint, Teams, Outlook integration
+✓ Enterprise deployment
+✗ Not ideal for general coding</pre>
+                        </div>
+
+                        <h3>Scenario 3: Maximum Value on Minimal Budget</h3>
+                        <div class="highlight-box">
+                            <strong>Best Choice:</strong> Free VS Code + GitHub Copilot Individual ($10/mo)
+                            <pre style="margin-top: 10px;">You Get:
+✓ Code completion
+✓ Chat assistance
+✓ Agent Mode (agentic capabilities)
+✓ MCP support (coming)
+✓ Terminal execution</pre>
+                        </div>
+
+                        <h3>Cost-Benefit Summary</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Budget</th>
+                                    <th>Best Option</th>
+                                    <th>Capabilities</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>$0/month</td><td>copilot.microsoft.com free</td><td>Chat only, research</td></tr>
+                                <tr><td>$10/month</td><td>GitHub Copilot Individual</td><td>CLI + VS Code + Chat + Agent Mode</td></tr>
+                                <tr><td>$20/month</td><td>GitHub Copilot Business</td><td>Full agent mode, MCP, enterprise</td></tr>
+                                <tr><td>Enterprise</td><td>Full stack</td><td>GitHub + M365 + Copilot Studio</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="summary">
+                        <h2>Summary: The Right Tool for the Job</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Need</th>
+                                    <th>Use This</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Terminal-based coding</td><td>GitHub Copilot CLI</td></tr>
+                                <tr><td>IDE-based coding</td><td>VS Code + GitHub Copilot Agent Mode</td></tr>
+                                <tr><td>Custom agents with MCP</td><td>Copilot Studio</td></tr>
+                                <tr><td>Office productivity</td><td>Microsoft 365 Copilot</td></tr>
+                                <tr><td>Quick questions</td><td>copilot.microsoft.com (it's fine for this)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="highlight-box">
+                            <strong>The Bottom Line:</strong> Don't try to stretch copilot.microsoft.com into something it's not. The Microsoft ecosystem HAS the capabilities you need—they're just not in the web chat interface.
+                        </div>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete guide with detailed setup instructions:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/copilot-microsoft-com-deep-dive.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://github.com/features/copilot/cli" target="_blank" class="btn btn-secondary">GitHub Copilot CLI &rarr;</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">&#9670;</span>
+                    <span>Microsoft Integration Guide</span>
+                </div>
+                <div class="footer-credit">
+                    <p>Created by <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Mondweep Chakravorty</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
