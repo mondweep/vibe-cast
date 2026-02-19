@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot MCP Agentic Guide | Microsoft Integration Guide</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/guide-page.css">
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">&#9670;</span>
+                <span class="logo-text">Microsoft Integration Guide</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html#home">Home</a>
+                <a href="../index.html#technologies">Technologies</a>
+                <a href="../index.html#patterns">Patterns</a>
+                <a href="../index.html#guides" class="active">Guides</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="guide-content">
+        <div class="guide-header">
+            <div class="container">
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>Copilot + MCP Agentic Engineering</h1>
+                <p class="guide-intro">Enable Claude Flow-like agentic practices for users limited to Microsoft Copilot</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#overview">MCP Support Map</a></li>
+                        <li><a href="#github-copilot">GitHub Copilot + MCP</a></li>
+                        <li><a href="#copilot-studio">Copilot Studio + MCP</a></li>
+                        <li><a href="#m365">M365 Declarative Agents</a></li>
+                        <li><a href="#comparison">Comparison</a></li>
+                        <li><a href="#recommendations">Recommendations</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="overview">
+                        <h2>Microsoft Copilot MCP Support Map</h2>
+                        <p>Microsoft has <strong>multiple Copilot products</strong> with varying MCP capabilities:</p>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>MCP Support</th>
+                                    <th>Best For</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>GitHub Copilot</strong> (VS Code)</td>
+                                    <td>Full - Local + Remote MCP</td>
+                                    <td>Coding, file editing, terminal</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Copilot Studio</strong></td>
+                                    <td>GA - Remote MCP only</td>
+                                    <td>Business agents, workflows</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>M365 Copilot</strong> (Declarative)</td>
+                                    <td>Preview - Remote MCP</td>
+                                    <td>M365 extensions</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>copilot.microsoft.com</strong></td>
+                                    <td>None</td>
+                                    <td>General Q&A only</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="warning-box">
+                            <strong>Key Insight:</strong> If you only have access to copilot.microsoft.com (web chat), you have NO MCP or agentic capabilities. You need GitHub Copilot, Copilot Studio, or M365 Copilot licenses.
+                        </div>
+                    </section>
+
+                    <section id="github-copilot">
+                        <h2>Option 1: GitHub Copilot + MCP (Best for Coding)</h2>
+                        <p>This is the <strong>closest to Claude Code + Claude Flow</strong> experience.</p>
+
+                        <h3>Capabilities</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>GitHub Copilot</th>
+                                    <th>Claude Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>File editing</td><td>&#10004; Direct in editor</td><td>&#10004; Direct</td></tr>
+                                <tr><td>Terminal execution</td><td>&#10004; With confirmation</td><td>&#10004; Full</td></tr>
+                                <tr><td>MCP servers</td><td>&#10004; Local + remote</td><td>&#10004; Local + remote</td></tr>
+                                <tr><td>Sandbox environment</td><td>&#10004; GitHub Actions</td><td>&#10004; Docker/local</td></tr>
+                                <tr><td>Multi-agent swarms</td><td>&#10008; Single agent</td><td>&#10004; 60+ agents</td></tr>
+                                <tr><td>Self-healing</td><td>&#10004; Auto-fix errors</td><td>&#10004; Built-in</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Setup MCP in VS Code</h3>
+                        <p>Create <code>.vscode/mcp.json</code>:</p>
+                        <pre><code>{
+  "servers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_TOKEN}"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/filesystem-mcp-server", "/path/to/project"]
+    }
+  }
+}</code></pre>
+
+                        <h3>Use Agent Mode</h3>
+                        <ol class="steps-list">
+                            <li>Open VS Code 1.99+</li>
+                            <li>Open Copilot Chat (Ctrl+Shift+I)</li>
+                            <li>Select "Agent" from mode dropdown</li>
+                            <li>Give high-level task: "Refactor auth module and run tests"</li>
+                        </ol>
+
+                        <div class="highlight-box">
+                            <strong>Agent Mode will:</strong> Create files, install dependencies, write code, run tests, and fix errors automatically.
+                        </div>
+                    </section>
+
+                    <section id="copilot-studio">
+                        <h2>Option 2: Copilot Studio + MCP</h2>
+                        <p>Best for <strong>building custom business agents</strong> that connect to external systems.</p>
+
+                        <h3>What You Can Do</h3>
+                        <ul>
+                            <li>Connect to <strong>remote MCP servers</strong> (cloud-hosted)</li>
+                            <li>Build agents with <strong>custom tools</strong></li>
+                            <li>Access <strong>Microsoft Graph, Dataverse, SharePoint</strong></li>
+                            <li>Deploy to <strong>Teams, M365, web</strong></li>
+                        </ul>
+
+                        <h3>Limitations for Coding</h3>
+                        <div class="warning-box">
+                            <ul style="margin: 0;">
+                                <li><strong>No local file system access</strong> (unlike Claude Code)</li>
+                                <li><strong>No terminal execution</strong> (unlike Agent Mode)</li>
+                                <li><strong>Primarily for business workflows</strong>, not coding</li>
+                            </ul>
+                        </div>
+
+                        <h3>Setup</h3>
+                        <ol class="steps-list">
+                            <li>Go to <a href="https://copilotstudio.microsoft.com" target="_blank">Copilot Studio</a></li>
+                            <li>Create new agent &rarr; Tools &rarr; Add Tool &rarr; MCP</li>
+                            <li>Provide your MCP server URL (must be cloud-hosted)</li>
+                        </ol>
+                    </section>
+
+                    <section id="m365">
+                        <h2>Option 3: M365 Declarative Agents + MCP</h2>
+                        <p>For <strong>extending Microsoft 365 Copilot</strong> with custom capabilities.</p>
+
+                        <h3>What You Can Do</h3>
+                        <ul>
+                            <li>Build agents inside <strong>M365 Copilot Chat</strong></li>
+                            <li>Connect to MCP servers for <strong>custom tools</strong></li>
+                            <li>Access <strong>SharePoint, Graph, M365 data</strong></li>
+                            <li>Display <strong>Adaptive Cards</strong> for rich UI</li>
+                        </ul>
+
+                        <h3>Setup with M365 Agents Toolkit</h3>
+                        <ol class="steps-list">
+                            <li>Install <a href="https://marketplace.visualstudio.com/items?itemName=TeamsDevApp.ms-teams-vscode-extension" target="_blank">M365 Agents Toolkit</a> in VS Code</li>
+                            <li>Create new app &rarr; Declarative Agent</li>
+                            <li>Add MCP plugin to <code>declarativeAgent.json</code></li>
+                            <li>Configure <code>ai-plugin.json</code> with MCP server URL</li>
+                        </ol>
+                    </section>
+
+                    <section id="comparison">
+                        <h2>Comparison: Claude Flow V3 vs Microsoft Options</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Capability</th>
+                                    <th>Claude Flow V3</th>
+                                    <th>GitHub Copilot</th>
+                                    <th>Copilot Studio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Swarm orchestration</td>
+                                    <td>&#10004; 60+ agents</td>
+                                    <td>&#10008; Single</td>
+                                    <td>&#10008; Single</td>
+                                </tr>
+                                <tr>
+                                    <td>Local file editing</td>
+                                    <td>&#10004; Full</td>
+                                    <td>&#10004; Full</td>
+                                    <td>&#10008; No</td>
+                                </tr>
+                                <tr>
+                                    <td>Terminal execution</td>
+                                    <td>&#10004; Full</td>
+                                    <td>&#10004; Confirm</td>
+                                    <td>&#10008; No</td>
+                                </tr>
+                                <tr>
+                                    <td>MCP support</td>
+                                    <td>&#10004; Local+remote</td>
+                                    <td>&#10004; Local+remote</td>
+                                    <td>&#10004; Remote</td>
+                                </tr>
+                                <tr>
+                                    <td>Sandbox environment</td>
+                                    <td>&#10004; Docker</td>
+                                    <td>&#10004; GH Actions</td>
+                                    <td>&#10008; Cloud</td>
+                                </tr>
+                                <tr>
+                                    <td>Learning/optimization</td>
+                                    <td>&#10004; RuVector</td>
+                                    <td>&#10008; No</td>
+                                    <td>&#10008; No</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="recommendations">
+                        <h2>Recommendations by Use Case</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Your Situation</th>
+                                    <th>Best Option</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Need Claude Code-like experience</td>
+                                    <td><strong>GitHub Copilot Agent Mode</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Building business agents</td>
+                                    <td><strong>Copilot Studio + MCP</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Extending M365</td>
+                                    <td><strong>Declarative Agents + MCP</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Need multi-agent swarms</td>
+                                    <td><strong>Build custom</strong> with Azure + MCP</td>
+                                </tr>
+                                <tr>
+                                    <td>Only copilot.microsoft.com</td>
+                                    <td><strong>Limited</strong> - no agentic capabilities</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="highlight-box">
+                            <strong>For true Claude Flow-like experience:</strong> Combine GitHub Copilot Agent Mode + Custom MCP servers + Azure Durable Functions (for orchestration) + GitHub Actions (for sandbox execution).
+                        </div>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete guide with architecture diagrams and code examples:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/copilot-mcp-agentic-guide.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://github.com/ruvnet/claude-flow" target="_blank" class="btn btn-secondary">Claude Flow V3 &rarr;</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">&#9670;</span>
+                    <span>Microsoft Integration Guide</span>
+                </div>
+                <div class="footer-credit">
+                    <p>Created by <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Mondweep Chakravorty</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

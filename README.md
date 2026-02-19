@@ -78,6 +78,14 @@ How BC, D365, and Graph APIs relate to each other.
 - Available tools: search, recommend, install_skill, validate
 - Practical examples for Microsoft integration projects
 
+### 9. [Copilot MCP Agentic Guide](./copilot-mcp-agentic-guide.md)
+**Agentic engineering** - Enabling Claude Flow-like practices with Microsoft Copilot.
+- MCP support across Microsoft Copilot products
+- GitHub Copilot Agent Mode setup
+- Copilot Studio and M365 Declarative Agents
+- Building multi-agent orchestration with Azure
+- Comparison: Claude Flow V3 vs Microsoft options
+
 ## Architecture Overview
 
 ```
@@ -135,6 +143,7 @@ How BC, D365, and Graph APIs relate to each other.
 | **Copilot** | AI-powered natural language queries | [Use Cases](./integrated-experiences-m365-bc-dynamics.md) |
 | **Microsoft Skills** | AI coding agent knowledge files | [Evaluation](./microsoft-skills-evaluation.md) |
 | **Skillsmith MCP** | Skill discovery for AI agents | [Guide](./skillsmith-mcp-guide.md) |
+| **Copilot + MCP** | Agentic engineering with Microsoft | [Guide](./copilot-mcp-agentic-guide.md) |
 
 ## Quick Start
 
@@ -164,6 +173,7 @@ How BC, D365, and Graph APIs relate to each other.
 6. **[Integrated Experiences](./integrated-experiences-m365-bc-dynamics.md)** - Build solutions
 7. **[Microsoft Skills Evaluation](./microsoft-skills-evaluation.md)** - Evaluate AI coding skills
 8. **[Skillsmith MCP Guide](./skillsmith-mcp-guide.md)** - Find and create skills for AI agents
+9. **[Copilot MCP Agentic Guide](./copilot-mcp-agentic-guide.md)** - Agentic engineering with Microsoft Copilot
 
 ## Implementation Phases
 
