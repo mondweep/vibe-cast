@@ -1,6 +1,6 @@
 # Microsoft Integration Exploration
 
-> Exploring Microsoft Graph, Business Central, Dynamics 365, Dataverse, Fabric, and Copilot
+> Exploring Microsoft Graph, Business Central, Dynamics 365, Dataverse, Fabric, SharePoint, and Copilot
 
 ## Overview
 
@@ -12,8 +12,10 @@ This repository documents the exploration of Microsoft's integration ecosystem, 
 - "I closed a deal in Dynamics but can't see if the invoice was paid in Business Central"
 - "Customer credit limits in BC don't reflect in Dynamics - we keep selling to customers on hold"
 - "I have to log into two systems to get a complete customer picture"
+- "I can't find the document I need in SharePoint"
+- "Everyone stores and tags things differently"
 
-**Root Cause:** Business Central (Finance/ERP) and Dynamics 365 (Sales/CRM) are separate systems with separate databases.
+**Root Cause:** Business Central (Finance/ERP), Dynamics 365 (Sales/CRM), and SharePoint (Documents) are separate systems that need to work together.
 
 ## Documentation
 
@@ -46,7 +48,15 @@ How BC, D365, and Graph APIs relate to each other.
 - When you need Fabric vs when you don't
 - Cost comparison and implementation phases
 
-### 5. [Integrated Experiences Guide](./integrated-experiences-m365-bc-dynamics.md)
+### 5. [SharePoint Optimization Guide](./sharepoint-optimization-guide.md)
+**Content management** - Catalog, discover, and manage documents across departments.
+- Information architecture and taxonomy
+- Microsoft Syntex for AI-powered classification
+- Microsoft Search configuration
+- Microsoft Purview for governance
+- Integration with D365 and Business Central
+
+### 6. [Integrated Experiences Guide](./integrated-experiences-m365-bc-dynamics.md)
 **Practical solutions** - Real-world use cases with implementations.
 - 360° Customer View
 - Quote-to-Cash Process
@@ -88,11 +98,12 @@ How BC, D365, and Graph APIs relate to each other.
 │                                       └──────────┘                    │
 │                                                                         │
 │  SUMMARY:                                                               │
-│  • Graph     = M365 data (emails, calendar, files)                     │
-│  • Dataverse = Operational data (run the business)                     │
-│  • BC        = Finance data (connects via Virtual Tables)              │
-│  • Fabric    = Analytics data (analyze the business, ML, history)      │
-│  • Copilot   = Works with ALL of them via natural language             │
+│  • Graph      = M365 data (emails, calendar, files, SharePoint)        │
+│  • Dataverse  = Operational data (run the business)                    │
+│  • BC         = Finance data (connects via Virtual Tables)             │
+│  • SharePoint = Documents (accessed via Graph, enhanced by Syntex)     │
+│  • Fabric     = Analytics data (analyze the business, ML, history)     │
+│  • Copilot    = Works with ALL of them via natural language            │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -106,6 +117,7 @@ How BC, D365, and Graph APIs relate to each other.
 | **Dynamics 365** | CRM - Sales, service, marketing | [Integration Guide](./business-central-dynamics-graph-integration.md) |
 | **Dataverse** | Unified data platform (D365 is built on this) | [Explained](./dataverse-explained.md) |
 | **Fabric** | Analytics, big data, ML | [Explained](./microsoft-fabric-explained.md) |
+| **SharePoint** | Document management, content collaboration | [Optimization Guide](./sharepoint-optimization-guide.md) |
 | **Copilot** | AI-powered natural language queries | [Use Cases](./integrated-experiences-m365-bc-dynamics.md) |
 
 ## Quick Start
@@ -132,7 +144,8 @@ How BC, D365, and Graph APIs relate to each other.
 2. **[Dataverse Explained](./dataverse-explained.md)** - Understand the central platform
 3. **[BC & D365 Integration](./business-central-dynamics-graph-integration.md)** - Understand the APIs
 4. **[Microsoft Fabric Explained](./microsoft-fabric-explained.md)** - Understand the analytics layer
-5. **[Integrated Experiences](./integrated-experiences-m365-bc-dynamics.md)** - Build solutions
+5. **[SharePoint Optimization Guide](./sharepoint-optimization-guide.md)** - Manage content effectively
+6. **[Integrated Experiences](./integrated-experiences-m365-bc-dynamics.md)** - Build solutions
 
 ## Implementation Phases
 
@@ -162,11 +175,18 @@ How BC, D365, and Graph APIs relate to each other.
 - [Dataverse](https://learn.microsoft.com/en-us/power-apps/maker/data-platform/)
 - [Dynamics 365 Web API](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/overview)
 - [Microsoft Fabric](https://learn.microsoft.com/en-us/fabric/)
+- [SharePoint Online](https://learn.microsoft.com/en-us/sharepoint/)
+- [Microsoft Syntex](https://learn.microsoft.com/en-us/microsoft-365/syntex/)
+- [Microsoft Search](https://learn.microsoft.com/en-us/microsoftsearch/)
+- [Microsoft Purview](https://learn.microsoft.com/en-us/purview/)
 
 ### Tools
 - [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)
 - [Power Platform Admin Center](https://admin.powerplatform.microsoft.com)
 - [Azure Portal](https://portal.azure.com)
+- [SharePoint Admin Center](https://admin.microsoft.com/sharepoint)
+- [Microsoft Search Admin](https://admin.microsoft.com/Adminportal/Home#/MicrosoftSearch)
+- [Purview Compliance Portal](https://compliance.microsoft.com)
 
 ---
 
