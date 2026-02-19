@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Platform Guide | Microsoft Integration Guide</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/guide-page.css">
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">&#9670;</span>
+                <span class="logo-text">Microsoft Integration Guide</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html#home">Home</a>
+                <a href="../index.html#technologies">Technologies</a>
+                <a href="../index.html#patterns">Patterns</a>
+                <a href="../index.html#guides" class="active">Guides</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="guide-content">
+        <div class="guide-header">
+            <div class="container">
+                <a href="../index.html#guides" class="back-link">&larr; Back to Guides</a>
+                <h1>Power Platform: The Integration Layer</h1>
+                <p class="guide-intro">Understanding how Power Platform connects M365, D365, Business Central, and the entire Microsoft ecosystem</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="guide-body">
+                <aside class="guide-toc">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#overview">What is Power Platform?</a></li>
+                        <li><a href="#components">The Five Components</a></li>
+                        <li><a href="#architecture">Where It Fits</a></li>
+                        <li><a href="#connections">Connecting Systems</a></li>
+                        <li><a href="#automate-vs-logic">Automate vs Logic Apps</a></li>
+                        <li><a href="#licensing">Licensing Guide</a></li>
+                        <li><a href="#patterns">Common Patterns</a></li>
+                    </ul>
+                </aside>
+
+                <article class="guide-article">
+                    <section id="overview">
+                        <h2>What is Power Platform?</h2>
+                        <p><strong>Power Platform</strong> is Microsoft's unified low-code/no-code suite that serves as both the <strong>experience layer</strong> (building apps, dashboards, portals) and the <strong>integration layer</strong> (connecting systems, automating workflows).</p>
+
+                        <div class="highlight-box">
+                            <strong>Key Insight:</strong> Dataverse is NOT separate from Power Platform—it IS Power Platform's data foundation. And Dynamics 365 is built ON Dataverse.
+                        </div>
+                    </section>
+
+                    <section id="components">
+                        <h2>The Five Components</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Purpose</th>
+                                    <th>Typical Users</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>Power Apps</strong></td><td>Build custom applications without coding</td><td>Business analysts, citizen devs</td></tr>
+                                <tr><td><strong>Power Automate</strong></td><td>Workflow automation between systems</td><td>Business users, IT</td></tr>
+                                <tr><td><strong>Power BI</strong></td><td>Business intelligence and dashboards</td><td>Analysts, managers</td></tr>
+                                <tr><td><strong>Power Pages</strong></td><td>External-facing portals and websites</td><td>Web developers, IT</td></tr>
+                                <tr><td><strong>Copilot Studio</strong></td><td>Build custom AI agents and copilots</td><td>AI developers, business users</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Plus: Dataverse (The Data Foundation)</h3>
+                        <p>Dataverse provides:</p>
+                        <ul>
+                            <li>Standard tables (Account, Contact, etc.)</li>
+                            <li>D365 tables (Opportunity, Case, etc.)</li>
+                            <li>BC Virtual Tables (Customers, Invoices, etc.)</li>
+                            <li>Custom tables for your business data</li>
+                            <li>Built-in security, relationships, and business rules</li>
+                        </ul>
+                    </section>
+
+                    <section id="architecture">
+                        <h2>Where Power Platform Fits</h2>
+
+                        <div class="diagram-box" style="background: #f5f5f5; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 11px; overflow-x: auto;">
+<pre>┌─────────────────────────────────────────────────────────────────────────┐
+│                         EXPERIENCE LAYER                                │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐          │
+│  │ D365    │ │ Power   │ │ Teams   │ │ Power   │ │ Copilot │          │
+│  │ Apps    │ │ Apps    │ │         │ │ BI      │ │         │          │
+│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘          │
+├───────┴──────────┴──────────┴──────────┴──────────┴────────────────────┤
+│                    POWER PLATFORM (Integration Layer)                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  Power Automate (workflows) │ Copilot Studio │ AI Builder       │   │
+│  ├─────────────────────────────────────────────────────────────────┤   │
+│  │                    1,000+ CONNECTORS                             │   │
+│  │  M365 │ D365 │ BC │ SharePoint │ Azure │ SQL │ SAP │ Salesforce  │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                         DATAVERSE (Data Platform)                       │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  D365 Native Tables  │  BC Virtual Tables  │  Custom Tables      │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                         DATA SOURCES                                    │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
+│  │  Business   │  │  Microsoft  │  │  SharePoint │  │   Fabric    │   │
+│  │  Central    │  │    Graph    │  │             │  │  (Analytics)│   │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘</pre>
+                        </div>
+
+                        <h3>Key Relationships</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>System</th>
+                                    <th>Relationship to Power Platform</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Dynamics 365</td><td>Built ON Dataverse (which is part of Power Platform)</td></tr>
+                                <tr><td>Business Central</td><td>Connected via Virtual Tables and BC Connector</td></tr>
+                                <tr><td>Microsoft Graph</td><td>Accessed via connectors for M365 data</td></tr>
+                                <tr><td>SharePoint</td><td>Direct integration for lists and documents</td></tr>
+                                <tr><td>Fabric</td><td>Dataverse syncs to Fabric for analytics</td></tr>
+                                <tr><td>Copilot</td><td>Copilot Studio is part of Power Platform</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="connections">
+                        <h2>Connecting Power Platform to Your Stack</h2>
+
+                        <h3>Business Central Integration</h3>
+                        <p><strong>Option 1: BC Connector</strong> - Direct API access, real-time data</p>
+                        <p><strong>Option 2: Virtual Tables</strong> - BC data appears as Dataverse tables</p>
+
+                        <pre><code>// Power Automate: Create BC Sales Order
+{
+  "action": "BusinessCentral.CreateItem",
+  "inputs": {
+    "environment": "production",
+    "company": "CRONUS",
+    "entity": "salesOrders",
+    "body": {
+      "customerNumber": "{{bcCustomerNo}}",
+      "externalDocumentNumber": "{{d365QuoteNo}}",
+      "requestedDeliveryDate": "{{deliveryDate}}"
+    }
+  }
+}</code></pre>
+
+                        <h3>Microsoft Graph Integration</h3>
+                        <p>Via connectors: Outlook, Teams, SharePoint, OneDrive, Users</p>
+                        <p>Via HTTP connector for full Graph API access:</p>
+
+                        <pre><code>// Power Automate HTTP action to Graph
+{
+  "method": "GET",
+  "uri": "https://graph.microsoft.com/v1.0/me/messages",
+  "headers": {
+    "Authorization": "Bearer @{outputs('Get_Token')}"
+  },
+  "queries": {
+    "$filter": "from/emailAddress/address eq '@{variables('CustomerEmail')}'",
+    "$top": "10"
+  }
+}</code></pre>
+
+                        <h3>SharePoint Integration</h3>
+                        <ul>
+                            <li>SharePoint lists as primary data source in Power Apps</li>
+                            <li>Document library automation with Power Automate</li>
+                            <li>Intelligent local caching for offline capability</li>
+                        </ul>
+
+                        <h3>Fabric Integration</h3>
+                        <ul>
+                            <li>Dataverse syncs to Fabric Lakehouse</li>
+                            <li>Near real-time with Fast Fabric (&lt;15 min latency)</li>
+                            <li>Enables analytics across operational data</li>
+                        </ul>
+                    </section>
+
+                    <section id="automate-vs-logic">
+                        <h2>Power Automate vs Azure Logic Apps</h2>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Criteria</th>
+                                    <th>Power Automate</th>
+                                    <th>Azure Logic Apps</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Audience</td><td>Business users, citizen devs</td><td>Developers, IT pros</td></tr>
+                                <tr><td>Interface</td><td>Visual designer only</td><td>Visual + code (VS/VS Code)</td></tr>
+                                <tr><td>Best for</td><td>M365/D365 workflows</td><td>Enterprise B2B, Azure-heavy</td></tr>
+                                <tr><td>Connectors</td><td>1,000+ (business focus)</td><td>Azure ecosystem + enterprise</td></tr>
+                                <tr><td>Custom code</td><td>Limited (expressions)</td><td>Azure Functions integration</td></tr>
+                                <tr><td>Pricing</td><td>Per-user or per-flow</td><td>Per-execution (consumption)</td></tr>
+                                <tr><td>RPA</td><td>Desktop flows included</td><td>Not included</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="highlight-box">
+                            <strong>Decision Rule:</strong> Start with Power Automate. Move to Logic Apps if you need Azure-scale, complex custom logic, or millions of executions.
+                        </div>
+                    </section>
+
+                    <section id="licensing">
+                        <h2>Licensing Guide</h2>
+
+                        <h3>What's Included with M365</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Included?</th>
+                                    <th>Limitations</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Power Apps</td><td>Yes</td><td>Standard connectors only</td></tr>
+                                <tr><td>Power Automate</td><td>Yes</td><td>Standard connectors only</td></tr>
+                                <tr><td>Power BI</td><td>Limited</td><td>Consumer features only</td></tr>
+                                <tr><td>Copilot Studio</td><td>No</td><td>Separate license required</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Standard Connectors (Included)</h3>
+                        <ul>
+                            <li>SharePoint</li>
+                            <li>Outlook</li>
+                            <li>Teams</li>
+                            <li>OneDrive</li>
+                            <li>Excel Online</li>
+                        </ul>
+
+                        <h3>Premium Connectors (Require License)</h3>
+                        <div class="warning-box">
+                            <strong>Warning:</strong> Adding ONE premium connector means the ENTIRE solution needs premium licensing for all users.
+                        </div>
+                        <ul>
+                            <li>Dataverse</li>
+                            <li>Business Central</li>
+                            <li>SQL Server</li>
+                            <li>Azure services</li>
+                            <li>HTTP/Webhook</li>
+                            <li>Salesforce, SAP, etc.</li>
+                        </ul>
+
+                        <h3>License Costs (Approximate)</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>License</th>
+                                    <th>Cost</th>
+                                    <th>What You Get</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Power Apps per app</td><td>$5/user/month</td><td>1 app + Dataverse</td></tr>
+                                <tr><td>Power Apps per user</td><td>$20/user/month</td><td>Unlimited apps + Dataverse</td></tr>
+                                <tr><td>Power Automate per user</td><td>$15/user/month</td><td>Unlimited cloud flows</td></tr>
+                                <tr><td>Power Automate per flow</td><td>$100/flow/month</td><td>Unlimited users per flow</td></tr>
+                                <tr><td>Power BI Pro</td><td>$10/user/month</td><td>Full BI capabilities</td></tr>
+                                <tr><td>Copilot Studio</td><td>$200/month</td><td>25,000 messages</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="patterns">
+                        <h2>Common Patterns</h2>
+
+                        <h3>Pattern 1: 360° Customer View</h3>
+                        <p><strong>Problem:</strong> Sales in D365 can't see BC financial data.</p>
+                        <p><strong>Solution:</strong> Enable BC Virtual Tables, add BC fields to D365 Account form.</p>
+
+                        <h3>Pattern 2: Credit Alert System</h3>
+                        <p><strong>Problem:</strong> Sales creates deals for customers on credit hold.</p>
+                        <pre><code>Flow: Credit Status Sync (every 15 min)
+
+1. Get BC customers where blocked or balance > creditLimit
+2. For each: Find D365 Account, update bc_creditstatus
+3. If status changed to blocked:
+   - Teams: Send adaptive card alert
+   - Dataverse: Create review Task</code></pre>
+
+                        <h3>Pattern 3: Quote-to-Cash Automation</h3>
+                        <p><strong>Problem:</strong> Won quotes manually re-entered in BC.</p>
+                        <pre><code>Flow: Quote Won → BC Order
+
+Trigger: When Quote status = "Won"
+
+1. Get Quote details and lines
+2. Find/Create BC Customer
+3. Create BC Sales Order
+4. Create Order Lines (map products to items)
+5. Update D365 Quote with BC order number
+6. Notify via Teams and Email</code></pre>
+
+                        <h3>Pattern 4: Document Auto-Classification</h3>
+                        <p><strong>Problem:</strong> Users don't tag documents properly.</p>
+                        <pre><code>Flow: AI Document Classification
+
+Trigger: File created in SharePoint
+
+1. AI Builder: Extract text, classify type
+2. Parse: Customer name, date, value
+3. Find related Dataverse records
+4. Move to correct library, update metadata
+5. Create D365 Timeline activity</code></pre>
+                    </section>
+
+                    <section id="ai">
+                        <h2>Power Platform + AI (2025-2026)</h2>
+
+                        <h3>AI Builder Models</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Use Case</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Document Processing</td><td>Extract data from invoices, receipts</td></tr>
+                                <tr><td>Text Classification</td><td>Categorize support tickets</td></tr>
+                                <tr><td>Sentiment Analysis</td><td>Analyze customer feedback</td></tr>
+                                <tr><td>Object Detection</td><td>Identify products in images</td></tr>
+                                <tr><td>Prediction</td><td>Forecast outcomes</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Copilot Integration</h3>
+                        <ul>
+                            <li><strong>Power Apps Copilot:</strong> Describe app, AI builds it</li>
+                            <li><strong>Power Automate Copilot:</strong> Describe flow, AI creates it</li>
+                            <li><strong>Power BI Copilot:</strong> Natural language to DAX/visuals</li>
+                            <li><strong>Copilot Studio:</strong> Build custom AI agents</li>
+                        </ul>
+                    </section>
+
+                    <div class="guide-footer">
+                        <h3>Full Documentation</h3>
+                        <p>For the complete guide with more code examples:</p>
+                        <a href="https://github.com/mondweep/vibe-cast/blob/microsoft-graph-exploration/power-platform-guide.md" target="_blank" class="btn btn-primary">View on GitHub &rarr;</a>
+                        <a href="https://learn.microsoft.com/en-us/power-platform/" target="_blank" class="btn btn-secondary">Microsoft Power Platform Docs &rarr;</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">&#9670;</span>
+                    <span>Microsoft Integration Guide</span>
+                </div>
+                <div class="footer-credit">
+                    <p>Created by <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Mondweep Chakravorty</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -95,6 +95,15 @@ How BC, D365, and Graph APIs relate to each other.
 - Programmatic access options and limitations
 - Cost-benefit analysis and recommendations
 
+### 11. [Power Platform Guide](./power-platform-guide.md)
+**Integration layer** - How Power Platform connects the entire Microsoft ecosystem.
+- Power Apps, Power Automate, Power BI, Power Pages, Copilot Studio
+- Dataverse as the data foundation (D365 is built on this)
+- Connecting to Business Central, Graph, SharePoint, Fabric
+- Power Automate vs Azure Logic Apps decision guide
+- Licensing (standard vs premium connectors)
+- Common integration patterns with code examples
+
 ## Architecture Overview
 
 ```
@@ -154,6 +163,7 @@ How BC, D365, and Graph APIs relate to each other.
 | **Skillsmith MCP** | Skill discovery for AI agents | [Guide](./skillsmith-mcp-guide.md) |
 | **Copilot + MCP** | Agentic engineering with Microsoft | [Guide](./copilot-mcp-agentic-guide.md) |
 | **Copilot Deep Dive** | Maximize value from copilot.microsoft.com | [Guide](./copilot-microsoft-com-deep-dive.md) |
+| **Power Platform** | Integration layer connecting the ecosystem | [Guide](./power-platform-guide.md) |
 
 ## Quick Start
 
@@ -185,6 +195,7 @@ How BC, D365, and Graph APIs relate to each other.
 8. **[Skillsmith MCP Guide](./skillsmith-mcp-guide.md)** - Find and create skills for AI agents
 9. **[Copilot MCP Agentic Guide](./copilot-mcp-agentic-guide.md)** - Agentic engineering with Microsoft Copilot
 10. **[Copilot Deep Dive](./copilot-microsoft-com-deep-dive.md)** - Maximize value from copilot.microsoft.com
+11. **[Power Platform Guide](./power-platform-guide.md)** - Integration layer connecting the ecosystem
 
 ## Implementation Phases
 
