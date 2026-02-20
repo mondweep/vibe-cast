@@ -117,10 +117,12 @@ async function synthesizeWithSarvam(translatedSegments, apiKey) {
     const text = seg.translatedText || seg.text;
 
     try {
+      // Assamese (as-IN) not supported in Bulbul v2/v3 TTS.
+      // Bengali (bn-IN) is the closest language — same script family, similar phonetics.
       const ttsResult = await sarvamTTS(text, apiKey, {
-        targetLanguage: 'as-IN',
+        targetLanguage: 'bn-IN',
         model: 'bulbul:v2',
-        speaker: 'meera',
+        speaker: 'anushka',
       });
 
       segments.push({
@@ -146,7 +148,7 @@ async function synthesizeWithSarvam(translatedSegments, apiKey) {
 
   return {
     provider: 'sarvam',
-    voice: 'Sarvam Bulbul v2 (meera)',
+    voice: 'Sarvam Bulbul v2 (anushka, bn-IN fallback for Assamese)',
     voiceDetails: VOICES['sarvam-bulbul'],
     segments,
     totalSegments: segments.length,
