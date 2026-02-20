@@ -48,17 +48,29 @@ function downloadFromYouTube(url) {
 
     const args = [
       '--no-playlist',
+      '--no-check-certificates',
+      '--remote-components', 'ejs:github',
       '--extract-audio',
       '--audio-format', 'wav',
       '--postprocessor-args', 'ffmpeg:-ar 16000 -ac 1',
       '--max-filesize', '50m',
       '--output', tmpFile,
-      '--no-warnings',
-      '--quiet',
       url,
     ];
 
-    execFile('yt-dlp', args, { timeout: 120000 }, (error, stdout, stderr) => {
+    // Pass proxy to yt-dlp if set
+    const proxy = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
+    if (proxy) {
+      args.unshift('--proxy', proxy);
+    }
+
+    // Add deno to PATH if available
+    const env = { ...process.env };
+    if (fs.existsSync('/root/.deno/bin/deno')) {
+      env.PATH = `/root/.deno/bin:${env.PATH}`;
+    }
+
+    execFile('yt-dlp', args, { timeout: 120000, env }, (error, stdout, stderr) => {
       if (error) {
         // Clean up temp file on error
         try { fs.unlinkSync(tmpFile); } catch {}

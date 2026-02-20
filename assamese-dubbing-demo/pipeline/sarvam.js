@@ -129,7 +129,6 @@ async function sarvamTranslate(text, apiKey, options = {}) {
       target_language_code: targetLanguage,
       model,
       mode: 'formal',
-      output_script: 'fully-native',
     }),
   });
 

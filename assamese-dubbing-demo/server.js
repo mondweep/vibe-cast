@@ -1,3 +1,12 @@
+require('dotenv').config();
+
+// Configure global fetch to use HTTP proxy if present
+const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
+if (proxyUrl) {
+  const { ProxyAgent, setGlobalDispatcher } = require('undici');
+  setGlobalDispatcher(new ProxyAgent(proxyUrl));
+}
+
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
