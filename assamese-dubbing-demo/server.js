@@ -7,6 +7,7 @@ const { translate } = require('./pipeline/translate');
 const { synthesize, VOICES } = require('./pipeline/synthesize');
 const { lipsync, LIPSYNC_ENGINES } = require('./pipeline/lipsync');
 const { mix } = require('./pipeline/mix');
+const { downloadAudio } = require('./pipeline/download');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -104,6 +105,23 @@ app.post('/api/dub', upload.single('file'), async (req, res) => {
     sourceLanguage = (req.body && req.body.sourceLanguage) || 'en';
     providers = (req.body && req.body.providers) || {};
     sourceUrl = req.body && req.body.sourceUrl;
+
+    // Download audio from URL if provided
+    if (sourceUrl && hasSarvamKey) {
+      try {
+        const downloaded = await downloadAudio(sourceUrl);
+        fileBuffer = downloaded.buffer;
+        uploadedFile = { name: downloaded.filename, size: downloaded.buffer.length };
+        providers.transcription = providers.transcription || 'sarvam';
+        providers.translation = providers.translation || 'sarvam';
+      } catch (dlErr) {
+        return res.status(400).json({
+          jobId,
+          status: 'error',
+          error: `Failed to download audio: ${dlErr.message}`,
+        });
+      }
+    }
   }
 
   const results = { jobId, stages: [], startTime: Date.now() };
@@ -117,10 +135,10 @@ app.post('/api/dub', upload.single('file'), async (req, res) => {
       fileBuffer: fileBuffer || null,
     });
     // Include source info in results
-    if (uploadedFile) {
+    if (sourceUrl) {
+      transcribeResult.source = { type: 'url', url: sourceUrl, downloadedSize: uploadedFile ? uploadedFile.size : null };
+    } else if (uploadedFile) {
       transcribeResult.source = { type: 'upload', name: uploadedFile.name, size: uploadedFile.size };
-    } else if (sourceUrl) {
-      transcribeResult.source = { type: 'url', url: sourceUrl };
     } else {
       transcribeResult.source = { type: 'demo' };
     }

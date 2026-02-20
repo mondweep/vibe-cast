@@ -222,7 +222,8 @@ function renderTranscription(d) {
       const sizeMB = (d.source.size / (1024 * 1024)).toFixed(1);
       sourceHtml = `Source: <strong>${d.source.name}</strong> (${sizeMB} MB) | `;
     } else if (d.source.type === 'url') {
-      sourceHtml = `Source: <strong>${d.source.url}</strong> | `;
+      const sizeMB = d.source.downloadedSize ? ` (${(d.source.downloadedSize / (1024 * 1024)).toFixed(1)} MB downloaded)` : '';
+      sourceHtml = `Source: <strong>${d.source.url}</strong>${sizeMB} | `;
     } else {
       sourceHtml = `Source: <strong>Demo sample</strong> | `;
     }
