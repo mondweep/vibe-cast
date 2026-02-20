@@ -269,8 +269,13 @@ function renderSynthesis(d) {
     <tr>
       <td class="assamese-text">${s.text}</td>
       <td>${s.estimatedDuration}s</td>
-      <td>${s.originalDuration}s</td>
-      <td><span class="timing-badge ${s.durationRatio > 1.3 ? 'over' : s.durationRatio > 1.1 ? 'warn' : 'ok'}">${s.durationRatio}x</span></td>
+      <td>${s.originalDuration ? s.originalDuration.toFixed(1) : '-'}s</td>
+      <td><span class="timing-badge ${(s.durationRatio > 1.3) ? 'over' : (s.durationRatio > 1.1) ? 'warn' : 'ok'}">${s.durationRatio}x</span></td>
+      <td>
+        ${s.audioBase64
+      ? `<audio controls src="data:audio/wav;base64,${s.audioBase64}" style="height:30px;width:200px;"></audio>`
+      : '<span style="color:var(--text-dim);font-size:0.8rem;">No audio</span>'}
+      </td>
     </tr>
   `).join('');
 
@@ -288,7 +293,7 @@ function renderSynthesis(d) {
       Voice: <strong>${d.voice}</strong> | Total: ${d.totalDuration.toFixed(1)}s
     </p>
     <table class="data-table">
-      <thead><tr><th>Assamese Text</th><th>TTS Duration</th><th>Original</th><th>Ratio</th></tr></thead>
+      <thead><tr><th>Assamese Text</th><th>TTS Duration</th><th>Original</th><th>Ratio</th><th>Audio</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
     ${warningsHtml}

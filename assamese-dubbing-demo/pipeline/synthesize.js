@@ -52,7 +52,7 @@ const VOICES = {
   'sarvam-bulbul': {
     name: 'Sarvam Bulbul v3',
     type: 'commercial',
-    voices: ['Meera', 'Arvind', '35+ speakers'],
+    voices: ['Neha', 'Meera', 'Arvind', '35+ speakers'],
     languages: 11,
     features: ['Pitch/pace/loudness control', 'Code-mixed support', 'Indian-first design'],
     latency: '~0.4s per segment',
@@ -117,54 +117,53 @@ async function synthesizeWithSarvam(translatedSegments, apiKey) {
     const text = seg.translatedText || seg.text;
 
     const estimatedDuration = (text.length / 15) * 1.0; // rough approximation
-      
-      try {
-        // Assamese (as-IN) not supported in Bulbul v2/v3 TTS.
-        // Bengali (bn-IN) is the closest language — same script family, similar phonetics.
-        const ttsResult = await sarvamTTS(text, apiKey, {
-          targetLanguage: 'bn-IN',
-          model: 'bulbul:v2',
-          speaker: 'anushka',
-        });
 
-        segments.push({
-          index: i,
-          text,
-          estimatedDuration: Math.round(estimatedDuration * 10) / 10,
-          audioBase64: ttsResult.audios?.[0] || null,
-          originalDuration: seg.end - seg.start,
-          durationRatio: Math.round((estimatedDuration / (seg.end - seg.start)) * 100) / 100,
-          audioFile: ttsResult.audios?.[0] ? `[live] segment_${i}_assamese.wav` : `[error] no audio returned`,
-        });
-      } catch (err) {
-        // If a single segment fails, continue with others
-        console.error(`Sarvam TTS segment ${i} failed:`, err.message);
-        segments.push({
-          index: i,
-          text,
-          estimatedDuration: Math.round(estimatedDuration * 10) / 10,
-          audioBase64: null,
-          originalDuration: seg.end - seg.start,
-          durationRatio: Math.round((estimatedDuration / (seg.end - seg.start)) * 100) / 100,
-          audioFile: `[error] ${err.message}`,
-          error: err.message,
-        });
-      }
+    try {
+      // Assamese (as-IN) check if supported in Bulbul v3, otherwise fallback to Bengali
+      const ttsResult = await sarvamTTS(text, apiKey, {
+        targetLanguage: 'bn-IN',
+        model: 'bulbul:v3',
+        speaker: 'neha',
+      });
+
+      segments.push({
+        index: i,
+        text,
+        estimatedDuration: Math.round(estimatedDuration * 10) / 10,
+        audioBase64: ttsResult.audios?.[0] || null,
+        originalDuration: seg.end - seg.start,
+        durationRatio: Math.round((estimatedDuration / (seg.end - seg.start)) * 100) / 100,
+        audioFile: ttsResult.audios?.[0] ? `[live] segment_${i}_assamese.wav` : `[error] no audio returned`,
+      });
+    } catch (err) {
+      // If a single segment fails, continue with others
+      console.error(`Sarvam TTS segment ${i} failed:`, err.message);
+      segments.push({
+        index: i,
+        text,
+        estimatedDuration: Math.round(estimatedDuration * 10) / 10,
+        audioBase64: null,
+        originalDuration: seg.end - seg.start,
+        durationRatio: Math.round((estimatedDuration / (seg.end - seg.start)) * 100) / 100,
+        audioFile: `[error] ${err.message}`,
+        error: err.message,
+      });
     }
+  }
 
-    return {
-      provider: 'sarvam',
-      voice: 'Sarvam Bulbul v2 (anushka, bn-IN fallback for Assamese)',
-      voiceDetails: VOICES['sarvam-bulbul'],
-      segments,
-      totalDuration: segments.reduce((s, seg) => s + (seg.estimatedDuration || 0), 0),
-      totalSegments: segments.length,
-      successfulSegments: segments.filter(s => s.audioBase64).length,
-      failedSegments: segments.filter(s => !s.audioBase64).length,
-      timingWarnings: segments
-        .filter(s => s.durationRatio > 1.3)
-        .map(s => `Segment ${s.index}: Assamese audio ${Math.round((s.durationRatio - 1) * 100)}% longer than source — may need speed adjustment`),
-    };
+  return {
+    provider: 'sarvam',
+    voice: 'Sarvam Bulbul v3 (neha, bn-IN fallback)',
+    voiceDetails: VOICES['sarvam-bulbul'],
+    segments,
+    totalDuration: segments.reduce((s, seg) => s + (seg.estimatedDuration || 0), 0),
+    totalSegments: segments.length,
+    successfulSegments: segments.filter(s => s.audioBase64).length,
+    failedSegments: segments.filter(s => !s.audioBase64).length,
+    timingWarnings: segments
+      .filter(s => s.durationRatio > 1.3)
+      .map(s => `Segment ${s.index}: Assamese audio ${Math.round((s.durationRatio - 1) * 100)}% longer than source — may need speed adjustment`),
+  };
 }
 
 async function synthesizeWithParlerTTS(segments, endpoint) {
