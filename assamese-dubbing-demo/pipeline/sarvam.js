@@ -141,9 +141,10 @@ async function sarvamTranslate(text, apiKey, options = {}) {
 }
 
 /**
- * Text-to-Speech via Bulbul v3
- * NOTE: Assamese (as-IN) is NOT supported. Only 11 languages.
- * Use for Bengali (bn-IN) fallback or other supported languages.
+ * Text-to-Speech via Sarvam Bulbul
+ *
+ * Assamese (as-IN) is supported in Bulbul V2 but NOT in V3.
+ * Default to bulbul:v2 for Assamese; use v3 for other languages.
  *
  * @param {string} text
  * @param {string} apiKey
@@ -152,9 +153,9 @@ async function sarvamTranslate(text, apiKey, options = {}) {
  */
 async function sarvamTTS(text, apiKey, options = {}) {
   const {
-    targetLanguage = 'bn-IN', // Default to Bengali as closest to Assamese
-    model = 'bulbul:v3',
-    speaker = 'shubh',
+    targetLanguage = 'as-IN',
+    model = 'bulbul:v2',
+    speaker = 'meera',
     pace = 1.0,
     temperature = 0.6,
     sampleRate = '24000',

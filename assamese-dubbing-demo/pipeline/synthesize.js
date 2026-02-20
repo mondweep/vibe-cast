@@ -10,6 +10,8 @@
  * For the demo: simulates TTS with metadata about what would be generated.
  */
 
+const { sarvamTTS } = require('./sarvam');
+
 const VOICES = {
   'ai4bharat-parler': {
     name: 'AI4Bharat Indic Parler-TTS',
@@ -74,6 +76,9 @@ async function synthesize(translatedSegments, options = {}) {
   if (provider === 'elevenlabs' && apiKey) {
     return await synthesizeWithElevenLabs(translatedSegments, apiKey);
   }
+  if (provider === 'sarvam' && apiKey) {
+    return await synthesizeWithSarvam(translatedSegments, apiKey);
+  }
 
   // Demo mode
   await simulateProcessing(900);
@@ -101,6 +106,52 @@ async function synthesize(translatedSegments, options = {}) {
     timingWarnings: segments
       .filter(s => s.durationRatio > 1.3)
       .map(s => `Segment ${s.index}: Assamese audio ${Math.round((s.durationRatio - 1) * 100)}% longer than source — may need speed adjustment`),
+  };
+}
+
+async function synthesizeWithSarvam(translatedSegments, apiKey) {
+  const segments = [];
+
+  for (let i = 0; i < translatedSegments.length; i++) {
+    const seg = translatedSegments[i];
+    const text = seg.translatedText || seg.text;
+
+    try {
+      const ttsResult = await sarvamTTS(text, apiKey, {
+        targetLanguage: 'as-IN',
+        model: 'bulbul:v2',
+        speaker: 'meera',
+      });
+
+      segments.push({
+        index: i,
+        text,
+        audioBase64: ttsResult.audios?.[0] || null,
+        originalDuration: seg.end - seg.start,
+        audioFile: ttsResult.audios?.[0] ? `[live] segment_${i}_assamese.wav` : `[error] no audio returned`,
+      });
+    } catch (err) {
+      // If a single segment fails, continue with others
+      console.error(`Sarvam TTS segment ${i} failed:`, err.message);
+      segments.push({
+        index: i,
+        text,
+        audioBase64: null,
+        originalDuration: seg.end - seg.start,
+        audioFile: `[error] ${err.message}`,
+        error: err.message,
+      });
+    }
+  }
+
+  return {
+    provider: 'sarvam',
+    voice: 'Sarvam Bulbul v2 (meera)',
+    voiceDetails: VOICES['sarvam-bulbul'],
+    segments,
+    totalSegments: segments.length,
+    successfulSegments: segments.filter(s => s.audioBase64).length,
+    failedSegments: segments.filter(s => !s.audioBase64).length,
   };
 }
 

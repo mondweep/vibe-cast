@@ -109,6 +109,7 @@ app.post('/api/dub', upload.single('file'), async (req, res) => {
     if (hasSarvamKey) {
       providers.transcription = providers.transcription || 'sarvam';
       providers.translation = providers.translation || 'sarvam';
+      providers.synthesis = providers.synthesis || 'sarvam';
     }
   } else {
     sourceLanguage = (req.body && req.body.sourceLanguage) || 'en';
@@ -123,6 +124,7 @@ app.post('/api/dub', upload.single('file'), async (req, res) => {
         uploadedFile = { name: downloaded.filename, size: downloaded.buffer.length };
         providers.transcription = providers.transcription || 'sarvam';
         providers.translation = providers.translation || 'sarvam';
+        providers.synthesis = providers.synthesis || 'sarvam';
       } catch (dlErr) {
         return res.status(400).json({
           jobId,
@@ -175,7 +177,7 @@ app.post('/api/dub', upload.single('file'), async (req, res) => {
     const synthesizeResult = await synthesize(translateResult.segments, {
       provider: providers.synthesis || 'demo',
       voice: providers.voice || 'ai4bharat-parler',
-      apiKey: process.env.AZURE_SPEECH_KEY || process.env.ELEVENLABS_API_KEY || process.env.SARVAM_API_KEY,
+      apiKey: process.env.SARVAM_API_KEY || process.env.AZURE_SPEECH_KEY || process.env.ELEVENLABS_API_KEY,
     });
     results.stages.push({
       name: 'Assamese TTS Synthesis',
