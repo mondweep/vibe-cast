@@ -1,2 +1,4 @@
 node_modules/
 .env
+test-*.png
+test-*.js
