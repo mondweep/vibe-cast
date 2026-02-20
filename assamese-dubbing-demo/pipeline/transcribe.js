@@ -2,6 +2,7 @@
  * ASR / Transcription Stage
  *
  * Integrates with:
+ *   - Sarvam Saaras v3 (23 Indian languages incl. Assamese)
  *   - OpenAI Whisper (large-v3) via API
  *   - AI4Bharat IndicWhisper (self-hosted)
  *   - ElevenLabs Scribe
@@ -9,6 +10,8 @@
  * For the demo: simulates transcription with realistic sample output.
  * When API keys are configured, routes to the real service.
  */
+
+const { sarvamTranscribe, LANG_MAP } = require('./sarvam');
 
 const SAMPLE_TRANSCRIPTS = {
   en: {
@@ -33,18 +36,21 @@ const SAMPLE_TRANSCRIPTS = {
   },
 };
 
-async function transcribe(filePath, options = {}) {
-  const { apiKey, provider = 'demo', sourceLanguage = 'en' } = options;
+async function transcribe(fileOrMeta, options = {}) {
+  const { apiKey, provider = 'demo', sourceLanguage = 'en', fileBuffer } = options;
 
   // Real API integration points
+  if (provider === 'sarvam' && apiKey && fileBuffer) {
+    return await transcribeWithSarvam(fileBuffer, apiKey, sourceLanguage, fileOrMeta);
+  }
   if (provider === 'whisper' && apiKey) {
-    return await transcribeWithWhisper(filePath, apiKey);
+    return await transcribeWithWhisper(fileOrMeta, apiKey);
   }
   if (provider === 'indicwhisper' && options.endpoint) {
-    return await transcribeWithIndicWhisper(filePath, options.endpoint);
+    return await transcribeWithIndicWhisper(fileOrMeta, options.endpoint);
   }
   if (provider === 'elevenlabs' && apiKey) {
-    return await transcribeWithElevenLabs(filePath, apiKey);
+    return await transcribeWithElevenLabs(fileOrMeta, apiKey);
   }
 
   // Demo mode: simulate processing
@@ -57,6 +63,78 @@ async function transcribe(filePath, options = {}) {
     duration: transcript.segments[transcript.segments.length - 1].end,
     wordCount: transcript.segments.reduce((sum, s) => sum + s.text.split(' ').length, 0),
   };
+}
+
+async function transcribeWithSarvam(fileBuffer, apiKey, sourceLanguage, fileMeta) {
+  const langCode = LANG_MAP[sourceLanguage] || 'en-IN';
+  const filename = (fileMeta && fileMeta.name) || 'audio.wav';
+
+  const result = await sarvamTranscribe(fileBuffer, apiKey, {
+    language: langCode,
+    filename,
+  });
+
+  // Sarvam returns { transcript, language_code, timestamps? }
+  // Normalize to pipeline format: { segments: [{ start, end, text }] }
+  let segments;
+  if (result.timestamps && result.timestamps.length > 0) {
+    // Use word-level timestamps to build segments
+    segments = buildSegmentsFromTimestamps(result.timestamps, result.transcript);
+  } else {
+    // No timestamps — treat entire transcript as one segment
+    segments = [{ start: 0, end: 30, text: result.transcript }];
+  }
+
+  return {
+    provider: 'sarvam',
+    language: langCode,
+    segments,
+    transcript: result.transcript,
+    duration: segments[segments.length - 1].end,
+    wordCount: result.transcript.split(/\s+/).length,
+  };
+}
+
+/**
+ * Build sentence-level segments from Sarvam word-level timestamps.
+ * Groups words into segments splitting on sentence-ending punctuation.
+ */
+function buildSegmentsFromTimestamps(timestamps, fullTranscript) {
+  if (!timestamps || timestamps.length === 0) {
+    return [{ start: 0, end: 30, text: fullTranscript }];
+  }
+
+  const segments = [];
+  let currentWords = [];
+  let segStart = timestamps[0].start || 0;
+
+  for (const ts of timestamps) {
+    currentWords.push(ts.word || ts.text || '');
+    const word = currentWords[currentWords.length - 1];
+
+    // Split on sentence-ending punctuation
+    if (/[।.!?]$/.test(word) || currentWords.length >= 20) {
+      segments.push({
+        start: segStart,
+        end: ts.end || segStart + 3,
+        text: currentWords.join(' ').trim(),
+      });
+      currentWords = [];
+      segStart = ts.end || segStart + 3;
+    }
+  }
+
+  // Remaining words
+  if (currentWords.length > 0) {
+    const lastTs = timestamps[timestamps.length - 1];
+    segments.push({
+      start: segStart,
+      end: lastTs.end || segStart + 3,
+      text: currentWords.join(' ').trim(),
+    });
+  }
+
+  return segments;
 }
 
 async function transcribeWithWhisper(filePath, apiKey) {

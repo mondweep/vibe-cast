@@ -1,58 +1,97 @@
 /**
- * Sarvam AI Integration
- *
- * Sarvam AI (https://www.sarvam.ai) provides Indian-language-first APIs:
- *   - Saaras v3: Speech-to-Text (23 languages including Assamese)
- *   - Sarvam Translate: Translation (23 languages including Assamese)
- *   - Bulbul v3: Text-to-Speech (11 languages — check Assamese availability)
+ * Sarvam AI Integration — Live API calls
  *
  * API docs: https://docs.sarvam.ai
+ * Auth header: api-subscription-key: YOUR_KEY
  *
- * To use: set SARVAM_API_KEY environment variable
+ * Assamese support:
+ *   STT (Saaras v3): YES — as-IN
+ *   Translate (sarvam-translate:v1): YES — as-IN (formal mode only)
+ *   TTS (Bulbul v3): NO — 11 languages, Assamese not included
  */
-
-const https = require('https');
 
 const SARVAM_BASE = 'https://api.sarvam.ai';
 
-const SARVAM_LANGUAGES = {
-  stt: [
-    'as-IN', 'bn-IN', 'en-IN', 'gu-IN', 'hi-IN', 'kn-IN',
-    'ml-IN', 'mr-IN', 'od-IN', 'pa-IN', 'ta-IN', 'te-IN',
-    'ur-IN', 'ne-IN', 'sd-IN', 'kok-IN', 'doi-IN', 'brx-IN',
-    'mni-IN', 'sat-IN', 'ks-IN', 'mai-IN',
-  ],
-  translate: [
-    'as', 'bn', 'en', 'gu', 'hi', 'kn', 'ml', 'mr', 'od',
-    'pa', 'ta', 'te', 'ur', 'ne', 'sd', 'kok', 'doi', 'brx',
-    'mni', 'sat', 'ks', 'mai',
-  ],
-  tts: [
-    'hi-IN', 'bn-IN', 'ta-IN', 'te-IN', 'gu-IN', 'kn-IN',
-    'ml-IN', 'mr-IN', 'pa-IN', 'od-IN', 'en-IN',
-    // Note: Assamese was in Bulbul V2 but may not be in V3.
-    // Check docs.sarvam.ai for current status.
-  ],
+// Language code mapping: simple code → BCP-47
+const LANG_MAP = {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  as: 'as-IN',
+  bn: 'bn-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+  gu: 'gu-IN',
+  kn: 'kn-IN',
+  ml: 'ml-IN',
+  mr: 'mr-IN',
+  od: 'od-IN',
+  pa: 'pa-IN',
 };
 
 /**
- * Sarvam Speech-to-Text (Saaras v3)
- * Assamese support: YES (as-IN)
+ * Speech-to-Text via Saaras v3
+ *
+ * @param {Buffer} audioBuffer - Raw audio file bytes
+ * @param {string} apiKey
+ * @param {object} options - { language, model, mode }
+ * @returns {object} - { transcript, language_code, timestamps }
  */
 async function sarvamTranscribe(audioBuffer, apiKey, options = {}) {
-  const { language = 'en-IN', model = 'saaras:v3' } = options;
+  const {
+    language = 'en-IN',
+    model = 'saaras:v3',
+    mode = 'transcribe',
+    filename = 'audio.wav',
+  } = options;
 
-  const formData = new FormData();
-  formData.append('file', new Blob([audioBuffer]), 'audio.wav');
-  formData.append('model', model);
-  formData.append('language_code', language);
+  // Build multipart form data manually for Node.js
+  const boundary = '----SarvamBoundary' + Date.now().toString(36);
+  const parts = [];
+
+  // File part
+  parts.push(
+    `--${boundary}\r\n` +
+    `Content-Disposition: form-data; name="file"; filename="${filename}"\r\n` +
+    `Content-Type: application/octet-stream\r\n\r\n`
+  );
+  parts.push(audioBuffer);
+  parts.push('\r\n');
+
+  // Model part
+  parts.push(
+    `--${boundary}\r\n` +
+    `Content-Disposition: form-data; name="model"\r\n\r\n` +
+    `${model}\r\n`
+  );
+
+  // Language part
+  parts.push(
+    `--${boundary}\r\n` +
+    `Content-Disposition: form-data; name="language_code"\r\n\r\n` +
+    `${language}\r\n`
+  );
+
+  // Mode part
+  parts.push(
+    `--${boundary}\r\n` +
+    `Content-Disposition: form-data; name="mode"\r\n\r\n` +
+    `${mode}\r\n`
+  );
+
+  parts.push(`--${boundary}--\r\n`);
+
+  // Concatenate all parts into a single Buffer
+  const bodyParts = parts.map(p => Buffer.isBuffer(p) ? p : Buffer.from(p, 'utf-8'));
+  const body = Buffer.concat(bodyParts);
 
   const response = await fetch(`${SARVAM_BASE}/speech-to-text`, {
     method: 'POST',
     headers: {
       'api-subscription-key': apiKey,
+      'Content-Type': `multipart/form-data; boundary=${boundary}`,
+      'Content-Length': body.length.toString(),
     },
-    body: formData,
+    body,
   });
 
   if (!response.ok) {
@@ -64,14 +103,18 @@ async function sarvamTranscribe(audioBuffer, apiKey, options = {}) {
 }
 
 /**
- * Sarvam Translate
- * Assamese support: YES (as)
+ * Translate via sarvam-translate:v1
+ *
+ * @param {string} text - Text to translate (max 2000 chars)
+ * @param {string} apiKey
+ * @param {object} options
+ * @returns {object} - { translated_text, source_language_code }
  */
 async function sarvamTranslate(text, apiKey, options = {}) {
   const {
     sourceLanguage = 'en-IN',
     targetLanguage = 'as-IN',
-    model = 'mayura:v2',
+    model = 'sarvam-translate:v1',
   } = options;
 
   const response = await fetch(`${SARVAM_BASE}/translate`, {
@@ -85,6 +128,8 @@ async function sarvamTranslate(text, apiKey, options = {}) {
       source_language_code: sourceLanguage,
       target_language_code: targetLanguage,
       model,
+      mode: 'formal',
+      output_script: 'fully-native',
     }),
   });
 
@@ -97,19 +142,24 @@ async function sarvamTranslate(text, apiKey, options = {}) {
 }
 
 /**
- * Sarvam Text-to-Speech (Bulbul v3)
- * Assamese support: UNCERTAIN in V3 (was supported in V2)
- * Falls back to Bengali (bn-IN) which shares the same script
+ * Text-to-Speech via Bulbul v3
+ * NOTE: Assamese (as-IN) is NOT supported. Only 11 languages.
+ * Use for Bengali (bn-IN) fallback or other supported languages.
+ *
+ * @param {string} text
+ * @param {string} apiKey
+ * @param {object} options
+ * @returns {object} - { audios: [base64_string] }
  */
 async function sarvamTTS(text, apiKey, options = {}) {
   const {
-    targetLanguage = 'as-IN',
-    model = 'bulbul:v2',
-    speaker = 'meera',
-    pitch = 0,
+    targetLanguage = 'bn-IN', // Default to Bengali as closest to Assamese
+    model = 'bulbul:v3',
+    speaker = 'shubh',
     pace = 1.0,
-    loudness = 1.0,
-    sampleRate = 22050,
+    temperature = 0.6,
+    sampleRate = '24000',
+    outputCodec = 'wav',
   } = options;
 
   const response = await fetch(`${SARVAM_BASE}/text-to-speech`, {
@@ -119,14 +169,14 @@ async function sarvamTTS(text, apiKey, options = {}) {
       'api-subscription-key': apiKey,
     },
     body: JSON.stringify({
-      inputs: [text],
+      text,
       target_language_code: targetLanguage,
       model,
       speaker,
-      pitch,
       pace,
-      loudness,
-      sample_rate: sampleRate,
+      temperature,
+      speech_sample_rate: sampleRate,
+      output_audio_codec: outputCodec,
       enable_preprocessing: true,
     }),
   });
@@ -143,5 +193,5 @@ module.exports = {
   sarvamTranscribe,
   sarvamTranslate,
   sarvamTTS,
-  SARVAM_LANGUAGES,
+  LANG_MAP,
 };

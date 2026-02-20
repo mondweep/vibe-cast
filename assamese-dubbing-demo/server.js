@@ -85,12 +85,21 @@ app.post('/api/dub', upload.single('file'), async (req, res) => {
   const jobId = uuidv4();
 
   // Handle both JSON and multipart form data
-  let sourceLanguage, providers, sourceUrl, uploadedFile;
+  let sourceLanguage, providers, sourceUrl, uploadedFile, fileBuffer;
+  const hasSarvamKey = !!process.env.SARVAM_API_KEY;
+
   if (req.file) {
-    // Multipart upload
+    // Multipart upload — capture the actual buffer for real processing
     sourceLanguage = req.body.sourceLanguage || 'en';
     providers = { voice: req.body.voice || 'ai4bharat-parler' };
     uploadedFile = { name: req.file.originalname, size: req.file.size, mimetype: req.file.mimetype };
+    fileBuffer = req.file.buffer;
+
+    // Auto-select Sarvam as provider when API key is set and file is uploaded
+    if (hasSarvamKey) {
+      providers.transcription = providers.transcription || 'sarvam';
+      providers.translation = providers.translation || 'sarvam';
+    }
   } else {
     sourceLanguage = (req.body && req.body.sourceLanguage) || 'en';
     providers = (req.body && req.body.providers) || {};
@@ -104,7 +113,8 @@ app.post('/api/dub', upload.single('file'), async (req, res) => {
     const transcribeResult = await transcribe(uploadedFile || null, {
       provider: providers.transcription || 'demo',
       sourceLanguage,
-      apiKey: process.env.OPENAI_API_KEY || process.env.SARVAM_API_KEY,
+      apiKey: process.env.SARVAM_API_KEY || process.env.OPENAI_API_KEY,
+      fileBuffer: fileBuffer || null,
     });
     // Include source info in results
     if (uploadedFile) {
@@ -125,7 +135,7 @@ app.post('/api/dub', upload.single('file'), async (req, res) => {
     const translateResult = await translate(transcribeResult.segments, {
       provider: providers.translation || 'demo',
       sourceLanguage,
-      apiKey: process.env.AZURE_TRANSLATOR_KEY || process.env.SARVAM_API_KEY,
+      apiKey: process.env.SARVAM_API_KEY || process.env.AZURE_TRANSLATOR_KEY,
     });
     results.stages.push({
       name: 'Translation to Assamese',

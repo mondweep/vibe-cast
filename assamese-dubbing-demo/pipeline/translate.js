@@ -2,12 +2,15 @@
  * Translation Stage
  *
  * Integrates with:
+ *   - Sarvam Translate (sarvam-translate:v1, 23 langs incl. Assamese)
  *   - AI4Bharat IndicTrans2 (open source, best for Indian languages)
  *   - Azure Translator (commercial, supports Assamese)
  *   - Google Translate API (commercial)
  *
  * For the demo: provides pre-translated Assamese output.
  */
+
+const { sarvamTranslate, LANG_MAP } = require('./sarvam');
 
 const SAMPLE_TRANSLATIONS = {
   en: [
@@ -29,6 +32,9 @@ const SAMPLE_TRANSLATIONS = {
 async function translate(segments, options = {}) {
   const { apiKey, provider = 'demo', sourceLanguage = 'en' } = options;
 
+  if (provider === 'sarvam' && apiKey) {
+    return await translateWithSarvam(segments, apiKey, sourceLanguage);
+  }
   if (provider === 'indictrans2' && options.endpoint) {
     return await translateWithIndicTrans2(segments, options.endpoint);
   }
@@ -51,6 +57,47 @@ async function translate(segments, options = {}) {
       translatedText: samples[i]?.assamese || seg.text,
       charExpansion: samples[i] ? (samples[i].assamese.length / seg.text.length).toFixed(2) : '1.00',
     })),
+  };
+}
+
+async function translateWithSarvam(segments, apiKey, sourceLanguage) {
+  const sourceLang = LANG_MAP[sourceLanguage] || 'en-IN';
+  const targetLang = 'as-IN';
+
+  // Translate each segment via Sarvam API
+  const translatedSegments = [];
+  for (const seg of segments) {
+    const text = seg.text || '';
+    if (!text.trim()) {
+      translatedSegments.push({
+        ...seg,
+        originalText: text,
+        translatedText: '',
+        charExpansion: '1.00',
+      });
+      continue;
+    }
+
+    const result = await sarvamTranslate(text, apiKey, {
+      sourceLanguage: sourceLang,
+      targetLanguage: targetLang,
+    });
+
+    const translated = result.translated_text || text;
+    translatedSegments.push({
+      ...seg,
+      originalText: text,
+      translatedText: translated,
+      charExpansion: (translated.length / text.length).toFixed(2),
+    });
+  }
+
+  return {
+    provider: 'sarvam',
+    sourceLanguage,
+    targetLanguage: 'Assamese (অসমীয়া)',
+    targetCode: 'as',
+    segments: translatedSegments,
   };
 }
 

@@ -37,7 +37,7 @@ exports.handler = async (event) => {
     const transcribeResult = await transcribe(null, {
       provider: providers.transcription || 'demo',
       sourceLanguage,
-      apiKey: process.env.OPENAI_API_KEY || process.env.SARVAM_API_KEY,
+      apiKey: process.env.SARVAM_API_KEY || process.env.OPENAI_API_KEY,
     });
     results.stages.push({
       name: 'Transcription (ASR)',
@@ -50,7 +50,7 @@ exports.handler = async (event) => {
     const translateResult = await translate(transcribeResult.segments, {
       provider: providers.translation || 'demo',
       sourceLanguage,
-      apiKey: process.env.AZURE_TRANSLATOR_KEY || process.env.SARVAM_API_KEY,
+      apiKey: process.env.SARVAM_API_KEY || process.env.AZURE_TRANSLATOR_KEY,
     });
     results.stages.push({
       name: 'Translation to Assamese',
