@@ -1,0 +1,294 @@
+{
+  "env": {
+    "AQE_MEMORY_PATH": ".agentic-qe/memory.db",
+    "AQE_MEMORY_ENABLED": "true",
+    "AQE_LEARNING_ENABLED": "true",
+    "AQE_V3_MODE": "true",
+    "AQE_V3_DDD_ENABLED": "true",
+    "AQE_V3_DOMAINS": "test-generation,test-execution,coverage-analysis,quality-assessment,defect-intelligence,learning-optimization,requirements-validation,code-intelligence,security-compliance,contract-testing,visual-accessibility,chaos-resilience",
+    "AQE_V3_SWARM_SIZE": "21",
+    "AQE_V3_TOPOLOGY": "hierarchical",
+    "AQE_V3_SUBLINEAR_ENABLED": "true",
+    "AQE_V3_HNSW_ENABLED": "true",
+    "AQE_V3_HOOKS_ENABLED": "true",
+    "AQE_V3_HOOK_BRIDGE": ".claude/hooks/v3-qe-bridge.sh",
+    "AQE_V3_DOMAIN_WORKERS": ".claude/hooks/v3-domain-workers.json",
+    "AQE_V3_AISP_ENABLED": "true",
+    "AQE_V3_REASONING_BANK": ".agentic-qe/memory.db",
+    "AQE_V3_PATTERN_PROMOTION_THRESHOLD": "3",
+    "AQE_V3_SUCCESS_RATE_THRESHOLD": "0.7"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Write|Edit|MultiEdit)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks guard --file \"$TOOL_INPUT_file_path\" --json",
+            "timeout": 3000,
+            "continueOnError": true
+          }
+        ]
+      },
+      {
+        "matcher": "^(Write|Edit|MultiEdit)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks pre-edit --file \"$TOOL_INPUT_file_path\" --json",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      },
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks pre-command --command \"$TOOL_INPUT_command\" --json",
+            "timeout": 3000,
+            "continueOnError": true
+          }
+        ]
+      },
+      {
+        "matcher": "^Task$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks pre-task --description \"$TOOL_INPUT_prompt\" --json",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Write|Edit|MultiEdit)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks post-edit --file \"$TOOL_INPUT_file_path\" --success --json",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      },
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks post-command --command \"$TOOL_INPUT_command\" --success --json",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      },
+      {
+        "matcher": "^Task$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks post-task --task-id \"$TOOL_RESULT_agent_id\" --success --json",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks route --task \"$PROMPT\" --json",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks session-start --session-id \"$SESSION_ID\" --json",
+            "timeout": 10000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "aqe hooks session-end --save-state --json",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node .claude/helpers/statusline-v3.cjs 2>/dev/null || .claude/statusline-v3.sh 2>/dev/null || echo \"▊ Agentic QE v3\"",
+    "refreshMs": 5000,
+    "enabled": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npx claude-flow:*)",
+      "Bash(npx @claude-flow/cli:*)",
+      "mcp__claude-flow__:*",
+      "mcp__agentic_qe__*"
+    ],
+    "deny": [
+      "Bash(rm -rf /)"
+    ]
+  },
+  "includeCoAuthoredBy": true,
+  "enabledMcpjsonServers": [
+    "agentic-qe",
+    "claude-flow"
+  ],
+  "claudeFlow": {
+    "version": "3.0.0",
+    "enabled": true,
+    "modelPreferences": {
+      "default": "claude-opus-4-5-20251101",
+      "routing": "claude-3-5-haiku-20241022"
+    },
+    "swarm": {
+      "topology": "hierarchical-mesh",
+      "maxAgents": 15
+    },
+    "memory": {
+      "backend": "hybrid",
+      "enableHNSW": true
+    },
+    "neural": {
+      "enabled": true
+    },
+    "daemon": {
+      "autoStart": true,
+      "workers": [
+        "map",
+        "audit",
+        "optimize",
+        "consolidate",
+        "testgaps",
+        "ultralearn",
+        "deepdive",
+        "document",
+        "refactor",
+        "benchmark"
+      ],
+      "schedules": {
+        "audit": {
+          "interval": "1h",
+          "priority": "critical"
+        },
+        "optimize": {
+          "interval": "30m",
+          "priority": "high"
+        },
+        "consolidate": {
+          "interval": "2h",
+          "priority": "low"
+        },
+        "document": {
+          "interval": "1h",
+          "priority": "normal",
+          "triggers": [
+            "adr-update",
+            "api-change"
+          ]
+        },
+        "deepdive": {
+          "interval": "4h",
+          "priority": "normal",
+          "triggers": [
+            "complex-change"
+          ]
+        },
+        "ultralearn": {
+          "interval": "1h",
+          "priority": "normal"
+        }
+      }
+    },
+    "learning": {
+      "enabled": true,
+      "autoTrain": true,
+      "patterns": [
+        "coordination",
+        "optimization",
+        "prediction"
+      ],
+      "retention": {
+        "shortTerm": "24h",
+        "longTerm": "30d"
+      }
+    },
+    "adr": {
+      "autoGenerate": true,
+      "directory": "/v3/implementation/adrs",
+      "template": "madr"
+    },
+    "ddd": {
+      "trackDomains": true,
+      "validateBoundedContexts": true,
+      "directory": "/v3/implementation/ddd"
+    },
+    "security": {
+      "autoScan": true,
+      "scanOnEdit": true,
+      "cveCheck": true,
+      "threatModel": true
+    }
+  },
+  "v3Configuration": {
+    "domains": {
+      "total": 13,
+      "names": [
+        "test-generation",
+        "test-execution",
+        "coverage-analysis",
+        "quality-assessment",
+        "defect-intelligence",
+        "learning-optimization",
+        "requirements-validation",
+        "code-intelligence",
+        "security-compliance",
+        "contract-testing",
+        "visual-accessibility",
+        "chaos-resilience",
+        "enterprise-integration"
+      ]
+    },
+    "swarm": {
+      "totalAgents": 60,
+      "topology": "hierarchical",
+      "coordination": "queen-led"
+    }
+  },
+  "v3Learning": {
+    "enabled": true,
+    "reasoningBank": {
+      "dbPath": ".agentic-qe/memory.db",
+      "enableHNSW": true
+    },
+    "patternPromotion": {
+      "threshold": 3,
+      "successRateMin": 0.7
+    }
+  }
+}

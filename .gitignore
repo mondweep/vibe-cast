@@ -1,0 +1,223 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Node.js (for future website development)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.production.local
+.env.development.local
+.env.test.local
+
+# Local n8n data (contains credentials, database, etc.)
+.n8n-local/
+
+# Core dumps (file only, not directories)
+/core
+# Allow wizard core infrastructure
+!v3/src/cli/wizards/core/
+
+# Test results (generated files)
+test-results/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs (for future website)
+.next/
+out/
+build/
+dist/
+
+# Logs
+logs/
+*.log
+
+# Testing
+coverage/
+# But allow Phase 3 QE tool directories
+!src/mcp/tools/qe/coverage/
+!src/mcp/tools/qe/flaky-detection/
+!src/mcp/tools/qe/performance/
+!src/mcp/tools/qe/visual/
+.nyc_output/
+
+# Test temporary databases (prevent leaking to project root)
+.test-memory-*.db*
+.test-learning*.db*
+tests/.tmp/
+
+# Misc
+*.bak
+*.tmp
+.cache/
+.roo/
+.hive-mind/
+
+# Project-specific ignores
+CLAUDE.md.backup
+/aqe
+
+
+# Removed Windows wrapper files per user request
+hive-mind-prompt-*.txt
+claude-flow-core/bin/
+claude-flow-core/dist-cjs/
+tests/__mocks__/
+
+!src/core/coordination/
+!src/core/memory/
+!src/coverage/
+!src/memory/
+!tests/memory/
+
+.claude/agents/test-agent.json
+.claude/agents/failing-agent.json
+tests/temp/
+
+
+# Ignore memory directories but allow source code
+memory/claude-flow-data.json
+memory/sessions/*
+!memory/sessions/README.md
+memory/agents/*
+!memory/agents/README.md
+coordination/memory_bank/*
+coordination/subtasks/*
+coordination/orchestration/*
+*.db*
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+# Claude Flow runtime (but not source adapters)
+/claude-flow
+!v3/src/adapters/claude-flow/
+.agentic-qe/memory/
+.agentic-qe/data/learning/state.json
+.agentic-qe/data/improvement/state.json
+.agentic-qe/a11y-scans/
+data/
+!v3/src/adapters/a2ui/data/
+test-projects/
+
+
+# Mock files - allow ESM module mocks for CI
+__mocks__/*
+!__mocks__/agentdb.ts
+!__mocks__/@ruvector/
+!__mocks__/@ruvector/**
+
+# Test artifacts that should not be committed
+test-learning-persistence
+junit.xml
+docs/qx-reports/*
+
+# Generated reports and client-specific analysis (should not be committed)
+*-qx-analysis-report.md
+*-a11y-audit.md
+*-qe-assessment.md
+*-threat-model.md
+*-security-threat-model.md
+qx-*.md
+QX-*.md
+
+# Claude Flow generated files
+.claude/settings.local.json
+.claude/memory/
+v3/.claude/
+.mcp.json
+claude-flow.config.json
+.swarm/
+.hive-mind/
+.claude-flow/
+!src/memory/
+!src/core/memory/
+!tests/memory/
+!src/edge/p2p/coordination/
+memory/claude-flow-data.json
+memory/sessions/*
+!memory/sessions/README.md
+memory/agents/*
+!memory/agents/README.md
+coordination/memory_bank/*
+coordination/subtasks/*
+coordination/orchestration/*
+*.db
+*.db-journal
+*.db-wal
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+# Removed Windows wrapper files per user request
+hive-mind-prompt-*.txt
+tests/tmp/*
+tmp/*
+
+# RuVector intelligence data (local learning, not for git)
+.ruvector/
+**/intelligence.json
+**/.ruvector/
+.env.supabase
+
+#v3 database files
+v3/agentdb.*
+
+# AQE data directories (local, not for git)
+.agentic-qe/results/*
+.agentic-qe/.cve-cache
+.agentic-qe/*-scans/
+v3/.agentic-qe/
+*.db-shm
+v3/.test-tmp/*
+
+# Accessibility scan outputs (generated, may contain site-specific data)
+docs/accessibility-scans/
+
+# QCSD Analysis Reports (site-specific, may contain sensitive findings)
+Agentic QCSD/
+L2C/
+
+# n8n instance-specific files (contain internal URLs/credentials)
+.env.n8n
+scripts/n8n-predeploy-check.sh
+**/n8n-*-config.*
+**/*acngva*
+
+# L2C Documents (user-specific, not for git)
+L2C Documents/
+v3/.test-evals/
+v3/docs/reports/
+
+v3/.agentic-qe-REMOVED/
+:memory:
+.agentic-qe/.claude/memory/
