@@ -60,6 +60,47 @@
       </div>
     </section>
 
+    <!-- Source Input -->
+    <section class="source-input">
+      <h2>Source Media</h2>
+      <div class="input-tabs">
+        <button class="input-tab active" onclick="switchInputTab('upload')" id="tab-upload">Upload File</button>
+        <button class="input-tab" onclick="switchInputTab('url')" id="tab-url">Video URL</button>
+        <button class="input-tab" onclick="switchInputTab('demo')" id="tab-demo">Use Demo Sample</button>
+      </div>
+      <div class="input-panel" id="panel-upload">
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Drop a video or audio file here, or click to browse</p>
+          <span class="upload-formats">MP4, MP3, WAV, WEBM, OGG (max 50MB)</span>
+        </div>
+        <input type="file" id="fileInput" accept="video/*,audio/*" style="display:none" onchange="handleFileSelect(event)">
+        <div class="file-info" id="fileInfo" style="display:none;">
+          <span class="file-name" id="fileName"></span>
+          <span class="file-size" id="fileSize"></span>
+          <button class="file-remove" onclick="clearFile()">&times;</button>
+        </div>
+      </div>
+      <div class="input-panel" id="panel-url" style="display:none;">
+        <div class="url-input-row">
+          <input type="text" id="videoUrl" class="url-input" placeholder="Paste a video URL (YouTube, direct link, etc.)">
+        </div>
+        <div class="url-note">Supports direct video/audio URLs. YouTube URLs will be shown for reference (download requires yt-dlp on backend).</div>
+      </div>
+      <div class="input-panel" id="panel-demo" style="display:none;">
+        <div class="demo-sample">
+          <div class="demo-sample-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+          <div class="demo-sample-info">
+            <strong>Demo: Product Introduction (19.3s)</strong>
+            <span>5 segments, English or Hindi source, pre-transcribed with Assamese translations</span>
+          </div>
+          <span class="timing-badge ok">Ready</span>
+        </div>
+      </div>
+    </section>
+
     <!-- Controls -->
     <section class="controls">
       <div class="control-row">
@@ -79,6 +120,7 @@
           <select id="ttsVoice">
             <option value="ai4bharat-parler">AI4Bharat Parler-TTS</option>
             <option value="ai4bharat-f5">AI4Bharat IndicF5 (clone)</option>
+            <option value="sarvam-bulbul">Sarvam Bulbul v3</option>
             <option value="azure-yashica">Azure Yashica</option>
             <option value="elevenlabs">ElevenLabs</option>
           </select>

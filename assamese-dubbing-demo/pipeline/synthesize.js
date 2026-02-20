@@ -47,6 +47,16 @@ const VOICES = {
     latency: '~0.5s per segment',
     quality: 8,
   },
+  'sarvam-bulbul': {
+    name: 'Sarvam Bulbul v3',
+    type: 'commercial',
+    voices: ['Meera', 'Arvind', '35+ speakers'],
+    languages: 11,
+    features: ['Pitch/pace/loudness control', 'Code-mixed support', 'Indian-first design'],
+    latency: '~0.4s per segment',
+    quality: 8,
+    note: 'Assamese supported in Bulbul V2; check V3 availability',
+  },
 };
 
 async function synthesize(translatedSegments, options = {}) {

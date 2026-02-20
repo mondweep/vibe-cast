@@ -1,5 +1,7 @@
 // ── State ───────────────────────────────────────────────────────
 let config = null;
+let selectedFile = null;
+let inputMode = 'upload'; // 'upload' | 'url' | 'demo'
 
 // ── Initialize ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -8,10 +10,81 @@ document.addEventListener('DOMContentLoaded', async () => {
     config = await res.json();
     updateModeBadge(config.mode);
     renderProviderReference();
+    setupDragDrop();
   } catch (e) {
     console.error('Failed to load config:', e);
   }
 });
+
+// ── Source Input ────────────────────────────────────────────────
+function switchInputTab(mode) {
+  inputMode = mode;
+  ['upload', 'url', 'demo'].forEach(m => {
+    document.getElementById(`tab-${m}`).classList.toggle('active', m === mode);
+    document.getElementById(`panel-${m}`).style.display = m === mode ? 'block' : 'none';
+  });
+}
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 50 * 1024 * 1024) {
+    alert('File too large. Maximum 50MB.');
+    return;
+  }
+  selectedFile = file;
+  showFileInfo(file);
+}
+
+function showFileInfo(file) {
+  document.getElementById('uploadZone').style.display = 'none';
+  const info = document.getElementById('fileInfo');
+  info.style.display = 'flex';
+  document.getElementById('fileName').textContent = file.name;
+  const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+  document.getElementById('fileSize').textContent = `${sizeMB} MB`;
+}
+
+function clearFile() {
+  selectedFile = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileInfo').style.display = 'none';
+  document.getElementById('uploadZone').style.display = 'block';
+}
+
+function setupDragDrop() {
+  const zone = document.getElementById('uploadZone');
+  if (!zone) return;
+
+  zone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', () => {
+    zone.classList.remove('drag-over');
+  });
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && (file.type.startsWith('video/') || file.type.startsWith('audio/'))) {
+      selectedFile = file;
+      showFileInfo(file);
+    }
+  });
+}
+
+function getSourceInput() {
+  if (inputMode === 'upload' && selectedFile) {
+    return { type: 'file', file: selectedFile, name: selectedFile.name };
+  }
+  if (inputMode === 'url') {
+    const url = document.getElementById('videoUrl').value.trim();
+    if (url) return { type: 'url', url };
+  }
+  // Default to demo mode
+  return { type: 'demo' };
+}
 
 function updateModeBadge(mode) {
   const badge = document.getElementById('modeBadge');
@@ -41,17 +114,31 @@ async function runPipeline() {
 
   const sourceLanguage = document.getElementById('sourceLanguage').value;
   const ttsVoice = document.getElementById('ttsVoice').value;
+  const sourceInput = getSourceInput();
 
   try {
     // Animate steps sequentially
     const stageNames = ['step-transcribe', 'step-translate', 'step-synthesize', 'step-lipsync', 'step-mix'];
 
-    // Start request
-    const fetchPromise = fetch('/api/dub', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sourceLanguage, providers: { voice: ttsVoice } }),
-    });
+    // Build request — use FormData if file upload, JSON otherwise
+    let fetchPromise;
+    if (sourceInput.type === 'file') {
+      const formData = new FormData();
+      formData.append('file', sourceInput.file);
+      formData.append('sourceLanguage', sourceLanguage);
+      formData.append('voice', ttsVoice);
+      fetchPromise = fetch('/api/dub', { method: 'POST', body: formData });
+    } else {
+      fetchPromise = fetch('/api/dub', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceLanguage,
+          providers: { voice: ttsVoice },
+          sourceUrl: sourceInput.type === 'url' ? sourceInput.url : undefined,
+        }),
+      });
+    }
 
     // Animate pipeline steps while waiting
     for (let i = 0; i < stageNames.length; i++) {
@@ -129,9 +216,21 @@ function renderTranscription(d) {
     </tr>
   `).join('');
 
+  let sourceHtml = '';
+  if (d.source) {
+    if (d.source.type === 'upload') {
+      const sizeMB = (d.source.size / (1024 * 1024)).toFixed(1);
+      sourceHtml = `Source: <strong>${d.source.name}</strong> (${sizeMB} MB) | `;
+    } else if (d.source.type === 'url') {
+      sourceHtml = `Source: <strong>${d.source.url}</strong> | `;
+    } else {
+      sourceHtml = `Source: <strong>Demo sample</strong> | `;
+    }
+  }
+
   return `
     <p style="margin-bottom:12px;color:var(--text-dim);font-size:0.85rem;">
-      Detected: <strong>${d.language}</strong> | Duration: ${d.duration}s | Words: ${d.wordCount}
+      ${sourceHtml}Detected: <strong>${d.language}</strong> | Duration: ${d.duration}s | Words: ${d.wordCount}
     </p>
     <table class="data-table">
       <thead><tr><th>Start</th><th>End</th><th>Text</th></tr></thead>

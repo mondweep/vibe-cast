@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const { transcribe } = require('./pipeline/transcribe');
 const { translate } = require('./pipeline/translate');
@@ -9,6 +10,19 @@ const { mix } = require('./pipeline/mix');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// File upload config — store in memory for demo, disk for production
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('video/') || file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video and audio files are accepted'));
+    }
+  },
+});
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -67,19 +81,39 @@ app.get('/api/config', (req, res) => {
 // -------------------------------------------------------------------
 // Run the full dubbing pipeline
 // -------------------------------------------------------------------
-app.post('/api/dub', async (req, res) => {
+app.post('/api/dub', upload.single('file'), async (req, res) => {
   const jobId = uuidv4();
-  const { sourceLanguage = 'en', providers = {} } = req.body;
+
+  // Handle both JSON and multipart form data
+  let sourceLanguage, providers, sourceUrl, uploadedFile;
+  if (req.file) {
+    // Multipart upload
+    sourceLanguage = req.body.sourceLanguage || 'en';
+    providers = { voice: req.body.voice || 'ai4bharat-parler' };
+    uploadedFile = { name: req.file.originalname, size: req.file.size, mimetype: req.file.mimetype };
+  } else {
+    sourceLanguage = (req.body && req.body.sourceLanguage) || 'en';
+    providers = (req.body && req.body.providers) || {};
+    sourceUrl = req.body && req.body.sourceUrl;
+  }
 
   const results = { jobId, stages: [], startTime: Date.now() };
 
   try {
     // Stage 1: Transcription
-    const transcribeResult = await transcribe(null, {
+    const transcribeResult = await transcribe(uploadedFile || null, {
       provider: providers.transcription || 'demo',
       sourceLanguage,
       apiKey: process.env.OPENAI_API_KEY || process.env.SARVAM_API_KEY,
     });
+    // Include source info in results
+    if (uploadedFile) {
+      transcribeResult.source = { type: 'upload', name: uploadedFile.name, size: uploadedFile.size };
+    } else if (sourceUrl) {
+      transcribeResult.source = { type: 'url', url: sourceUrl };
+    } else {
+      transcribeResult.source = { type: 'demo' };
+    }
     results.stages.push({
       name: 'Transcription (ASR)',
       status: 'complete',

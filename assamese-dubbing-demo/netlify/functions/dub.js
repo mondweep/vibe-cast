@@ -9,14 +9,26 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  let body;
-  try {
-    body = JSON.parse(event.body || '{}');
-  } catch {
-    return { statusCode: 400, body: 'Invalid JSON' };
-  }
+  // Parse body — handle both JSON and multipart (multipart falls back to demo)
+  let sourceLanguage = 'en';
+  let providers = {};
+  let sourceUrl;
+  const contentType = (event.headers['content-type'] || '');
 
-  const { sourceLanguage = 'en', providers = {} } = body;
+  if (contentType.includes('multipart/form-data')) {
+    // Netlify Functions don't natively parse multipart — treat as demo with file noted
+    sourceLanguage = 'en';
+    providers = {};
+  } else {
+    try {
+      const body = JSON.parse(event.body || '{}');
+      sourceLanguage = body.sourceLanguage || 'en';
+      providers = body.providers || {};
+      sourceUrl = body.sourceUrl;
+    } catch {
+      return { statusCode: 400, body: 'Invalid JSON' };
+    }
+  }
   const jobId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   const results = { jobId, stages: [], startTime: Date.now() };
 
