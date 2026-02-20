@@ -47,8 +47,8 @@ async function transcribe(filePath, options = {}) {
     return await transcribeWithElevenLabs(filePath, apiKey);
   }
 
-  // Demo mode: simulate processing with realistic delay
-  await simulateProcessing(2000);
+  // Demo mode: simulate processing
+  await simulateProcessing(800);
 
   const transcript = SAMPLE_TRANSCRIPTS[sourceLanguage] || SAMPLE_TRANSCRIPTS.en;
   return {

@@ -37,7 +37,7 @@ async function translate(segments, options = {}) {
   }
 
   // Demo mode
-  await simulateProcessing(1800);
+  await simulateProcessing(700);
 
   const samples = SAMPLE_TRANSLATIONS[sourceLanguage] || SAMPLE_TRANSLATIONS.en;
   return {

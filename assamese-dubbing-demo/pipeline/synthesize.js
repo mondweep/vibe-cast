@@ -66,7 +66,7 @@ async function synthesize(translatedSegments, options = {}) {
   }
 
   // Demo mode
-  await simulateProcessing(2500);
+  await simulateProcessing(900);
 
   const voiceInfo = VOICES[voice] || VOICES['ai4bharat-parler'];
   const segments = translatedSegments.map((seg, i) => {

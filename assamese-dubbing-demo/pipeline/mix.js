@@ -31,7 +31,7 @@ async function mix(synthesizedAudio, originalVideoPath, options = {}) {
   const { provider = 'demo' } = options;
 
   // Demo mode
-  await simulateProcessing(2000);
+  await simulateProcessing(600);
 
   const segments = synthesizedAudio.segments || [];
   const totalDuration = synthesizedAudio.totalDuration || 19.5;

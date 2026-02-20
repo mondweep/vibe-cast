@@ -50,7 +50,7 @@ async function lipsync(videoPath, audioSegments, options = {}) {
   }
 
   // Demo mode
-  await simulateProcessing(3000);
+  await simulateProcessing(1000);
 
   const engineInfo = LIPSYNC_ENGINES[engine] || LIPSYNC_ENGINES['wav2lip'];
   return {
