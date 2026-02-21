@@ -33,6 +33,21 @@ export function Layout() {
       <main className="main">
         <Outlet />
       </main>
+
+      <footer className="footer">
+        <p>
+          Built by <strong>Mondweep Chakravorty</strong>
+          {' · '}
+          <a
+            href="https://www.linkedin.com/in/mondweepchakravorty/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer__link"
+          >
+            Questions? Connect on LinkedIn
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }

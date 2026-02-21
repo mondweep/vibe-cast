@@ -1,6 +1,7 @@
 import type { BeatPosition } from '../../metronome/domain/types.ts';
 import type { Progression } from '../domain/types.ts';
 import { ChordLabel } from './ChordLabel.tsx';
+import { MiniChordDiagram } from './MiniChordDiagram.tsx';
 
 interface ProgressionDisplayProps {
   progression: Progression;
@@ -16,9 +17,8 @@ export function ProgressionDisplay({ progression, currentPosition, isPlaying }: 
         {progression.bars.map(bar => (
           <div
             key={bar.barNumber}
-            className={`progression-display__bar ${
-              isPlaying && currentPosition.bar === bar.barNumber ? 'progression-display__bar--active' : ''
-            }`}
+            className={`progression-display__bar ${isPlaying && currentPosition.bar === bar.barNumber ? 'progression-display__bar--active' : ''
+              }`}
           >
             <div className="progression-display__bar-label">
               Bar {bar.barNumber}
@@ -36,12 +36,17 @@ export function ProgressionDisplay({ progression, currentPosition, isPlaying }: 
                   currentPosition.subdivision === 'down';
 
                 return (
-                  <ChordLabel
-                    key={i}
-                    chord={segment.chord}
-                    isActive={isActive}
-                    isSilence={isSilence}
-                  />
+                  <div key={i} className="progression-display__segment">
+                    <ChordLabel
+                      chord={segment.chord}
+                      isActive={isActive}
+                      isSilence={isSilence}
+                    />
+                    <MiniChordDiagram
+                      chord={segment.chord}
+                      isActive={isActive}
+                    />
+                  </div>
                 );
               })}
             </div>

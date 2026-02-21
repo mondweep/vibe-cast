@@ -8,6 +8,7 @@ import {
   SUBDIVISIONS_PER_BEAT,
   TICKS_PER_BAR,
 } from './types.ts';
+import { playClick, type ClickType } from './metronome-audio.ts';
 
 export function clampBpm(bpm: number): BPM {
   return Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(bpm)));
@@ -65,6 +66,18 @@ export function createMetronomeEngine(
 
   function emitTick() {
     const position = getCurrentPosition();
+
+    // Play audio click
+    let clickType: ClickType;
+    if (position.subdivision === 'down' && position.beat === 1) {
+      clickType = 'accent';
+    } else if (position.subdivision === 'down') {
+      clickType = 'beat';
+    } else {
+      clickType = 'upbeat';
+    }
+    playClick(clickType);
+
     for (const listener of listeners) {
       listener(position);
     }
