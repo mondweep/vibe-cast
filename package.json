@@ -1,0 +1,24 @@
+{
+  "name": "vibe-cast",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "dependencies": {
+    "@types/node": "^24.10.1",
+    "@types/uuid": "^10.0.0",
+    "decimal.js": "^10.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
+  }
+}
