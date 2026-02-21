@@ -1,0 +1,537 @@
+/* ===== CSS Reset & Variables ===== */
+:root {
+  --color-bg: #1a1a2e;
+  --color-surface: #16213e;
+  --color-primary: #0f3460;
+  --color-accent: #e94560;
+  --color-text: #eee;
+  --color-text-muted: #aaa;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #f44336;
+  --color-silence: #9c27b0;
+
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: system-ui, -apple-system, sans-serif;
+
+  --radius: 8px;
+  --radius-lg: 16px;
+  --spacing: 16px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Layout ===== */
+.layout {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--spacing);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing) 0;
+  border-bottom: 1px solid var(--color-primary);
+}
+
+.header__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+/* ===== Navigation ===== */
+.nav {
+  display: flex;
+  gap: 4px;
+  padding: 12px 0;
+  overflow-x: auto;
+}
+
+.nav__link {
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav__link:hover { background: var(--color-primary); color: var(--color-text); }
+.nav__link--active { background: var(--color-accent); color: white; }
+
+.main {
+  flex: 1;
+  padding: var(--spacing) 0;
+}
+
+/* ===== Pages ===== */
+.page { display: flex; flex-direction: column; gap: var(--spacing); }
+.page h2 { font-size: 1.5rem; font-weight: 700; }
+.page__subtitle { color: var(--color-text-muted); font-size: 0.875rem; }
+
+/* ===== Buttons ===== */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn:active { transform: scale(0.97); }
+.btn--primary { background: var(--color-accent); color: white; }
+.btn--primary:hover { background: #d13350; }
+.btn--secondary { background: var(--color-primary); color: var(--color-text); }
+.btn--secondary:hover { background: #1a4a80; }
+.btn--small { padding: 6px 12px; font-size: 0.75rem; }
+.btn--active { background: var(--color-accent); color: white; }
+
+/* ===== Metronome ===== */
+.metronome-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing);
+  padding: var(--spacing);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+.metronome-controls__toggle {
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 80px;
+}
+
+.metronome-controls__bpm {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metronome-controls__bpm label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.metronome-controls__bpm input[type="range"] {
+  width: 100%;
+  accent-color: var(--color-accent);
+}
+
+/* ===== Beat Indicator ===== */
+.beat-indicator {
+  padding: var(--spacing);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+.beat-indicator__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.beat-indicator__dot {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  background: var(--color-primary);
+  color: var(--color-text-muted);
+  transition: background 0.1s, color 0.1s, transform 0.1s;
+}
+
+.beat-indicator__dot--downbeat { font-size: 1rem; }
+.beat-indicator__dot--upbeat { font-size: 0.75rem; opacity: 0.7; }
+.beat-indicator__dot--active {
+  background: var(--color-accent);
+  color: white;
+  transform: scale(1.2);
+}
+
+/* ===== Progression Display ===== */
+.progression-display {
+  padding: var(--spacing);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+.progression-display__title {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+.progression-display__bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.progression-display__bar {
+  padding: 12px;
+  background: var(--color-primary);
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.progression-display__bar--active {
+  border-color: var(--color-accent);
+}
+
+.progression-display__bar-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.progression-display__bar-tag {
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: var(--color-accent);
+  border-radius: 4px;
+  font-size: 0.625rem;
+  color: white;
+}
+
+.progression-display__segments {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== Chord Label ===== */
+.chord-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.125rem;
+  background: rgba(255,255,255,0.05);
+  transition: background 0.15s, color 0.15s;
+}
+
+.chord-label--active {
+  background: var(--color-accent);
+  color: white;
+}
+
+.chord-label--silence {
+  background: var(--color-silence);
+  animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+.chord-label__silence-badge {
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+@keyframes pulse {
+  from { opacity: 1; }
+  to { opacity: 0.6; }
+}
+
+/* ===== Fretboard ===== */
+.fretboard {
+  display: flex;
+  gap: 4px;
+  padding: var(--spacing);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+}
+
+.fretboard__string-names {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fretboard__string-label {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  width: 24px;
+}
+
+.fretboard__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.fretboard__string {
+  display: flex;
+  gap: 2px;
+}
+
+.fretboard__fret {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--color-primary);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+  position: relative;
+}
+
+.fretboard__fret:hover { background: rgba(255,255,255,0.1); }
+
+.fretboard__dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.fretboard__dot--placed .fretboard__dot { background: var(--color-accent); }
+.fretboard__dot--correct .fretboard__dot { background: var(--color-success); }
+.fretboard__dot--incorrect .fretboard__dot { background: var(--color-error); }
+.fretboard__dot--missed .fretboard__dot { background: var(--color-warning); opacity: 0.6; }
+
+.fretboard__fret.fretboard__dot--placed { background: rgba(233, 69, 96, 0.2); }
+.fretboard__fret.fretboard__dot--correct { background: rgba(76, 175, 80, 0.2); }
+.fretboard__fret.fretboard__dot--incorrect { background: rgba(244, 67, 54, 0.2); }
+.fretboard__fret.fretboard__dot--missed { background: rgba(255, 152, 0, 0.15); }
+
+.drill-result {
+  padding: var(--spacing);
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+}
+
+.fretboard-page__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.fretboard-page__chord-select {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* ===== Tap Zone ===== */
+.tap-zone {
+  width: 100%;
+  height: 200px;
+  border: 3px dashed var(--color-primary);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  transition: background 0.1s, border-color 0.1s, transform 0.05s;
+  user-select: none;
+}
+
+.tap-zone--active { border-color: var(--color-accent); color: var(--color-text); }
+.tap-zone--active:active { transform: scale(0.98); background: rgba(233, 69, 96, 0.1); }
+.tap-zone--perfect .tap-zone__feedback { color: var(--color-success); }
+.tap-zone--good .tap-zone__feedback { color: var(--color-warning); }
+.tap-zone--miss .tap-zone__feedback { color: var(--color-error); }
+.tap-zone--silence_violation .tap-zone__feedback { color: var(--color-silence); }
+.tap-zone:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.silence-warning { color: var(--color-silence); }
+
+.rhythm-stats {
+  display: flex;
+  gap: var(--spacing);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  padding: var(--spacing);
+  background: var(--color-surface);
+  border-radius: var(--radius);
+}
+
+/* ===== Flashcard ===== */
+.flashcard {
+  width: 100%;
+  min-height: 200px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  perspective: 1000px;
+  font-family: inherit;
+  text-align: left;
+}
+
+.flashcard__inner {
+  padding: 24px;
+  transition: transform 0.4s;
+}
+
+.flashcard--flipped .flashcard__front { display: none; }
+.flashcard:not(.flashcard--flipped) .flashcard__back { display: none; }
+
+.flashcard__category {
+  display: inline-block;
+  padding: 4px 8px;
+  background: var(--color-primary);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  margin-bottom: 16px;
+}
+
+.flashcard__question { font-size: 1.125rem; line-height: 1.5; }
+.flashcard__answer { font-size: 1rem; line-height: 1.6; color: var(--color-success); }
+.flashcard__hint { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 16px; display: block; }
+
+/* ===== Confidence Buttons ===== */
+.confidence-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.confidence-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  transition: opacity 0.15s;
+}
+
+.confidence-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.confidence-btn--again { background: var(--color-error); }
+.confidence-btn--hard { background: var(--color-warning); }
+.confidence-btn--good { background: var(--color-success); }
+.confidence-btn--easy { background: #2196f3; }
+
+/* ===== Streak Badge ===== */
+.streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.streak-badge__fire { font-size: 1.25rem; }
+.streak-badge__count { font-size: 1rem; }
+
+/* ===== Daily Progress ===== */
+.daily-progress {
+  padding: var(--spacing);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+.daily-progress__title {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: var(--color-text-muted);
+}
+
+.daily-progress__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.daily-progress__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.daily-progress__label { font-size: 0.75rem; color: var(--color-text-muted); }
+.daily-progress__value { font-size: 1.5rem; font-weight: 700; font-family: var(--font-mono); }
+
+/* ===== Stats Page ===== */
+.stats-page__streak {
+  display: flex;
+  gap: var(--spacing);
+  padding: var(--spacing);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+.stats-page__streak-current, .stats-page__streak-best {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stats-page__streak-number {
+  font-size: 3rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+}
+
+.stats-page__streak-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .layout { padding: 8px; }
+  .nav { gap: 2px; }
+  .nav__link { padding: 6px 10px; font-size: 0.75rem; }
+  .beat-indicator__dot { width: 32px; height: 32px; font-size: 0.75rem; }
+  .rhythm-stats { flex-direction: column; gap: 4px; }
+}
