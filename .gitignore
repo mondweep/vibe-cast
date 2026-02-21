@@ -1,0 +1,10 @@
+# Build artifacts
+target/
+*.lock
+
+# RVF generated files
+*.rvf
+*.rvf.lock
+
+# OS files
+.DS_Store

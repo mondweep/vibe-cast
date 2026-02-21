@@ -1,0 +1,18 @@
+[package]
+name = "bird-song-rvf"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Bird Song Identifier using RVF — a learning project"
+
+[workspace]
+
+[dependencies]
+rvf-types = { version = "0.1", features = ["std"] }
+rvf-crypto = "0.1"
+rvf-runtime = "0.1"
+tempfile = "3"
+
+[[example]]
+name = "bird_song"
+path = "examples/bird_song.rs"
