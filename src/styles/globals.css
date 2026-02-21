@@ -792,6 +792,50 @@ body {
   color: var(--color-text-muted);
 }
 
+/* ===== About Page ===== */
+.about-section {
+  padding: var(--spacing);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+.about-section h3 {
+  font-size: 1.125rem;
+  margin-bottom: 12px;
+}
+
+.about-section p {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.about-section p:last-child {
+  margin-bottom: 0;
+}
+
+.about-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.about-list li {
+  padding: 8px 12px;
+  background: var(--color-primary);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.about-list li strong {
+  color: var(--color-text);
+}
+
 /* ===== Footer ===== */
 .footer {
   padding: 24px 0 12px;

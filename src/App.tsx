@@ -5,6 +5,7 @@ import { FretboardPage } from './app/FretboardPage.tsx';
 import { RhythmPage } from './app/RhythmPage.tsx';
 import { FlashcardsPage } from './app/FlashcardsPage.tsx';
 import { StatsPage } from './app/StatsPage.tsx';
+import { AboutPage } from './app/AboutPage.tsx';
 import './styles/globals.css';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="rhythm" element={<RhythmPage />} />
           <Route path="flashcards" element={<FlashcardsPage />} />
           <Route path="stats" element={<StatsPage />} />
+          <Route path="about" element={<AboutPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

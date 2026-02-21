@@ -28,6 +28,9 @@ export function Layout() {
         <NavLink to="/stats" className={({ isActive }) => `nav__link ${isActive ? 'nav__link--active' : ''}`}>
           Stats
         </NavLink>
+        <NavLink to="/about" className={({ isActive }) => `nav__link ${isActive ? 'nav__link--active' : ''}`}>
+          About
+        </NavLink>
       </nav>
 
       <main className="main">
