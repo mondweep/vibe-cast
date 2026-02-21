@@ -251,9 +251,8 @@ body {
 
 .progression-display__bars {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 8px;
-  overflow-x: auto;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
 
 .progression-display__bar {
@@ -337,7 +336,7 @@ body {
 }
 
 .mini-chord-diagram__fret-num {
-  width: 18px;
+  width: 16px;
   height: 12px;
   display: flex;
   align-items: center;
@@ -362,8 +361,8 @@ body {
 }
 
 .mini-chord-diagram__cell {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -381,8 +380,8 @@ body {
 }
 
 .mini-chord-diagram__dot {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--color-accent);
   display: flex;
