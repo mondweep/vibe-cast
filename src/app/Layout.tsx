@@ -46,6 +46,15 @@ export function Layout() {
           >
             Questions? Connect on LinkedIn
           </a>
+          {' · '}
+          <a
+            href="https://github.com/mondweep/vibe-cast"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer__link"
+          >
+            GitHub ↗
+          </a>
         </p>
       </footer>
     </div>
