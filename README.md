@@ -1,1 +1,0 @@
-# drum-pad-app-opencode
