@@ -597,6 +597,33 @@ body {
   display: inline-block;
 }
 
+/* Footer */
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+.footer-content p {
+  margin: 4px 0;
+}
+.site-footer a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.site-footer a:hover {
+  text-decoration: underline;
+}
+.footer-links {
+  margin-top: 6px;
+}
+.footer-sep {
+  margin: 0 10px;
+  color: var(--border);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .pipeline-visual {
