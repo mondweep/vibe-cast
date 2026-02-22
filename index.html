@@ -188,6 +188,24 @@
       text-align: center;
       letter-spacing: 2px;
     }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #555;
+      font-size: 0.65rem;
+      line-height: 1.8;
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .footer a:hover {
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
@@ -214,6 +232,12 @@
   </div>
 
   <p class="key-hint">Keyboard: Q W E R A S D F</p>
+
+  <footer class="footer">
+    <p>Built by <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank">Mondweep Chakravorty</a></p>
+    <p>Questions? Reach out to the developer.</p>
+    <p><a href="https://github.com/mondweep/vibe-cast" target="_blank">View on GitHub</a></p>
+  </footer>
 
   <script>
     const AudioContext = window.AudioContext || window.webkitAudioContext;
