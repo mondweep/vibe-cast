@@ -1,0 +1,64 @@
+name: Build & Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'fiat500-tracker/**'
+
+env:
+  PROJECT_ID: fiat500-tracker
+  REGION: europe-west2
+  SERVICE_NAME: fiat500-tracker
+  REPO_NAME: fiat500-tracker
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install and build
+        working-directory: fiat500-tracker
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build and push Docker image
+        working-directory: fiat500-tracker
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image "$IMAGE" \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "NODE_ENV=production" \
+            --set-secrets "SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_SERVICE_KEY=SUPABASE_SERVICE_KEY:latest,FIAT500_TRACKER_API_KEY=FIAT500_TRACKER_API_KEY:latest,SENDGRID_API_KEY=SENDGRID_API_KEY:latest,OPENCLAW_WEBHOOK_URL=OPENCLAW_WEBHOOK_URL:latest,OPENCLAW_WEBHOOK_SECRET=OPENCLAW_WEBHOOK_SECRET:latest"

@@ -1,0 +1,8 @@
+node_modules
+.env
+.git
+.github
+tests
+src
+tsconfig.json
+*.md
