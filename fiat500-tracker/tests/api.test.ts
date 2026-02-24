@@ -32,7 +32,7 @@ function createApp() {
   return app;
 }
 
-describe('Phase 1: API Skeleton', () => {
+describe('API Tests', () => {
   let app: express.Express;
 
   beforeAll(() => {
@@ -66,26 +66,48 @@ describe('Phase 1: API Skeleton', () => {
       const res = await request(app)
         .get('/api/shortlist')
         .set('Authorization', `Bearer ${API_KEY}`);
-      // Should not be 401 — it might be 200 or 500 depending on Supabase
       expect(res.status).not.toBe(401);
     });
   });
 
-  describe('Route stubs', () => {
-    it('GET /api/shortlist returns array', async () => {
+  describe('Config routes', () => {
+    it('GET /api/config returns 404 when no config exists', async () => {
       const res = await request(app)
-        .get('/api/shortlist')
+        .get('/api/config')
         .set('Authorization', `Bearer ${API_KEY}`);
-      // May be 200 with empty array or 500 if tables don't exist yet
-      expect([200, 500]).toContain(res.status);
+      // 404 if no config, 200 if config exists
+      expect([200, 404]).toContain(res.status);
     });
 
-    it('POST /api/scrape/trigger returns 202', async () => {
+    it('PUT /api/config rejects invalid body', async () => {
+      const res = await request(app)
+        .put('/api/config')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({ postcode: 'INVALID' });
+      expect(res.status).toBe(400);
+    });
+
+    it('PUT /api/config validates budget_min < budget_max', async () => {
+      const res = await request(app)
+        .put('/api/config')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({
+          postcode: 'GU14 6TH',
+          budget_min: 500000,
+          budget_max: 100000,
+          adults: [{ age: 40, ncb_years: 5 }],
+        });
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('Scrape routes', () => {
+    it('POST /api/scrape/trigger returns 400 without config', async () => {
       const res = await request(app)
         .post('/api/scrape/trigger')
         .set('Authorization', `Bearer ${API_KEY}`);
-      expect(res.status).toBe(202);
-      expect(res.body.status).toBe('started');
+      // 400 if no config, 202 if config exists
+      expect([202, 400]).toContain(res.status);
     });
 
     it('GET /api/scrape/status returns status', async () => {
@@ -93,54 +115,100 @@ describe('Phase 1: API Skeleton', () => {
         .get('/api/scrape/status')
         .set('Authorization', `Bearer ${API_KEY}`);
       expect(res.status).toBe(200);
-      expect(res.body.status).toBe('idle');
+    });
+  });
+
+  describe('Listings routes', () => {
+    it('GET /api/listings returns array', async () => {
+      const res = await request(app)
+        .get('/api/listings')
+        .set('Authorization', `Bearer ${API_KEY}`);
+      expect([200, 500]).toContain(res.status);
     });
 
-    it('POST /api/conversations creates draft (stub)', async () => {
+    it('GET /api/listings/:id returns 404 for non-existent listing', async () => {
       const res = await request(app)
-        .post('/api/conversations')
+        .get('/api/listings/00000000-0000-0000-0000-000000000000')
+        .set('Authorization', `Bearer ${API_KEY}`);
+      expect(res.status).toBe(404);
+    });
+
+    it('POST /api/listings/manual rejects invalid URL', async () => {
+      const res = await request(app)
+        .post('/api/listings/manual')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ listing_id: 'test-id', template: 'initial_enquiry' });
-      expect(res.status).toBe(201);
+        .send({ url: 'not-a-url' });
+      expect(res.status).toBe(400);
     });
 
-    it('GET /api/conversations returns array', async () => {
-      const res = await request(app)
-        .get('/api/conversations')
-        .set('Authorization', `Bearer ${API_KEY}`);
-      expect(res.status).toBe(200);
-      expect(res.body).toEqual([]);
-    });
-
-    it('POST /api/tracking/pause returns success', async () => {
-      const res = await request(app)
-        .post('/api/tracking/pause')
-        .set('Authorization', `Bearer ${API_KEY}`);
-      expect(res.status).toBe(200);
-      expect(res.body.tracking_active).toBe(false);
-    });
-
-    it('POST /api/tracking/resume returns success', async () => {
-      const res = await request(app)
-        .post('/api/tracking/resume')
-        .set('Authorization', `Bearer ${API_KEY}`);
-      expect(res.status).toBe(200);
-      expect(res.body.tracking_active).toBe(true);
-    });
-
-    it('POST /api/webhooks/email-inbound returns success', async () => {
-      const res = await request(app)
-        .post('/api/webhooks/email-inbound')
-        .set('Authorization', `Bearer ${API_KEY}`);
-      expect(res.status).toBe(200);
-    });
-
-    it('POST /api/listings/manual returns 201', async () => {
+    it('POST /api/listings/manual returns 422 when Playwright unavailable', async () => {
       const res = await request(app)
         .post('/api/listings/manual')
         .set('Authorization', `Bearer ${API_KEY}`)
         .send({ url: 'https://www.autotrader.co.uk/car/123' });
-      expect(res.status).toBe(201);
+      // 422 if Playwright not installed, 201 if it is
+      expect([201, 422]).toContain(res.status);
+    });
+  });
+
+  describe('Conversation routes', () => {
+    it('POST /api/conversations rejects invalid listing_id', async () => {
+      const res = await request(app)
+        .post('/api/conversations')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({ listing_id: 'not-a-uuid', template: 'initial_enquiry' });
+      expect(res.status).toBe(400);
+    });
+
+    it('POST /api/conversations returns 404 for non-existent listing', async () => {
+      const res = await request(app)
+        .post('/api/conversations')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({ listing_id: '00000000-0000-0000-0000-000000000000', template: 'initial_enquiry' });
+      expect(res.status).toBe(404);
+    });
+
+    it('GET /api/conversations returns array or error', async () => {
+      const res = await request(app)
+        .get('/api/conversations')
+        .set('Authorization', `Bearer ${API_KEY}`);
+      // 200 if table exists, 500 if not
+      expect([200, 500]).toContain(res.status);
+    });
+  });
+
+  describe('Tracking routes', () => {
+    it('POST /api/tracking/pause returns 404 without config or 200 with config', async () => {
+      const res = await request(app)
+        .post('/api/tracking/pause')
+        .set('Authorization', `Bearer ${API_KEY}`);
+      // 404 if no config, 200 if config exists
+      expect([200, 404]).toContain(res.status);
+    });
+
+    it('POST /api/tracking/resume returns 404 without config or 200 with config', async () => {
+      const res = await request(app)
+        .post('/api/tracking/resume')
+        .set('Authorization', `Bearer ${API_KEY}`);
+      expect([200, 404]).toContain(res.status);
+    });
+  });
+
+  describe('Webhook routes', () => {
+    it('POST /api/webhooks/email-inbound rejects missing sender', async () => {
+      const res = await request(app)
+        .post('/api/webhooks/email-inbound')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({});
+      expect(res.status).toBe(400);
+    });
+
+    it('POST /api/webhooks/email-inbound processes valid email', async () => {
+      const res = await request(app)
+        .post('/api/webhooks/email-inbound')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({ from: 'seller@example.com', subject: 'Re: Fiat 500', text: 'Yes still available' });
+      expect(res.status).toBe(200);
     });
   });
 });

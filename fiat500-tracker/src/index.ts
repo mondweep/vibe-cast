@@ -9,6 +9,7 @@ import conversationsRoutes from './routes/conversations.js';
 import scrapeRoutes from './routes/scrape.js';
 import trackingRoutes from './routes/tracking.js';
 import webhooksRoutes from './routes/webhooks.js';
+import { startDigestScheduler } from './scheduler/digest.js';
 
 const app = express();
 
@@ -47,6 +48,7 @@ const port = parseInt(env.PORT, 10);
 
 app.listen(port, () => {
   console.log(`Fiat 500 Tracker API running on port ${port}`);
+  startDigestScheduler();
 });
 
 export { app };
