@@ -3,6 +3,5 @@ node_modules
 .git
 .github
 tests
-src
-tsconfig.json
+dist
 *.md

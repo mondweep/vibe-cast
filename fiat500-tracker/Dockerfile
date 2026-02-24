@@ -1,3 +1,17 @@
+# Stage 1: Build TypeScript
+FROM node:20-slim AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY tsconfig.json ./
+COPY src/ ./src/
+
+RUN npm run build
+
+# Stage 2: Production with Playwright
 FROM mcr.microsoft.com/playwright:v1.50.0-noble
 
 WORKDIR /app
@@ -5,7 +19,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-COPY dist/ ./dist/
+COPY --from=builder /app/dist/ ./dist/
 
 EXPOSE 8080
 
