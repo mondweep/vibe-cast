@@ -1,0 +1,31 @@
+# Security: Never commit sensitive credentials
+.private/
+.env
+.env.local
+.env.*.local
+*.key
+secrets.json
+openclaw.json
+fiat500-api-config.json
+
+# Build artifacts (optional: commit if you prefer pre-built JS)
+dist/
+*.js
+!node_modules/**/*.js
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

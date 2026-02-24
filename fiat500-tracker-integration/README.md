@@ -11,7 +11,8 @@
 ```
 ┌─────────────────────────────────┐
 │  Fiat 500 Tracker (GCP Cloud Run)│
-│  https://fiat500-tracker-...     │
+│  https://fiat500-tracker-XXXXX.  │
+│         europe-west2.run.app     │
 └──────────────┬──────────────────┘
                │ (1) Webhook events
                │ (POST /webhooks/fiat500)
@@ -21,7 +22,7 @@
                ↓
 ┌──────────────────────────────────┐
 │  OpenClaw Gateway (EC2)          │
-│  Maina (100.96.199.93:18789)     │
+│  Maina (Tailscale private IP)    │
 ├──────────────────────────────────┤
 │ • Webhook receiver (/webhooks)  │
 │ • Message routing (/tracker)     │
@@ -41,8 +42,8 @@
 - **Behavior:** Parse event, format for WhatsApp, push to user
 
 ### 2. Outbound API Client
-- **Auth:** Bearer token (Fiat500 API Key)
-- **Base URL:** https://fiat500-tracker-83829553594.europe-west2.run.app
+- **Auth:** Bearer token (Fiat500 API Key, stored in `.private/fiat500-api-config.json`)
+- **Base URL:** `https://fiat500-tracker-XXXXX.europe-west2.run.app` (GCP Cloud Run endpoint, masked for security)
 - **Retry:** Exponential backoff on 5xx/timeout
 - **Timeout:** 30s per request
 

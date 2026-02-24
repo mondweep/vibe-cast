@@ -73,9 +73,11 @@
 
 ### 1. Compile TypeScript
 ```bash
-cd /home/ec2-user/.openclaw/workspace/fiat500-tracker-integration
+cd [YOUR_OPENCLAW_WORKSPACE]/fiat500-tracker-integration
 npx tsc *.ts --target ES2020 --module commonjs --outDir ./dist
 ```
+
+**Replace `[YOUR_OPENCLAW_WORKSPACE]` with your OpenClaw workspace path** (e.g., `/home/[username]/.openclaw/workspace`)
 
 ### 2. Test Connectivity
 ```bash
@@ -203,17 +205,25 @@ WhatsApp displays notification
 
 ## Credentials
 
-**All stored in:** `~/.private/fiat500-api-config.json`
+**All stored in:** `~/.private/fiat500-api-config.json` (ENCRYPTED, NEVER commit to git)
 
 ```json
 {
-  "baseUrl": "https://fiat500-tracker-83829553594.europe-west2.run.app",
-  "apiKey": "51b88c8bc38d738e79582f17bec921821db461323fbb2240691d940b3b931931",
-  "webhookSecret": "6a516b2129ee22bbc1347a904104e5bd5dc649a7b5716797"
+  "baseUrl": "https://fiat500-tracker-XXXXX.europe-west2.run.app",
+  "apiKey": "[YOUR_API_KEY]",
+  "webhookSecret": "[YOUR_WEBHOOK_SECRET]"
 }
 ```
 
-**⚠️ Never commit credentials to git.**
+**⚠️ CRITICAL:** Never commit this file to GitHub. It contains:
+- API keys (can be used to call your service)
+- Webhook secrets (can be used to impersonate webhooks)
+- Infrastructure details
+
+**Best practice:** Use `.gitignore` to exclude `.private/` folder
+```
+echo ".private/" >> .gitignore
+```
 
 ---
 
@@ -227,13 +237,14 @@ tail -f ~/.openclaw/logs/gateway.log | grep fiat500
 ### Tailscale Status
 ```bash
 sudo tailscale status
-# Verify: 100.96.199.93 maina-ec2 online ✓
+# Verify: [Tailscale private IP] maina-ec2 online ✓
 ```
 
-### Test API Directly
+### Test API Directly (Load credentials from config, never hardcode)
 ```bash
-curl -H "Authorization: Bearer $API_KEY" \
-  https://fiat500-tracker-83829553594.europe-west2.run.app/api/shortlist
+source ~/.private/fiat500-api-config.json
+curl -H "Authorization: Bearer $apiKey" \
+  $baseUrl/api/shortlist
 ```
 
 ---

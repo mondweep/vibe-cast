@@ -22,7 +22,7 @@ This integration connects your **Fiat 500 Tracker** (GCP Cloud Run) to **OpenCla
 ```
 GCP Cloud Run (Fiat500 Tracker)
       ↓ (Webhook events every 3 hours + seller replies)
-  [Tailscale VPN, private IP 100.96.199.93:18789]
+  [Tailscale VPN, private IP 100.96.X.X:18789]
       ↓
 EC2 OpenClaw Gateway
   ├─ Webhook receiver (POST /webhooks/fiat500)
@@ -45,13 +45,14 @@ EC2 OpenClaw Gateway
 ✅ **Tailscale setup complete:**
 ```bash
 sudo tailscale status
-# Output: 100.96.199.93  maina-ec2  online ✓
+# Output: [Tailscale private IP]  maina-ec2  online ✓
 ```
 
-✅ **Fiat500 API credentials stored:**
+✅ **Fiat500 API credentials stored (ENCRYPTED):**
 ```bash
 cat ~/.private/fiat500-api-config.json
 # Contains: baseUrl, apiKey, webhookSecret
+# ⚠️ NEVER commit this file to Git
 ```
 
 ✅ **Node.js 18+** (already installed on EC2)
@@ -92,7 +93,7 @@ Add to the `hooks.internal.entries` section:
         "command-logger": { "enabled": true },
         "fiat500-tracker": {
           "enabled": true,
-          "module": "/home/ec2-user/.openclaw/workspace/fiat500-tracker-integration/dist/openclaw-integration.js",
+          "module": "[YOUR_OPENCLAW_WORKSPACE]/fiat500-tracker-integration/dist/openclaw-integration.js",
           "export": "createFiat500Integration",
           "routes": [
             {
@@ -108,6 +109,8 @@ Add to the `hooks.internal.entries` section:
 }
 ```
 
+**Note:** Replace `[YOUR_OPENCLAW_WORKSPACE]` with your actual OpenClaw workspace path (e.g., `/home/[username]/.openclaw/workspace`)
+
 Then restart OpenClaw:
 
 ```bash
@@ -121,15 +124,22 @@ openclaw gateway restart
 In your **Fiat500 Tracker** environment variables (GCP Cloud Run):
 
 ```bash
-OPENCLAW_WEBHOOK_URL=http://100.96.199.93:18789/webhooks/fiat500
-OPENCLAW_WEBHOOK_SECRET=6a516b2129ee22bbc1347a904104e5bd5dc649a7b5716797
+OPENCLAW_WEBHOOK_URL=http://[TAILSCALE_PRIVATE_IP]:18789/webhooks/fiat500
+OPENCLAW_WEBHOOK_SECRET=[YOUR_WEBHOOK_SECRET]
 ```
+
+**Replace with actual values:**
+- `[TAILSCALE_PRIVATE_IP]` — Output of `sudo tailscale status` (e.g., 100.96.X.X)
+- `[YOUR_WEBHOOK_SECRET]` — Generated webhook secret (never hardcode, use GCP Secret Manager)
 
 Redeploy the GCP app:
 ```bash
 gcloud run deploy fiat500-tracker \
-  --update-env-vars OPENCLAW_WEBHOOK_URL=http://100.96.199.93:18789/webhooks/fiat500,OPENCLAW_WEBHOOK_SECRET=6a516b2129ee22bbc1347a904104e5bd5dc649a7b5716797
+  --update-env-vars OPENCLAW_WEBHOOK_URL=http://[TAILSCALE_PRIVATE_IP]:18789/webhooks/fiat500 \
+  --set-secrets OPENCLAW_WEBHOOK_SECRET=projects/[PROJECT_ID]/secrets/openclaw-webhook-secret/versions/latest
 ```
+
+**Security best practice:** Store secrets in [Google Cloud Secret Manager](https://cloud.google.com/secret-manager), not as plaintext env vars.
 
 ---
 
@@ -156,15 +166,19 @@ sudo tailscale status
 
 ```bash
 # From EC2, test Fiat500 API connectivity
-curl -H "Authorization: Bearer 51b88c8bc38d738e79582f17bec921821db461323fbb2240691d940b3b931931" \
-  https://fiat500-tracker-83829553594.europe-west2.run.app/health
+# Load credentials from secure config file (NEVER hardcode!)
+source ~/.private/fiat500-api-config.json
+curl -H "Authorization: Bearer $apiKey" \
+  $baseUrl/health
 ```
 
 ### Test 2: Get Shortlist
 
 ```bash
-curl -H "Authorization: Bearer 51b88c8bc38d738e79582f17bec921821db461323fbb2240691d940b3b931931" \
-  https://fiat500-tracker-83829553594.europe-west2.run.app/api/shortlist | jq .
+# Load credentials from secure config file
+source ~/.private/fiat500-api-config.json
+curl -H "Authorization: Bearer $apiKey" \
+  $baseUrl/api/shortlist | jq .
 ```
 
 ### Test 3: Send WhatsApp Message
@@ -184,9 +198,12 @@ You should receive:
 From your Fiat500 app, post a test event:
 
 ```bash
-curl -X POST http://100.96.199.93:18789/webhooks/fiat500 \
+# Load credentials from config (NEVER hardcode in scripts!)
+source ~/.private/fiat500-api-config.json
+
+curl -X POST http://[TAILSCALE_PRIVATE_IP]:18789/webhooks/fiat500 \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer 6a516b2129ee22bbc1347a904104e5bd5dc649a7b5716797" \
+  -H "Authorization: Bearer $webhookSecret" \
   -d '{
     "event": "new_shortlist_entry",
     "timestamp": "2026-02-24T22:50:00Z",
@@ -204,6 +221,8 @@ curl -X POST http://100.96.199.93:18789/webhooks/fiat500 \
     }
   }'
 ```
+
+**Replace `[TAILSCALE_PRIVATE_IP]` with output of `sudo tailscale status`**
 
 ---
 
@@ -247,7 +266,7 @@ Each webhook becomes a formatted WhatsApp message.
 ### "Unauthorized: invalid webhook secret"
 
 **Cause:** GCP app sending wrong secret  
-**Fix:** Verify `OPENCLAW_WEBHOOK_SECRET` in Cloud Run env vars matches `6a516b2129ee22bbc1347a904104e5bd5dc649a7b5716797`
+**Fix:** Verify `OPENCLAW_WEBHOOK_SECRET` in Cloud Run env vars matches the value in `~/.private/fiat500-api-config.json` → `webhookSecret`
 
 ### "API unreachable"
 
