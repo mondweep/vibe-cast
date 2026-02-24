@@ -1,9 +1,9 @@
 # PRD: Fiat 500 Car Tracker
 
-**Version:** 0.2
+**Version:** 0.3
 **Date:** 2026-02-24
 **Author:** Auto-generated
-**Status:** Awaiting review
+**Status:** Awaiting final review — all questions resolved
 
 ---
 
@@ -55,7 +55,7 @@ All of the following will be scraped/queried on a recurring schedule:
 |----------|------|---------------|
 | **AutoTrader** | Dealer + private | Web scraping / API |
 | **Gumtree** | Private + trade | Web scraping |
-| **Facebook Marketplace** | Private + trade | Web scraping / manual fallback |
+| **Facebook Marketplace** | Private + trade | Manual — paste links into WhatsApp, Tracker fetches + scores |
 | **CarGurus** | Dealer aggregator | Web scraping / API |
 | **Cinch** | Online dealer | API / scraping |
 | **Cazoo** | Online dealer | API / scraping |
@@ -149,6 +149,7 @@ OpenClaw will call the Tracker API to persist this configuration in Supabase.
 | "Show price history for car 5" | OpenClaw calls `GET /api/listings/{id}/price-history` |
 | "Pause tracking" / "Resume tracking" | Pauses/resumes the cron schedule |
 | "Show insurance breakdown for car 2" | OpenClaw calls `GET /api/listings/{id}/insurance` |
+| "Add this car: [URL]" | OpenClaw calls `POST /api/listings/manual` — fetches details from the URL, scores it, adds to tracker (useful for FB Marketplace) |
 
 ### OpenClaw tool registration
 
@@ -187,6 +188,12 @@ The Tracker exposes itself as a tool for OpenClaw to call. This is registered in
       "method": "GET",
       "path": "/api/listings/{id}/insurance",
       "description": "Get insurance estimate breakdown for a listing"
+    },
+    {
+      "name": "add_manual_listing",
+      "method": "POST",
+      "path": "/api/listings/manual",
+      "description": "Manually add a listing by URL (e.g. from Facebook Marketplace)"
     },
     {
       "name": "draft_email",
@@ -238,7 +245,7 @@ The Tracker pushes events to OpenClaw via webhook. OpenClaw formats them and sen
 | Price drop on tracked car | "Price drop alert! 2016 Fiat 500 0.9 TwinAir dropped from £6,200 to £5,800 on AutoTrader. Say 'tell me about car 4' for details." |
 | Seller replied to your email | "Reply from Surrey Motors about the 2017 500 Pop: 'Hi, yes the car is still available. Happy to arrange a viewing this weekend.' Reply here to respond." |
 | Listing removed (car sold) | "Heads up: the 2018 Fiat 500 Lounge (£7,200, CarGurus) is no longer listed — likely sold." |
-| Daily digest (configurable) | "Daily Fiat 500 update: 3 new listings found, 1 price drop, top pick is a 2017 0.9 TwinAir at £5,450 in Brighton (score 91)." |
+| Daily digest (6pm daily) | "Daily Fiat 500 update: 3 new listings found, 1 price drop, top pick is a 2017 0.9 TwinAir at £5,450 in Brighton (score 91)." |
 
 ### Dealer email engagement flow
 
@@ -384,6 +391,7 @@ All endpoints require `Authorization: Bearer <API_KEY>` header.
 | GET | `/api/listings/{id}` | Full details of one listing |
 | GET | `/api/listings/{id}/price-history` | Price changes over time |
 | GET | `/api/listings/{id}/insurance` | Insurance estimate breakdown |
+| POST | `/api/listings/manual` | Manually add a listing (e.g. from FB Marketplace link) |
 
 ### Conversations
 
@@ -529,7 +537,7 @@ All endpoints require `Authorization: Bearer <API_KEY>` header.
 | Database | Supabase (PostgreSQL) |
 | Scraping | Playwright (headless Chromium in container) |
 | Scheduling | GCP Cloud Scheduler (triggers scrape endpoint every 3 hours) |
-| Email sending | SendGrid (transactional API) |
+| Email sending | SendGrid free tier (100 emails/day — transactional API) |
 | Email receiving | SendGrid Inbound Parse (webhook to Cloud Run) |
 | WhatsApp | OpenClaw (existing EC2 instance) |
 | Insurance data | Comparison site APIs / scraping / manual entry fallback |
@@ -621,27 +629,22 @@ Once the Tracker is deployed to Cloud Run, register it as a tool in OpenClaw:
 
 ---
 
-## 16. Resolved Questions
+## 16. All Questions Resolved
 
 | Question | Resolution |
 |----------|-----------|
 | Budget | £5,000 – £8,000 |
-| Engine preference | 0.9L TwinAir and 1.2L 8v only (low insurance) |
+| Engine preference | 0.9L TwinAir and 1.2L 8v only (insurance groups 6-10) |
 | Daughter's age | 17 |
-| Platforms | All major UK platforms |
+| Platforms | All major UK platforms (9 automated + FB Marketplace manual) |
+| Facebook Marketplace | Manual — paste links into WhatsApp, Tracker fetches and scores |
 | Dealer engagement mode | Auto-draft emails for review via WhatsApp |
 | Hosting | GCP Cloud Run (backend) + Supabase (database) |
 | Postcode, ages, NCB, email | Entered at invocation via OpenClaw/WhatsApp, stored in Supabase `user_config` |
 | OpenClaw integration | Tool registration via REST API; webhook for proactive notifications |
+| Email delivery | SendGrid free tier (100 emails/day), to be set up |
+| Daily digest | 6pm daily via WhatsApp |
 
 ---
 
-## 17. Remaining Open Questions
-
-1. **Facebook Marketplace** — Are you happy with the manual fallback approach (paste links into WhatsApp) rather than attempting flaky automation?
-2. **Daily digest timing** — What time would you like the daily summary WhatsApp notification? (e.g., 8am, 7pm?)
-3. **SendGrid account** — Do you already have a SendGrid account, or should we set one up?
-
----
-
-**Next steps:** Review this PRD and confirm / amend. Once approved, I will scaffold the Cloud Run project, deploy the Supabase schema, and begin building the scraper and API infrastructure.
+**All requirements captured. Next steps:** Review this PRD and approve. Once approved, I will scaffold the Cloud Run project, deploy the Supabase schema, and begin building the scraper and API infrastructure.
