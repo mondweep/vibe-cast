@@ -104,7 +104,8 @@ router.put('/', async (req: Request, res: Response) => {
   }
 
   if (result.error) {
-    res.status(500).json({ error: 'Failed to save config', details: result.error.message });
+    console.error('[Config] Save error:', result.error);
+    res.status(500).json({ error: 'Failed to save config' });
     return;
   }
 

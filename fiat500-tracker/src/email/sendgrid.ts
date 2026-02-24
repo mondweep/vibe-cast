@@ -25,10 +25,10 @@ export async function sendEmail(params: {
       text: params.body,
       replyTo: params.replyTo,
     });
-    console.log(`[SendGrid] Email sent to ${params.to}: ${params.subject}`);
+    console.log(`[SendGrid] Email sent successfully`);
     return true;
-  } catch (err) {
-    console.error('[SendGrid] Failed to send email:', err);
+  } catch (err: any) {
+    console.error('[SendGrid] Failed to send email:', err?.message || 'Unknown error');
     return false;
   }
 }

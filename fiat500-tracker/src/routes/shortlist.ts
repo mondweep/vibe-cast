@@ -13,7 +13,8 @@ router.get('/', async (_req: Request, res: Response) => {
     .limit(10);
 
   if (error) {
-    res.status(500).json({ error: error.message });
+    console.error('[Shortlist] Query error:', error);
+    res.status(500).json({ error: 'Failed to fetch shortlist' });
     return;
   }
 

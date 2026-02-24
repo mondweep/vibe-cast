@@ -1,9 +1,17 @@
+import crypto from 'crypto';
 import { supabase } from '../db/client.js';
 import { env } from '../config/env.js';
 import type { WebhookEvent } from '../types/index.js';
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 2000;
+
+function signPayload(payload: string, secret: string, timestamp: string): string {
+  return crypto
+    .createHmac('sha256', secret)
+    .update(`${timestamp}.${payload}`)
+    .digest('hex');
+}
 
 export async function sendWebhookEvent(event: WebhookEvent): Promise<boolean> {
   // Get webhook URL from config
@@ -19,16 +27,23 @@ export async function sendWebhookEvent(event: WebhookEvent): Promise<boolean> {
     return false;
   }
 
+  const body = JSON.stringify(event);
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signature = env.OPENCLAW_WEBHOOK_SECRET
+    ? signPayload(body, env.OPENCLAW_WEBHOOK_SECRET, timestamp)
+    : '';
+
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Webhook-Secret': env.OPENCLAW_WEBHOOK_SECRET,
+          'X-Webhook-Signature': signature,
+          'X-Webhook-Timestamp': timestamp,
           'X-Event-Type': event.event,
         },
-        body: JSON.stringify(event),
+        body,
       });
 
       if (response.ok) {
@@ -38,7 +53,7 @@ export async function sendWebhookEvent(event: WebhookEvent): Promise<boolean> {
 
       console.warn(`[OpenClaw] HTTP ${response.status} for event ${event.event} (attempt ${attempt + 1})`);
     } catch (err) {
-      console.warn(`[OpenClaw] Network error for event ${event.event} (attempt ${attempt + 1}):`, err);
+      console.warn(`[OpenClaw] Network error for event ${event.event} (attempt ${attempt + 1})`);
     }
 
     if (attempt < MAX_RETRIES) {

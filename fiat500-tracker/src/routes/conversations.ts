@@ -74,7 +74,8 @@ router.post('/', async (req: Request, res: Response) => {
     .single();
 
   if (convError || !conversation) {
-    res.status(500).json({ error: 'Failed to create conversation', details: convError?.message });
+    console.error('[Conversations] Create error:', convError);
+    res.status(500).json({ error: 'Failed to create conversation' });
     return;
   }
 
@@ -92,7 +93,8 @@ router.post('/', async (req: Request, res: Response) => {
     .single();
 
   if (msgError) {
-    res.status(500).json({ error: 'Failed to create message', details: msgError.message });
+    console.error('[Conversations] Message create error:', msgError);
+    res.status(500).json({ error: 'Failed to create message' });
     return;
   }
 
@@ -117,7 +119,8 @@ router.get('/', async (_req: Request, res: Response) => {
     .order('created_at', { ascending: false });
 
   if (error) {
-    res.status(500).json({ error: error.message });
+    console.error('[Conversations] List error:', error);
+    res.status(500).json({ error: 'Failed to fetch conversations' });
     return;
   }
 
@@ -258,7 +261,8 @@ router.post('/:id/reply', async (req: Request, res: Response) => {
     .single();
 
   if (error) {
-    res.status(500).json({ error: 'Failed to create reply draft', details: error.message });
+    console.error('[Conversations] Reply draft error:', error);
+    res.status(500).json({ error: 'Failed to create reply draft' });
     return;
   }
 

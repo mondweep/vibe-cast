@@ -6,7 +6,7 @@ dotenv.config();
 const envSchema = z.object({
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_KEY: z.string().min(1),
-  FIAT500_TRACKER_API_KEY: z.string().min(1),
+  FIAT500_TRACKER_API_KEY: z.string().min(32),
   SENDGRID_API_KEY: z.string().optional().default(''),
   OPENCLAW_WEBHOOK_URL: z.string().optional().default(''),
   OPENCLAW_WEBHOOK_SECRET: z.string().optional().default(''),

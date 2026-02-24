@@ -23,7 +23,8 @@ router.get('/', async (req: Request, res: Response) => {
   const { data, error } = await query;
 
   if (error) {
-    res.status(500).json({ error: error.message });
+    console.error('[Listings] Query error:', error);
+    res.status(500).json({ error: 'Failed to fetch listings' });
     return;
   }
 
@@ -52,6 +53,18 @@ router.get('/:id', async (req: Request, res: Response) => {
   res.json({ ...data, price_history: priceHistory || [] });
 });
 
+const ALLOWED_DOMAINS = [
+  'autotrader.co.uk', 'www.autotrader.co.uk',
+  'gumtree.com', 'www.gumtree.com',
+  'cargurus.co.uk', 'www.cargurus.co.uk',
+  'cinch.co.uk', 'www.cinch.co.uk',
+  'cazoo.co.uk', 'www.cazoo.co.uk',
+  'ebay.co.uk', 'www.ebay.co.uk',
+  'heycar.co.uk', 'www.heycar.co.uk',
+  'motors.co.uk', 'www.motors.co.uk',
+  'facebook.com', 'www.facebook.com',
+];
+
 const manualUrlSchema = z.object({
   url: z.string().url(),
 });
@@ -59,11 +72,27 @@ const manualUrlSchema = z.object({
 router.post('/manual', async (req: Request, res: Response) => {
   const parsed = manualUrlSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: 'Invalid URL', details: parsed.error.flatten().fieldErrors });
+    res.status(400).json({ error: 'Invalid URL' });
     return;
   }
 
   const { url } = parsed.data;
+
+  // SSRF protection: only allow known car listing domains
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== 'https:') {
+      res.status(400).json({ error: 'Only HTTPS URLs are allowed' });
+      return;
+    }
+    if (!ALLOWED_DOMAINS.includes(parsedUrl.hostname)) {
+      res.status(400).json({ error: 'URL domain not in allowlist. Supported: autotrader, gumtree, cargurus, cinch, cazoo, ebay, heycar, motors.co.uk' });
+      return;
+    }
+  } catch {
+    res.status(400).json({ error: 'Invalid URL' });
+    return;
+  }
 
   // Get user config for distance calculation
   const { data: config } = await supabase
@@ -133,7 +162,8 @@ router.post('/manual', async (req: Request, res: Response) => {
     .single();
 
   if (error) {
-    res.status(500).json({ error: 'Failed to store listing', details: error.message });
+    console.error('[Listings] Insert error:', error);
+    res.status(500).json({ error: 'Failed to store listing' });
     return;
   }
 
@@ -229,7 +259,8 @@ router.post('/:id/insurance', async (req: Request, res: Response) => {
     .single();
 
   if (error) {
-    res.status(500).json({ error: 'Failed to save quote', details: error.message });
+    console.error('[Listings] Quote insert error:', error);
+    res.status(500).json({ error: 'Failed to save quote' });
     return;
   }
 

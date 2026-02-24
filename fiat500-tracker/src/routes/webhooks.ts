@@ -1,21 +1,34 @@
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
 import { supabase } from '../db/client.js';
 import { notifySellerReply } from '../notifications/openclaw-webhook.js';
 
 const router = Router();
 
+const inboundEmailSchema = z.object({
+  from: z.string().min(1),
+  subject: z.string().optional().default(''),
+  text: z.string().max(50_000).optional().default(''),
+  html: z.string().max(100_000).optional().default(''),
+  headers: z.string().optional().default(''),
+}).passthrough();
+
 router.post('/email-inbound', async (req: Request, res: Response) => {
   console.log('[Webhook] Received inbound email');
 
   try {
-    // SendGrid Inbound Parse sends multipart/form-data or JSON
+    const parsed = inboundEmailSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid webhook payload' });
+      return;
+    }
+
     const {
       from: senderEmail,
       subject,
       text: body,
       html,
-      headers: rawHeaders,
-    } = req.body;
+    } = parsed.data;
 
     if (!senderEmail) {
       res.status(400).json({ error: 'Missing sender email' });
@@ -43,7 +56,7 @@ router.post('/email-inbound', async (req: Request, res: Response) => {
 
     if (!conversation) {
       // Try to match by In-Reply-To header or subject
-      console.warn(`[Webhook] No matching conversation for email from ${cleanEmail}`);
+      console.warn('[Webhook] No matching conversation for inbound email');
       res.json({ message: 'No matching conversation found — email logged' });
       return;
     }
