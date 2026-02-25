@@ -140,7 +140,7 @@ All routes return proper status codes with placeholder responses:
 ### 1.8 Dockerfile
 
 ```dockerfile
-FROM mcr.microsoft.com/playwright:v1.50.0-noble
+FROM mcr.microsoft.com/playwright:v1.58.2-noble
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --production

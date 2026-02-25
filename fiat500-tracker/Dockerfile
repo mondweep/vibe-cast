@@ -12,7 +12,7 @@ COPY src/ ./src/
 RUN npm run build
 
 # Stage 2: Production with Playwright
-FROM mcr.microsoft.com/playwright:v1.50.0-noble
+FROM mcr.microsoft.com/playwright:v1.58.2-noble
 
 WORKDIR /app
 
