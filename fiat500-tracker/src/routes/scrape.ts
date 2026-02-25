@@ -43,16 +43,20 @@ router.post('/trigger', async (_req: Request, res: Response) => {
     return;
   }
 
-  // Start scrape in background — all 8 automated platforms
+  // Start scrape in background
+  // NOTE: Playwright-based scrapers (AutoTrader, Gumtree, Cinch, Cazoo, eBay, Heycar, Motors)
+  // are disabled because Chromium cannot launch in Cloud Run's gVisor sandbox.
+  // CarGurus works via HTTP fetch (no browser needed).
+  // TODO: Convert other scrapers to use fetch-based extraction or use Cloud Run gen2.
   const scrapers = [
-    new AutoTraderScraper(),
-    new GumtreeScraper(),
     new CarGurusScraper(),
-    new CinchScraper(),
-    new CazooScraper(),
-    new EbayMotorsScraper(),
-    new HeycarScraper(),
-    new MotorsCoUkScraper(),
+    // new AutoTraderScraper(),
+    // new GumtreeScraper(),
+    // new CinchScraper(),
+    // new CazooScraper(),
+    // new EbayMotorsScraper(),
+    // new HeycarScraper(),
+    // new MotorsCoUkScraper(),
   ];
 
   // Return immediately with 202

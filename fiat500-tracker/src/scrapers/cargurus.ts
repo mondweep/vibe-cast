@@ -9,12 +9,12 @@ export class CarGurusScraper extends BaseScraper {
     const listings: ScrapedListing[] = [];
 
     try {
-      const priceMin = Math.round(config.budget_min / 100);
-      const priceMax = Math.round(config.budget_max / 100);
       const postcode = encodeURIComponent(config.postcode.replace(/\s+/g, ''));
+      const priceMin = Math.round(config.budget_min / 100); // pence to pounds
+      const priceMax = Math.round(config.budget_max / 100);
 
-      // CarGurus UK has a JSON search API
-      const searchUrl = `https://www.cargurus.co.uk/Cars/searchResults.action?zip=${postcode}&inventorySearchWidgetType=AUTO&searchId=&sortDir=ASC&sortType=DEAL_SCORE&sourceContext=cargurus&maxMileage=&transmissionCodes=M&fuelTypes=PETROL&minPrice=${priceMin}&maxPrice=${priceMax}&entitySelectionsString=c29607&distance=${config.search_radius_miles}`;
+      // CarGurus UK listing page — entity d3131 = Fiat 500
+      const searchUrl = `https://www.cargurus.co.uk/Cars/inventorylisting/viewDetailsFilterViewInventoryListing.action?sourceContext=carGurusHomePageModel&entitySelectingHelper.selectedEntity=d3131&zip=${postcode}&distance=${config.search_radius_miles}&minPrice=${priceMin}&maxPrice=${priceMax}&transmissionCodes=M&fuelTypes=PETROL`;
 
       console.log(`[CarGurus] Searching: ${searchUrl}`);
 
@@ -22,6 +22,7 @@ export class CarGurusScraper extends BaseScraper {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-GB,en;q=0.9',
         },
       });
 
@@ -31,50 +32,22 @@ export class CarGurusScraper extends BaseScraper {
       }
 
       const html = await response.text();
+      console.log(`[CarGurus] Got ${html.length} bytes of HTML`);
 
-      // CarGurus embeds listing data as JSON in the page
-      const jsonMatch = html.match(/window\.__CARGURUS_LISTINGS__\s*=\s*(\[[\s\S]*?\]);/);
+      // CarGurus embeds listing data as window.__PREFLIGHT__ = {...}; in a script tag
+      // Extract using brace-balanced parsing since the JSON is large and contains nested objects
+      const preflight = this.extractPreflight(html);
 
-      if (jsonMatch) {
-        try {
-          const data = JSON.parse(jsonMatch[1]) as CarGurusListing[];
-          for (const item of data) {
-            const listing = this.mapListing(item);
-            if (listing) listings.push(listing);
-          }
-        } catch (parseErr) {
-          errors.push(`CarGurus JSON parse error: ${parseErr}`);
+      if (preflight?.tiles && Array.isArray(preflight.tiles)) {
+        console.log(`[CarGurus] Found ${preflight.tiles.length} tiles in __PREFLIGHT__ (total: ${preflight.totalListings ?? 'unknown'})`);
+
+        for (const tile of preflight.tiles) {
+          const listing = this.mapTile(tile);
+          if (listing) listings.push(listing);
         }
-      }
-
-      // Fallback: try to extract from embedded JSON-LD or other structured data
-      if (listings.length === 0) {
-        const scriptMatches = html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi);
-        for (const m of scriptMatches) {
-          try {
-            const ld = JSON.parse(m[1]);
-            if (ld['@type'] === 'Car' || ld['@type'] === 'Vehicle') {
-              const listing = this.mapJsonLd(ld);
-              if (listing) listings.push(listing);
-            }
-            if (Array.isArray(ld)) {
-              for (const item of ld) {
-                if (item['@type'] === 'Car' || item['@type'] === 'Vehicle') {
-                  const listing = this.mapJsonLd(item);
-                  if (listing) listings.push(listing);
-                }
-              }
-            }
-          } catch {
-            // Skip invalid JSON-LD
-          }
-        }
-      }
-
-      // If still nothing, try regex extraction from HTML
-      if (listings.length === 0) {
-        const extracted = this.extractFromHtml(html, errors);
-        listings.push(...extracted);
+      } else {
+        console.log('[CarGurus] No tiles found in __PREFLIGHT__, check HTML structure');
+        errors.push('CarGurus: could not extract __PREFLIGHT__ tiles from page');
       }
 
       console.log(`[CarGurus] Found ${listings.length} listings`);
@@ -87,110 +60,124 @@ export class CarGurusScraper extends BaseScraper {
     return this.makeResult(listings, errors);
   }
 
-  private mapListing(item: CarGurusListing): ScrapedListing | null {
-    if (!item.id || !item.listingUrl) return null;
+  private extractPreflight(html: string): PreflightData | null {
+    const marker = 'window.__PREFLIGHT__';
+    const idx = html.indexOf(marker);
+    if (idx === -1) return null;
 
-    return {
-      platform: 'cargurus',
-      platform_listing_id: String(item.id),
-      url: item.listingUrl.startsWith('http') ? item.listingUrl : `https://www.cargurus.co.uk${item.listingUrl}`,
-      title: item.listingTitle || `${item.year || ''} Fiat 500`.trim(),
-      price: (item.price || 0) * 100, // pounds to pence
-      year: item.year || 2015,
-      mileage: item.mileage || 0,
-      engine_size: this.extractEngineSize(item.listingTitle || ''),
-      fuel_type: 'petrol',
-      transmission: 'manual',
-      colour: item.exteriorColor || null,
-      mot_expiry: null,
-      seller_name: item.sellerName || null,
-      seller_type: item.sellerType === 'dealer' ? 'dealer' : 'private',
-      seller_rating: item.dealRating ? this.mapDealRating(item.dealRating) : null,
-      location_postcode: null,
-      description: null,
-      image_urls: item.mainPictureUrl ? [item.mainPictureUrl] : [],
-    };
-  }
+    // Find the opening brace after the '='
+    const eqIdx = html.indexOf('=', idx + marker.length);
+    if (eqIdx === -1) return null;
 
-  private mapJsonLd(ld: Record<string, unknown>): ScrapedListing | null {
-    const name = String(ld.name || 'Fiat 500');
-    const url = String(ld.url || '');
-    if (!url) return null;
+    let braceStart = -1;
+    for (let i = eqIdx + 1; i < html.length; i++) {
+      if (html[i] === '{') { braceStart = i; break; }
+      if (html[i] !== ' ' && html[i] !== '\t' && html[i] !== '\n' && html[i] !== '\r') return null;
+    }
+    if (braceStart === -1) return null;
 
-    const offers = ld.offers as Record<string, unknown> | undefined;
-    const price = offers ? Number(offers.price || 0) : 0;
-
-    return {
-      platform: 'cargurus',
-      platform_listing_id: url.split('/').pop() || url,
-      url: url.startsWith('http') ? url : `https://www.cargurus.co.uk${url}`,
-      title: name,
-      price: price * 100,
-      year: Number(ld.modelDate || ld.vehicleModelDate || 2015),
-      mileage: Number((ld.mileageFromOdometer as Record<string, unknown>)?.value || 0),
-      engine_size: this.extractEngineSize(name),
-      fuel_type: 'petrol',
-      transmission: 'manual',
-      colour: String(ld.color || '') || null,
-      mot_expiry: null,
-      seller_name: null,
-      seller_type: 'private',
-      seller_rating: null,
-      location_postcode: null,
-      description: String(ld.description || '') || null,
-      image_urls: ld.image ? [String(ld.image)] : [],
-    };
-  }
-
-  private extractFromHtml(html: string, errors: string[]): ScrapedListing[] {
-    const listings: ScrapedListing[] = [];
-    // Regex-based extraction as last resort
-    const listingPattern = /data-listing-id="(\d+)"[\s\S]*?href="([^"]*)"[\s\S]*?class="[^"]*price[^"]*"[^>]*>([\s\S]*?)<\//gi;
-
-    let match;
-    while ((match = listingPattern.exec(html)) !== null) {
-      try {
-        const [, id, href, priceText] = match;
-        const price = parseInt(priceText.replace(/[^0-9]/g, ''), 10) * 100;
-        if (!price) continue;
-
-        listings.push({
-          platform: 'cargurus',
-          platform_listing_id: id,
-          url: href.startsWith('http') ? href : `https://www.cargurus.co.uk${href}`,
-          title: 'Fiat 500',
-          price,
-          year: 2015,
-          mileage: 0,
-          engine_size: '1.2',
-          fuel_type: 'petrol',
-          transmission: 'manual',
-          colour: null,
-          mot_expiry: null,
-          seller_name: null,
-          seller_type: 'private',
-          seller_rating: null,
-          location_postcode: null,
-          description: null,
-          image_urls: [],
-        });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        errors.push(`CarGurus HTML parse error: ${msg}`);
+    // Walk through to find matching closing brace, respecting strings
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    for (let i = braceStart; i < html.length; i++) {
+      const ch = html[i];
+      if (escape) { escape = false; continue; }
+      if (ch === '\\' && inString) { escape = true; continue; }
+      if (ch === '"' && !escape) { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === '{') depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) {
+          const jsonStr = html.slice(braceStart, i + 1);
+          try {
+            return JSON.parse(jsonStr) as PreflightData;
+          } catch (err) {
+            console.error(`[CarGurus] JSON parse failed at length ${jsonStr.length}: ${err}`);
+            return null;
+          }
+        }
       }
     }
-    return listings;
+    return null;
+  }
+
+  private mapTile(tile: CarGurusTile): ScrapedListing | null {
+    // Tiles have nested structure: { type: "LISTING_...", data: { ...fields } }
+    const d = tile.data || tile;
+    const id = d.id || d.listingId;
+    if (!id) return null;
+
+    const price = (d.price || 0) * 100; // pounds to pence
+    if (price === 0) return null;
+
+    const title = d.listingTitle || `${d.carYear || ''} Fiat 500`.trim();
+
+    // Build URL from listing ID
+    const url = `https://www.cargurus.co.uk/Cars/inventorylisting/viewDetailsFilterViewInventoryListing.action#listing=${id}`;
+
+    // Extract image URL from originalPictureData or fallback
+    const imageUrl = d.originalPictureData?.url || d.mainPictureUrl || d.pictureUrl || null;
+
+    return {
+      platform: 'cargurus',
+      platform_listing_id: String(id),
+      url,
+      title,
+      price,
+      year: d.carYear || this.extractYear(title) || 2015,
+      mileage: d.mileage || 0,
+      engine_size: this.extractEngineSize(title),
+      fuel_type: this.normalizeFuel(d.localizedFuelType || 'petrol'),
+      transmission: this.normalizeTransmission(d.localizedTransmission || 'manual'),
+      colour: d.localizedExteriorColor || d.exteriorColorName || null,
+      mot_expiry: null,
+      seller_name: d.dealerName || d.serviceProviderName || null,
+      seller_type: d.sellerType === 'DEALER' || d.dealerName ? 'dealer' : 'private',
+      seller_rating: d.dealRating ? this.mapDealRating(d.dealRating) : null,
+      location_postcode: d.sellerPostalCode || null,
+      description: null,
+      image_urls: imageUrl ? [imageUrl] : [],
+    };
   }
 
   private mapDealRating(rating: string): number {
+    // CarGurus uses UPPER_SNAKE_CASE like "GREAT_PRICE", "GOOD_PRICE", etc.
     const map: Record<string, number> = {
+      'GREAT_PRICE': 90,
+      'GOOD_PRICE': 75,
+      'FAIR_PRICE': 60,
+      'HIGH_PRICE': 40,
+      'OVERPRICED': 20,
+      // Also handle simpler forms
       'Great': 90,
       'Good': 75,
       'Fair': 60,
       'High': 40,
-      'Overpriced': 20,
     };
     return map[rating] ?? 50;
+  }
+
+  private normalizeFuel(fuel: string): string {
+    const lower = fuel.toLowerCase();
+    if (lower.includes('petrol') || lower.includes('gasoline')) return 'petrol';
+    if (lower.includes('diesel')) return 'diesel';
+    if (lower.includes('electric')) return 'electric';
+    if (lower.includes('hybrid')) return 'hybrid';
+    return 'petrol';
+  }
+
+  private normalizeTransmission(trans: string): string {
+    const lower = trans.toLowerCase();
+    if (lower.includes('auto')) return 'automatic';
+    if (lower.includes('manual')) return 'manual';
+    return 'manual';
+  }
+
+  private extractYear(text: string): number | null {
+    const match = text.match(/\b(20[0-2]\d)\b/);
+    return match ? parseInt(match[1], 10) : null;
   }
 
   private extractEngineSize(text: string): string {
@@ -202,16 +189,54 @@ export class CarGurusScraper extends BaseScraper {
   }
 }
 
-interface CarGurusListing {
+// Types for CarGurus __PREFLIGHT__ data
+interface PreflightData {
+  tiles?: CarGurusTile[];
+  totalListings?: number;
+}
+
+// Each tile wraps listing data in { type, data } structure
+interface CarGurusTile {
+  type?: string;
+  data?: CarGurusTileData;
+  // Flat fallback fields (in case structure changes)
   id?: number;
-  listingUrl?: string;
+  listingId?: number;
   listingTitle?: string;
   price?: number;
-  year?: number;
+  carYear?: number;
   mileage?: number;
-  exteriorColor?: string;
-  sellerName?: string;
+  localizedFuelType?: string;
+  localizedTransmission?: string;
+  dealerName?: string;
   sellerType?: string;
   dealRating?: string;
+  localizedExteriorColor?: string;
+  exteriorColorName?: string;
+  sellerPostalCode?: string;
+  serviceProviderName?: string;
+  originalPictureData?: { url?: string };
   mainPictureUrl?: string;
+  pictureUrl?: string;
+}
+
+interface CarGurusTileData {
+  id?: number;
+  listingId?: number;
+  listingTitle?: string;
+  price?: number;
+  carYear?: number;
+  mileage?: number;
+  localizedFuelType?: string;
+  localizedTransmission?: string;
+  localizedExteriorColor?: string;
+  exteriorColorName?: string;
+  dealerName?: string;
+  serviceProviderName?: string;
+  sellerType?: string;
+  sellerPostalCode?: string;
+  dealRating?: string;
+  originalPictureData?: { url?: string };
+  mainPictureUrl?: string;
+  pictureUrl?: string;
 }
