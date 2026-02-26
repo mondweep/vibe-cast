@@ -1,0 +1,150 @@
+/* === Demo Panels === */
+.demo-panel {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+.demo-header { margin-bottom: 1.5rem; }
+.demo-header h3 { font-size: 1.4rem; color: #6ee7b7; margin-bottom: 0.3rem; }
+.demo-header p { color: #64748b; font-size: 0.95rem; }
+
+.demo-input { margin-bottom: 1.5rem; }
+.demo-input label { display: block; font-size: 0.9rem; color: #94a3b8; margin-bottom: 0.5rem; }
+.input-row { display: flex; gap: 0.75rem; }
+.input-row select {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #e0e4ef;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.input-row select:focus { outline: none; border-color: #6ee7b7; }
+.input-row select option { background: #1e293b; color: #e0e4ef; }
+
+/* === Demo Output === */
+.demo-output {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  min-height: 200px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.agent-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  animation: fadeIn 0.3s ease;
+}
+.agent-step:last-child { border: none; }
+.agent-step.placeholder { color: #475569; font-style: italic; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-icon { font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+
+.step-thought { color: #a78bfa; }
+.step-action { color: #6ee7b7; }
+.step-observation { color: #60a5fa; }
+.step-result { color: #fbbf24; }
+.step-error { color: #f87171; }
+
+.step-label {
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-right: 0.5rem;
+}
+
+/* === Orchestration Agents === */
+.orchestration-agents {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+.agent-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: all 0.3s;
+  min-width: 100px;
+}
+.agent-node.active {
+  border-color: #6ee7b7;
+  background: rgba(110, 231, 183, 0.08);
+  box-shadow: 0 0 20px rgba(110, 231, 183, 0.15);
+}
+.agent-node.done {
+  border-color: rgba(110, 231, 183, 0.3);
+  background: rgba(110, 231, 183, 0.03);
+}
+.agent-avatar { font-size: 1.8rem; }
+.agent-name { font-size: 0.8rem; font-weight: 700; color: #e0e4ef; }
+.agent-status { font-size: 0.7rem; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
+.agent-node.active .agent-status { color: #6ee7b7; }
+.agent-node.done .agent-status { color: #6ee7b7; }
+.agent-arrow { color: #334155; font-size: 1.5rem; }
+
+/* === RAG Pipeline === */
+.rag-pipeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+.rag-stage {
+  width: 100%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  transition: all 0.4s;
+}
+.rag-stage.active {
+  border-color: #6ee7b7;
+  background: rgba(110, 231, 183, 0.05);
+}
+.rag-stage.done {
+  border-color: rgba(110, 231, 183, 0.2);
+}
+.stage-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #6ee7b7;
+  margin-bottom: 0.3rem;
+}
+.stage-content { color: #94a3b8; font-size: 0.9rem; }
+.rag-arrow { color: #334155; font-size: 1.2rem; }
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .input-row { flex-direction: column; }
+  .orchestration-agents { gap: 0.3rem; }
+  .agent-node { padding: 0.5rem 0.8rem; min-width: 70px; }
+  .agent-arrow { font-size: 1rem; }
+}

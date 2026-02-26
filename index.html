@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nagaon University AI Summit 2026 — Agentic AI: Building the Future</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/agenda.css" />
+  <link rel="stylesheet" href="css/demos.css" />
+</head>
+<body>
+  <!-- Particle canvas background -->
+  <canvas id="particle-bg"></canvas>
+
+  <!-- Navigation -->
+  <nav id="main-nav">
+    <div class="nav-brand">
+      <span class="nav-logo">&#9670;</span>
+      <span class="nav-title">Nagaon AI Summit</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#hero">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#agenda">Agenda</a></li>
+      <li><a href="#demos">Live Demos</a></li>
+      <li><a href="#techniques">Techniques</a></li>
+      <li><a href="#resources">Resources</a></li>
+    </ul>
+    <div class="session-badge" title="Session ID">
+      <span class="pulse-dot"></span>
+      <code>HhcKv</code>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header id="hero">
+    <div class="hero-content">
+      <p class="hero-tag">Nagaon University &bull; February 2026</p>
+      <h1 class="hero-title">
+        <span class="title-line">Agentic AI</span>
+        <span class="title-accent">Building Intelligent Systems That Act</span>
+      </h1>
+      <p class="hero-subtitle">
+        Explore the frontier of AI agents — autonomous systems that reason, plan,
+        use tools, and collaborate to solve real-world problems.
+      </p>
+      <div class="hero-cta">
+        <a href="#agenda" class="btn btn-primary">View Agenda</a>
+        <a href="#demos" class="btn btn-secondary">Try Live Demos</a>
+      </div>
+      <div class="hero-session">
+        Session: <code>nagaon-ai-summit-setup-HhcKv</code>
+      </div>
+    </div>
+    <div class="hero-visual" id="hero-network"></div>
+  </header>
+
+  <!-- About Section -->
+  <section id="about">
+    <div class="container">
+      <h2 class="section-title">What is Agentic AI?</h2>
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="card-icon">&#128300;</div>
+          <h3>Reasoning</h3>
+          <p>AI agents break down complex problems into manageable steps, thinking through solutions systematically before acting.</p>
+        </div>
+        <div class="about-card">
+          <div class="card-icon">&#128736;</div>
+          <h3>Tool Use</h3>
+          <p>Agents extend their capabilities by using external tools — APIs, databases, code execution, web search, and more.</p>
+        </div>
+        <div class="about-card">
+          <div class="card-icon">&#128640;</div>
+          <h3>Autonomy</h3>
+          <p>Unlike simple chatbots, agentic systems execute multi-step workflows independently, adapting as they go.</p>
+        </div>
+        <div class="about-card">
+          <div class="card-icon">&#129309;</div>
+          <h3>Collaboration</h3>
+          <p>Multiple specialized agents can work together — one plans, another codes, another tests — creating powerful orchestration.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agenda Section -->
+  <section id="agenda">
+    <div class="container">
+      <h2 class="section-title">Summit Agenda</h2>
+      <p class="section-subtitle">A hands-on journey through AI agentic skills and techniques</p>
+
+      <div class="agenda-timeline">
+        <!-- Session 1 -->
+        <div class="agenda-block" data-session="1">
+          <div class="time-marker">
+            <span class="time">09:00</span>
+            <span class="duration">45 min</span>
+          </div>
+          <div class="session-card keynote">
+            <span class="session-type">Keynote</span>
+            <h3>The Agentic Revolution: From Chatbots to Autonomous Systems</h3>
+            <p>How AI moved beyond question-answering to become a collaborator that can reason, plan, and execute complex tasks. The paradigm shift from prompt engineering to agent engineering.</p>
+            <div class="session-tags">
+              <span class="tag">Foundation</span>
+              <span class="tag">Vision</span>
+              <span class="tag">Industry Trends</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session 2 -->
+        <div class="agenda-block" data-session="2">
+          <div class="time-marker">
+            <span class="time">09:45</span>
+            <span class="duration">60 min</span>
+          </div>
+          <div class="session-card workshop">
+            <span class="session-type">Live Workshop</span>
+            <h3>Anatomy of an AI Agent: ReAct, Tool Use & Chain-of-Thought</h3>
+            <p>Deep dive into how modern AI agents work under the hood. Build a ReAct (Reasoning + Acting) agent from scratch. Understand how LLMs decide which tools to call and when.</p>
+            <div class="session-tags">
+              <span class="tag">Hands-on</span>
+              <span class="tag">ReAct Pattern</span>
+              <span class="tag">Tool Calling</span>
+            </div>
+            <div class="session-demo-link">
+              <a href="#demo-react" class="demo-badge">Interactive Demo Available</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session 3 -->
+        <div class="agenda-block" data-session="3">
+          <div class="time-marker">
+            <span class="time">10:45</span>
+            <span class="duration">15 min</span>
+          </div>
+          <div class="session-card break">
+            <span class="session-type">Break</span>
+            <h3>Networking & Refreshments</h3>
+            <p>Connect with fellow attendees and discuss ideas.</p>
+          </div>
+        </div>
+
+        <!-- Session 4 -->
+        <div class="agenda-block" data-session="4">
+          <div class="time-marker">
+            <span class="time">11:00</span>
+            <span class="duration">60 min</span>
+          </div>
+          <div class="session-card workshop">
+            <span class="session-type">Live Workshop</span>
+            <h3>Multi-Agent Orchestration: Specialized Agents Working Together</h3>
+            <p>Explore how to decompose complex problems into sub-tasks handled by specialized agents. Build a multi-agent pipeline where a Planner, Coder, and Reviewer collaborate on software tasks.</p>
+            <div class="session-tags">
+              <span class="tag">Multi-Agent</span>
+              <span class="tag">Orchestration</span>
+              <span class="tag">Task Decomposition</span>
+            </div>
+            <div class="session-demo-link">
+              <a href="#demo-orchestration" class="demo-badge">Interactive Demo Available</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session 5 -->
+        <div class="agenda-block" data-session="5">
+          <div class="time-marker">
+            <span class="time">12:00</span>
+            <span class="duration">45 min</span>
+          </div>
+          <div class="session-card talk">
+            <span class="session-type">Deep Dive</span>
+            <h3>RAG, Memory & Context: Making Agents That Remember</h3>
+            <p>How agents use Retrieval-Augmented Generation (RAG) to access vast knowledge bases. Building persistent memory systems so agents learn and improve across sessions.</p>
+            <div class="session-tags">
+              <span class="tag">RAG</span>
+              <span class="tag">Vector Search</span>
+              <span class="tag">Memory Systems</span>
+            </div>
+            <div class="session-demo-link">
+              <a href="#demo-rag" class="demo-badge">Interactive Demo Available</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session 6 -->
+        <div class="agenda-block" data-session="6">
+          <div class="time-marker">
+            <span class="time">12:45</span>
+            <span class="duration">60 min</span>
+          </div>
+          <div class="session-card break">
+            <span class="session-type">Lunch</span>
+            <h3>Lunch Break & Open Discussion</h3>
+            <p>Enjoy lunch and engage in open discussions with speakers and peers.</p>
+          </div>
+        </div>
+
+        <!-- Session 7 -->
+        <div class="agenda-block" data-session="7">
+          <div class="time-marker">
+            <span class="time">13:45</span>
+            <span class="duration">60 min</span>
+          </div>
+          <div class="session-card workshop">
+            <span class="session-type">Live Workshop</span>
+            <h3>Code Generation Agents: From Description to Deployed App</h3>
+            <p>Watch an AI agent build a complete web application from a natural language description. Understand the code generation pipeline: planning, scaffolding, implementation, testing, and deployment.</p>
+            <div class="session-tags">
+              <span class="tag">Code Generation</span>
+              <span class="tag">Full-Stack</span>
+              <span class="tag">Deployment</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session 8 -->
+        <div class="agenda-block" data-session="8">
+          <div class="time-marker">
+            <span class="time">14:45</span>
+            <span class="duration">45 min</span>
+          </div>
+          <div class="session-card talk">
+            <span class="session-type">Deep Dive</span>
+            <h3>Safety, Guardrails & Responsible Agentic AI</h3>
+            <p>Building AI agents that are safe and reliable. Implementing guardrails, human-in-the-loop controls, and defensive patterns against prompt injection and misuse.</p>
+            <div class="session-tags">
+              <span class="tag">Safety</span>
+              <span class="tag">Guardrails</span>
+              <span class="tag">Ethics</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session 9 -->
+        <div class="agenda-block" data-session="9">
+          <div class="time-marker">
+            <span class="time">15:30</span>
+            <span class="duration">15 min</span>
+          </div>
+          <div class="session-card break">
+            <span class="session-type">Break</span>
+            <h3>Refreshments</h3>
+            <p>Short break before the final sessions.</p>
+          </div>
+        </div>
+
+        <!-- Session 10 -->
+        <div class="agenda-block" data-session="10">
+          <div class="time-marker">
+            <span class="time">15:45</span>
+            <span class="duration">45 min</span>
+          </div>
+          <div class="session-card workshop">
+            <span class="session-type">Hackathon Kickoff</span>
+            <h3>Build Your Own Agent: Mini Hackathon</h3>
+            <p>Teams build a simple AI agent using provided templates and APIs. Categories: Research Agent, Creative Agent, Data Analysis Agent, or Coding Agent. Best demo wins!</p>
+            <div class="session-tags">
+              <span class="tag">Hackathon</span>
+              <span class="tag">Team Work</span>
+              <span class="tag">Competition</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session 11 -->
+        <div class="agenda-block" data-session="11">
+          <div class="time-marker">
+            <span class="time">16:30</span>
+            <span class="duration">30 min</span>
+          </div>
+          <div class="session-card keynote">
+            <span class="session-type">Closing Keynote</span>
+            <h3>The Road Ahead: Agents in Every Domain</h3>
+            <p>From healthcare to education, finance to creative arts — how agentic AI will transform every industry. Opportunities for students and researchers in the agentic AI era.</p>
+            <div class="session-tags">
+              <span class="tag">Future</span>
+              <span class="tag">Careers</span>
+              <span class="tag">Opportunities</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Demos Section -->
+  <section id="demos">
+    <div class="container">
+      <h2 class="section-title">Interactive Demos</h2>
+      <p class="section-subtitle">Experience agentic AI patterns hands-on — right in your browser</p>
+
+      <!-- Demo 1: ReAct Agent -->
+      <div class="demo-panel" id="demo-react">
+        <div class="demo-header">
+          <h3>ReAct Agent Simulator</h3>
+          <p>Watch an AI agent reason step-by-step and decide which tools to use</p>
+        </div>
+        <div class="demo-workspace">
+          <div class="demo-input">
+            <label>Ask the agent a question:</label>
+            <div class="input-row">
+              <select id="react-preset">
+                <option value="">Choose a preset question...</option>
+                <option value="weather">What's the weather in Nagaon and should I carry an umbrella?</option>
+                <option value="compare">Compare Python and JavaScript for building AI agents</option>
+                <option value="research">Find the latest research on multi-agent systems</option>
+                <option value="calculate">Calculate the cost of running an AI agent for 1000 queries</option>
+              </select>
+              <button class="btn btn-primary" id="react-run">Run Agent</button>
+            </div>
+          </div>
+          <div class="demo-output" id="react-output">
+            <div class="agent-step placeholder">
+              <span class="step-icon">&#9654;</span>
+              <span>Select a question and click "Run Agent" to see the ReAct loop in action</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demo 2: Multi-Agent Orchestration -->
+      <div class="demo-panel" id="demo-orchestration">
+        <div class="demo-header">
+          <h3>Multi-Agent Orchestration</h3>
+          <p>Watch specialized agents collaborate on a software engineering task</p>
+        </div>
+        <div class="demo-workspace">
+          <div class="demo-input">
+            <label>Choose a task for the agent team:</label>
+            <div class="input-row">
+              <select id="orchestration-preset">
+                <option value="">Choose a task...</option>
+                <option value="api">Build a REST API endpoint for user registration</option>
+                <option value="component">Create a React dashboard component with charts</option>
+                <option value="refactor">Refactor a monolithic function into clean modules</option>
+              </select>
+              <button class="btn btn-primary" id="orchestration-run">Start Pipeline</button>
+            </div>
+          </div>
+          <div class="orchestration-agents">
+            <div class="agent-node" id="agent-planner">
+              <div class="agent-avatar">&#128209;</div>
+              <div class="agent-name">Planner</div>
+              <div class="agent-status">idle</div>
+            </div>
+            <div class="agent-arrow">&#8594;</div>
+            <div class="agent-node" id="agent-coder">
+              <div class="agent-avatar">&#128187;</div>
+              <div class="agent-name">Coder</div>
+              <div class="agent-status">idle</div>
+            </div>
+            <div class="agent-arrow">&#8594;</div>
+            <div class="agent-node" id="agent-reviewer">
+              <div class="agent-avatar">&#128270;</div>
+              <div class="agent-name">Reviewer</div>
+              <div class="agent-status">idle</div>
+            </div>
+            <div class="agent-arrow">&#8594;</div>
+            <div class="agent-node" id="agent-tester">
+              <div class="agent-avatar">&#9989;</div>
+              <div class="agent-name">Tester</div>
+              <div class="agent-status">idle</div>
+            </div>
+          </div>
+          <div class="demo-output" id="orchestration-output">
+            <div class="agent-step placeholder">
+              <span class="step-icon">&#9654;</span>
+              <span>Select a task and click "Start Pipeline" to watch agents collaborate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demo 3: RAG Retrieval -->
+      <div class="demo-panel" id="demo-rag">
+        <div class="demo-header">
+          <h3>RAG: Retrieval-Augmented Generation</h3>
+          <p>See how agents retrieve relevant knowledge before generating answers</p>
+        </div>
+        <div class="demo-workspace">
+          <div class="demo-input">
+            <label>Ask a knowledge-intensive question:</label>
+            <div class="input-row">
+              <select id="rag-preset">
+                <option value="">Choose a question...</option>
+                <option value="transformer">How does the attention mechanism in transformers work?</option>
+                <option value="agent-arch">What are the key components of an AI agent architecture?</option>
+                <option value="mcp">What is the Model Context Protocol (MCP)?</option>
+              </select>
+              <button class="btn btn-primary" id="rag-run">Search & Generate</button>
+            </div>
+          </div>
+          <div class="rag-pipeline">
+            <div class="rag-stage" id="rag-query-stage">
+              <div class="stage-label">Query</div>
+              <div class="stage-content" id="rag-query-content">Waiting...</div>
+            </div>
+            <div class="rag-arrow">&#8595;</div>
+            <div class="rag-stage" id="rag-embed-stage">
+              <div class="stage-label">Embed</div>
+              <div class="stage-content" id="rag-embed-content">Waiting...</div>
+            </div>
+            <div class="rag-arrow">&#8595;</div>
+            <div class="rag-stage" id="rag-retrieve-stage">
+              <div class="stage-label">Retrieve</div>
+              <div class="stage-content" id="rag-retrieve-content">Waiting...</div>
+            </div>
+            <div class="rag-arrow">&#8595;</div>
+            <div class="rag-stage" id="rag-generate-stage">
+              <div class="stage-label">Generate</div>
+              <div class="stage-content" id="rag-generate-content">Waiting...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Techniques Section -->
+  <section id="techniques">
+    <div class="container">
+      <h2 class="section-title">Key Agentic Techniques</h2>
+      <p class="section-subtitle">The building blocks of modern AI agent systems</p>
+
+      <div class="techniques-grid">
+        <div class="technique-card" data-technique="react">
+          <div class="technique-number">01</div>
+          <h3>ReAct Pattern</h3>
+          <p>Interleave reasoning (thinking) and acting (tool use) in a loop. The agent thinks about what to do, takes an action, observes the result, and repeats.</p>
+          <pre class="code-snippet"><code>Thought: I need to find the weather data
+Action: search("Nagaon weather today")
+Observation: Current temp: 24°C, Humidity: 78%
+Thought: Now I can answer the user
+Action: respond("The weather in Nagaon...")</code></pre>
+        </div>
+
+        <div class="technique-card" data-technique="planning">
+          <div class="technique-number">02</div>
+          <h3>Task Decomposition</h3>
+          <p>Break complex goals into a tree of sub-tasks. Each sub-task is small enough for a single agent call, making the overall problem tractable.</p>
+          <pre class="code-snippet"><code>Goal: "Build a weather dashboard"
+├── Plan architecture
+├── Create API integration
+│   ├── Research weather APIs
+│   └── Write fetch logic
+├── Build UI components
+│   ├── Temperature widget
+│   └── Forecast chart
+└── Deploy to production</code></pre>
+        </div>
+
+        <div class="technique-card" data-technique="tools">
+          <div class="technique-number">03</div>
+          <h3>Tool Use & Function Calling</h3>
+          <p>Give agents access to external tools — search engines, calculators, code interpreters, databases — and let the LLM decide when and how to use them.</p>
+          <pre class="code-snippet"><code>tools = [
+  { name: "web_search", desc: "Search the web" },
+  { name: "run_code", desc: "Execute Python" },
+  { name: "read_file", desc: "Read a file" },
+  { name: "write_file", desc: "Create/edit files" }
+]
+// LLM chooses the right tool for each step</code></pre>
+        </div>
+
+        <div class="technique-card" data-technique="memory">
+          <div class="technique-number">04</div>
+          <h3>Memory & State</h3>
+          <p>Agents maintain short-term context (conversation) and long-term memory (vector stores) to build on past interactions and knowledge.</p>
+          <pre class="code-snippet"><code>Short-term: Current conversation context
+Long-term:  Vector database of past sessions
+Episodic:   "Last time user preferred Python"
+Semantic:   "RAG best practices document"
+Procedural: "Steps to deploy on Netlify"</code></pre>
+        </div>
+
+        <div class="technique-card" data-technique="multi-agent">
+          <div class="technique-number">05</div>
+          <h3>Multi-Agent Systems</h3>
+          <p>Multiple specialized agents collaborate — a planner delegates to a coder, whose output is reviewed by an evaluator, creating emergent intelligence.</p>
+          <pre class="code-snippet"><code>Orchestrator → Planner Agent
+  └→ "Break down the user's request"
+Planner → Coder Agent
+  └→ "Implement step 3: API endpoint"
+Coder → Reviewer Agent
+  └→ "Check for bugs and improvements"
+Reviewer → Tester Agent
+  └→ "Write and run test cases"</code></pre>
+        </div>
+
+        <div class="technique-card" data-technique="guardrails">
+          <div class="technique-number">06</div>
+          <h3>Safety & Guardrails</h3>
+          <p>Responsible agentic AI includes permission boundaries, human-in-the-loop checkpoints, output validation, and defense against adversarial inputs.</p>
+          <pre class="code-snippet"><code>Guardrails:
+  ✓ Permission levels (read / write / execute)
+  ✓ Human approval for risky actions
+  ✓ Input sanitization against injection
+  ✓ Output validation and fact-checking
+  ✓ Rate limiting and cost controls
+  ✓ Audit logging of all actions</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Resources Section -->
+  <section id="resources">
+    <div class="container">
+      <h2 class="section-title">Resources & Next Steps</h2>
+      <p class="section-subtitle">Continue your agentic AI journey after the summit</p>
+
+      <div class="resources-grid">
+        <div class="resource-card">
+          <h3>Learn</h3>
+          <ul>
+            <li>Anthropic Claude Documentation</li>
+            <li>LangChain / LangGraph Tutorials</li>
+            <li>CrewAI Multi-Agent Framework</li>
+            <li>"Building AI Agents" by Chip Huyen</li>
+          </ul>
+        </div>
+        <div class="resource-card">
+          <h3>Build</h3>
+          <ul>
+            <li>Claude Agent SDK</li>
+            <li>Model Context Protocol (MCP)</li>
+            <li>OpenAI Agents SDK</li>
+            <li>AutoGen by Microsoft</li>
+          </ul>
+        </div>
+        <div class="resource-card">
+          <h3>Practice</h3>
+          <ul>
+            <li>Build a personal research agent</li>
+            <li>Create a code review agent</li>
+            <li>Develop a RAG-powered Q&A system</li>
+            <li>Contribute to open-source agent projects</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="nav-logo">&#9670;</span>
+          <span>Nagaon University AI Summit 2026</span>
+        </div>
+        <div class="footer-session">
+          <p>Session ID: <code>nagaon-ai-summit-setup-HhcKv</code></p>
+          <p>Branch: <code>claude/nagaon-ai-summit-setup-HhcKv</code></p>
+          <p>Part of the <strong>Vibe-Cast</strong> project collection</p>
+        </div>
+        <div class="footer-links">
+          <p>Built with agentic AI &mdash; by Claude Code</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/particles.js"></script>
+  <script src="js/demos.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
