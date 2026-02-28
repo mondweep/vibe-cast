@@ -116,7 +116,24 @@ svg.radar { width: 100%; max-width: 400px; }
 }
 .insight .title { color: var(--accent); font-weight: 600; margin-bottom: 4px; }
 
-/* Drag-drop overlay */
+/* Upload bar */
+.upload-bar {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 12px;
+}
+.upload-bar label {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+  background: #21262d; border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text); font-size: 0.85em; cursor: pointer; white-space: nowrap;
+}
+.upload-bar label:hover { background: #30363d; }
+.upload-bar label:active { background: var(--accent); color: #0d1117; }
+.upload-bar input[type=file] { display: none; }
+.upload-bar .upload-status { color: var(--muted); font-size: 0.8em; flex: 1; }
+.upload-bar .upload-status.loaded { color: var(--accent2); }
+
+/* Drag-drop overlay (desktop bonus) */
 .drop-overlay {
   position: fixed; inset: 0; background: rgba(88,166,255,0.1);
   border: 3px dashed var(--accent); display: none; z-index: 100;
@@ -162,6 +179,15 @@ svg.radar { width: 100%; max-width: 400px; }
     <span><strong>3</strong> distance metrics</span>
     <span>Period: <strong>2024-12-31</strong></span>
     <span>Format: <strong>RVF v1.0</strong></span>
+  </div>
+
+  <div class="upload-bar">
+    <label>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.5 1a.5.5 0 0 1 .5.5V6h4.5a.5.5 0 0 1 .354.854l-5 5a.5.5 0 0 1-.708 0l-5-5A.5.5 0 0 1 2.5 6H7V1.5A.5.5 0 0 1 7.5 1z" transform="rotate(180 8 8)"/><path d="M1 12.5A.5.5 0 0 1 1.5 12h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5z"/></svg>
+      Load .rvf file
+      <input type="file" accept=".rvf,.json" id="rvf-upload" onchange="handleUpload(this)">
+    </label>
+    <span class="upload-status" id="upload-status">Using embedded data (20 portfolios)</span>
   </div>
 
   <div class="tabs">
@@ -478,33 +504,75 @@ function resetSliders() {
   });
 }
 
-// ===== Drag & Drop .rvf loader =====
+// ===== RVF File Loading =====
+function loadRVF(file) {
+  const status = document.getElementById('upload-status');
+  status.textContent = 'Loading ' + file.name + '...';
+  status.className = 'upload-status';
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const newRvf = JSON.parse(reader.result);
+      if (!newRvf.vectors || !Array.isArray(newRvf.vectors) || newRvf.vectors.length === 0) {
+        throw new Error('No vectors found in file');
+      }
+      // Validate first vector has expected structure
+      const v0 = newRvf.vectors[0];
+      if (!v0.vector || !Array.isArray(v0.vector)) {
+        throw new Error('Invalid vector format');
+      }
+      Object.assign(RVF, newRvf);
+      rebuildUI();
+      status.textContent = 'Loaded ' + file.name + ' (' + newRvf.vectors.length + ' portfolios)';
+      status.className = 'upload-status loaded';
+    } catch(err) {
+      status.textContent = 'Error: ' + err.message;
+      status.className = 'upload-status';
+      status.style.color = 'var(--danger)';
+    }
+  };
+  reader.onerror = () => {
+    status.textContent = 'Failed to read file';
+    status.className = 'upload-status';
+    status.style.color = 'var(--danger)';
+  };
+  reader.readAsText(file);
+}
+
+// Upload button handler
+function handleUpload(input) {
+  const file = input.files[0];
+  if (file) loadRVF(file);
+  input.value = ''; // allow re-uploading same file
+}
+
+// Drag & drop (desktop bonus, also feeds into loadRVF)
 const overlay = document.getElementById('drop-overlay');
 document.addEventListener('dragover', e => { e.preventDefault(); overlay.classList.add('show'); });
 document.addEventListener('dragleave', e => { if (e.relatedTarget === null) overlay.classList.remove('show'); });
 document.addEventListener('drop', e => {
   e.preventDefault(); overlay.classList.remove('show');
   const file = e.dataTransfer.files[0];
-  if (file && file.name.endsWith('.rvf')) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const newRvf = JSON.parse(reader.result);
-        if (newRvf.format === 'rvf' && newRvf.vectors) {
-          Object.assign(RVF, newRvf);
-          rebuildUI();
-          alert('Loaded ' + newRvf.vectors.length + ' vectors from ' + file.name);
-        }
-      } catch(err) { alert('Invalid .rvf file: ' + err.message); }
-    };
-    reader.readAsText(file);
-  }
+  if (file) loadRVF(file);
 });
 
 function rebuildUI() {
+  // Update info bar
+  const infoBar = document.querySelector('.info-bar');
+  if (infoBar) {
+    infoBar.innerHTML = `
+      <span><strong>${RVF.vectors.length}</strong> portfolios</span>
+      <span><strong>${RVF.schema?.dimensions || RVF.vectors[0]?.vector?.length || '?'}</strong> dimensions</span>
+      <span><strong>3</strong> distance metrics</span>
+      ${RVF.reportingPeriod ? `<span>Period: <strong>${RVF.reportingPeriod}</strong></span>` : ''}
+      <span>Format: <strong>RVF v${RVF.version || '?'}</strong></span>
+    `;
+  }
+  // Rebuild fund selector
   const sel = document.getElementById('fund-select');
   sel.innerHTML = RVF.vectors.map((v, i) =>
-    `<option value="${i}">${v.name} — ${v.style}</option>`
+    `<option value="${i}">${v.name} — ${v.style || 'Unknown'}</option>`
   ).join('');
   buildSliders();
   search();
