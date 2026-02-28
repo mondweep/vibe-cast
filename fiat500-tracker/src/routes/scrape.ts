@@ -9,6 +9,7 @@ import { CazooScraper } from '../scrapers/cazoo.js';
 import { EbayMotorsScraper } from '../scrapers/ebay-motors.js';
 import { HeycarScraper } from '../scrapers/heycar.js';
 import { MotorsCoUkScraper } from '../scrapers/motors-co-uk.js';
+import { BigMotoringWorldScraper } from '../scrapers/big-motoring-world.js';
 import { recalculateAllScores } from '../ranking/engine.js';
 import { batchEstimateInsurance } from '../insurance/estimator.js';
 import type { UserConfig } from '../types/index.js';
@@ -50,6 +51,7 @@ router.post('/trigger', async (_req: Request, res: Response) => {
   // TODO: Convert other scrapers to use fetch-based extraction or use Cloud Run gen2.
   const scrapers = [
     new CarGurusScraper(),
+    new BigMotoringWorldScraper(),
     // new AutoTraderScraper(),
     // new GumtreeScraper(),
     // new CinchScraper(),
