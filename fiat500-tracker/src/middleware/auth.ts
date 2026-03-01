@@ -7,11 +7,30 @@ function constantTimeEqual(a: string, b: string): boolean {
   return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
+// Routes that allow unauthenticated GET requests (public read-only)
+const PUBLIC_GET_PREFIXES = [
+  '/config',
+  '/listings',
+  '/shortlist',
+  '/scrape/status',
+];
+
 export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
   // Skip auth for health check
   if (req.path === '/health') {
     next();
     return;
+  }
+
+  // Allow public GET access to read-only routes
+  if (req.method === 'GET') {
+    const isPublic = PUBLIC_GET_PREFIXES.some(
+      prefix => req.path === prefix || req.path.startsWith(prefix + '/')
+    );
+    if (isPublic) {
+      next();
+      return;
+    }
   }
 
   const authHeader = req.headers.authorization;

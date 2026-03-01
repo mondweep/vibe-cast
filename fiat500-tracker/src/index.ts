@@ -41,7 +41,7 @@ app.get('/health', async (_req, res) => {
   }
 });
 
-// Auth middleware for all /api/* routes
+// Auth middleware for all /api/* routes (GET on read-only paths is public)
 app.use('/api', authMiddleware);
 
 // Stricter rate limits for resource-intensive endpoints

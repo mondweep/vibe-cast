@@ -1,15 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'https://fiat500-tracker-83829553594.europe-west2.run.app';
-const API_KEY = import.meta.env.VITE_API_KEY || '';
 
-async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      'Authorization': `Bearer ${API_KEY}`,
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
+async function apiFetch<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`);
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `HTTP ${res.status}`);
@@ -103,6 +95,5 @@ export const api = {
   getListing: (id: string) => apiFetch<ListingDetail>(`/api/listings/${id}`),
   getShortlist: () => apiFetch<ShortlistEntry[]>('/api/shortlist'),
   getScrapeStatus: () => apiFetch<ScrapeStatus>('/api/scrape/status'),
-  triggerScrape: () => apiFetch<{ status: string }>('/api/scrape/trigger', { method: 'POST' }),
   getConfig: () => apiFetch<UserConfig>('/api/config'),
 };

@@ -8,7 +8,6 @@ export default function Dashboard() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [config, setConfig] = useState<UserConfig | null>(null);
   const [loading, setLoading] = useState(true);
-  const [scraping, setScraping] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -29,25 +28,6 @@ export default function Dashboard() {
       setConfig(c);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function triggerScrape() {
-    setScraping(true);
-    try {
-      await api.triggerScrape();
-      // Poll status
-      const poll = setInterval(async () => {
-        const st = await api.getScrapeStatus().catch(() => null);
-        if (st) setScrapeStatus(st);
-        if (st?.status !== 'running') {
-          clearInterval(poll);
-          setScraping(false);
-          loadData();
-        }
-      }, 5000);
-    } catch {
-      setScraping(false);
     }
   }
 
@@ -86,16 +66,7 @@ export default function Dashboard() {
       {/* Scrape Status + Config */}
       <div className="grid md:grid-cols-2 gap-4">
         <div className="bg-fiat-navy rounded-xl p-5 border border-slate-700">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold">Scrape Status</h2>
-            <button
-              onClick={triggerScrape}
-              disabled={scraping}
-              className="px-4 py-2 bg-fiat-accent hover:bg-red-600 disabled:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              {scraping ? 'Scraping...' : 'Run Scrape'}
-            </button>
-          </div>
+          <h2 className="text-lg font-semibold mb-3">Scrape Status</h2>
           {scrapeStatus?.last_run ? (
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
