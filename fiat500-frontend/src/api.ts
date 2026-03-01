@@ -1,12 +1,25 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'https://fiat500-tracker-83829553594.europe-west2.run.app';
 
-async function apiFetch<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`);
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+  });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `HTTP ${res.status}`);
   }
   return res.json();
+}
+
+export interface SearchFilters {
+  postcode?: string;
+  search_radius_miles?: number;
+  budget_min?: number;
+  budget_max?: number;
 }
 
 export interface Listing {
@@ -95,5 +108,8 @@ export const api = {
   getListing: (id: string) => apiFetch<ListingDetail>(`/api/listings/${id}`),
   getShortlist: () => apiFetch<ShortlistEntry[]>('/api/shortlist'),
   getScrapeStatus: () => apiFetch<ScrapeStatus>('/api/scrape/status'),
+  triggerScrape: () => apiFetch<{ status: string }>('/api/scrape/trigger', { method: 'POST' }),
   getConfig: () => apiFetch<UserConfig>('/api/config'),
+  patchConfig: (filters: SearchFilters) =>
+    apiFetch<UserConfig>('/api/config', { method: 'PATCH', body: JSON.stringify(filters) }),
 };

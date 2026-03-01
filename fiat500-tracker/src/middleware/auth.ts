@@ -15,6 +15,12 @@ const PUBLIC_GET_PREFIXES = [
   '/scrape/status',
 ];
 
+// Routes that allow unauthenticated write requests (rate-limited elsewhere)
+const PUBLIC_WRITE_ROUTES: { method: string; path: string }[] = [
+  { method: 'POST', path: '/scrape/trigger' },
+  { method: 'PATCH', path: '/config' },
+];
+
 export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
   // Skip auth for health check
   if (req.path === '/health') {
@@ -31,6 +37,15 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
       next();
       return;
     }
+  }
+
+  // Allow public write access to specific rate-limited routes
+  const isPublicWrite = PUBLIC_WRITE_ROUTES.some(
+    route => req.method === route.method && req.path === route.path
+  );
+  if (isPublicWrite) {
+    next();
+    return;
   }
 
   const authHeader = req.headers.authorization;

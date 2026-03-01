@@ -8,10 +8,27 @@ export default function Dashboard() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [config, setConfig] = useState<UserConfig | null>(null);
   const [loading, setLoading] = useState(true);
+  const [scraping, setScraping] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [filterMsg, setFilterMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+
+  // Form state for search filters
+  const [postcode, setPostcode] = useState('');
+  const [radius, setRadius] = useState(50);
+  const [budgetMax, setBudgetMax] = useState(10000);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Sync form fields when config loads
+  useEffect(() => {
+    if (config) {
+      setPostcode(config.postcode || '');
+      setRadius(config.search_radius_miles || 50);
+      setBudgetMax(Math.round((config.budget_max || 1000000) / 100));
+    }
+  }, [config]);
 
   async function loadData() {
     setLoading(true);
@@ -28,6 +45,44 @@ export default function Dashboard() {
       setConfig(c);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function saveFilters() {
+    setSaving(true);
+    setFilterMsg(null);
+    try {
+      const updated = await api.patchConfig({
+        postcode: postcode.trim() || undefined,
+        search_radius_miles: radius,
+        budget_max: budgetMax * 100, // convert pounds to pence
+      });
+      setConfig(updated);
+      setFilterMsg({ type: 'ok', text: 'Filters saved' });
+    } catch (err) {
+      setFilterMsg({ type: 'err', text: err instanceof Error ? err.message : 'Failed to save' });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function triggerScrape() {
+    setScraping(true);
+    setFilterMsg(null);
+    try {
+      await api.triggerScrape();
+      const poll = setInterval(async () => {
+        const st = await api.getScrapeStatus().catch(() => null);
+        if (st) setScrapeStatus(st);
+        if (st?.status !== 'running') {
+          clearInterval(poll);
+          setScraping(false);
+          loadData();
+        }
+      }, 5000);
+    } catch (err) {
+      setScraping(false);
+      setFilterMsg({ type: 'err', text: err instanceof Error ? err.message : 'Failed to start scrape' });
     }
   }
 
@@ -63,7 +118,81 @@ export default function Dashboard() {
         <StatCard label="Lowest Price" value={`£${lowestPrice.toLocaleString()}`} />
       </div>
 
-      {/* Scrape Status + Config */}
+      {/* Search Filters + Scrape */}
+      <div className="bg-fiat-navy rounded-xl p-5 border border-slate-700">
+        <h2 className="text-lg font-semibold mb-4">Search Filters</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">Postcode</label>
+            <input
+              type="text"
+              value={postcode}
+              onChange={e => setPostcode(e.target.value.toUpperCase())}
+              placeholder="e.g. GU1 1AA"
+              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-fiat-blue"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">Radius (miles)</label>
+            <select
+              value={radius}
+              onChange={e => setRadius(Number(e.target.value))}
+              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-fiat-blue"
+            >
+              {[10, 25, 50, 75, 100].map(r => (
+                <option key={r} value={r}>{r} miles</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">Max Budget</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">£</span>
+              <input
+                type="number"
+                value={budgetMax}
+                onChange={e => setBudgetMax(Number(e.target.value))}
+                min={500}
+                max={50000}
+                step={500}
+                className="w-full bg-slate-800 border border-slate-600 rounded-lg pl-7 pr-3 py-2 text-sm text-white focus:outline-none focus:border-fiat-blue"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">Make &amp; Model</label>
+            <input
+              type="text"
+              value="Fiat 500 (Manual)"
+              disabled
+              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-3 mt-4">
+          <button
+            onClick={saveFilters}
+            disabled={saving}
+            className="px-4 py-2 bg-slate-600 hover:bg-slate-500 disabled:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            {saving ? 'Saving...' : 'Save Filters'}
+          </button>
+          <button
+            onClick={triggerScrape}
+            disabled={scraping}
+            className="px-4 py-2 bg-fiat-accent hover:bg-red-600 disabled:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            {scraping ? 'Scraping...' : 'Run Scrape'}
+          </button>
+          {filterMsg && (
+            <span className={`text-sm ${filterMsg.type === 'ok' ? 'text-fiat-green' : 'text-fiat-accent'}`}>
+              {filterMsg.text}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Scrape Status + Platform Breakdown */}
       <div className="grid md:grid-cols-2 gap-4">
         <div className="bg-fiat-navy rounded-xl p-5 border border-slate-700">
           <h2 className="text-lg font-semibold mb-3">Scrape Status</h2>

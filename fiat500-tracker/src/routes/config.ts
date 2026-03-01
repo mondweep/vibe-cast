@@ -112,4 +112,83 @@ router.put('/', async (req: Request, res: Response) => {
   res.json(result.data);
 });
 
+// Lightweight PATCH for search filters only (public-facing)
+const searchFiltersSchema = z.object({
+  postcode: z.string().regex(/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i, 'Invalid UK postcode').optional(),
+  search_radius_miles: z.number().int().min(1).max(100).optional(),
+  budget_min: z.number().int().positive().optional(),
+  budget_max: z.number().int().positive().optional(),
+});
+
+router.patch('/', async (req: Request, res: Response) => {
+  const parsed = searchFiltersSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors });
+    return;
+  }
+
+  const filters = parsed.data;
+  if (Object.keys(filters).length === 0) {
+    res.status(400).json({ error: 'No fields to update' });
+    return;
+  }
+
+  if (filters.budget_min != null && filters.budget_max != null && filters.budget_min >= filters.budget_max) {
+    res.status(400).json({ error: 'budget_min must be less than budget_max' });
+    return;
+  }
+
+  const { data: existing } = await supabase
+    .from('user_config')
+    .select('id, budget_min, budget_max')
+    .limit(1)
+    .single();
+
+  if (!existing) {
+    res.status(404).json({ error: 'No configuration found.' });
+    return;
+  }
+
+  // Cross-validate against existing values when only one side is provided
+  const effectiveMin = filters.budget_min ?? existing.budget_min;
+  const effectiveMax = filters.budget_max ?? existing.budget_max;
+  if (effectiveMin >= effectiveMax) {
+    res.status(400).json({ error: 'budget_min must be less than budget_max' });
+    return;
+  }
+
+  const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (filters.search_radius_miles != null) row.search_radius_miles = filters.search_radius_miles;
+  if (filters.budget_min != null) row.budget_min = filters.budget_min;
+  if (filters.budget_max != null) row.budget_max = filters.budget_max;
+
+  if (filters.postcode != null) {
+    row.postcode = filters.postcode.toUpperCase().replace(/\s+/g, ' ').trim();
+    try {
+      const geo = await geocodePostcode(filters.postcode);
+      if (geo) {
+        row.latitude = geo.latitude;
+        row.longitude = geo.longitude;
+      }
+    } catch (err) {
+      console.warn('Failed to geocode postcode:', err);
+    }
+  }
+
+  const result = await supabase
+    .from('user_config')
+    .update(row)
+    .eq('id', existing.id)
+    .select()
+    .single();
+
+  if (result.error) {
+    console.error('[Config] Patch error:', result.error);
+    res.status(500).json({ error: 'Failed to update config' });
+    return;
+  }
+
+  res.json(result.data);
+});
+
 export default router;
