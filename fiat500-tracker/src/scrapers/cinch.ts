@@ -1,4 +1,3 @@
-import { chromium, type Browser } from 'playwright';
 import { BaseScraper, type ScraperResult } from './base-scraper.js';
 import type { ScrapedListing, UserConfig } from '../types/index.js';
 
@@ -8,95 +7,185 @@ export class CinchScraper extends BaseScraper {
   async scrape(config: UserConfig): Promise<ScraperResult> {
     const errors: string[] = [];
     const listings: ScrapedListing[] = [];
-    let browser: Browser | null = null;
 
     try {
-      browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-      const context = await browser.newContext({
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      // Cinch is a Next.js app with __NEXT_DATA__ containing full vehicle listings
+      const searchUrl = 'https://www.cinch.co.uk/used-cars/fiat/500/manual-gearbox?financeType=any';
+
+      console.log(`[Cinch] Fetching: ${searchUrl}`);
+
+      const response = await fetch(searchUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-GB,en;q=0.9',
+        },
       });
-      const page = await context.newPage();
 
-      const priceMin = Math.round(config.budget_min / 100);
-      const priceMax = Math.round(config.budget_max / 100);
-
-      const searchUrl = `https://www.cinch.co.uk/used-cars/fiat/500?price-from=${priceMin}&price-to=${priceMax}&fuel-type=petrol&transmission=manual`;
-
-      console.log(`[Cinch] Searching: ${searchUrl}`);
-      await page.goto(searchUrl, { waitUntil: 'networkidle', timeout: 60000 });
-      await this.randomDelay(2000, 4000);
-
-      // Cinch is a React app — wait for content to render
-      await page.waitForSelector('[data-testid="vehicle-card"], .vehicle-card, article', { timeout: 15000 }).catch(() => null);
-
-      const cards = await page.locator('[data-testid="vehicle-card"], .vehicle-card, article').all();
-
-      for (const card of cards) {
-        try {
-          const href = await card.locator('a').first().getAttribute('href').catch(() => null);
-          if (!href) continue;
-
-          const url = href.startsWith('http') ? href : `https://www.cinch.co.uk${href}`;
-          const idMatch = href.match(/\/(\d+)$/);
-          const title = await card.locator('h2, h3, [data-testid="vehicle-title"]').first().textContent().catch(() => 'Fiat 500');
-          const priceText = await card.locator('[data-testid="vehicle-price"], [class*="price"]').first().textContent().catch(() => '0');
-          const price = parseInt((priceText || '0').replace(/[^0-9]/g, ''), 10) * 100;
-
-          const specsText = await card.locator('[data-testid="vehicle-specs"], [class*="spec"]').first().textContent().catch(() => '');
-          const imgSrc = await card.locator('img').first().getAttribute('src').catch(() => null);
-
-          listings.push({
-            platform: 'cinch',
-            platform_listing_id: idMatch ? idMatch[1] : href,
-            url,
-            title: (title || 'Fiat 500').trim(),
-            price,
-            year: this.extractYear(title || '') || 2015,
-            mileage: this.extractMileage(specsText || ''),
-            engine_size: this.extractEngineSize(title || ''),
-            fuel_type: 'petrol',
-            transmission: 'manual',
-            colour: null,
-            mot_expiry: null,
-            seller_name: 'cinch',
-            seller_type: 'dealer',
-            seller_rating: 75,
-            location_postcode: null,
-            description: null,
-            image_urls: imgSrc ? [imgSrc] : [],
-          });
-        } catch (err) {
-          errors.push(`Cinch card parse error: ${err}`);
-        }
+      if (!response.ok) {
+        errors.push(`Cinch HTTP ${response.status}`);
+        return this.makeResult(listings, errors);
       }
 
-      console.log(`[Cinch] Found ${listings.length} listings`);
-      await context.close();
+      const html = await response.text();
+      console.log(`[Cinch] Got ${html.length} bytes of HTML`);
+
+      // Extract __NEXT_DATA__ JSON
+      const nextData = this.extractNextData(html);
+      if (!nextData) {
+        errors.push('Cinch: could not extract __NEXT_DATA__ from page');
+        return this.makeResult(listings, errors);
+      }
+
+      const vehicleListings = nextData?.props?.pageProps?.searchResults?.response?.vehicleListings;
+      if (!Array.isArray(vehicleListings)) {
+        errors.push('Cinch: no vehicleListings in __NEXT_DATA__');
+        return this.makeResult(listings, errors);
+      }
+
+      const priceMin = config.budget_min; // pence
+      const priceMax = config.budget_max;
+
+      console.log(`[Cinch] Found ${vehicleListings.length} vehicles in __NEXT_DATA__`);
+
+      for (const vehicle of vehicleListings) {
+        const listing = this.mapVehicle(vehicle);
+        if (!listing) continue;
+
+        // Filter by budget (Cinch prices are in pounds, we convert to pence)
+        if (listing.price < priceMin || listing.price > priceMax) continue;
+
+        listings.push(listing);
+      }
+
+      console.log(`[Cinch] ${listings.length} listings within budget`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Cinch scraper error: ${msg}`);
-      console.error(`[Cinch] Error:`, msg);
-    } finally {
-      if (browser) await browser.close();
+      console.error('[Cinch] Error:', msg);
     }
 
     return this.makeResult(listings, errors);
   }
 
-  private extractYear(text: string): number | null {
-    const match = text.match(/\b(20[0-2]\d)\b/);
-    return match ? parseInt(match[1], 10) : null;
+  private extractNextData(html: string): NextDataResponse | null {
+    const marker = '<script id="__NEXT_DATA__" type="application/json">';
+    const idx = html.indexOf(marker);
+    if (idx === -1) return null;
+
+    const start = idx + marker.length;
+    const end = html.indexOf('</script>', start);
+    if (end === -1) return null;
+
+    try {
+      return JSON.parse(html.slice(start, end));
+    } catch {
+      return null;
+    }
   }
 
-  private extractMileage(text: string): number {
-    const match = text.match(/([\d,]+)\s*miles/i);
-    return match ? parseInt(match[1].replace(/,/g, ''), 10) : 0;
+  private mapVehicle(v: CinchVehicle): ScrapedListing | null {
+    const id = v.vehicleId;
+    if (!id) return null;
+
+    const price = (v.price || 0) * 100; // pounds to pence
+    if (price === 0) return null;
+
+    const year = v.vehicleYear || v.modelYear || 0;
+    const variant = v.variant || '';
+    const trim = v.trim || '';
+    const title = `${year} Fiat 500 ${variant}`.trim();
+
+    const url = `https://www.cinch.co.uk/used-cars/fiat/500/${id}`;
+
+    const engineCc = v.engineCapacityCc || v.engineSize || 0;
+    const engineSize = engineCc > 0 ? (engineCc / 1000).toFixed(1) : this.extractEngineSize(variant);
+
+    return {
+      platform: 'cinch',
+      platform_listing_id: id,
+      url,
+      title,
+      price,
+      year: year || 2015,
+      mileage: v.mileage || 0,
+      engine_size: engineSize,
+      fuel_type: this.normalizeFuel(v.fuelType || 'Petrol'),
+      transmission: this.normalizeTransmission(v.transmissionType || 'Manual'),
+      colour: v.colour || null,
+      mot_expiry: null,
+      seller_name: v.site ? `cinch ${v.site}` : 'cinch',
+      seller_type: 'dealer',
+      seller_rating: 75,
+      location_postcode: null,
+      description: [trim, variant].filter(Boolean).join(' - ') || null,
+      image_urls: v.thumbnailUrl ? [v.thumbnailUrl] : [],
+    };
   }
 
   private extractEngineSize(text: string): string {
     if (/0\.9|twinair/i.test(text)) return '0.9';
     if (/1\.2/i.test(text)) return '1.2';
     if (/1\.4/i.test(text)) return '1.4';
+    if (/1\.0/i.test(text)) return '1.0';
     return '1.2';
   }
+
+  private normalizeFuel(fuel: string): string {
+    const lower = fuel.toLowerCase();
+    if (lower.includes('petrol') || lower.includes('gasoline')) return 'petrol';
+    if (lower.includes('diesel')) return 'diesel';
+    if (lower.includes('electric')) return 'electric';
+    if (lower.includes('hybrid')) return 'hybrid';
+    return 'petrol';
+  }
+
+  private normalizeTransmission(trans: string): string {
+    const lower = trans.toLowerCase();
+    if (lower.includes('auto')) return 'automatic';
+    if (lower.includes('manual')) return 'manual';
+    return 'manual';
+  }
+}
+
+// ── Types ──────────────────────────────────────────────────────────────
+
+interface NextDataResponse {
+  props?: {
+    pageProps?: {
+      searchResults?: {
+        response?: {
+          vehicleListings?: CinchVehicle[];
+          searchResultsCount?: number;
+        };
+      };
+    };
+  };
+}
+
+interface CinchVehicle {
+  vehicleId?: string;
+  modelYear?: number;
+  vehicleYear?: number;
+  bodyType?: string;
+  colour?: string;
+  doors?: number;
+  engineCapacityCc?: number;
+  engineSize?: number;
+  fuelType?: string;
+  vrm?: string;
+  mileage?: number;
+  seats?: number;
+  stockType?: string;
+  trim?: string;
+  variant?: string;
+  transmissionType?: string;
+  make?: string;
+  model?: string;
+  price?: number;
+  priceIncludingAdminFee?: number;
+  thumbnailUrl?: string;
+  site?: string;
+  isAvailable?: boolean;
+  condition?: string;
 }

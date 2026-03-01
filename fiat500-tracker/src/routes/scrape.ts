@@ -1,15 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { supabase } from '../db/client.js';
 import { runScrapeOrchestrator } from '../scrapers/scrape-orchestrator.js';
-import { AutoTraderScraper } from '../scrapers/autotrader.js';
-import { GumtreeScraper } from '../scrapers/gumtree.js';
 import { CarGurusScraper } from '../scrapers/cargurus.js';
-import { CinchScraper } from '../scrapers/cinch.js';
-import { CazooScraper } from '../scrapers/cazoo.js';
-import { EbayMotorsScraper } from '../scrapers/ebay-motors.js';
-import { HeycarScraper } from '../scrapers/heycar.js';
-import { MotorsCoUkScraper } from '../scrapers/motors-co-uk.js';
 import { BigMotoringWorldScraper } from '../scrapers/big-motoring-world.js';
+import { CinchScraper } from '../scrapers/cinch.js';
+import { HeycarScraper } from '../scrapers/heycar.js';
+import { CarwowScraper } from '../scrapers/carwow.js';
 import { recalculateAllScores } from '../ranking/engine.js';
 import { batchEstimateInsurance } from '../insurance/estimator.js';
 import type { UserConfig } from '../types/index.js';
@@ -44,21 +40,18 @@ router.post('/trigger', async (_req: Request, res: Response) => {
     return;
   }
 
-  // Start scrape in background
-  // NOTE: Playwright-based scrapers (AutoTrader, Gumtree, Cinch, Cazoo, eBay, Heycar, Motors)
-  // are disabled because Chromium cannot launch in Cloud Run's gVisor sandbox.
-  // CarGurus works via HTTP fetch (no browser needed).
-  // TODO: Convert other scrapers to use fetch-based extraction or use Cloud Run gen2.
+  // All scrapers below use plain HTTP fetch (no Playwright/browser needed).
+  // Platforms not included:
+  //   AutoTrader — SPA requires JS execution, GraphQL gateway blocks headless requests
+  //   Cazoo — Vercel security checkpoint blocks all non-browser requests
+  //   Cargiant — no Fiat 500 stock (London physical dealer, limited inventory)
+  //   Gumtree / eBay Motors / Motors.co.uk — require Playwright (TODO: convert)
   const scrapers = [
     new CarGurusScraper(),
     new BigMotoringWorldScraper(),
-    // new AutoTraderScraper(),
-    // new GumtreeScraper(),
-    // new CinchScraper(),
-    // new CazooScraper(),
-    // new EbayMotorsScraper(),
-    // new HeycarScraper(),
-    // new MotorsCoUkScraper(),
+    new CinchScraper(),
+    new HeycarScraper(),
+    new CarwowScraper(),
   ];
 
   // Return immediately with 202

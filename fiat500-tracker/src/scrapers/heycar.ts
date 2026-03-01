@@ -1,4 +1,3 @@
-import { chromium, type Browser, type Page } from 'playwright';
 import { BaseScraper, type ScraperResult } from './base-scraper.js';
 import type { ScrapedListing, UserConfig } from '../types/index.js';
 
@@ -8,281 +7,161 @@ export class HeycarScraper extends BaseScraper {
   async scrape(config: UserConfig): Promise<ScraperResult> {
     const errors: string[] = [];
     const listings: ScrapedListing[] = [];
-    let browser: Browser | null = null;
 
     try {
-      browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-      const context = await browser.newContext({
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      // Heycar is a Next.js RSC app that embeds listing data in plpEvents within
+      // self.__next_f.push() script chunks. We can extract these via plain fetch.
+      const lat = config.latitude || 51.385117;
+      const lon = config.longitude || 0.378817;
+      const postcode = encodeURIComponent(config.postcode);
+
+      const searchUrl = `https://heycar.com/uk/autos/make/fiat/model/500?stock-condition=used&sort=i15_uk_elo&lat=${lat}&lon=${lon}&postcode=${postcode}`;
+
+      console.log(`[Heycar] Fetching: ${searchUrl}`);
+
+      const response = await fetch(searchUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-GB,en;q=0.9',
+        },
       });
-      const page = await context.newPage();
 
-      const priceMin = Math.round(config.budget_min / 100); // pence to pounds
-      const priceMax = Math.round(config.budget_max / 100);
-      const postcode = encodeURIComponent(config.postcode.replace(/\s+/g, ''));
-      const radius = config.search_radius_miles;
-
-      // Heycar search URL for Fiat 500
-      const searchUrl = `https://www.heycar.co.uk/used-cars/fiat/500?price-from=${priceMin}&price-to=${priceMax}&fuel-type=petrol&transmission=manual&postcode=${postcode}&radius=${radius}&sort=price-asc`;
-
-      console.log(`[Heycar] Searching: ${searchUrl}`);
-      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await this.randomDelay(2000, 4000);
-
-      // Handle cookie consent if present
-      try {
-        const cookieBtn = page.locator('button:has-text("Accept All"), button:has-text("Accept all cookies"), button:has-text("Accept & Close"), button[id*="accept"]').first();
-        if (await cookieBtn.isVisible({ timeout: 3000 })) {
-          await cookieBtn.click();
-          await this.delay(1000);
-        }
-      } catch {
-        // No cookie banner — continue
+      if (!response.ok) {
+        errors.push(`Heycar HTTP ${response.status}`);
+        return this.makeResult(listings, errors);
       }
 
-      // Try extracting from structured data (JSON-LD) first
-      const structuredListings = await this.extractStructuredData(page, errors);
-      if (structuredListings.length > 0) {
-        listings.push(...structuredListings);
-        console.log(`[Heycar] Extracted ${structuredListings.length} listings from structured data`);
+      const html = await response.text();
+      console.log(`[Heycar] Got ${html.length} bytes of HTML`);
+
+      // Extract plpEvents from RSC script chunks
+      const events = this.extractPlpEvents(html);
+
+      if (events.length === 0) {
+        errors.push('Heycar: could not extract plpEvents from page');
+        return this.makeResult(listings, errors);
       }
 
-      // Also parse search result cards from the DOM
-      let pageNum = 1;
-      const maxPages = 5;
+      const priceMin = config.budget_min; // pence
+      const priceMax = config.budget_max;
 
-      while (pageNum <= maxPages) {
-        const pageListings = await this.parseSearchPage(page, errors);
+      console.log(`[Heycar] Found ${events.length} listings in plpEvents`);
 
-        // Avoid duplicates with structured data results
-        for (const pl of pageListings) {
-          const isDuplicate = listings.some(
-            l => l.platform_listing_id === pl.platform_listing_id,
-          );
-          if (!isDuplicate) listings.push(pl);
-        }
+      for (const event of events) {
+        const data = event.data;
+        if (!data) continue;
 
-        console.log(`[Heycar] Page ${pageNum}: found ${pageListings.length} listings`);
+        const listing = this.mapEvent(data);
+        if (!listing) continue;
 
-        // Check for next page
-        const nextBtn = page.locator('a[aria-label="Next page"], button:has-text("Next"), a:has-text("Next"), [data-testid="pagination-next"]').first();
-        const hasNext = await nextBtn.isVisible({ timeout: 3000 }).catch(() => false);
+        // Filter by budget
+        if (listing.price < priceMin || listing.price > priceMax) continue;
 
-        if (!hasNext || pageNum >= maxPages) break;
-
-        await nextBtn.click();
-        await this.randomDelay(2000, 4000);
-        pageNum++;
+        listings.push(listing);
       }
 
-      console.log(`[Heycar] Total found: ${listings.length} listings`);
-      await context.close();
+      console.log(`[Heycar] ${listings.length} listings within budget`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Heycar scraper error: ${msg}`);
-      console.error(`[Heycar] Error:`, msg);
-    } finally {
-      if (browser) await browser.close();
+      console.error('[Heycar] Error:', msg);
     }
 
     return this.makeResult(listings, errors);
   }
 
-  private async extractStructuredData(page: Page, errors: string[]): Promise<ScrapedListing[]> {
-    const listings: ScrapedListing[] = [];
+  private extractPlpEvents(html: string): HeycarPlpEvent[] {
+    // RSC data is embedded in self.__next_f.push([1,"..."]) calls
+    // The plpEvents array is inside one of these chunks
+    const regex = /self\.__next_f\.push\(\[1,"(.*?)"\]\)/g;
+    let match;
 
-    try {
-      // Heycar often embeds JSON-LD structured data for vehicle listings
-      const scripts = await page.locator('script[type="application/ld+json"]').all();
+    while ((match = regex.exec(html)) !== null) {
+      let chunk: string;
+      try {
+        chunk = JSON.parse(`"${match[1]}"`); // unescape the string
+      } catch {
+        continue;
+      }
 
-      for (const script of scripts) {
-        try {
-          const content = await script.textContent().catch(() => null);
-          if (!content) continue;
+      if (!chunk.includes('plpEvents')) continue;
 
-          const data = JSON.parse(content);
+      // Find the plpEvents JSON array within the chunk
+      const eventsIdx = chunk.indexOf('"plpEvents"');
+      if (eventsIdx === -1) continue;
 
-          // Handle single object or array
-          const items = Array.isArray(data) ? data : [data];
+      // Find the opening bracket
+      const bracketIdx = chunk.indexOf('[', eventsIdx);
+      if (bracketIdx === -1) continue;
 
-          for (const item of items) {
-            if (item['@type'] === 'Car' || item['@type'] === 'Vehicle' || item['@type'] === 'Product') {
-              const listing = this.mapJsonLd(item);
-              if (listing) listings.push(listing);
-            }
-
-            // Handle ItemList with ListItem entries
-            if (item['@type'] === 'ItemList' && Array.isArray(item.itemListElement)) {
-              for (const listItem of item.itemListElement) {
-                const vehicle = listItem.item || listItem;
-                if (vehicle['@type'] === 'Car' || vehicle['@type'] === 'Vehicle' || vehicle['@type'] === 'Product') {
-                  const listing = this.mapJsonLd(vehicle);
-                  if (listing) listings.push(listing);
-                }
-              }
-            }
-          }
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          errors.push(`Heycar JSON-LD parse error: ${msg}`);
+      // Walk to find matching closing bracket
+      let depth = 0;
+      let end = -1;
+      for (let i = bracketIdx; i < chunk.length; i++) {
+        if (chunk[i] === '[') depth++;
+        else if (chunk[i] === ']') {
+          depth--;
+          if (depth === 0) { end = i + 1; break; }
         }
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      errors.push(`Heycar structured data extraction error: ${msg}`);
+
+      if (end === -1) continue;
+
+      const eventsJson = chunk.slice(bracketIdx, end);
+      try {
+        const events = JSON.parse(eventsJson) as HeycarPlpEvent[];
+        if (Array.isArray(events) && events.length > 0) {
+          return events;
+        }
+      } catch {
+        // Try to fix common RSC serialization quirks
+        const cleaned = eventsJson.replace(/"\$undefined"/g, 'null');
+        try {
+          const events = JSON.parse(cleaned) as HeycarPlpEvent[];
+          if (Array.isArray(events)) return events;
+        } catch {
+          continue;
+        }
+      }
     }
 
-    return listings;
+    return [];
   }
 
-  private mapJsonLd(item: Record<string, unknown>): ScrapedListing | null {
-    const name = String(item.name || '');
-    const url = String(item.url || '');
-    if (!url && !name) return null;
+  private mapEvent(data: HeycarEventData): ScrapedListing | null {
+    const id = data.listing_id;
+    if (!id) return null;
 
-    const fullUrl = url.startsWith('http') ? url : `https://www.heycar.co.uk${url}`;
-    const idMatch = fullUrl.match(/\/vehicle\/([^/?]+)/);
-    const platformListingId = idMatch ? idMatch[1] : url.split('/').pop() || url;
+    const price = (data.price || 0) * 100; // pounds to pence
+    if (price === 0) return null;
 
-    // Extract price from offers
-    const offers = item.offers as Record<string, unknown> | undefined;
-    const rawPrice = offers ? Number(offers.price || 0) : 0;
-    const price = rawPrice * 100; // pounds to pence
+    const year = data.year || 0;
+    const variant = data.variant || '';
+    const title = `${year} ${data.vehicle_name || 'Fiat 500'} ${variant}`.trim();
 
-    // Extract vehicle details
-    const modelDate = Number(item.modelDate || item.vehicleModelDate || item.productionDate || 0);
-
-    const mileageObj = item.mileageFromOdometer as Record<string, unknown> | undefined;
-    const mileage = mileageObj ? Number(mileageObj.value || 0) : 0;
-
-    const fuelType = String(item.fuelType || 'petrol').toLowerCase();
-    const transmission = String(item.vehicleTransmission || 'manual').toLowerCase();
-    const colour = item.color ? String(item.color) : null;
-
-    const imageUrl = typeof item.image === 'string'
-      ? item.image
-      : Array.isArray(item.image) && item.image.length > 0
-        ? String(item.image[0])
-        : null;
+    const url = `https://heycar.com/uk/autos/detail/${id}`;
 
     return {
       platform: 'heycar',
-      platform_listing_id: platformListingId,
-      url: fullUrl,
-      title: name || 'Fiat 500',
+      platform_listing_id: id,
+      url,
+      title,
       price,
-      year: modelDate || this.extractYear(name) || 2015,
-      mileage,
-      engine_size: this.extractEngineSize(name),
-      fuel_type: fuelType.includes('petrol') ? 'petrol' : fuelType.includes('diesel') ? 'diesel' : fuelType,
-      transmission: transmission.includes('manual') ? 'manual' : transmission.includes('auto') ? 'automatic' : transmission,
-      colour,
+      year: year || 2015,
+      mileage: data.mileage || 0,
+      engine_size: this.extractEngineSize(variant),
+      fuel_type: this.extractFuelType(variant),
+      transmission: this.extractTransmission(variant),
+      colour: data.colour || null,
       mot_expiry: null,
-      seller_name: null,
-      seller_type: 'dealer', // Heycar only lists dealer cars
+      seller_name: data.advertiser_id ? `Heycar dealer ${data.advertiser_id}` : null,
+      seller_type: 'dealer',
       seller_rating: null,
       location_postcode: null,
-      description: item.description ? String(item.description) : null,
-      image_urls: imageUrl ? [imageUrl] : [],
+      description: variant || null,
+      image_urls: [],
     };
-  }
-
-  private async parseSearchPage(page: Page, errors: string[]): Promise<ScrapedListing[]> {
-    const listings: ScrapedListing[] = [];
-
-    try {
-      // Wait for listing cards to load
-      await page.waitForSelector('[data-testid="vehicle-card"], article[class*="card"], [class*="search-result"], [class*="listing-card"]', { timeout: 15000 }).catch(() => null);
-
-      const cards = await page.locator('[data-testid="vehicle-card"], article[class*="card"], [class*="search-result-card"], [class*="listing-card"]').all();
-
-      for (const card of cards) {
-        try {
-          const listing = await this.parseCard(card);
-          if (listing) listings.push(listing);
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          errors.push(`Failed to parse Heycar card: ${msg}`);
-        }
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      errors.push(`Failed to parse Heycar page: ${msg}`);
-    }
-
-    return listings;
-  }
-
-  private async parseCard(card: import('playwright').Locator): Promise<ScrapedListing | null> {
-    // Extract listing URL and ID
-    const linkEl = card.locator('a[href*="/vehicle/"], a[href*="/used-cars/"]').first();
-    const href = await linkEl.getAttribute('href').catch(() => null);
-    if (!href) return null;
-
-    const url = href.startsWith('http') ? href : `https://www.heycar.co.uk${href}`;
-    const idMatch = href.match(/\/vehicle\/([^/?]+)/);
-    const platformListingId = idMatch ? idMatch[1] : href.split('/').pop() || href;
-
-    // Extract title
-    const title = await card.locator('h2, h3, [data-testid="vehicle-title"], [class*="title"]').first().textContent().catch(() => null) || 'Fiat 500';
-
-    // Extract price
-    const priceText = await card.locator('[data-testid="vehicle-price"], [class*="price"]').first().textContent().catch(() => '0');
-    const price = this.parsePrice(priceText || '0');
-
-    // Extract key specs — Heycar typically shows specs in a structured list
-    const specsText = await card.locator('[data-testid="vehicle-specs"], [class*="spec"], [class*="key-info"], ul').first().textContent().catch(() => '');
-
-    const year = this.extractYear(title) || this.extractYear(specsText || '') || 2015;
-    const mileage = this.extractMileage(specsText || '') || this.extractMileage(title);
-    const engineSize = this.extractEngineSize(title + ' ' + (specsText || ''));
-    const fuelType = this.extractFuelType(specsText || '');
-    const transmission = this.extractTransmission(specsText || '');
-
-    // Seller info — Heycar is dealer-only
-    const sellerName = await card.locator('[data-testid="dealer-name"], [class*="dealer"], [class*="seller"]').first().textContent().catch(() => null);
-
-    // Location
-    const locationText = await card.locator('[data-testid="dealer-location"], [class*="location"], [class*="distance"]').first().textContent().catch(() => null);
-
-    // Image
-    const imgSrc = await card.locator('img').first().getAttribute('src').catch(() => null);
-
-    return {
-      platform: 'heycar',
-      platform_listing_id: platformListingId,
-      url,
-      title: title.trim(),
-      price,
-      year,
-      mileage,
-      engine_size: engineSize,
-      fuel_type: fuelType,
-      transmission,
-      colour: null,
-      mot_expiry: null,
-      seller_name: sellerName?.trim() || null,
-      seller_type: 'dealer', // Heycar only lists dealer cars
-      seller_rating: null,
-      location_postcode: this.extractPostcode(locationText || ''),
-      description: null,
-      image_urls: imgSrc ? [imgSrc] : [],
-    };
-  }
-
-  private parsePrice(text: string): number {
-    const cleaned = text.replace(/[^0-9]/g, '');
-    return cleaned ? parseInt(cleaned, 10) * 100 : 0; // convert pounds to pence
-  }
-
-  private extractYear(text: string): number | null {
-    const match = text.match(/\b(20[0-2]\d)\b/);
-    return match ? parseInt(match[1], 10) : null;
-  }
-
-  private extractMileage(text: string): number {
-    const match = text.match(/([\d,]+)\s*miles/i);
-    return match ? parseInt(match[1].replace(/,/g, ''), 10) : 0;
   }
 
   private extractEngineSize(text: string): string {
@@ -290,23 +169,45 @@ export class HeycarScraper extends BaseScraper {
     if (/1\.2/i.test(text)) return '1.2';
     if (/1\.4/i.test(text)) return '1.4';
     if (/1\.0/i.test(text)) return '1.0';
-    return '1.2'; // default for Fiat 500
-  }
-
-  private extractTransmission(text: string): string {
-    if (/\bauto(matic)?\b/i.test(text)) return 'automatic';
-    return 'manual'; // default based on search filter
+    return '1.2';
   }
 
   private extractFuelType(text: string): string {
     if (/\bdiesel\b/i.test(text)) return 'diesel';
     if (/\belectric\b/i.test(text)) return 'electric';
     if (/\bhybrid\b/i.test(text)) return 'hybrid';
-    return 'petrol'; // default based on search filter
+    return 'petrol';
   }
 
-  private extractPostcode(text: string): string | null {
-    const match = text.match(/[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}/i);
-    return match ? match[0].toUpperCase() : null;
+  private extractTransmission(text: string): string {
+    if (/\bauto(matic)?\b/i.test(text)) return 'automatic';
+    return 'manual';
   }
+}
+
+// ── Types ──────────────────────────────────────────────────────────────
+
+interface HeycarPlpEvent {
+  schema?: string;
+  data?: HeycarEventData;
+}
+
+interface HeycarEventData {
+  advertiser_id?: string;
+  body_style?: string;
+  colour?: string;
+  condition?: string;
+  created_at?: string;
+  listing_id?: string;
+  make?: string;
+  mileage?: number;
+  model?: string;
+  monthly_price?: number;
+  price?: number;
+  registration?: string;
+  variant?: string;
+  vehicle_name?: string;
+  vin?: string;
+  year?: number;
+  vehicle_available?: boolean;
 }
