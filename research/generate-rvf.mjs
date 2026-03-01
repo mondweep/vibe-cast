@@ -1,14 +1,17 @@
-// generate-rvf.mjs — Generates .rvf data file + self-contained HTML explorer
-// Uses agentdb's RVFOptimizer for vector compression quality metrics
+// generate-rvf.mjs — Generates binary .rvf file + self-contained HTML explorer
+//
+// Outputs:
+//   research/output/portfolio-vectors.rvf    — proper binary RVF (HNSW-indexed)
+//   research/output/portfolio-vectors.json   — JSON sidecar (for HTML explorer)
+//   research/output/portfolio-explorer.html  — self-contained HTML explorer with chat
 //
 // Usage: node research/generate-rvf.mjs
-// Output: research/output/portfolio-vectors.rvf
-//         research/output/portfolio-explorer.html
 
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { RVFOptimizer } from 'agentdb';
+import { RVFOptimizer, LLMRouter } from 'agentdb';
+import { RvfDatabase } from '@ruvector/rvf';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -251,13 +254,13 @@ for (const portfolio of PORTFOLIOS) {
 }
 
 // ---------------------------------------------------------------------------
-// Write .rvf file
+// JSON sidecar (for the HTML explorer — keeps full metadata + schema)
 // ---------------------------------------------------------------------------
 
 const rvfData = {
     format: 'rvf',
     version: '1.0',
-    generator: 'agentdb@3.0.0-alpha.10 / RVFOptimizer',
+    generator: 'agentdb@3.0.0-alpha.10 / RVFOptimizer + @ruvector/rvf',
     created: new Date().toISOString().split('T')[0],
     dataSource: 'SEC EDGAR 13F-HR Filings (Public Domain)',
     reportingPeriod: holdingsData._reportingPeriod,
@@ -265,18 +268,104 @@ const rvfData = {
     vectors,
 };
 
+const jsonPath = join(__dirname, 'output/portfolio-vectors.json');
+writeFileSync(jsonPath, JSON.stringify(rvfData, null, 2));
+console.log(`Written: ${jsonPath} (${(readFileSync(jsonPath).length / 1024).toFixed(1)} KB)`);
+
+// ---------------------------------------------------------------------------
+// Write binary .rvf file using @ruvector/rvf
+// ---------------------------------------------------------------------------
+
 const rvfPath = join(__dirname, 'output/portfolio-vectors.rvf');
-writeFileSync(rvfPath, JSON.stringify(rvfData, null, 2));
-console.log(`Written: ${rvfPath} (${(readFileSync(rvfPath).length / 1024).toFixed(1)} KB)`);
+
+// Remove existing file if present (RvfDatabase.create fails on existing)
+if (existsSync(rvfPath)) unlinkSync(rvfPath);
+
+async function writeBinaryRVF() {
+    console.log('\n--- Binary RVF Generation ---');
+
+    // 1. Create binary RVF store with HNSW index
+    const db = await RvfDatabase.create(rvfPath, {
+        dimensions: 32,
+        metric: 'cosine',
+        m: 16,               // HNSW neighbors per layer
+        efConstruction: 200,  // Build-time beam width (high quality)
+    });
+
+    console.log(`Created: ${rvfPath}`);
+    console.log(`  File ID: ${await db.fileId()}`);
+    console.log(`  Dimension: ${await db.dimension()}`);
+
+    // 2. Ingest all portfolio vectors with metadata
+    const entries = vectors.map((v, i) => ({
+        id: String(i + 1),
+        vector: new Float32Array(v.vector),
+        metadata: {
+            name: v.name,
+            style: v.style,
+            cik: v.id,
+            totalValueUsd: v.metadata.totalValueUsd,
+            holdingsCount: v.metadata.holdingsCount,
+        },
+    }));
+
+    const result = await db.ingestBatch(entries);
+    console.log(`  Ingested: ${result.accepted} vectors (epoch ${result.epoch})`);
+
+    // 3. Verify with a test query
+    const testQuery = new Float32Array(vectors[0].vector);
+    const testResults = await db.query(testQuery, 5, { efSearch: 100 });
+    console.log(`  Test query (${vectors[0].name}): top-5 distances = [${testResults.map(r => r.distance.toFixed(4)).join(', ')}]`);
+
+    // 4. Show segment inventory
+    const segs = await db.segments();
+    console.log(`  Segments (${segs.length}):`);
+    for (const seg of segs) {
+        console.log(`    ${seg.segType.padEnd(12)} id=${seg.id} offset=${seg.offset} size=${seg.payloadLength}`);
+    }
+
+    // 5. Status summary
+    const status = await db.status();
+    console.log(`  Status: ${status.totalVectors} vectors, ${status.totalSegments} segments, ${(status.fileSizeBytes / 1024).toFixed(1)} KB`);
+
+    // 6. Derive a read-only snapshot (COW branch)
+    const snapshotPath = join(__dirname, 'output/portfolio-vectors-snapshot.rvf');
+    if (existsSync(snapshotPath)) unlinkSync(snapshotPath);
+    const snapshot = await db.derive(snapshotPath);
+    const snapLineage = await snapshot.lineageDepth();
+    console.log(`  Derived snapshot: ${snapshotPath} (lineage depth: ${snapLineage})`);
+    await snapshot.close();
+
+    await db.close();
+    console.log(`  Final size: ${(readFileSync(rvfPath).length / 1024).toFixed(1)} KB (binary)`);
+
+    return status;
+}
 
 // ---------------------------------------------------------------------------
 // Generate self-contained HTML explorer
 // ---------------------------------------------------------------------------
 
-const htmlContent = buildHTML(rvfData);
-const htmlPath = join(__dirname, 'output/portfolio-explorer.html');
-writeFileSync(htmlPath, htmlContent);
-console.log(`Written: ${htmlPath} (${(readFileSync(htmlPath).length / 1024).toFixed(1)} KB)`);
+async function generateHTML() {
+    const htmlContent = buildHTML(rvfData);
+    const htmlPath = join(__dirname, 'output/portfolio-explorer.html');
+    writeFileSync(htmlPath, htmlContent);
+    console.log(`Written: ${htmlPath} (${(readFileSync(htmlPath).length / 1024).toFixed(1)} KB)`);
+}
+
+// ---------------------------------------------------------------------------
+// Run
+// ---------------------------------------------------------------------------
+
+try {
+    await writeBinaryRVF();
+    await generateHTML();
+} catch (err) {
+    console.error('Binary RVF generation failed:', err.message);
+    console.error('Stack:', err.stack);
+    // Still write the HTML with JSON data as fallback
+    await generateHTML();
+}
 
 // Print compression quality summary
 console.log('\nRVF Compression Quality (via agentdb RVFOptimizer):');
@@ -443,6 +532,54 @@ svg.radar { width: 100%; max-width: 400px; }
 .tab:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
 .tab.active { background: var(--accent); color: #0d1117; border-color: var(--accent); font-weight: 600; }
 
+/* Chat panel */
+.chat-container {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  display: flex; flex-direction: column; height: 520px; margin-bottom: 16px;
+}
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px;
+}
+.chat-msg {
+  max-width: 85%; padding: 8px 12px; border-radius: var(--radius); font-size: 0.85em;
+  line-height: 1.5; word-wrap: break-word; white-space: pre-wrap;
+}
+.chat-msg.user {
+  align-self: flex-end; background: var(--accent); color: #0d1117;
+}
+.chat-msg.assistant {
+  align-self: flex-start; background: #21262d; color: var(--text); border: 1px solid var(--border);
+}
+.chat-msg.system {
+  align-self: center; color: var(--muted); font-size: 0.78em; font-style: italic;
+  background: none; padding: 4px; text-align: center;
+}
+.chat-msg code { background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
+.chat-msg strong { color: var(--accent2); }
+.chat-input-row {
+  display: flex; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--border);
+}
+.chat-input-row input {
+  flex: 1; background: var(--bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 8px 12px; font-size: 0.85em; outline: none;
+}
+.chat-input-row input:focus { border-color: var(--accent); }
+.chat-input-row button {
+  padding: 8px 16px; background: var(--accent); color: #0d1117; font-weight: 600;
+  border: none; border-radius: var(--radius); cursor: pointer; font-size: 0.85em;
+}
+.chat-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+.chat-api-bar {
+  display: flex; gap: 6px; padding: 6px 12px; border-top: 1px solid var(--border);
+  align-items: center; font-size: 0.75em; color: var(--muted);
+}
+.chat-api-bar select, .chat-api-bar input {
+  font-size: 0.85em; padding: 4px 8px; background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 4px;
+}
+.chat-api-bar input { flex: 1; min-width: 120px; }
+.chat-api-bar select { min-width: 100px; }
+
 .holdings-list { font-size: 0.8em; color: var(--muted); }
 .holdings-list span { color: var(--text); }
 
@@ -485,6 +622,7 @@ svg.radar { width: 100%; max-width: 400px; }
   <div class="tabs">
     <div class="tab active" onclick="setTab('fund')">Find Similar Fund</div>
     <div class="tab" onclick="setTab('custom')">Custom Vector Query</div>
+    <div class="tab" onclick="setTab('chat')">Chat with Data</div>
   </div>
 
   <div id="fund-tab">
@@ -505,6 +643,31 @@ svg.radar { width: 100%; max-width: 400px; }
     </div>
   </div>
 
+  <div id="chat-tab" style="display:none">
+    <div class="chat-container">
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-msg system">Ask questions about the portfolio data. The AI has full context of all ${rvf.vectors.length} fund vectors, their holdings, styles, and similarity relationships.</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="e.g. Which funds are most similar to Berkshire?" onkeydown="if(event.key==='Enter')sendChat()">
+        <button onclick="sendChat()" id="chat-send">Send</button>
+      </div>
+      <div class="chat-api-bar">
+        <span>Provider:</span>
+        <select id="chat-provider" onchange="updateChatModels()">
+          <option value="openrouter">OpenRouter</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="gemini">Gemini</option>
+          <option value="local">Local (no API)</option>
+        </select>
+        <span>Key:</span>
+        <input type="password" id="chat-api-key" placeholder="API key (stored in browser only)">
+        <span id="chat-cost" style="margin-left:auto;"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="search-panels">
   <div class="controls">
     <div class="metric-toggle">
       <button class="active" onclick="setMetric('cosine',this)">Cosine</button>
@@ -530,6 +693,7 @@ svg.radar { width: 100%; max-width: 400px; }
   <div class="vector-detail">
     <div class="dim-grid" id="vector-detail"></div>
   </div>
+  </div><!-- /search-panels -->
 </div>
 
 <div class="drop-overlay" id="drop-overlay">Drop .rvf file to load</div>
@@ -737,16 +901,23 @@ function setMetric(metric, btn) {
 function setTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('fund-tab').style.display = 'none';
+  document.getElementById('custom-tab').style.display = 'none';
+  document.getElementById('chat-tab').style.display = 'none';
+  document.getElementById('search-panels').style.display = '';
   if (tab === 'fund') {
     document.querySelectorAll('.tab')[0].classList.add('active');
     document.getElementById('fund-tab').style.display = '';
-    document.getElementById('custom-tab').style.display = 'none';
     search();
-  } else {
+  } else if (tab === 'custom') {
     document.querySelectorAll('.tab')[1].classList.add('active');
-    document.getElementById('fund-tab').style.display = 'none';
     document.getElementById('custom-tab').style.display = '';
     searchCustom();
+  } else if (tab === 'chat') {
+    document.querySelectorAll('.tab')[2].classList.add('active');
+    document.getElementById('chat-tab').style.display = '';
+    document.getElementById('search-panels').style.display = 'none';
+    document.getElementById('chat-input').focus();
   }
 }
 
@@ -849,6 +1020,258 @@ function rebuildUI() {
   ).join('');
   buildSliders();
   search();
+}
+
+// ===== Chat with Data =====
+let chatHistory = [];
+
+function buildPortfolioContext() {
+  let ctx = 'You are an expert portfolio analyst. You have access to ' + RVF.vectors.length + ' institutional portfolio vectors from SEC 13F filings.\\n\\n';
+  ctx += 'Each portfolio is represented as a 32-dimensional vector covering: sector allocation, concentration metrics, style/size, and behavioral signals.\\n\\n';
+  ctx += 'PORTFOLIO DATA:\\n';
+  for (const v of RVF.vectors) {
+    ctx += '\\n**' + v.name + '** (' + v.style + '):\\n';
+    if (v.metadata?.topHoldings) {
+      ctx += '  Top holdings: ' + v.metadata.topHoldings.map(h => h.ticker + ' (' + (h.weight*100).toFixed(1) + '%)').join(', ') + '\\n';
+    }
+    if (v.metadata?.totalValueUsd) {
+      ctx += '  AUM: $' + (v.metadata.totalValueUsd/1e9).toFixed(1) + 'B, ' + (v.metadata.holdingsCount || '?') + ' positions\\n';
+    }
+    // Key vector dimensions
+    const vec = v.vector;
+    ctx += '  Tech: ' + (vec[0]*100).toFixed(1) + '%, Health: ' + (vec[1]*100).toFixed(1) + '%, Finance: ' + (vec[2]*100).toFixed(1) + '%';
+    ctx += ', Top1: ' + (vec[11]*100).toFixed(1) + '%, HHI: ' + vec[14]?.toFixed(3) + ', LgCap: ' + (vec[18]*100).toFixed(1) + '%\\n';
+  }
+
+  // Pre-compute similarity matrix for top pairs
+  ctx += '\\nMOST SIMILAR PAIRS (cosine similarity):\\n';
+  const pairs = [];
+  for (let i = 0; i < RVF.vectors.length; i++) {
+    for (let j = i+1; j < RVF.vectors.length; j++) {
+      pairs.push({ a: RVF.vectors[i].name, b: RVF.vectors[j].name, sim: cosine(RVF.vectors[i].vector, RVF.vectors[j].vector) });
+    }
+  }
+  pairs.sort((a,b) => b.sim - a.sim);
+  for (const p of pairs.slice(0,10)) {
+    ctx += '  ' + p.a + ' <-> ' + p.b + ': ' + p.sim.toFixed(4) + '\\n';
+  }
+  return ctx;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  const msgs = document.getElementById('chat-messages');
+  msgs.innerHTML += '<div class="chat-msg user">' + escapeHtml(msg) + '</div>';
+  msgs.scrollTop = msgs.scrollHeight;
+
+  chatHistory.push({ role: 'user', content: msg });
+
+  const provider = document.getElementById('chat-provider').value;
+  const apiKey = document.getElementById('chat-api-key').value;
+
+  if (provider === 'local') {
+    // Local inference — vector-powered response with no API call
+    const response = localInference(msg);
+    msgs.innerHTML += '<div class="chat-msg assistant">' + response + '</div>';
+    chatHistory.push({ role: 'assistant', content: response });
+    msgs.scrollTop = msgs.scrollHeight;
+    return;
+  }
+
+  if (!apiKey) {
+    msgs.innerHTML += '<div class="chat-msg system">Please enter an API key, or switch to "Local (no API)" mode.</div>';
+    msgs.scrollTop = msgs.scrollHeight;
+    return;
+  }
+
+  // Show typing indicator
+  const typingId = 'typing-' + Date.now();
+  msgs.innerHTML += '<div class="chat-msg assistant" id="' + typingId + '" style="opacity:0.5">Thinking...</div>';
+  msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('chat-send').disabled = true;
+
+  try {
+    const systemPrompt = buildPortfolioContext();
+    const apiMessages = [
+      { role: 'system', content: systemPrompt },
+      ...chatHistory
+    ];
+
+    let response;
+    if (provider === 'anthropic') {
+      response = await callAnthropic(apiKey, apiMessages);
+    } else if (provider === 'gemini') {
+      response = await callGemini(apiKey, apiMessages);
+    } else {
+      response = await callOpenRouter(apiKey, apiMessages);
+    }
+
+    const el = document.getElementById(typingId);
+    if (el) el.innerHTML = formatResponse(response.content);
+    chatHistory.push({ role: 'assistant', content: response.content });
+    document.getElementById('chat-cost').textContent = response.cost > 0 ? ('$' + response.cost.toFixed(4)) : '';
+  } catch(err) {
+    const el = document.getElementById(typingId);
+    if (el) { el.textContent = 'Error: ' + err.message; el.style.color = 'var(--danger)'; }
+  }
+  document.getElementById('chat-send').disabled = false;
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatResponse(text) {
+  // Basic markdown: bold, code, newlines
+  return escapeHtml(text)
+    .replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>')
+    .replace(/\`(.+?)\`/g, '<code>$1</code>')
+    .replace(/\\n/g, '<br>');
+}
+
+// --- Local inference (no API, vector-powered) ---
+function localInference(query) {
+  const q = query.toLowerCase();
+
+  // Find most relevant fund by name mention
+  let targetFund = null;
+  for (const v of RVF.vectors) {
+    if (q.includes(v.name.toLowerCase()) || q.includes(v.name.split(' ')[0].toLowerCase())) {
+      targetFund = v; break;
+    }
+  }
+
+  if (targetFund && (q.includes('similar') || q.includes('like') || q.includes('close') || q.includes('compare'))) {
+    const results = RVF.vectors
+      .filter(v => v.name !== targetFund.name)
+      .map(v => ({ name: v.name, style: v.style, sim: cosine(targetFund.vector, v.vector) }))
+      .sort((a,b) => b.sim - a.sim)
+      .slice(0, 5);
+    let resp = '<strong>Most similar funds to ' + escapeHtml(targetFund.name) + ':</strong>\\n\\n';
+    results.forEach((r, i) => { resp += (i+1) + '. <strong>' + escapeHtml(r.name) + '</strong> (' + r.style + ') — cosine: ' + r.sim.toFixed(4) + '\\n'; });
+    return resp;
+  }
+
+  if (targetFund) {
+    const v = targetFund;
+    let resp = '<strong>' + escapeHtml(v.name) + '</strong> (' + v.style + ')\\n\\n';
+    if (v.metadata?.totalValueUsd) resp += 'AUM: <strong>$' + (v.metadata.totalValueUsd/1e9).toFixed(1) + 'B</strong>\\n';
+    if (v.metadata?.holdingsCount) resp += 'Positions: <strong>' + v.metadata.holdingsCount + '</strong>\\n';
+    if (v.metadata?.topHoldings) {
+      resp += '\\nTop holdings:\\n';
+      v.metadata.topHoldings.forEach(h => { resp += '  • ' + h.ticker + ' (' + (h.weight*100).toFixed(1) + '%)\\n'; });
+    }
+    resp += '\\nSector: Tech ' + (v.vector[0]*100).toFixed(1) + '%, Health ' + (v.vector[1]*100).toFixed(1) + '%, Finance ' + (v.vector[2]*100).toFixed(1) + '%';
+    resp += '\\nConcentration: Top1 ' + (v.vector[11]*100).toFixed(1) + '%, HHI ' + v.vector[14]?.toFixed(3);
+    resp += '\\nStyle: LgCap ' + (v.vector[18]*100).toFixed(1) + '%, Growth ' + (v.vector[23]*100).toFixed(1) + '%';
+    return resp;
+  }
+
+  if (q.includes('most concentrated') || q.includes('highest concentration')) {
+    const sorted = [...RVF.vectors].sort((a,b) => b.vector[14] - a.vector[14]).slice(0,5);
+    let resp = '<strong>Most concentrated portfolios</strong> (by HHI):\\n\\n';
+    sorted.forEach((v, i) => { resp += (i+1) + '. <strong>' + escapeHtml(v.name) + '</strong> — HHI: ' + v.vector[14].toFixed(4) + ', Top1: ' + (v.vector[11]*100).toFixed(1) + '%\\n'; });
+    return resp;
+  }
+
+  if (q.includes('most diversified') || q.includes('lowest concentration')) {
+    const sorted = [...RVF.vectors].sort((a,b) => a.vector[14] - b.vector[14]).slice(0,5);
+    let resp = '<strong>Most diversified portfolios</strong> (by HHI):\\n\\n';
+    sorted.forEach((v, i) => { resp += (i+1) + '. <strong>' + escapeHtml(v.name) + '</strong> — HHI: ' + v.vector[14].toFixed(4) + ', Holdings: ' + (v.metadata?.holdingsCount || '?') + '\\n'; });
+    return resp;
+  }
+
+  if (q.includes('tech') || q.includes('technology')) {
+    const sorted = [...RVF.vectors].sort((a,b) => b.vector[0] - a.vector[0]).slice(0,5);
+    let resp = '<strong>Highest tech exposure:</strong>\\n\\n';
+    sorted.forEach((v, i) => { resp += (i+1) + '. <strong>' + escapeHtml(v.name) + '</strong> — Tech: ' + (v.vector[0]*100).toFixed(1) + '%\\n'; });
+    return resp;
+  }
+
+  if (q.includes('largest') || q.includes('biggest') || q.includes('aum')) {
+    const sorted = [...RVF.vectors].sort((a,b) => (b.metadata?.totalValueUsd||0) - (a.metadata?.totalValueUsd||0)).slice(0,5);
+    let resp = '<strong>Largest funds by AUM:</strong>\\n\\n';
+    sorted.forEach((v, i) => { resp += (i+1) + '. <strong>' + escapeHtml(v.name) + '</strong> — $' + ((v.metadata?.totalValueUsd||0)/1e9).toFixed(1) + 'B\\n'; });
+    return resp;
+  }
+
+  // Default: summary
+  let resp = '<strong>Portfolio Dataset Summary</strong>\\n\\n';
+  resp += RVF.vectors.length + ' institutional portfolios, 32-dimensional vectors\\n\\n';
+  resp += 'Try asking:\\n';
+  resp += '• "Which funds are similar to Berkshire?"\\n';
+  resp += '• "Most concentrated portfolios"\\n';
+  resp += '• "Highest tech exposure"\\n';
+  resp += '• "Tell me about Citadel"\\n';
+  resp += '• "Largest funds by AUM"\\n';
+  return resp;
+}
+
+// --- API callers ---
+async function callOpenRouter(apiKey, messages) {
+  const sysMsg = messages.find(m => m.role === 'system');
+  const chatMsgs = messages.filter(m => m.role !== 'system');
+  const body = {
+    model: 'anthropic/claude-3.5-sonnet',
+    messages: sysMsg ? [sysMsg, ...chatMsgs] : chatMsgs,
+    temperature: 0.7, max_tokens: 2048
+  };
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('OpenRouter ' + res.status + ': ' + (await res.text()).substring(0, 200));
+  const data = await res.json();
+  return { content: data.choices?.[0]?.message?.content || '', cost: parseFloat(data.usage?.cost || '0') };
+}
+
+async function callAnthropic(apiKey, messages) {
+  const sysMsg = messages.find(m => m.role === 'system');
+  const chatMsgs = messages.filter(m => m.role !== 'system');
+  const body = {
+    model: 'claude-sonnet-4-20250514',
+    system: sysMsg?.content || '',
+    messages: chatMsgs,
+    temperature: 0.7, max_tokens: 2048
+  };
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('Anthropic ' + res.status + ': ' + (await res.text()).substring(0, 200));
+  const data = await res.json();
+  const inputCost = (data.usage?.input_tokens || 0) * 0.000003;
+  const outputCost = (data.usage?.output_tokens || 0) * 0.000015;
+  return { content: data.content?.[0]?.text || '', cost: inputCost + outputCost };
+}
+
+async function callGemini(apiKey, messages) {
+  const sysMsg = messages.find(m => m.role === 'system');
+  const chatMsgs = messages.filter(m => m.role !== 'system');
+  const contents = chatMsgs.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+  const body = {
+    system_instruction: sysMsg ? { parts: [{ text: sysMsg.content }] } : undefined,
+    contents,
+    generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+  };
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('Gemini ' + res.status + ': ' + (await res.text()).substring(0, 200));
+  const data = await res.json();
+  return { content: data.candidates?.[0]?.content?.parts?.[0]?.text || '', cost: 0 };
 }
 
 // ===== Init =====
