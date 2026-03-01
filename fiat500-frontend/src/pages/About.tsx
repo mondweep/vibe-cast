@@ -17,19 +17,36 @@ export default function About() {
       {/* Motivation */}
       <Section title="Why I Built This">
         <p>
-          Buying a used car in the UK is a fragmented experience. Listings are scattered across
-          AutoTrader, Gumtree, CarGurus, Cinch, Heycar, Carwow, and dozens of smaller dealers.
-          Prices shift daily. Good deals disappear within hours.
+          My daughter is preparing for her practical driving test in July 2025. She needs a manual
+          car to learn on and eventually take the test in. I wanted to find a used Fiat 500 with a
+          manual gearbox, within a reasonable budget, somewhere in the South East of England.
         </p>
         <p>
-          I wanted a single pane of glass that would watch every platform, surface the best-value
-          cars within my budget and radius, estimate insurance costs for my household, and let me
-          contact sellers — all without manually refreshing half a dozen tabs every morning.
+          The problem? Listings are scattered across AutoTrader, Gumtree, CarGurus, Cinch, Heycar,
+          Carwow, and dozens of smaller dealers. Prices shift daily. Good deals disappear within
+          hours. And working out the true cost of ownership — including insurance for two adults and
+          a learner driver — means juggling spreadsheets and comparison sites.
         </p>
         <p>
-          Fiat 500 Tracker started as a personal tool and evolved into a full-stack platform
-          that demonstrates what's possible when you combine web scraping, scoring algorithms,
-          and conversational AI into a cohesive workflow.
+          I wanted a single system that would monitor every platform automatically, rank the best-value
+          cars by price, mileage, and age, estimate insurance costs for our household (two adults plus
+          my daughter on a learner's licence), and let me engage directly with sellers — all from
+          WhatsApp via my personal{' '}
+          <span className="text-fiat-blue font-medium">OpenClaw</span> AI assistant running on EC2.
+        </p>
+        <p>
+          What started as a personal need evolved into a full-stack platform that demonstrates what's
+          possible when you combine web scraping, scoring algorithms, and conversational AI into a
+          cohesive workflow. We wrote a detailed Product Requirements Document to define the scope
+          before building:{' '}
+          <a
+            href="https://github.com/mondweep/vibe-cast/blob/claude/fiat-500-car-tracker-ZbfKA/docs/PRD-fiat-500-car-tracker.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-fiat-blue hover:text-blue-400 font-medium"
+          >
+            read the PRD on GitHub
+          </a>.
         </p>
       </Section>
 
