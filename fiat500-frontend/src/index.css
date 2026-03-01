@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --color-fiat-red: #cc0000;
+  --color-fiat-dark: #111827;
+  --color-fiat-navy: #1e293b;
+  --color-fiat-blue: #3b82f6;
+  --color-fiat-accent: #ef4444;
+  --color-fiat-green: #22c55e;
+  --color-fiat-yellow: #eab308;
+  --color-fiat-muted: #94a3b8;
+}
+
+body {
+  margin: 0;
+  background: var(--color-fiat-dark);
+  color: #f1f5f9;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-fiat-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}

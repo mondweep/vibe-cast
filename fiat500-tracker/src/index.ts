@@ -18,7 +18,7 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({ origin: false })); // API-only, no browser CORS needed
+app.use(cors({ origin: true })); // Allow browser requests from any origin
 app.use(express.json({ limit: '100kb' }));
 
 // Global rate limit: 60 requests/minute per IP
