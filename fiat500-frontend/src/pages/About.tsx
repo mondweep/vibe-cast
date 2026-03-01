@@ -17,7 +17,7 @@ export default function About() {
       {/* Motivation */}
       <Section title="Why I Built This">
         <p>
-          My daughter is preparing for her practical driving test in July 2025. She needs a manual
+          My daughter is preparing for her practical driving test in July 2026. She needs a manual
           car to learn on and eventually take the test in. I wanted to find a used Fiat 500 with a
           manual gearbox, within a reasonable budget, somewhere in the South East of England.
         </p>
