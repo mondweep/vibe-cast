@@ -179,7 +179,7 @@ export class AutoTraderScraper extends BaseScraper {
 
     const images = (l.images || [])
       .slice(0, 5)
-      .map(img => img.replace('{resize}', 'c800x600'));
+      .map(img => img.replace('{resize}', 'w800'));
 
     const distance = l.trackingContext?.distance;
     const rating = l.dealerReview?.overallReviewRating;
