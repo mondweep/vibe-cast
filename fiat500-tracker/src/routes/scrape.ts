@@ -6,6 +6,7 @@ import { BigMotoringWorldScraper } from '../scrapers/big-motoring-world.js';
 import { CinchScraper } from '../scrapers/cinch.js';
 import { HeycarScraper } from '../scrapers/heycar.js';
 import { CarwowScraper } from '../scrapers/carwow.js';
+import { AutoTraderScraper } from '../scrapers/autotrader.js';
 import { recalculateAllScores } from '../ranking/engine.js';
 import { batchEstimateInsurance } from '../insurance/estimator.js';
 import type { UserConfig } from '../types/index.js';
@@ -40,13 +41,13 @@ router.post('/trigger', async (_req: Request, res: Response) => {
     return;
   }
 
-  // All scrapers below use plain HTTP fetch (no Playwright/browser needed).
+  // HTTP-based scrapers + Playwright-based AutoTrader (container has Playwright installed)
   // Platforms not included:
-  //   AutoTrader — SPA requires JS execution, GraphQL gateway blocks headless requests
   //   Cazoo — Vercel security checkpoint blocks all non-browser requests
   //   Cargiant — no Fiat 500 stock (London physical dealer, limited inventory)
   //   Gumtree / eBay Motors / Motors.co.uk — require Playwright (TODO: convert)
   const scrapers = [
+    new AutoTraderScraper(),
     new CarGurusScraper(),
     new BigMotoringWorldScraper(),
     new CinchScraper(),
