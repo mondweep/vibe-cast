@@ -44,6 +44,8 @@ class GeminiClient(LLMClient):
     def extract_tool_calls(self, response: Any) -> list[ToolCall]:
         calls = []
         for candidate in response.candidates:
+            if not candidate.content or not candidate.content.parts:
+                continue
             for part in candidate.content.parts:
                 if part.function_call:
                     fc = part.function_call
@@ -70,15 +72,40 @@ class GeminiClient(LLMClient):
         }
 
     def format_assistant_message(self, response: Any) -> dict:
+        parts = []
+        if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+            parts = response.candidates[0].content.parts
+            
         return {
             "role": "model",
-            "parts": response.candidates[0].content.parts,
+            "parts": parts,
         }
 
     def convert_tool_definitions(self, tools: list[ToolDefinition]) -> list[Any]:
+        def fix_schema(schema: dict) -> dict:
+            """Recursively fix JSON schema for Gemini compatibility."""
+            if not isinstance(schema, dict):
+                return schema
+            
+            # Make a copy to avoid mutating the original
+            fixed = schema.copy()
+            
+            # Gemini models require 'items' if type is array
+            if fixed.get("type") == "array" and "items" not in fixed:
+                fixed["items"] = {"type": "object"}  # Default to object types if unspecified
+                
+            for k, v in fixed.items():
+                if isinstance(v, dict):
+                    fixed[k] = fix_schema(v)
+                elif isinstance(v, list):
+                    fixed[k] = [fix_schema(item) if isinstance(item, dict) else item for item in v]
+                    
+            return fixed
+
         declarations = []
         for tool in tools:
             params = dict(tool.parameters) if tool.parameters else {}
+            params = fix_schema(params)
             params.pop("additionalProperties", None)
 
             declarations.append(
@@ -90,13 +117,27 @@ class GeminiClient(LLMClient):
             )
         return declarations
 
-    def _convert_messages(self, messages: list[dict]) -> list[dict]:
+    def _convert_messages(self, messages: list[dict]) -> list[Any]:
         """Convert provider-neutral messages to Gemini format."""
         contents = []
         for msg in messages:
+            role = "model" if msg["role"] == "assistant" else msg["role"]
             if "parts" in msg:
-                contents.append(msg)
+                # If it's already structured, unpack it
+                parts = []
+                for p in msg["parts"]:
+                    # check if p is already a Part
+                    if isinstance(p, types.Part):
+                        parts.append(p)
+                    elif isinstance(p, dict) and "text" in p:
+                        parts.append(types.Part.from_text(text=p["text"]))
+                    elif isinstance(p, str):
+                        parts.append(types.Part.from_text(text=p))
+                    else:
+                        parts.append(p)
+                contents.append(types.Content(role=role, parts=parts))
             else:
-                role = "model" if msg["role"] == "assistant" else msg["role"]
-                contents.append({"role": role, "parts": [msg.get("content", "")]})
+                contents.append(
+                    types.Content(role=role, parts=[types.Part.from_text(text=msg.get("content", ""))])
+                )
         return contents

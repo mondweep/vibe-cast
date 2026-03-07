@@ -13,10 +13,12 @@ _OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")
 _TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "templates")
 
 
+from typing import Any
+
 async def generate_report(
     target_company: dict,
     sector: dict,
-    competitors: list[dict],
+    competitors: list[Any],
     target_data: dict,
     executive_summary: str = "",
     swot: dict | None = None,
