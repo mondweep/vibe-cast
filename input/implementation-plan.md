@@ -63,8 +63,6 @@ gantt
 
 | # | Task | Output |
 |---|------|--------|
-| # | Task | Output |
-|---|------|--------|
 | 1.1 | Create project directory structure (including `agent/llm/`, `tests/`) | All folders and `__init__.py` files |
 | 1.2 | Create `requirements.txt` with all dependencies (multi-provider + testing) | `requirements.txt` |
 | 1.3 | Create `.env.example` with multi-provider configuration template | `.env.example` |
