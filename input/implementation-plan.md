@@ -98,14 +98,49 @@ graph TB
 
 **Goal**: Implement the first three tools that form the discovery pipeline.
 
+### Coding Standards for All MCP Tools
+
+Every MCP tool function **must** include a clear, descriptive Python docstring. FastMCP uses these docstrings as the tool descriptions that Claude sees during tool discovery, so they directly affect how well the agent calls the tools.
+
+Each docstring must include:
+- **Summary line**: What the tool does in one sentence
+- **Args section**: Each parameter with its type and purpose
+- **Returns section**: Structure of the returned data
+- **Raises/Notes section** (where applicable): Error conditions or important behavior
+
+Example:
+
+```python
+@mcp.tool()
+async def validate_company(company_name: str) -> dict:
+    """Validate that a company is a real, identifiable entity.
+
+    Searches the web for the given company name and confirms it exists.
+    Returns the canonical company name, official domain, and a brief description.
+
+    Args:
+        company_name: The name of the company to validate (free-text input).
+
+    Returns:
+        A dict with keys:
+            - name (str): Canonical company name.
+            - domain (str): Official website domain.
+            - description (str): Brief company description.
+            - valid (bool): Whether the company was found.
+            - suggestions (list[str]): Alternative names if validation failed.
+    """
+```
+
+This standard applies to **all tools across Phase 2, 3, and 4**.
+
 ### Tasks
 
 | # | Task | Output |
 |---|------|--------|
-| 2.1 | Implement `validate_company` tool | Tool registered on MCP server |
-| 2.2 | Implement `identify_sector` tool | Tool registered on MCP server |
-| 2.3 | Implement `find_competitors` tool | Tool registered on MCP server |
-| 2.4 | Register all three tools in `mcp_server.py` | MCP server lists 3 tools |
+| 2.1 | Implement `validate_company` tool with descriptive docstring | Tool registered on MCP server |
+| 2.2 | Implement `identify_sector` tool with descriptive docstring | Tool registered on MCP server |
+| 2.3 | Implement `find_competitors` tool with descriptive docstring | Tool registered on MCP server |
+| 2.4 | Register all three tools in `mcp_server.py` | MCP server lists 3 tools with correct descriptions |
 | 2.5 | Manual validation — run each tool standalone with test inputs | Verified correct output for known companies |
 
 ### Validation Criteria
@@ -150,7 +185,7 @@ sequenceDiagram
 |---|------|--------|
 | 3.1 | Implement category-specific search query builders | Functions that produce targeted search queries per category (pricing, products, marketing, market position) |
 | 3.2 | Implement content extraction pipeline | Searches, scrapes top results, and structures extracted content per category |
-| 3.3 | Implement `browse_company` tool with partial failure handling | Tool registered on MCP server |
+| 3.3 | Implement `browse_company` tool with descriptive docstring and partial failure handling | Tool registered on MCP server |
 | 3.4 | Register tool in `mcp_server.py` | MCP server lists 4 tools |
 | 3.5 | Integration test — run full discovery + browse pipeline | End-to-end test with a known company |
 
@@ -199,7 +234,7 @@ flowchart TD
 | # | Task | Output |
 |---|------|--------|
 | 4.1 | Create Jinja2 report template in `templates/report.md.j2` | Template with placeholders for all report sections |
-| 4.2 | Implement `generate_report` tool | Tool registered on MCP server, renders template, saves to `output/` |
+| 4.2 | Implement `generate_report` tool with descriptive docstring | Tool registered on MCP server, renders template, saves to `output/` |
 | 4.3 | Register tool in `mcp_server.py` | MCP server lists 5 tools |
 | 4.4 | Implement agent loop in `agent/client.py` | Agent loop connects to MCP server, discovers tools, runs conversation loop |
 | 4.5 | Write system prompt for the agent | System prompt that guides Claude through the analysis workflow |
