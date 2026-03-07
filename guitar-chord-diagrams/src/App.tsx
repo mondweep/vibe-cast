@@ -11,15 +11,19 @@ import DiagramGrid from './components/ChordDiagram/DiagramGrid';
 import ProgressionPanel from './components/Progression/ProgressionPanel';
 import type { ProgressionEntry } from './components/Progression/ProgressionPanel';
 import FavoritesPanel from './components/Favorites/FavoritesPanel';
+import AuthModal from './components/Auth/AuthModal';
+import SessionHistoryPanel from './components/SessionHistory/SessionHistoryPanel';
 import { useChordLookup } from './hooks/useChordLookup';
 import { useFavorites } from './hooks/useFavorites';
 import { useDarkMode } from './hooks/useDarkMode';
+import { useAuth } from './hooks/useAuth';
+import { useSessionCapture } from './hooks/useSessionCapture';
 import { parseChordName } from './data/chordDefinitions';
 import { STANDARD_TUNING, getTuningNotes } from './data/tunings';
 import './App.css';
 
 type InputSource = 'search' | 'audio';
-type Tab = 'diagrams' | 'favorites';
+type Tab = 'diagrams' | 'favorites' | 'history';
 
 function App() {
   const [selectedChord, setSelectedChord] = useState<ParsedChord | null>(null);
@@ -27,11 +31,17 @@ function App() {
   const [tuning, setTuning] = useState<Tuning>(STANDARD_TUNING);
   const [tab, setTab] = useState<Tab>('diagrams');
   const [progression, setProgression] = useState<ProgressionEntry[]>([]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const progressionStart = useRef<number>(Date.now());
   const lastChordTime = useRef<number>(Date.now());
 
   const { theme, toggleTheme } = useDarkMode();
   const { favorites, isFavorite, toggleFavorite, clearFavorites, exportFavorites, importFavorites } = useFavorites();
+  const auth = useAuth();
+  const { recordChord } = useSessionCapture(
+    auth.user?.id ?? null,
+    tuning.name,
+  );
 
   const tuningNotes = useMemo(() => getTuningNotes(tuning), [tuning]);
   const { voicings, chordNotes } = useChordLookup(selectedChord, tuningNotes);
@@ -54,7 +64,6 @@ function App() {
   const addToProgression = useCallback((chord: ParsedChord) => {
     const now = Date.now();
     setProgression(prev => {
-      // Update duration of previous entry
       const updated = [...prev];
       if (updated.length > 0) {
         updated[updated.length - 1] = {
@@ -75,6 +84,7 @@ function App() {
     setSelectedChord(chord);
     setInputSource('search');
     setTab('diagrams');
+    recordChord(chord, 'search');
   }
 
   function handleAudioDetected(chord: ParsedChord) {
@@ -82,6 +92,7 @@ function App() {
     setInputSource('audio');
     setTab('diagrams');
     addToProgression(chord);
+    recordChord(chord, 'audio');
   }
 
   function handleQuickSelect(name: string) {
@@ -90,6 +101,7 @@ function App() {
       setSelectedChord(parsed);
       setInputSource('search');
       setTab('diagrams');
+      recordChord(parsed, 'search');
     }
   }
 
@@ -105,9 +117,38 @@ function App() {
     lastChordTime.current = Date.now();
   }
 
+  function handleViewHistory() {
+    setTab('history');
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col transition-colors">
-      <Header theme={theme} onToggleTheme={toggleTheme} />
+      <Header
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        user={auth.user}
+        isConfigured={auth.isConfigured}
+        onSignInClick={() => setShowAuthModal(true)}
+        onSignOut={auth.signOut}
+        onViewHistory={handleViewHistory}
+      />
+
+      {/* Auth modal */}
+      {showAuthModal && (
+        <AuthModal
+          onSignIn={async (email, password) => {
+            await auth.signIn(email, password);
+            if (!auth.error) setShowAuthModal(false);
+          }}
+          onSignUp={async (email, password, displayName) => {
+            await auth.signUp(email, password, displayName);
+            if (!auth.error) setShowAuthModal(false);
+          }}
+          onClose={() => { setShowAuthModal(false); auth.clearError(); }}
+          error={auth.error}
+          loading={auth.loading}
+        />
+      )}
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
         {/* Audio input panel */}
@@ -126,7 +167,7 @@ function App() {
           <TuningSelector currentTuning={tuning} onTuningChange={setTuning} />
         </div>
 
-        {/* Tab switcher: Diagrams / Favorites */}
+        {/* Tab switcher */}
         <div className="flex gap-2 justify-center mb-6">
           <button
             onClick={() => setTab('diagrams')}
@@ -153,12 +194,23 @@ function App() {
               </span>
             )}
           </button>
+          {auth.isAuthenticated && (
+            <button
+              onClick={() => setTab('history')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === 'history'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+              }`}
+            >
+              History
+            </button>
+          )}
         </div>
 
         {/* Diagrams tab */}
         {tab === 'diagrams' && (
           <>
-            {/* Chord info */}
             {selectedChord && (
               <div className="mb-8">
                 <ChordName name={selectedChord.displayName} root={selectedChord.root} />
@@ -181,7 +233,6 @@ function App() {
               </div>
             )}
 
-            {/* Diagram grid */}
             {selectedChord && voicings.length > 0 && (
               <DiagramGrid
                 voicings={voicings}
@@ -191,7 +242,6 @@ function App() {
               />
             )}
 
-            {/* Empty state */}
             {!selectedChord && (
               <div className="text-center py-12">
                 <svg viewBox="0 0 24 24" className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" strokeWidth={1}>
@@ -218,6 +268,21 @@ function App() {
                     </button>
                   ))}
                 </div>
+
+                {/* Sign in prompt for non-authenticated users */}
+                {auth.isConfigured && !auth.isAuthenticated && (
+                  <div className="mt-8 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl max-w-md mx-auto">
+                    <p className="text-sm text-indigo-700 dark:text-indigo-300 mb-2">
+                      Sign in to save your practice sessions and track progress over time.
+                    </p>
+                    <button
+                      onClick={() => setShowAuthModal(true)}
+                      className="text-sm px-4 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
+                      Sign In / Sign Up
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </>
@@ -232,6 +297,11 @@ function App() {
             onExport={exportFavorites}
             onImport={importFavorites}
           />
+        )}
+
+        {/* History tab */}
+        {tab === 'history' && auth.user && (
+          <SessionHistoryPanel userId={auth.user.id} />
         )}
       </main>
 

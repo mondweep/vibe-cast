@@ -1,13 +1,20 @@
 import DarkModeToggle from './DarkModeToggle';
+import UserMenu from '../Auth/UserMenu';
+import type { User } from '@supabase/supabase-js';
 
 type Theme = 'light' | 'dark' | 'system';
 
 interface HeaderProps {
   theme: Theme;
   onToggleTheme: () => void;
+  user: User | null;
+  isConfigured: boolean;
+  onSignInClick: () => void;
+  onSignOut: () => void;
+  onViewHistory: () => void;
 }
 
-export default function Header({ theme, onToggleTheme }: HeaderProps) {
+export default function Header({ theme, onToggleTheme, user, isConfigured, onSignInClick, onSignOut, onViewHistory }: HeaderProps) {
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 print:hidden">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -26,6 +33,18 @@ export default function Header({ theme, onToggleTheme }: HeaderProps) {
         <div className="flex items-center gap-3">
           <p className="text-sm text-gray-400 hidden sm:block">Guitar Chord Diagram Explorer</p>
           <DarkModeToggle theme={theme} onToggle={onToggleTheme} />
+          {isConfigured && (
+            user ? (
+              <UserMenu user={user} onSignOut={onSignOut} onViewHistory={onViewHistory} />
+            ) : (
+              <button
+                onClick={onSignInClick}
+                className="px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+              >
+                Sign In
+              </button>
+            )
+          )}
         </div>
       </div>
     </header>
