@@ -310,6 +310,10 @@ httpx>=0.27.0
 trafilatura>=1.12.0
 jinja2>=3.1.0
 python-dotenv>=1.0.0
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.24.0
 ```
 
 ---
@@ -347,8 +351,21 @@ vibe-cast/
 │       └── openai_client.py       # OpenAI implementation
 ├── templates/
 │   └── report.md.j2              # Jinja2 report template
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py                # Shared fixtures (mock search results, etc.)
+│   ├── test_search.py             # Tests for DuckDuckGo wrapper
+│   ├── test_scraper.py            # Tests for web scraper
+│   ├── test_validate_company.py   # Tests for validate_company tool
+│   ├── test_identify_sector.py    # Tests for identify_sector tool
+│   ├── test_find_competitors.py   # Tests for find_competitors tool
+│   ├── test_browse_company.py     # Tests for browse_company tool
+│   ├── test_generate_report.py    # Tests for generate_report tool
+│   ├── test_llm_clients.py        # Tests for all LLM client implementations
+│   └── test_agent_loop.py         # Tests for agent orchestration loop
 ├── output/                        # Generated reports
 ├── main.py                        # CLI entry point
+├── pytest.ini                     # Pytest configuration
 ├── requirements.txt
 ├── .env.example
 └── README.md
@@ -356,7 +373,106 @@ vibe-cast/
 
 ---
 
-## 8. Error Handling Strategy
+## 8. Testing Strategy (London School TDD)
+
+The project follows **London School TDD** (mockist/interaction-based testing). Every collaborator is mocked so that each unit is tested in complete isolation. **No API keys are needed to run the test suite.**
+
+### 8.1 Approach
+
+```mermaid
+graph TD
+    subgraph "Unit Under Test"
+        UUT[Module being tested]
+    end
+
+    subgraph "Mocked Collaborators"
+        M1[DuckDuckGo API]
+        M2[httpx / trafilatura]
+        M3[LLM SDK — genai / anthropic / openai]
+        M4[MCP Server]
+        M5[File system — report output]
+    end
+
+    UUT -.->|mock| M1
+    UUT -.->|mock| M2
+    UUT -.->|mock| M3
+    UUT -.->|mock| M4
+    UUT -.->|mock| M5
+```
+
+**Key principles:**
+- **Mock at the boundary**: External SDKs (`duckduckgo_search.DDGS`, `httpx.AsyncClient`, `google.genai`, `anthropic.Anthropic`, `openai.OpenAI`) are always mocked
+- **Test behavior, not implementation**: Assert on outputs and interactions, not internal state
+- **Fixtures provide realistic data**: `conftest.py` contains realistic mock search results, scraped content, and LLM responses
+- **No network calls in tests**: The entire test suite runs offline, fast, and deterministically
+- **TDD cycle**: Write the test first (red), implement the minimum code to pass (green), then refactor
+
+### 8.2 Test Coverage by Component
+
+| Component | What is mocked | What is tested |
+|-----------|---------------|----------------|
+| `search.py` | `DDGS().text()` | Query formatting, result parsing, error handling, rate limiting |
+| `scraper.py` | `httpx.AsyncClient`, `trafilatura.extract` | URL fetching, content extraction, timeout handling |
+| `validate_company` | `web_search()` | Company name parsing, domain extraction, valid/invalid cases |
+| `identify_sector` | `web_search()` | Sector classification from search results |
+| `find_competitors` | `web_search()` | Competitor extraction, deduplication, ranking |
+| `browse_company` | `web_search()`, `scrape_url()` | Category routing, partial failure, content aggregation |
+| `generate_report` | File system (`open()`) | Template rendering, file path generation, summary extraction |
+| `GeminiClient` | `google.genai.Client` | Tool format conversion, tool call extraction, result formatting |
+| `AnthropicClient` | `anthropic.Anthropic` | Tool format conversion, tool call extraction, result formatting |
+| `OpenAIClient` | `openai.OpenAI` | Tool format conversion, tool call extraction, result formatting |
+| `agent/client.py` | `LLMClient`, MCP server | Tool dispatch loop, conversation history, termination, error handling |
+
+### 8.3 Test Markers
+
+```ini
+# pytest.ini
+[pytest]
+markers =
+    unit: Unit tests (mocked, no network, no API keys) — default
+    integration: Integration tests (require API keys + network) — opt-in
+asyncio_mode = auto
+```
+
+Run tests: `pytest` (unit only) or `pytest -m integration` (requires keys).
+
+---
+
+## 9. Rate Limiting (DuckDuckGo)
+
+DuckDuckGo aggressively rate-limits automated queries. The `search.py` wrapper includes a **token-bucket rate limiter** to prevent `RatelimitException` errors.
+
+### 9.1 Design
+
+```mermaid
+flowchart TD
+    CALL[web_search called] --> RL{Rate limiter<br/>has token?}
+    RL -->|Yes| EXEC[Execute DDG search]
+    RL -->|No| WAIT[Sleep until next token<br/>available]
+    WAIT --> EXEC
+    EXEC --> RES{Success?}
+    RES -->|Yes| RET[Return results]
+    RES -->|RatelimitException| BACK[Exponential backoff<br/>1s → 2s → 4s]
+    BACK --> RETRY{Retries < 3?}
+    RETRY -->|Yes| EXEC
+    RETRY -->|No| ERR[Return empty results<br/>+ warning]
+```
+
+### 9.2 Configuration
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `SEARCH_RATE_LIMIT` | `1.0` | Minimum seconds between DuckDuckGo requests |
+| `SEARCH_MAX_RETRIES` | `3` | Max retries on rate limit errors |
+| `SEARCH_BACKOFF_BASE` | `2.0` | Exponential backoff multiplier |
+
+The rate limiter is a simple `asyncio.Lock` + timestamp approach — no external dependency needed. It's shared across all tool invocations within a single run.
+
+---
+
+## 10. Error Handling Strategy
+
+The rate limiter from section 9 is the first line of defense for search errors. Beyond that:
 
 ```mermaid
 flowchart TD
@@ -379,7 +495,7 @@ flowchart TD
 
 ---
 
-## 9. Configuration
+## 11. Configuration
 
 ```env
 # .env.example
@@ -405,7 +521,7 @@ OUTPUT_DIR=output                    # Optional: report output directory
 
 ---
 
-## 10. Security Considerations
+## 12. Security Considerations
 
 | Concern | Mitigation |
 |---------|-----------|
@@ -416,7 +532,7 @@ OUTPUT_DIR=output                    # Optional: report output directory
 
 ---
 
-## 11. Limitations & Trade-offs
+## 13. Limitations & Trade-offs
 
 - **Single-agent sequential execution**: The four `browse_company` calls run sequentially. This is simpler but slower than a parallel approach.
 - **No persistent storage**: Each run is independent. No caching of previous results.

@@ -11,6 +11,15 @@
 
 This plan breaks the implementation into 5 phases, each delivering a working increment. Each phase builds on the previous one and can be validated independently.
 
+### Testing Approach: London School TDD
+
+Every phase follows **test-first development**. For each module:
+1. **Red**: Write a failing test with mocked collaborators
+2. **Green**: Implement the minimum code to pass
+3. **Refactor**: Clean up while keeping tests green
+
+All external services (DuckDuckGo, LLM APIs, web scraping, file I/O) are mocked. **No API keys are needed to run `pytest`.** Integration tests requiring real API keys are marked with `@pytest.mark.integration` and skipped by default.
+
 ```mermaid
 gantt
     title Implementation Phases
@@ -18,25 +27,25 @@ gantt
     axisFormat  %b %d
 
     section Phase 1 - Foundation
-    Project scaffolding           :p1a, 2026-03-07, 1d
+    Project scaffolding + test infra :p1a, 2026-03-07, 1d
     MCP server skeleton           :p1b, after p1a, 1d
-    Search & scraper utilities    :p1c, after p1a, 1d
-    LLM client abstraction layer  :p1d, after p1a, 2d
+    TDD: Search + scraper utils   :p1c, after p1a, 1d
+    TDD: LLM client layer         :p1d, after p1a, 2d
 
     section Phase 2 - Core Tools
-    validate_company              :p2a, after p1b, 1d
-    identify_sector               :p2b, after p2a, 1d
-    find_competitors              :p2c, after p2b, 1d
+    TDD: validate_company         :p2a, after p1b, 1d
+    TDD: identify_sector          :p2b, after p2a, 1d
+    TDD: find_competitors         :p2c, after p2b, 1d
 
     section Phase 3 - Data Collection
-    browse_company tool           :p3a, after p2c, 2d
-    Integration testing           :p3b, after p3a, 1d
+    TDD: browse_company tool      :p3a, after p2c, 2d
+    Test suite verification       :p3b, after p3a, 1d
 
     section Phase 4 - Report & Agent
     Report template               :p4a, after p3b, 1d
-    generate_report tool          :p4b, after p4a, 1d
-    Agent loop (multi-provider)   :p4c, after p4b, 1d
-    Provider verification         :p4d, after p4c, 1d
+    TDD: generate_report tool     :p4b, after p4a, 1d
+    TDD: Agent loop (multi-prov)  :p4c, after p4b, 1d
+    Full test suite green         :p4d, after p4c, 1d
 
     section Phase 5 - Polish
     CLI entry point               :p5a, after p4d, 1d
@@ -54,25 +63,29 @@ gantt
 
 | # | Task | Output |
 |---|------|--------|
-| 1.1 | Create project directory structure (including `agent/llm/`) | All folders and `__init__.py` files |
-| 1.2 | Create `requirements.txt` with all dependencies (multi-provider) | `requirements.txt` |
+| # | Task | Output |
+|---|------|--------|
+| 1.1 | Create project directory structure (including `agent/llm/`, `tests/`) | All folders and `__init__.py` files |
+| 1.2 | Create `requirements.txt` with all dependencies (multi-provider + testing) | `requirements.txt` |
 | 1.3 | Create `.env.example` with multi-provider configuration template | `.env.example` |
-| 1.4 | Implement `server/utils/search.py` — DuckDuckGo search wrapper | Reusable `web_search(query, max_results)` function |
-| 1.5 | Implement `server/utils/scraper.py` — web content extractor | Reusable `scrape_url(url)` and `scrape_multiple(urls)` functions |
-| 1.6 | Create bare FastMCP server in `server/mcp_server.py` | Server starts and responds to tool listing |
-| 1.7 | Implement `agent/llm/base.py` — abstract `LLMClient` interface | Base class with `chat()`, `extract_tool_calls()`, `extract_text()`, `format_tool_result()` |
-| 1.8 | Implement `agent/llm/gemini_client.py` — Gemini provider (default) | `GeminiClient` class using `google-genai` SDK |
-| 1.9 | Implement `agent/llm/anthropic_client.py` — Claude provider | `AnthropicClient` class using `anthropic` SDK |
-| 1.10 | Implement `agent/llm/openai_client.py` — OpenAI provider | `OpenAIClient` class using `openai` SDK |
-| 1.11 | Implement `agent/llm/__init__.py` — provider factory | `get_llm_client(provider)` factory function |
+| 1.4 | Create `pytest.ini` and `tests/conftest.py` with shared fixtures | Test infrastructure ready |
+| 1.5 | **TDD**: Write tests for `search.py` (mock `DDGS`) → implement `server/utils/search.py` with rate limiting | `test_search.py` passes, `web_search()` works |
+| 1.6 | **TDD**: Write tests for `scraper.py` (mock `httpx`, `trafilatura`) → implement `server/utils/scraper.py` | `test_scraper.py` passes, `scrape_url()` works |
+| 1.7 | Create bare FastMCP server in `server/mcp_server.py` | Server starts and responds to tool listing |
+| 1.8 | Implement `agent/llm/base.py` — abstract `LLMClient` interface | Base class with `chat()`, `extract_tool_calls()`, `extract_text()`, `format_tool_result()` |
+| 1.9 | **TDD**: Write tests for `GeminiClient` (mock `google.genai`) → implement `agent/llm/gemini_client.py` | `test_llm_clients.py::TestGemini*` passes |
+| 1.10 | **TDD**: Write tests for `AnthropicClient` (mock `anthropic`) → implement `agent/llm/anthropic_client.py` | `test_llm_clients.py::TestAnthropic*` passes |
+| 1.11 | **TDD**: Write tests for `OpenAIClient` (mock `openai`) → implement `agent/llm/openai_client.py` | `test_llm_clients.py::TestOpenAI*` passes |
+| 1.12 | **TDD**: Write tests for provider factory → implement `agent/llm/__init__.py` | `test_llm_clients.py::TestFactory*` passes |
 
 ### Deliverables
 - Project runs `pip install -r requirements.txt` without errors
-- `search.py` returns results for a test query
-- `scraper.py` extracts content from a test URL
+- `pytest` runs and all Phase 1 tests pass (mocked, no API keys)
+- `search.py` rate limiter prevents burst requests
+- `scraper.py` handles timeouts and extraction failures
 - MCP server starts and lists zero tools
 - `get_llm_client("gemini")` returns a working `GeminiClient` instance
-- Each LLM client can make a basic `chat()` call with tool definitions
+- Each LLM client correctly converts MCP tool schemas to provider format
 
 ### Architecture at end of Phase 1
 
@@ -147,11 +160,11 @@ This standard applies to **all tools across Phase 2, 3, and 4**.
 
 | # | Task | Output |
 |---|------|--------|
-| 2.1 | Implement `validate_company` tool with descriptive docstring | Tool registered on MCP server |
-| 2.2 | Implement `identify_sector` tool with descriptive docstring | Tool registered on MCP server |
-| 2.3 | Implement `find_competitors` tool with descriptive docstring | Tool registered on MCP server |
+| 2.1 | **TDD**: Write tests for `validate_company` (mock `web_search`) → implement tool | `test_validate_company.py` passes |
+| 2.2 | **TDD**: Write tests for `identify_sector` (mock `web_search`) → implement tool | `test_identify_sector.py` passes |
+| 2.3 | **TDD**: Write tests for `find_competitors` (mock `web_search`) → implement tool | `test_find_competitors.py` passes |
 | 2.4 | Register all three tools in `mcp_server.py` | MCP server lists 3 tools with correct descriptions |
-| 2.5 | Manual validation — run each tool standalone with test inputs | Verified correct output for known companies |
+| 2.5 | Verify `pytest` — all Phase 1 + Phase 2 tests pass | Full green test suite |
 
 ### Validation Criteria
 - `validate_company("OpenAI")` returns `{ name: "OpenAI", domain: "openai.com", valid: true, ... }`
@@ -193,11 +206,11 @@ sequenceDiagram
 
 | # | Task | Output |
 |---|------|--------|
-| 3.1 | Implement category-specific search query builders | Functions that produce targeted search queries per category (pricing, products, marketing, market position) |
-| 3.2 | Implement content extraction pipeline | Searches, scrapes top results, and structures extracted content per category |
-| 3.3 | Implement `browse_company` tool with descriptive docstring and partial failure handling | Tool registered on MCP server |
+| 3.1 | **TDD**: Write tests for category-specific query builders → implement | `test_browse_company.py::TestQueryBuilders` passes |
+| 3.2 | **TDD**: Write tests for content extraction pipeline (mock `web_search`, `scrape_url`) → implement | `test_browse_company.py::TestExtraction` passes |
+| 3.3 | **TDD**: Write tests for partial failure handling → implement `browse_company` tool | `test_browse_company.py::TestPartialFailure` passes |
 | 3.4 | Register tool in `mcp_server.py` | MCP server lists 4 tools |
-| 3.5 | Integration test — run full discovery + browse pipeline | End-to-end test with a known company |
+| 3.5 | Verify `pytest` — all Phase 1-3 tests pass | Full green test suite |
 
 ### Validation Criteria
 - `browse_company("Stripe", "stripe.com", ["pricing", "products"])` returns structured data for both categories
@@ -244,12 +257,12 @@ flowchart TD
 | # | Task | Output |
 |---|------|--------|
 | 4.1 | Create Jinja2 report template in `templates/report.md.j2` | Template with placeholders for all report sections |
-| 4.2 | Implement `generate_report` tool with descriptive docstring | Tool registered on MCP server, renders template, saves to `output/` |
+| 4.2 | **TDD**: Write tests for `generate_report` (mock file I/O) → implement tool | `test_generate_report.py` passes |
 | 4.3 | Register tool in `mcp_server.py` | MCP server lists 5 tools |
-| 4.4 | Implement agent loop in `agent/client.py` (provider-agnostic) | Agent loop connects to MCP server, discovers tools, uses `LLMClient` interface for conversation loop |
+| 4.4 | **TDD**: Write tests for agent loop (mock `LLMClient` + MCP) → implement `agent/client.py` | `test_agent_loop.py` passes |
 | 4.5 | Write system prompt for the agent | System prompt that guides the LLM through the analysis workflow (works across all providers) |
-| 4.6 | End-to-end test — full run with Gemini (default provider) | Complete report generated |
-| 4.7 | Verify agent loop works with Anthropic and OpenAI providers | Confirm provider switching via `LLM_PROVIDER` env var |
+| 4.6 | Verify `pytest` — all Phase 1-4 tests pass | Full green test suite |
+| 4.7 | `@pytest.mark.integration`: End-to-end test with Gemini (requires `GOOGLE_API_KEY`) | Complete report generated (opt-in) |
 
 ### Report template structure
 
@@ -342,10 +355,10 @@ flowchart TD
 
 | Phase | Focus | Key Output | Estimated Effort |
 |-------|-------|-----------|-----------------|
-| **1** | Foundation | Project structure, utilities, empty MCP server | Small |
-| **2** | Discovery Tools | `validate_company`, `identify_sector`, `find_competitors` | Medium |
-| **3** | Data Collection | `browse_company` with scraping pipeline | Medium-Large |
-| **4** | Report & Agent | `generate_report`, agent loop, end-to-end flow | Medium |
+| **1** | Foundation | Project structure, utilities, LLM clients, test infra | Medium |
+| **2** | Discovery Tools | `validate_company`, `identify_sector`, `find_competitors` + tests | Medium |
+| **3** | Data Collection | `browse_company` with scraping pipeline + tests | Medium-Large |
+| **4** | Report & Agent | `generate_report`, agent loop, full test suite | Medium |
 | **5** | Polish | CLI, error handling, logging, documentation | Small-Medium |
 
 ---
