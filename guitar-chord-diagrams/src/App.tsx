@@ -1,14 +1,16 @@
-import { useState } from 'react';
-import type { ParsedChord } from './types';
+import { useState, useMemo } from 'react';
+import type { ParsedChord, Tuning } from './types';
 import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
 import AudioInputPanel from './components/AudioInput/AudioInputPanel';
 import SearchInput from './components/ChordSearch/SearchInput';
+import TuningSelector from './components/ChordSearch/TuningSelector';
 import ChordName from './components/ChordDisplay/ChordName';
 import NoteList from './components/ChordDisplay/NoteList';
 import DiagramGrid from './components/ChordDiagram/DiagramGrid';
 import { useChordLookup } from './hooks/useChordLookup';
 import { parseChordName } from './data/chordDefinitions';
+import { STANDARD_TUNING, getTuningNotes } from './data/tunings';
 import './App.css';
 
 type InputSource = 'search' | 'audio';
@@ -16,7 +18,10 @@ type InputSource = 'search' | 'audio';
 function App() {
   const [selectedChord, setSelectedChord] = useState<ParsedChord | null>(null);
   const [inputSource, setInputSource] = useState<InputSource>('search');
-  const { voicings, chordNotes } = useChordLookup(selectedChord);
+  const [tuning, setTuning] = useState<Tuning>(STANDARD_TUNING);
+
+  const tuningNotes = useMemo(() => getTuningNotes(tuning), [tuning]);
+  const { voicings, chordNotes } = useChordLookup(selectedChord, tuningNotes);
 
   function handleSearchSelect(chord: ParsedChord) {
     setSelectedChord(chord);
@@ -45,8 +50,9 @@ function App() {
         <AudioInputPanel onChordDetected={handleAudioDetected} />
 
         {/* Search section */}
-        <div className="flex justify-center mb-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
           <SearchInput onChordSelect={handleSearchSelect} />
+          <TuningSelector currentTuning={tuning} onTuningChange={setTuning} />
         </div>
 
         {/* Chord info */}
@@ -56,6 +62,9 @@ function App() {
             <NoteList notes={chordNotes} root={selectedChord.root} />
             <p className="text-center text-sm text-gray-400 mt-2">
               {voicings.length} voicing{voicings.length !== 1 ? 's' : ''} found
+              {tuning.name !== 'Standard' && (
+                <span className="ml-1">in {tuning.name} tuning</span>
+              )}
               {inputSource === 'audio' && (
                 <span className="ml-2 inline-flex items-center gap-1 text-indigo-500">
                   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>

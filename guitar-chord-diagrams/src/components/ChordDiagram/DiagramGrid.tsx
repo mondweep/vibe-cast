@@ -1,5 +1,6 @@
 import type { ChordVoicing } from '../../types';
 import DiagramSVG from './DiagramSVG';
+import PlayButton from './PlayButton';
 import { useState } from 'react';
 
 interface DiagramGridProps {
@@ -56,9 +57,10 @@ export default function DiagramGrid({ voicings, chordName }: DiagramGridProps) {
           {filtered.map((voicing, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center justify-center hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col items-center hover:shadow-md transition-shadow"
             >
               <DiagramSVG voicing={voicing} />
+              <PlayButton voicing={voicing} />
             </div>
           ))}
         </div>

@@ -7,6 +7,11 @@ export const STANDARD_TUNING: Tuning = {
 
 export const STANDARD_TUNING_NOTES: NoteName[] = ['E', 'A', 'D', 'G', 'B', 'E'];
 
+/** Extract just the note names (without octave) from a Tuning */
+export function getTuningNotes(tuning: Tuning): NoteName[] {
+  return tuning.notes.map(n => n.replace(/\d+$/, '') as NoteName);
+}
+
 export const ALTERNATE_TUNINGS: Tuning[] = [
   STANDARD_TUNING,
   { name: 'Drop D', notes: ['D2', 'A2', 'D3', 'G3', 'B3', 'E4'] },
