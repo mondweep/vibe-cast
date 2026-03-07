@@ -21,6 +21,7 @@ gantt
     Project scaffolding           :p1a, 2026-03-07, 1d
     MCP server skeleton           :p1b, after p1a, 1d
     Search & scraper utilities    :p1c, after p1a, 1d
+    LLM client abstraction layer  :p1d, after p1a, 2d
 
     section Phase 2 - Core Tools
     validate_company              :p2a, after p1b, 1d
@@ -34,10 +35,11 @@ gantt
     section Phase 4 - Report & Agent
     Report template               :p4a, after p3b, 1d
     generate_report tool          :p4b, after p4a, 1d
-    Agent loop + MCP client       :p4c, after p4b, 1d
+    Agent loop (multi-provider)   :p4c, after p4b, 1d
+    Provider verification         :p4d, after p4c, 1d
 
     section Phase 5 - Polish
-    CLI entry point               :p5a, after p4c, 1d
+    CLI entry point               :p5a, after p4d, 1d
     Error handling & edge cases   :p5b, after p5a, 1d
     Documentation                 :p5c, after p5b, 1d
 ```
@@ -52,18 +54,25 @@ gantt
 
 | # | Task | Output |
 |---|------|--------|
-| 1.1 | Create project directory structure | All folders and `__init__.py` files |
-| 1.2 | Create `requirements.txt` with all dependencies | `requirements.txt` |
-| 1.3 | Create `.env.example` with configuration template | `.env.example` |
+| 1.1 | Create project directory structure (including `agent/llm/`) | All folders and `__init__.py` files |
+| 1.2 | Create `requirements.txt` with all dependencies (multi-provider) | `requirements.txt` |
+| 1.3 | Create `.env.example` with multi-provider configuration template | `.env.example` |
 | 1.4 | Implement `server/utils/search.py` — DuckDuckGo search wrapper | Reusable `web_search(query, max_results)` function |
 | 1.5 | Implement `server/utils/scraper.py` — web content extractor | Reusable `scrape_url(url)` and `scrape_multiple(urls)` functions |
 | 1.6 | Create bare FastMCP server in `server/mcp_server.py` | Server starts and responds to tool listing |
+| 1.7 | Implement `agent/llm/base.py` — abstract `LLMClient` interface | Base class with `chat()`, `extract_tool_calls()`, `extract_text()`, `format_tool_result()` |
+| 1.8 | Implement `agent/llm/gemini_client.py` — Gemini provider (default) | `GeminiClient` class using `google-genai` SDK |
+| 1.9 | Implement `agent/llm/anthropic_client.py` — Claude provider | `AnthropicClient` class using `anthropic` SDK |
+| 1.10 | Implement `agent/llm/openai_client.py` — OpenAI provider | `OpenAIClient` class using `openai` SDK |
+| 1.11 | Implement `agent/llm/__init__.py` — provider factory | `get_llm_client(provider)` factory function |
 
 ### Deliverables
 - Project runs `pip install -r requirements.txt` without errors
 - `search.py` returns results for a test query
 - `scraper.py` extracts content from a test URL
 - MCP server starts and lists zero tools
+- `get_llm_client("gemini")` returns a working `GeminiClient` instance
+- Each LLM client can make a basic `chat()` call with tool definitions
 
 ### Architecture at end of Phase 1
 
@@ -73,6 +82,7 @@ graph TB
         MCP[FastMCP Server<br/>empty shell]
         S[search.py]
         W[scraper.py]
+        LLM[LLM Client Layer<br/>Gemini / Claude / OpenAI]
     end
 
     subgraph Not Yet
@@ -236,9 +246,10 @@ flowchart TD
 | 4.1 | Create Jinja2 report template in `templates/report.md.j2` | Template with placeholders for all report sections |
 | 4.2 | Implement `generate_report` tool with descriptive docstring | Tool registered on MCP server, renders template, saves to `output/` |
 | 4.3 | Register tool in `mcp_server.py` | MCP server lists 5 tools |
-| 4.4 | Implement agent loop in `agent/client.py` | Agent loop connects to MCP server, discovers tools, runs conversation loop |
-| 4.5 | Write system prompt for the agent | System prompt that guides Claude through the analysis workflow |
-| 4.6 | End-to-end test — full run with a real company | Complete report generated |
+| 4.4 | Implement agent loop in `agent/client.py` (provider-agnostic) | Agent loop connects to MCP server, discovers tools, uses `LLMClient` interface for conversation loop |
+| 4.5 | Write system prompt for the agent | System prompt that guides the LLM through the analysis workflow (works across all providers) |
+| 4.6 | End-to-end test — full run with Gemini (default provider) | Complete report generated |
+| 4.7 | Verify agent loop works with Anthropic and OpenAI providers | Confirm provider switching via `LLM_PROVIDER` env var |
 
 ### Report template structure
 
@@ -260,23 +271,28 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    START([Start]) --> INIT[Initialize MCP client<br/>Connect to server<br/>Discover tools]
-    INIT --> SEND[Send system prompt +<br/>user message to Claude]
-    SEND --> CHECK{Response contains<br/>tool_use?}
+    START([Start]) --> PROV[Load LLM_PROVIDER from .env]
+    PROV --> FACTORY[get_llm_client provider]
+    FACTORY --> INIT[Initialize MCP client<br/>Connect to server<br/>Discover tools]
+    INIT --> CONVERT[Convert MCP tools to<br/>provider tool format]
+    CONVERT --> SEND[Send system prompt +<br/>user message via LLMClient.chat]
+    SEND --> CHECK{extract_tool_calls<br/>returns any?}
 
     CHECK -->|Yes| EXEC[Execute tool calls<br/>via MCP]
-    EXEC --> APPEND[Append tool_result<br/>to conversation]
+    EXEC --> FMT[format_tool_result<br/>for provider]
+    FMT --> APPEND[Append to conversation]
     APPEND --> SEND
 
-    CHECK -->|No| DONE[Extract final text<br/>Print summary]
+    CHECK -->|No| DONE[extract_text<br/>Print summary]
     DONE --> END([End])
 ```
 
 ### Validation Criteria
 - Report template renders correctly with sample data
-- Agent successfully orchestrates all 5 tools in sequence
+- Agent successfully orchestrates all 5 tools in sequence using Gemini (default)
 - Full end-to-end run produces a markdown report in `output/`
 - Agent handles tool errors gracefully (continues with partial data)
+- Switching `LLM_PROVIDER=anthropic` or `LLM_PROVIDER=openai` produces equivalent results
 
 ---
 
@@ -301,10 +317,11 @@ flowchart TD
 flowchart TD
     START([python main.py 'Stripe']) --> ENV{.env exists?}
     ENV -->|No| ERR1[Error: Create .env<br/>from .env.example]
-    ENV -->|Yes| KEY{ANTHROPIC_API_KEY<br/>set?}
-    KEY -->|No| ERR2[Error: Set API key]
-    KEY -->|Yes| RUN[Launch MCP Server<br/>Start Agent Loop]
-    RUN --> PROG[Show progress:<br/>Validating company...<br/>Identifying sector...<br/>Finding competitors...<br/>Researching companies...<br/>Generating report...]
+    ENV -->|Yes| PROV[Read LLM_PROVIDER<br/>default: gemini]
+    PROV --> KEY{API key set for<br/>selected provider?}
+    KEY -->|No| ERR2[Error: Set GOOGLE_API_KEY<br/>or ANTHROPIC_API_KEY<br/>or OPENAI_API_KEY]
+    KEY -->|Yes| RUN[Launch MCP Server<br/>Initialize LLM Client<br/>Start Agent Loop]
+    RUN --> PROG[Show progress:<br/>Using Gemini 2.5 Flash...<br/>Validating company...<br/>Identifying sector...<br/>Finding competitors...<br/>Researching companies...<br/>Generating report...]
     PROG --> DONE[Report saved to<br/>output/stripe_2026-03-07.md]
     DONE --> SUM[Print executive summary<br/>to console]
 

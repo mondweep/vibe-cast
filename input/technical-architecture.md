@@ -12,7 +12,7 @@
 
 The Competitive Analysis AI Agent is a single-agent system that automates competitor research. Given a company name, it validates the entity, identifies the sector, finds top competitors, collects strategic data, and generates a comparative markdown report.
 
-The system uses a **Model Context Protocol (MCP)** client-server architecture where Claude acts as the orchestrating agent and tools are exposed via a FastMCP server.
+The system uses a **Model Context Protocol (MCP)** client-server architecture with a **provider-agnostic agent loop** that supports Claude, Gemini, and OpenAI as interchangeable LLM backends. Tools are exposed via a FastMCP server and remain completely independent of the chosen LLM provider.
 
 ---
 
@@ -25,8 +25,12 @@ graph TB
     end
 
     subgraph Agent Layer
-        AL[Agent Loop<br/>anthropic SDK]
-        AL -->|tool_use request| MC[MCP Client]
+        AL[Agent Loop<br/>provider-agnostic]
+        AL --> LLM{LLM Provider}
+        LLM -->|gemini| G[Google Gemini API]
+        LLM -->|anthropic| C[Claude API]
+        LLM -->|openai| O[OpenAI API]
+        AL -->|tool calls| MC[MCP Client]
         MC -->|tool results| AL
     end
 
@@ -64,34 +68,91 @@ graph TB
 
 ### 3.1 Agent Loop (Client)
 
-The agent loop is a lightweight orchestrator using the Anthropic SDK's native tool-use capability. No agent framework is needed.
+The agent loop is a lightweight, provider-agnostic orchestrator. It uses an abstract `LLMClient` interface with concrete implementations for each supported provider. No agent framework is needed.
 
 ```mermaid
 sequenceDiagram
     participant U as User
     participant A as Agent Loop
-    participant C as Claude API
+    participant L as LLM Client (Gemini/Claude/OpenAI)
     participant M as MCP Server
 
     U->>A: Company name
-    A->>C: System prompt + user message + tool definitions
+    A->>L: System prompt + user message + tool definitions
 
     loop Until final text response
-        C->>A: tool_use block(s)
+        L->>A: tool_use block(s)
         A->>M: Execute tool call(s)
         M->>A: Tool result(s)
-        A->>C: tool_result message(s)
+        A->>L: tool_result message(s)
     end
 
-    C->>A: Final text response
+    L->>A: Final text response
     A->>U: Report saved + summary
 ```
 
 **Key design decisions:**
-- Direct `anthropic` SDK usage — no framework overhead
+- **Provider-agnostic**: The agent loop works with any LLM that supports tool-use (function calling)
+- **Abstract LLM interface**: A simple `LLMClient` base class with a `chat(messages, tools) -> response` method
+- **Three implementations**: `AnthropicClient`, `GeminiClient`, `OpenAIClient` — each ~50 lines
+- **Provider selected via config**: `LLM_PROVIDER=gemini` in `.env` (Gemini is the default — free tier)
 - Tools are discovered from the MCP server at startup
 - The agent loop handles retries and error propagation
 - Conversation history is maintained in-memory for the duration of one run
+
+### 3.1.1 LLM Client Architecture
+
+```mermaid
+classDiagram
+    class LLMClient {
+        <<abstract>>
+        +chat(messages, tools) Response
+        +extract_tool_calls(response) list[ToolCall]
+        +extract_text(response) str
+        +format_tool_result(tool_call_id, result) Message
+    }
+
+    class AnthropicClient {
+        -client: anthropic.Anthropic
+        -model: str
+        +chat(messages, tools) Response
+        +extract_tool_calls(response) list[ToolCall]
+        +extract_text(response) str
+        +format_tool_result(tool_call_id, result) Message
+    }
+
+    class GeminiClient {
+        -client: genai.Client
+        -model: str
+        +chat(messages, tools) Response
+        +extract_tool_calls(response) list[ToolCall]
+        +extract_text(response) str
+        +format_tool_result(tool_call_id, result) Message
+    }
+
+    class OpenAIClient {
+        -client: openai.OpenAI
+        -model: str
+        +chat(messages, tools) Response
+        +extract_tool_calls(response) list[ToolCall]
+        +extract_text(response) str
+        +format_tool_result(tool_call_id, result) Message
+    }
+
+    LLMClient <|-- AnthropicClient
+    LLMClient <|-- GeminiClient
+    LLMClient <|-- OpenAIClient
+```
+
+Each client normalizes the provider-specific tool-use format into a common `ToolCall(id, name, arguments)` structure so the agent loop doesn't need to know which provider is active.
+
+### 3.1.2 Provider Comparison
+
+| Provider | Default Model | Free Tier | API Key Env Var |
+|----------|--------------|-----------|-----------------|
+| **Gemini** (default) | `gemini-2.5-flash` | Ongoing free tier: 10 RPM, 250 RPD | `GOOGLE_API_KEY` |
+| **Anthropic** | `claude-sonnet-4-20250514` | ~$5 one-time credits | `ANTHROPIC_API_KEY` |
+| **OpenAI** | `gpt-4o` | ~$5 one-time credits | `OPENAI_API_KEY` |
 
 ### 3.2 MCP Server
 
@@ -227,7 +288,7 @@ graph LR
 | Layer | Technology | Justification |
 |-------|-----------|---------------|
 | **Language** | Python 3.11+ | Ecosystem support, async capabilities |
-| **Agent LLM** | Claude (via `anthropic` SDK) | Native tool-use, MCP originator |
+| **Agent LLM** | Multi-provider: Gemini (default), Claude, OpenAI | User choice; Gemini has best free tier |
 | **MCP Server** | `fastmcp` | Lightweight, Pythonic MCP server |
 | **Web Search** | `duckduckgo-search` | Free, no API key, sufficient for this use case |
 | **Web Scraping** | `httpx` + `trafilatura` | Async HTTP + excellent content extraction |
@@ -237,7 +298,12 @@ graph LR
 ### Dependencies
 
 ```
-anthropic>=0.39.0
+# LLM providers (install the one(s) you need)
+google-genai>=1.0.0            # Gemini (default provider)
+anthropic>=0.39.0              # Claude (optional)
+openai>=1.50.0                 # OpenAI (optional)
+
+# Core
 fastmcp>=2.0.0
 duckduckgo-search>=7.0.0
 httpx>=0.27.0
@@ -272,7 +338,13 @@ vibe-cast/
 │       └── scraper.py             # httpx + trafilatura scraper
 ├── agent/
 │   ├── __init__.py
-│   └── client.py                  # Agent loop + MCP client
+│   ├── client.py                  # Agent loop + MCP client
+│   └── llm/
+│       ├── __init__.py            # Factory: get_llm_client(provider)
+│       ├── base.py                # Abstract LLMClient interface
+│       ├── anthropic_client.py    # Claude implementation
+│       ├── gemini_client.py       # Gemini implementation (default)
+│       └── openai_client.py       # OpenAI implementation
 ├── templates/
 │   └── report.md.j2              # Jinja2 report template
 ├── output/                        # Generated reports
@@ -311,8 +383,21 @@ flowchart TD
 
 ```env
 # .env.example
-ANTHROPIC_API_KEY=sk-ant-...         # Required: Claude API key
-CLAUDE_MODEL=claude-sonnet-4-20250514       # Optional: model override (default: claude-sonnet-4-20250514)
+
+# --- LLM Provider (choose one) ---
+LLM_PROVIDER=gemini                  # Options: gemini (default), anthropic, openai
+
+# --- Provider API Keys (set the one matching your provider) ---
+GOOGLE_API_KEY=AIza...               # Required if LLM_PROVIDER=gemini
+ANTHROPIC_API_KEY=sk-ant-...         # Required if LLM_PROVIDER=anthropic
+OPENAI_API_KEY=sk-...                # Required if LLM_PROVIDER=openai
+
+# --- Model Overrides (optional — sensible defaults per provider) ---
+# GEMINI_MODEL=gemini-2.5-flash           # Default for gemini
+# ANTHROPIC_MODEL=claude-sonnet-4-20250514       # Default for anthropic
+# OPENAI_MODEL=gpt-4o                     # Default for openai
+
+# --- General ---
 REQUEST_TIMEOUT=15                   # Optional: HTTP timeout in seconds
 MAX_SEARCH_RESULTS=5                 # Optional: DuckDuckGo results per query
 OUTPUT_DIR=output                    # Optional: report output directory
