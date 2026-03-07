@@ -20,7 +20,7 @@ export default function TuningSelector({ currentTuning, onTuningChange }: Tuning
           const tuning = ALTERNATE_TUNINGS.find(t => t.name === e.target.value);
           if (tuning) onTuningChange(tuning);
         }}
-        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:border-indigo-500 focus:outline-none"
+        className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:outline-none"
       >
         {ALTERNATE_TUNINGS.map(tuning => (
           <option key={tuning.name} value={tuning.name}>

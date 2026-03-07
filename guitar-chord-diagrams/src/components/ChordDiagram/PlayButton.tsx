@@ -23,7 +23,7 @@ export default function PlayButton({ voicing }: PlayButtonProps) {
       className={`mt-1 flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
         isPlaying
           ? 'bg-indigo-100 text-indigo-600'
-          : 'bg-gray-50 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600'
+          : 'bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600'
       }`}
       disabled={isPlaying}
     >

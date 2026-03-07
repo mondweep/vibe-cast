@@ -1,18 +1,21 @@
 import type { ChordVoicing } from '../../types';
-import DiagramSVG from './DiagramSVG';
-import PlayButton from './PlayButton';
-import { useState } from 'react';
+import LazyDiagramCard from './LazyDiagramCard';
+import ExportBar from './ExportBar';
+import { useState, useRef } from 'react';
 
 interface DiagramGridProps {
   voicings: ChordVoicing[];
   chordName: string;
+  isFavorite: (v: ChordVoicing) => boolean;
+  onToggleFavorite: (v: ChordVoicing) => void;
 }
 
 const CATEGORIES = ['all', 'open', 'barre', 'partial', 'jazz'] as const;
 type Category = typeof CATEGORIES[number];
 
-export default function DiagramGrid({ voicings, chordName }: DiagramGridProps) {
+export default function DiagramGrid({ voicings, chordName, isFavorite, onToggleFavorite }: DiagramGridProps) {
   const [filter, setFilter] = useState<Category>('all');
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const filtered = filter === 'all'
     ? voicings
@@ -29,7 +32,7 @@ export default function DiagramGrid({ voicings, chordName }: DiagramGridProps) {
   return (
     <div>
       {/* Filter tabs */}
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         {CATEGORIES.map(cat => (
           <button
             key={cat}
@@ -37,7 +40,7 @@ export default function DiagramGrid({ voicings, chordName }: DiagramGridProps) {
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
               filter === cat
                 ? 'bg-indigo-600 text-white'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             } ${categoryCounts[cat] === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
             disabled={categoryCounts[cat] === 0}
           >
@@ -47,21 +50,23 @@ export default function DiagramGrid({ voicings, chordName }: DiagramGridProps) {
         ))}
       </div>
 
+      {/* Export bar */}
+      <ExportBar chordName={chordName} gridRef={gridRef} />
+
       {/* Diagram grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-gray-400 dark:text-gray-500">
           <p className="text-lg">No {filter} voicings found for {chordName}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div ref={gridRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4" role="list" aria-label={`${chordName} chord voicings`}>
           {filtered.map((voicing, idx) => (
-            <div
+            <LazyDiagramCard
               key={idx}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col items-center hover:shadow-md transition-shadow"
-            >
-              <DiagramSVG voicing={voicing} />
-              <PlayButton voicing={voicing} />
-            </div>
+              voicing={voicing}
+              isFavorite={isFavorite(voicing)}
+              onToggleFavorite={onToggleFavorite}
+            />
           ))}
         </div>
       )}

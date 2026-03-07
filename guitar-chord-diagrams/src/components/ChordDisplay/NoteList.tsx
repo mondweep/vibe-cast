@@ -13,8 +13,8 @@ export default function NoteList({ notes, root }: NoteListProps) {
           key={i}
           className={`px-3 py-1 rounded-lg text-sm font-medium ${
             note === root
-              ? 'bg-indigo-100 text-indigo-700'
-              : 'bg-gray-100 text-gray-600'
+              ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
           }`}
         >
           {note}

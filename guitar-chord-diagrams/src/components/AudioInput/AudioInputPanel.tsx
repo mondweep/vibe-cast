@@ -42,15 +42,15 @@ export default function AudioInputPanel({ onChordDetected }: AudioInputPanelProp
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 mb-6">
       {/* Mode tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-4 w-fit mx-auto">
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 mb-4 w-fit mx-auto">
         <button
           onClick={() => switchMode('mic')}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             mode === 'mic'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
           }`}
         >
           Microphone
@@ -59,8 +59,8 @@ export default function AudioInputPanel({ onChordDetected }: AudioInputPanelProp
           onClick={() => switchMode('file')}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             mode === 'file'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
           }`}
         >
           Upload File
