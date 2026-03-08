@@ -4,7 +4,7 @@ import { detectPitches, getPeakFrequencies } from '../../audio/pitchDetection';
 import { detectChord, detectedToParseResult } from '../../audio/chordDetector';
 import type { DetectedChord, ParsedChord } from '../../types';
 import type { DetectionConfig } from '../../audio/detectionConfig';
-import { DETECTION_CONFIGS } from '../../audio/detectionConfig';
+import { DETECTION_PRESETS } from '../../audio/detectionConfig';
 
 interface MicrophoneCaptureProps {
   onChordDetected: (chord: ParsedChord, alternatives: DetectedChord[]) => void;
@@ -12,7 +12,7 @@ interface MicrophoneCaptureProps {
   onPeakFrequencies: (peaks: { frequency: number; magnitude: number }[]) => void;
   isListening: boolean;
   onToggle: () => void;
-  detectionMode?: 'standard' | 'beginner';
+  detectionConfig?: DetectionConfig;
 }
 
 type PermissionState = 'prompt' | 'granted' | 'denied' | 'error';
@@ -29,7 +29,7 @@ export default function MicrophoneCapture({
   onPeakFrequencies,
   isListening,
   onToggle,
-  detectionMode = 'standard',
+  detectionConfig,
 }: MicrophoneCaptureProps) {
   const [permission, setPermission] = useState<PermissionState>('prompt');
   const [errorMsg, setErrorMsg] = useState('');
@@ -38,15 +38,13 @@ export default function MicrophoneCapture({
   const lastUpdateRef = useRef<number>(0);
   const stabilityRef = useRef<StabilityState>({ chordName: '', consecutiveHits: 0, score: 0 });
   const currentChordRef = useRef<{ name: string; score: number }>({ name: '', score: 0 });
-  const configRef = useRef<DetectionConfig>(DETECTION_CONFIGS[detectionMode]);
+  const configRef = useRef<DetectionConfig>(detectionConfig ?? DETECTION_PRESETS.standard);
 
   // Keep config ref in sync with prop
   useEffect(() => {
-    configRef.current = DETECTION_CONFIGS[detectionMode];
-    // Reset all detection state when mode changes
-    stabilityRef.current = { chordName: '', consecutiveHits: 0, score: 0 };
-    currentChordRef.current = { name: '', score: 0 };
-  }, [detectionMode]);
+    const newConfig = detectionConfig ?? DETECTION_PRESETS.standard;
+    configRef.current = newConfig;
+  }, [detectionConfig]);
 
   const processAudio = useCallback(() => {
     const analyzer = analyzerRef.current;

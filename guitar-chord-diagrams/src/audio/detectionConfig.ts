@@ -1,4 +1,4 @@
-export type DetectionMode = 'standard' | 'beginner';
+export type DetectionMode = 'standard' | 'beginner' | 'custom';
 
 export interface DetectionConfig {
   throttleMs: number;
@@ -8,7 +8,7 @@ export interface DetectionConfig {
   simplifyQualities: boolean;
 }
 
-export const DETECTION_CONFIGS: Record<DetectionMode, DetectionConfig> = {
+export const DETECTION_PRESETS: Record<'standard' | 'beginner', DetectionConfig> = {
   standard: {
     throttleMs: 250,
     stabilityHits: 1,
@@ -58,22 +58,61 @@ export const QUALITY_SIMPLIFICATION: Record<string, string> = {
   power: 'major',
 };
 
-const STORAGE_KEY = 'chordlab-detection-mode';
+/** Slider range definitions for the UI. */
+export const PARAM_RANGES = {
+  throttleMs: { min: 100, max: 1200, step: 50, label: 'Detection Speed', unit: 'ms' },
+  stabilityHits: { min: 1, max: 5, step: 1, label: 'Stability', unit: 'hits' },
+  confidenceThreshold: { min: 0.1, max: 0.8, step: 0.05, label: 'Confidence Threshold', unit: '' },
+  hysteresisMargin: { min: 0, max: 0.3, step: 0.01, label: 'Switch Resistance', unit: '' },
+} as const;
 
-export function loadDetectionMode(): DetectionMode {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'standard' || stored === 'beginner') return stored;
-  } catch {
-    // localStorage unavailable
-  }
-  return 'standard';
+const STORAGE_KEY = 'chordlab-detection-config';
+
+interface StoredConfig {
+  mode: DetectionMode;
+  config: DetectionConfig;
 }
 
-export function saveDetectionMode(mode: DetectionMode): void {
+export function loadDetectionSettings(): StoredConfig {
   try {
-    localStorage.setItem(STORAGE_KEY, mode);
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as StoredConfig;
+      if (parsed.config && typeof parsed.config.throttleMs === 'number') {
+        return parsed;
+      }
+    }
+    // Migrate from old key
+    const oldKey = localStorage.getItem('chordlab-detection-mode');
+    if (oldKey === 'beginner') {
+      return { mode: 'beginner', config: { ...DETECTION_PRESETS.beginner } };
+    }
   } catch {
     // localStorage unavailable
   }
+  return { mode: 'standard', config: { ...DETECTION_PRESETS.standard } };
+}
+
+export function saveDetectionSettings(mode: DetectionMode, config: DetectionConfig): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ mode, config }));
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+/** Check if a config matches a preset exactly. */
+export function matchesPreset(config: DetectionConfig): DetectionMode {
+  for (const [name, preset] of Object.entries(DETECTION_PRESETS)) {
+    if (
+      config.throttleMs === preset.throttleMs &&
+      config.stabilityHits === preset.stabilityHits &&
+      config.confidenceThreshold === preset.confidenceThreshold &&
+      config.hysteresisMargin === preset.hysteresisMargin &&
+      config.simplifyQualities === preset.simplifyQualities
+    ) {
+      return name as DetectionMode;
+    }
+  }
+  return 'custom';
 }

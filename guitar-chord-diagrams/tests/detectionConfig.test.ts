@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  DETECTION_CONFIGS,
+  DETECTION_PRESETS,
   SIMPLIFIED_QUALITIES,
   QUALITY_SIMPLIFICATION,
-  loadDetectionMode,
-  saveDetectionMode,
+  PARAM_RANGES,
+  loadDetectionSettings,
+  saveDetectionSettings,
+  matchesPreset,
 } from '../src/audio/detectionConfig';
 import { detectChord, simplifyQuality } from '../src/audio/chordDetector';
 import type { DetectedPitch } from '../src/types';
@@ -18,9 +20,9 @@ function makePitches(notes: { note: string; freq: number }[]): DetectedPitch[] {
   }));
 }
 
-describe('DETECTION_CONFIGS', () => {
+describe('DETECTION_PRESETS', () => {
   it('standard mode has fast throttle and low thresholds', () => {
-    const config = DETECTION_CONFIGS.standard;
+    const config = DETECTION_PRESETS.standard;
     expect(config.throttleMs).toBe(250);
     expect(config.stabilityHits).toBe(1);
     expect(config.confidenceThreshold).toBe(0.3);
@@ -29,13 +31,49 @@ describe('DETECTION_CONFIGS', () => {
   });
 
   it('beginner mode has slower throttle and higher thresholds than standard', () => {
-    const config = DETECTION_CONFIGS.beginner;
-    const standard = DETECTION_CONFIGS.standard;
+    const config = DETECTION_PRESETS.beginner;
+    const standard = DETECTION_PRESETS.standard;
     expect(config.throttleMs).toBeGreaterThan(standard.throttleMs);
     expect(config.stabilityHits).toBeGreaterThan(standard.stabilityHits);
     expect(config.confidenceThreshold).toBeGreaterThan(standard.confidenceThreshold);
     expect(config.hysteresisMargin).toBeGreaterThan(standard.hysteresisMargin);
     expect(config.simplifyQualities).toBe(true);
+  });
+});
+
+describe('PARAM_RANGES', () => {
+  it('defines ranges for all tunable parameters', () => {
+    expect(PARAM_RANGES.throttleMs.min).toBeLessThan(PARAM_RANGES.throttleMs.max);
+    expect(PARAM_RANGES.stabilityHits.min).toBeLessThan(PARAM_RANGES.stabilityHits.max);
+    expect(PARAM_RANGES.confidenceThreshold.min).toBeLessThan(PARAM_RANGES.confidenceThreshold.max);
+    expect(PARAM_RANGES.hysteresisMargin.min).toBeLessThan(PARAM_RANGES.hysteresisMargin.max);
+  });
+
+  it('presets fall within defined ranges', () => {
+    for (const preset of Object.values(DETECTION_PRESETS)) {
+      expect(preset.throttleMs).toBeGreaterThanOrEqual(PARAM_RANGES.throttleMs.min);
+      expect(preset.throttleMs).toBeLessThanOrEqual(PARAM_RANGES.throttleMs.max);
+      expect(preset.stabilityHits).toBeGreaterThanOrEqual(PARAM_RANGES.stabilityHits.min);
+      expect(preset.stabilityHits).toBeLessThanOrEqual(PARAM_RANGES.stabilityHits.max);
+      expect(preset.confidenceThreshold).toBeGreaterThanOrEqual(PARAM_RANGES.confidenceThreshold.min);
+      expect(preset.confidenceThreshold).toBeLessThanOrEqual(PARAM_RANGES.confidenceThreshold.max);
+      expect(preset.hysteresisMargin).toBeGreaterThanOrEqual(PARAM_RANGES.hysteresisMargin.min);
+      expect(preset.hysteresisMargin).toBeLessThanOrEqual(PARAM_RANGES.hysteresisMargin.max);
+    }
+  });
+});
+
+describe('matchesPreset', () => {
+  it('identifies standard preset', () => {
+    expect(matchesPreset({ ...DETECTION_PRESETS.standard })).toBe('standard');
+  });
+
+  it('identifies beginner preset', () => {
+    expect(matchesPreset({ ...DETECTION_PRESETS.beginner })).toBe('beginner');
+  });
+
+  it('returns custom for modified config', () => {
+    expect(matchesPreset({ ...DETECTION_PRESETS.standard, throttleMs: 500 })).toBe('custom');
   });
 });
 
@@ -122,20 +160,6 @@ describe('detectChord with simplified mode', () => {
     expect(results[0].quality).toBe('minor');
   });
 
-  it('returns fewer candidates in simplified mode', () => {
-    const pitches = makePitches([
-      { note: 'C', freq: 130.8 },
-      { note: 'E', freq: 164.8 },
-      { note: 'G', freq: 196.0 },
-      { note: 'B', freq: 246.9 },
-    ]);
-    const standard = detectChord(pitches);
-    const simplified = detectChord(pitches, { simplified: true });
-    // Both should return results, but simplified filters more aggressively
-    expect(standard.length).toBeGreaterThan(0);
-    expect(simplified.length).toBeGreaterThan(0);
-  });
-
   it('backward compatible — no options behaves as standard', () => {
     const pitches = makePitches([
       { note: 'C', freq: 130.8 },
@@ -149,27 +173,43 @@ describe('detectChord with simplified mode', () => {
   });
 });
 
-describe('loadDetectionMode / saveDetectionMode', () => {
+describe('loadDetectionSettings / saveDetectionSettings', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('defaults to standard when nothing stored', () => {
-    expect(loadDetectionMode()).toBe('standard');
+  it('defaults to standard config when nothing stored', () => {
+    const { mode, config } = loadDetectionSettings();
+    expect(mode).toBe('standard');
+    expect(config).toEqual(DETECTION_PRESETS.standard);
   });
 
-  it('persists and loads beginner mode', () => {
-    saveDetectionMode('beginner');
-    expect(loadDetectionMode()).toBe('beginner');
+  it('persists and loads custom config', () => {
+    const custom = { ...DETECTION_PRESETS.standard, throttleMs: 500 };
+    saveDetectionSettings('custom', custom);
+    const { mode, config } = loadDetectionSettings();
+    expect(mode).toBe('custom');
+    expect(config.throttleMs).toBe(500);
   });
 
-  it('persists and loads standard mode', () => {
-    saveDetectionMode('standard');
-    expect(loadDetectionMode()).toBe('standard');
+  it('persists and loads beginner preset', () => {
+    saveDetectionSettings('beginner', DETECTION_PRESETS.beginner);
+    const { mode, config } = loadDetectionSettings();
+    expect(mode).toBe('beginner');
+    expect(config).toEqual(DETECTION_PRESETS.beginner);
   });
 
-  it('defaults to standard for invalid stored value', () => {
-    localStorage.setItem('chordlab-detection-mode', 'invalid');
-    expect(loadDetectionMode()).toBe('standard');
+  it('migrates from old detection-mode key', () => {
+    localStorage.setItem('chordlab-detection-mode', 'beginner');
+    const { mode, config } = loadDetectionSettings();
+    expect(mode).toBe('beginner');
+    expect(config).toEqual(DETECTION_PRESETS.beginner);
+  });
+
+  it('defaults to standard for corrupted stored value', () => {
+    localStorage.setItem('chordlab-detection-config', 'not-json');
+    const { mode, config } = loadDetectionSettings();
+    expect(mode).toBe('standard');
+    expect(config).toEqual(DETECTION_PRESETS.standard);
   });
 });

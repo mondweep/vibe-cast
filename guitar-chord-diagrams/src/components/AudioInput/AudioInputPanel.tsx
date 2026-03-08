@@ -2,9 +2,10 @@ import { useState, useCallback } from 'react';
 import MicrophoneCapture from './MicrophoneCapture';
 import FileUpload from './FileUpload';
 import SpectrumVisualizer from './SpectrumVisualizer';
+import DetectionSettings from './DetectionSettings';
 import type { DetectedChord, ParsedChord } from '../../types';
-import type { DetectionMode } from '../../audio/detectionConfig';
-import { loadDetectionMode, saveDetectionMode } from '../../audio/detectionConfig';
+import type { DetectionConfig, DetectionMode } from '../../audio/detectionConfig';
+import { loadDetectionSettings, saveDetectionSettings } from '../../audio/detectionConfig';
 
 interface AudioInputPanelProps {
   onChordDetected: (chord: ParsedChord) => void;
@@ -19,7 +20,8 @@ export default function AudioInputPanel({ onChordDetected }: AudioInputPanelProp
   const [peakFrequencies, setPeakFrequencies] = useState<{ frequency: number; magnitude: number }[]>([]);
   const [alternatives, setAlternatives] = useState<DetectedChord[]>([]);
   const [confidence, setConfidence] = useState<number | null>(null);
-  const [detectionMode, setDetectionMode] = useState<DetectionMode>(loadDetectionMode);
+
+  const [detectionConfig, setDetectionConfig] = useState<DetectionConfig>(() => loadDetectionSettings().config);
 
   const handleChordDetected = useCallback((chord: ParsedChord, alts: DetectedChord[]) => {
     onChordDetected(chord);
@@ -44,64 +46,35 @@ export default function AudioInputPanel({ onChordDetected }: AudioInputPanelProp
     setPeakFrequencies([]);
   }
 
-  function toggleDetectionMode() {
-    const next: DetectionMode = detectionMode === 'standard' ? 'beginner' : 'standard';
-    setDetectionMode(next);
-    saveDetectionMode(next);
+  function handleConfigChange(config: DetectionConfig, detectionMode: DetectionMode) {
+    setDetectionConfig(config);
+    saveDetectionSettings(detectionMode, config);
   }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 mb-6">
-      {/* Mode tabs + detection toggle */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-fit">
-          <button
-            onClick={() => switchMode('mic')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              mode === 'mic'
-                ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
-            }`}
-          >
-            Microphone
-          </button>
-          <button
-            onClick={() => switchMode('file')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              mode === 'file'
-                ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
-            }`}
-          >
-            Upload File
-          </button>
-        </div>
-
-        {/* Sensitivity toggle */}
-        {mode === 'mic' && (
-          <button
-            onClick={toggleDetectionMode}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
-              detectionMode === 'beginner'
-                ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-300'
-                : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400'
-            }`}
-            title={detectionMode === 'beginner'
-              ? 'Beginner mode: slower, more stable detection with simplified chords'
-              : 'Standard mode: fast detection with all chord types'
-            }
-          >
-            {/* Toggle track */}
-            <span className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-              detectionMode === 'beginner' ? 'bg-amber-400' : 'bg-gray-300 dark:bg-gray-500'
-            }`}>
-              <span className={`inline-block h-3 w-3 rounded-full bg-white transition-transform ${
-                detectionMode === 'beginner' ? 'translate-x-4' : 'translate-x-0.5'
-              }`} />
-            </span>
-            {detectionMode === 'beginner' ? 'Beginner' : 'Standard'}
-          </button>
-        )}
+      {/* Mode tabs */}
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 mb-4 w-fit mx-auto">
+        <button
+          onClick={() => switchMode('mic')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            mode === 'mic'
+              ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+          }`}
+        >
+          Microphone
+        </button>
+        <button
+          onClick={() => switchMode('file')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            mode === 'file'
+              ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+          }`}
+        >
+          Upload File
+        </button>
       </div>
 
       {/* Input controls */}
@@ -113,18 +86,16 @@ export default function AudioInputPanel({ onChordDetected }: AudioInputPanelProp
             onPeakFrequencies={setPeakFrequencies}
             isListening={isListening}
             onToggle={handleToggleMic}
-            detectionMode={detectionMode}
+            detectionConfig={detectionConfig}
           />
         ) : (
           <FileUpload onChordDetected={handleChordDetected} />
         )}
       </div>
 
-      {/* Beginner mode hint */}
-      {mode === 'mic' && detectionMode === 'beginner' && (
-        <p className="text-xs text-amber-600 dark:text-amber-400 text-center mb-2">
-          Beginner mode: slower updates, simplified chords (major, minor, 7th)
-        </p>
+      {/* Detection settings (mic mode only) */}
+      {mode === 'mic' && (
+        <DetectionSettings config={detectionConfig} onChange={handleConfigChange} />
       )}
 
       {/* Spectrum visualizer (mic mode only) */}
