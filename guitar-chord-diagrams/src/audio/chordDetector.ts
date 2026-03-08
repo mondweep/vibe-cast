@@ -4,6 +4,7 @@ import { CHORD_DEFINITIONS, formatChordName } from '../data/chordDefinitions';
 import { generateVoicings } from '../utils/fretboardMath';
 import { CURATED_VOICINGS } from '../data/chordVoicings';
 import { STANDARD_TUNING_NOTES } from '../data/tunings';
+import { SIMPLIFIED_QUALITIES, QUALITY_SIMPLIFICATION } from './detectionConfig';
 
 // Common chord types get a slight preference in ambiguous situations
 const COMMONALITY_WEIGHTS: Record<string, number> = {
@@ -29,11 +30,17 @@ interface ChordCandidate {
   totalTones: number;
 }
 
+export interface DetectChordOptions {
+  simplified?: boolean;
+}
+
 /**
  * Detect the chord from an array of detected pitches.
  * Returns up to 3 chord matches sorted by confidence.
+ * When simplified=true, only scores against beginner-friendly qualities.
  */
-export function detectChord(pitches: DetectedPitch[]): DetectedChord[] {
+export function detectChord(pitches: DetectedPitch[], options?: DetectChordOptions): DetectedChord[] {
+  const simplified = options?.simplified ?? false;
   if (pitches.length < 2) return [];
 
   // Extract unique note names (strip octave)
@@ -49,6 +56,9 @@ export function detectChord(pitches: DetectedPitch[]): DetectedChord[] {
 
   for (const root of CHROMATIC_NOTES) {
     for (const [quality, def] of Object.entries(CHORD_DEFINITIONS)) {
+      // In simplified mode, skip qualities that aren't beginner-friendly
+      if (simplified && !SIMPLIFIED_QUALITIES.has(quality)) continue;
+
       // Get the notes that should be in this chord (mod 12)
       const expectedNotes = [...new Set(
         applyFormula(root, def.intervals.map(i => i % 12))
@@ -165,4 +175,13 @@ export function detectedToParseResult(chord: DetectedChord) {
     quality: chord.quality,
     displayName: chord.name,
   };
+}
+
+/**
+ * Simplify a chord quality to its beginner-friendly equivalent.
+ * Returns the quality unchanged if it's already simple, or maps it via QUALITY_SIMPLIFICATION.
+ */
+export function simplifyQuality(quality: string): string {
+  if (SIMPLIFIED_QUALITIES.has(quality)) return quality;
+  return QUALITY_SIMPLIFICATION[quality] ?? 'major';
 }

@@ -3,6 +3,8 @@ import { AudioAnalyzer } from '../../audio/analyzer';
 import { detectPitches, getPeakFrequencies } from '../../audio/pitchDetection';
 import { detectChord, detectedToParseResult } from '../../audio/chordDetector';
 import type { DetectedChord, ParsedChord } from '../../types';
+import type { DetectionConfig } from '../../audio/detectionConfig';
+import { DETECTION_CONFIGS } from '../../audio/detectionConfig';
 
 interface MicrophoneCaptureProps {
   onChordDetected: (chord: ParsedChord, alternatives: DetectedChord[]) => void;
@@ -10,9 +12,16 @@ interface MicrophoneCaptureProps {
   onPeakFrequencies: (peaks: { frequency: number; magnitude: number }[]) => void;
   isListening: boolean;
   onToggle: () => void;
+  detectionMode?: 'standard' | 'beginner';
 }
 
 type PermissionState = 'prompt' | 'granted' | 'denied' | 'error';
+
+interface StabilityState {
+  chordName: string;
+  consecutiveHits: number;
+  score: number;
+}
 
 export default function MicrophoneCapture({
   onChordDetected,
@@ -20,12 +29,23 @@ export default function MicrophoneCapture({
   onPeakFrequencies,
   isListening,
   onToggle,
+  detectionMode = 'standard',
 }: MicrophoneCaptureProps) {
   const [permission, setPermission] = useState<PermissionState>('prompt');
   const [errorMsg, setErrorMsg] = useState('');
   const analyzerRef = useRef<AudioAnalyzer | null>(null);
   const rafRef = useRef<number>(0);
   const lastUpdateRef = useRef<number>(0);
+  const stabilityRef = useRef<StabilityState>({ chordName: '', consecutiveHits: 0, score: 0 });
+  const currentChordRef = useRef<{ name: string; score: number }>({ name: '', score: 0 });
+  const configRef = useRef<DetectionConfig>(DETECTION_CONFIGS[detectionMode]);
+
+  // Keep config ref in sync with prop
+  useEffect(() => {
+    configRef.current = DETECTION_CONFIGS[detectionMode];
+    // Reset stability when mode changes
+    stabilityRef.current = { chordName: '', consecutiveHits: 0, score: 0 };
+  }, [detectionMode]);
 
   const processAudio = useCallback(() => {
     const analyzer = analyzerRef.current;
@@ -34,9 +54,9 @@ export default function MicrophoneCapture({
     const frequencyData = analyzer.getFrequencyData();
     onFrequencyData(frequencyData);
 
-    // Throttle chord detection to ~4 updates/sec
+    const config = configRef.current;
     const now = Date.now();
-    if (now - lastUpdateRef.current >= 250) {
+    if (now - lastUpdateRef.current >= config.throttleMs) {
       lastUpdateRef.current = now;
 
       const peaks = getPeakFrequencies(frequencyData, analyzer.sampleRate, analyzer.fftSize);
@@ -45,9 +65,34 @@ export default function MicrophoneCapture({
       const pitches = detectPitches(frequencyData, analyzer.sampleRate, analyzer.fftSize);
 
       if (pitches.length >= 2) {
-        const chords = detectChord(pitches);
-        if (chords.length > 0 && chords[0].confidence > 0.3) {
-          onChordDetected(detectedToParseResult(chords[0]), chords);
+        const chords = detectChord(pitches, { simplified: config.simplifyQualities });
+
+        if (chords.length > 0 && chords[0].confidence > config.confidenceThreshold) {
+          const topChord = chords[0];
+          const stability = stabilityRef.current;
+          const current = currentChordRef.current;
+
+          // Update stability tracking
+          if (topChord.name === stability.chordName) {
+            stability.consecutiveHits++;
+            stability.score = topChord.confidence;
+          } else {
+            stability.chordName = topChord.name;
+            stability.consecutiveHits = 1;
+            stability.score = topChord.confidence;
+          }
+
+          // Check if we should emit this chord
+          const isStable = stability.consecutiveHits >= config.stabilityHits;
+          const beatsHysteresis =
+            current.name === '' ||
+            topChord.name === current.name ||
+            topChord.confidence > current.score + config.hysteresisMargin;
+
+          if (isStable && beatsHysteresis) {
+            currentChordRef.current = { name: topChord.name, score: topChord.confidence };
+            onChordDetected(detectedToParseResult(topChord), chords);
+          }
         }
       }
     }
@@ -63,6 +108,8 @@ export default function MicrophoneCapture({
       setPermission('granted');
       setErrorMsg('');
       lastUpdateRef.current = 0;
+      stabilityRef.current = { chordName: '', consecutiveHits: 0, score: 0 };
+      currentChordRef.current = { name: '', score: 0 };
       rafRef.current = requestAnimationFrame(processAudio);
     } catch (err) {
       const error = err as Error;
