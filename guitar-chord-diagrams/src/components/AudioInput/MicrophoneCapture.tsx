@@ -43,8 +43,9 @@ export default function MicrophoneCapture({
   // Keep config ref in sync with prop
   useEffect(() => {
     configRef.current = DETECTION_CONFIGS[detectionMode];
-    // Reset stability when mode changes
+    // Reset all detection state when mode changes
     stabilityRef.current = { chordName: '', consecutiveHits: 0, score: 0 };
+    currentChordRef.current = { name: '', score: 0 };
   }, [detectionMode]);
 
   const processAudio = useCallback(() => {

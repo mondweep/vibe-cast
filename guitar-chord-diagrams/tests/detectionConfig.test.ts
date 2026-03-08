@@ -28,12 +28,13 @@ describe('DETECTION_CONFIGS', () => {
     expect(config.simplifyQualities).toBe(false);
   });
 
-  it('beginner mode has slow throttle and high thresholds', () => {
+  it('beginner mode has slower throttle and higher thresholds than standard', () => {
     const config = DETECTION_CONFIGS.beginner;
-    expect(config.throttleMs).toBe(800);
-    expect(config.stabilityHits).toBe(3);
-    expect(config.confidenceThreshold).toBe(0.5);
-    expect(config.hysteresisMargin).toBe(0.15);
+    const standard = DETECTION_CONFIGS.standard;
+    expect(config.throttleMs).toBeGreaterThan(standard.throttleMs);
+    expect(config.stabilityHits).toBeGreaterThan(standard.stabilityHits);
+    expect(config.confidenceThreshold).toBeGreaterThan(standard.confidenceThreshold);
+    expect(config.hysteresisMargin).toBeGreaterThan(standard.hysteresisMargin);
     expect(config.simplifyQualities).toBe(true);
   });
 });

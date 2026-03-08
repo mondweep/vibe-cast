@@ -17,10 +17,10 @@ export const DETECTION_CONFIGS: Record<DetectionMode, DetectionConfig> = {
     simplifyQualities: false,
   },
   beginner: {
-    throttleMs: 800,
-    stabilityHits: 3,
-    confidenceThreshold: 0.5,
-    hysteresisMargin: 0.15,
+    throttleMs: 600,
+    stabilityHits: 2,
+    confidenceThreshold: 0.35,
+    hysteresisMargin: 0.12,
     simplifyQualities: true,
   },
 };
