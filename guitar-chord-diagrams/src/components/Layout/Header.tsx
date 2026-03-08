@@ -12,9 +12,10 @@ interface HeaderProps {
   onSignInClick: () => void;
   onSignOut: () => void;
   onViewHistory: () => void;
+  onAboutClick: () => void;
 }
 
-export default function Header({ theme, onToggleTheme, user, isConfigured, onSignInClick, onSignOut, onViewHistory }: HeaderProps) {
+export default function Header({ theme, onToggleTheme, user, isConfigured, onSignInClick, onSignOut, onViewHistory, onAboutClick }: HeaderProps) {
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 print:hidden">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -31,7 +32,12 @@ export default function Header({ theme, onToggleTheme, user, isConfigured, onSig
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <p className="text-sm text-gray-400 hidden sm:block">Guitar Chord Diagram Explorer</p>
+          <button
+            onClick={onAboutClick}
+            className="text-sm text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 hidden sm:block transition-colors"
+          >
+            About
+          </button>
           <DarkModeToggle theme={theme} onToggle={onToggleTheme} />
           {isConfigured && (
             user ? (

@@ -132,6 +132,7 @@ function App() {
         onSignInClick={() => setShowAuthModal(true)}
         onSignOut={auth.signOut}
         onViewHistory={handleViewHistory}
+        onAboutClick={() => setTab('about')}
       />
 
       {/* Auth modal */}
