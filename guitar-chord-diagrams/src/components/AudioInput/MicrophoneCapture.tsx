@@ -86,6 +86,7 @@ export default function MicrophoneCapture({
           // Check if we should emit this chord
           const isStable = stability.consecutiveHits >= config.stabilityHits;
           const beatsHysteresis =
+            config.hysteresisMargin === 0 ||
             current.name === '' ||
             topChord.name === current.name ||
             topChord.confidence > current.score + config.hysteresisMargin;
