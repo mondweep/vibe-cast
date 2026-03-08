@@ -13,6 +13,7 @@ import type { ProgressionEntry } from './components/Progression/ProgressionPanel
 import FavoritesPanel from './components/Favorites/FavoritesPanel';
 import AuthModal from './components/Auth/AuthModal';
 import SessionHistoryPanel from './components/SessionHistory/SessionHistoryPanel';
+import AboutPanel from './components/About/AboutPanel';
 import { useChordLookup } from './hooks/useChordLookup';
 import { useFavorites } from './hooks/useFavorites';
 import { useDarkMode } from './hooks/useDarkMode';
@@ -23,7 +24,7 @@ import { STANDARD_TUNING, getTuningNotes } from './data/tunings';
 import './App.css';
 
 type InputSource = 'search' | 'audio';
-type Tab = 'diagrams' | 'favorites' | 'history';
+type Tab = 'diagrams' | 'favorites' | 'history' | 'about';
 
 function App() {
   const [selectedChord, setSelectedChord] = useState<ParsedChord | null>(null);
@@ -206,6 +207,16 @@ function App() {
               History
             </button>
           )}
+          <button
+            onClick={() => setTab('about')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === 'about'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+          >
+            About
+          </button>
         </div>
 
         {/* Diagrams tab */}
@@ -303,6 +314,9 @@ function App() {
         {tab === 'history' && auth.user && (
           <SessionHistoryPanel userId={auth.user.id} />
         )}
+
+        {/* About tab */}
+        {tab === 'about' && <AboutPanel />}
       </main>
 
       <Footer />
