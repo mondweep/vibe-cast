@@ -40,10 +40,13 @@ export default function MicrophoneCapture({
   const currentChordRef = useRef<{ name: string; score: number }>({ name: '', score: 0 });
   const configRef = useRef<DetectionConfig>(detectionConfig ?? DETECTION_PRESETS.standard);
 
-  // Keep config ref in sync with prop
+  // Keep config ref in sync with prop and reset detection state
   useEffect(() => {
     const newConfig = detectionConfig ?? DETECTION_PRESETS.standard;
     configRef.current = newConfig;
+    // Reset stability and hysteresis state so the new config takes effect immediately
+    stabilityRef.current = { chordName: '', consecutiveHits: 0, score: 0 };
+    currentChordRef.current = { name: '', score: 0 };
   }, [detectionConfig]);
 
   const processAudio = useCallback(() => {
