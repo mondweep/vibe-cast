@@ -34,7 +34,7 @@ export default function Header({ theme, onToggleTheme, user, isConfigured, onSig
         <div className="flex items-center gap-3">
           <button
             onClick={onAboutClick}
-            className="text-sm text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 hidden sm:block transition-colors"
+            className="text-sm text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
           >
             About
           </button>
