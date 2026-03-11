@@ -1,38 +1,56 @@
-# Vibe Cast - RARI Jaipur AI Summit 2026
+# Agentics Foundation: Resources and Network — From Ideation to Prototyping and Beyond
 
-A weather-to-lifestyle AI application that transforms weather data into personalized activity and outfit recommendations.
+**AI Summit 2026 | Sri Karan Narendra Agricultural University, Jobner | RARI, Durgapura, Jaipur**
 
-## Overview
+Presentation and demo materials for Mondweep Chakravorty's talk at the AI Summit, 12th March 2026.
 
-Vibe Cast goes beyond traditional weather apps by using AI to interpret weather conditions and suggest what to wear, what to do, and how to make the most of your day — all tailored to your location and preferences.
+## Contents
 
-## Features
+### Presentation (`/presentation`)
+A self-contained HTML slide deck covering:
+- Speaker introduction
+- The gap between AI promise and AI delivery
+- What is the Agentics Foundation
+- The Agentic AI ecosystem (MCP, Goose, AGENTS.md)
+- Resources available (agentics.org, video, community)
+- From ideation to prototype with agentic AI
+- Agriculture + AI: Why it matters
+- Live demo introduction
+- Beyond prototyping — Forge and quality gates
+- Call to action
 
-- Real-time weather data integration
-- AI-powered outfit recommendations
-- Activity suggestions based on current conditions
-- Location-aware personalization
+**To run:** Open `presentation/index.html` in any modern browser. Use arrow keys or click to navigate.
 
-## Tech Stack
+### KrishiMitra Demo App (`/krishimitra`)
+"The Farmer's AI Companion" — an agriculture-focused AI advisory app built for Rajasthan farmers, demonstrating the power of going from idea to working prototype using agentic AI tools.
 
-- Python
-- Streamlit (UI)
-- Claude API (AI recommendations)
-- OpenWeatherMap API (weather data)
+**Features:**
+- District-specific advisory for Rajasthan
+- Crop management recommendations
+- Pest & disease alerts
+- Irrigation scheduling
+- Market intelligence & mandi prices
+- Fertilizer guidance
+- Weather impact advisory
+- Soil-type aware recommendations
 
-## Getting Started
+**To run:** Open `krishimitra/index.html` in any modern browser. No dependencies required.
 
-```bash
-# Clone the repository
-git clone https://github.com/mondweep/vibe-cast.git
+## Speaker
 
-# Install dependencies
-pip install -r requirements.txt
+**Mondweep Chakravorty**
+- Head of AI Strategy & Delivery, DxSure Ltd., UK
+- Co-Founder, Agentics Foundation London Chapter
+- 20 years of delivery excellence | £500M+ cumulative revenue impact
+- [LinkedIn](https://linkedin.com/in/mondweepchakravorty) | [GitHub](https://github.com/mondweep)
 
-# Run the app
-streamlit run app.py
-```
+## Resources
 
-## Presented At
+- [agentics.org](https://agentics.org) — Agentics Foundation
+- [video.agentics.org](https://video.agentics.org) — Video resources
+- [community.agentics.org](https://community.agentics.org) — Community platform
+- [Forge](https://github.com/ikennaokpala/forge) — Autonomous BDD validation skill
 
-**RARI Jaipur AI Summit 2026** — March 2026, Jaipur, India
+## License
+
+MIT
