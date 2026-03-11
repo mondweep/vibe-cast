@@ -1,0 +1,6 @@
+node_modules
+server/node_modules
+*.db
+.env
+tests/
+playwright.config.js
