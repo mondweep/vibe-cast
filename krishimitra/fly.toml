@@ -1,4 +1,4 @@
-app = "krishimitra"
+app = "krishimitra-jaipur"
 primary_region = "bom"  # Mumbai - closest to Jaipur
 
 [build]
