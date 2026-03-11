@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const https = require('https');
 const path = require('path');
 const { initDatabase } = require('./db');
 
@@ -432,8 +433,16 @@ app.get('/api/weather/:district', async (req, res) => {
 
     try {
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=Asia/Kolkata&forecast_days=7`;
-        const response = await fetch(url);
-        const data = await response.json();
+        const data = await new Promise((resolve, reject) => {
+            https.get(url, { timeout: 10000 }, (resp) => {
+                let body = '';
+                resp.on('data', chunk => body += chunk);
+                resp.on('end', () => {
+                    try { resolve(JSON.parse(body)); }
+                    catch (e) { reject(new Error('Invalid JSON')); }
+                });
+            }).on('error', reject).on('timeout', function() { this.destroy(); reject(new Error('Timeout')); });
+        });
         res.json(data);
     } catch (err) {
         res.json({ error: 'Weather service unavailable', message: err.message });

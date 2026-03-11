@@ -886,8 +886,62 @@
             </p>
         </div>
 
-        <!-- SLIDE 10: Demo Time (placeholder for live demo) -->
-        <div class="slide" data-slide="9" style="justify-content: center;">
+        <!-- SLIDE 10: Architecture - How KrishiMitra Works -->
+        <div class="slide" data-slide="9">
+            <span class="badge badge-primary">Architecture</span>
+            <h2>How <span class="ag-text">KrishiMitra</span> Gets <span class="gradient-text">Real Data</span></h2>
+            <p class="subtitle" style="margin-bottom: 20px;">A real application powered by live government data and AI</p>
+            <div style="display: flex; gap: 24px; max-width: 1100px; width: 100%; align-items: stretch;">
+                <!-- Left: Architecture Diagram -->
+                <div style="flex: 1; background: var(--bg-card); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 24px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.6; color: var(--text-secondary); white-space: pre; overflow: hidden;">&#x1F310; Browser (Hindi/English)
+    &#x2502;
+    &#x2502; REST API
+    &#x25BC;
+&#x1F5A5;&#xFE0F; Express.js Server
+    &#x251C;&#x2500; /api/advisory &#x2500;&#x2500;&#x25B6; &#x1F916; Claude / Gemini
+    &#x2502;   &#x2514;&#x2500; DB context      (AI responses)
+    &#x2502;
+    &#x251C;&#x2500; /api/weather &#x2500;&#x2500;&#x2500;&#x25B6; &#x26C5; Open-Meteo
+    &#x2502;                       (live weather)
+    &#x2514;&#x2500; /api/crops,msp,
+       soil,pests &#x2500;&#x2500;&#x2500;&#x25B6; &#x1F4BE; SQLite DB
+                            &#x251C; 15 crops
+                            &#x251C; 25 MSP prices
+                            &#x251C; 38 mandi prices
+                            &#x251C; 10 soil profiles
+                            &#x251C; 12 pest entries
+                            &#x2514; 6 govt schemes
+
+&#x1F504; Data Fetch (pre-demo):
+    curl data.gov.in &#x2500;&#x25B6; SQLite
+    curl Open-Meteo  &#x2500;&#x25B6; SQLite</div>
+                <!-- Right: Data Sources -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 14px;">
+                    <div class="card" style="border-color: rgba(34, 197, 94, 0.3); padding: 18px;">
+                        <h4 style="font-size: 0.95rem;">&#x1F4CA; data.gov.in API</h4>
+                        <p style="font-size: 0.82rem;">Live mandi prices from <strong>Agmarknet</strong>. Real wheat at &#8377;2,350/q from Kota APMC — fetched <em>today</em>. 71+ commodity records for Rajasthan.</p>
+                    </div>
+                    <div class="card" style="border-color: rgba(99, 102, 241, 0.3); padding: 18px;">
+                        <h4 style="font-size: 0.95rem;">&#x26C5; Open-Meteo Weather</h4>
+                        <p style="font-size: 0.82rem;">Real-time temperature, humidity, 7-day forecast for all 10 districts. Free, no API key needed. Updated live.</p>
+                    </div>
+                    <div class="card" style="border-color: rgba(245, 158, 11, 0.3); padding: 18px;">
+                        <h4 style="font-size: 0.95rem;">&#x1F3DB;&#xFE0F; Government Data (Seeded)</h4>
+                        <p style="font-size: 0.82rem;">MSP from GoI CACP, soil from NBSS&amp;LUP surveys, pest data from ICAR-NCIPM, schemes from official portals. All verified sources.</p>
+                    </div>
+                    <div class="card" style="border-color: rgba(139, 92, 246, 0.3); padding: 18px;">
+                        <h4 style="font-size: 0.95rem;">&#x1F916; AI Layer (Claude / Gemini)</h4>
+                        <p style="font-size: 0.82rem;">LLM receives <strong>DB context + farm details</strong> to generate personalized advisory. Falls back to data-only templates if no API key.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="subtitle" style="margin-top: 16px; text-align: center; font-size: 0.9rem; color: var(--accent);">
+                Node.js + SQLite + real government APIs — built overnight with Claude Code
+            </p>
+        </div>
+
+        <!-- SLIDE 11: Demo Time (placeholder for live demo) -->
+        <div class="slide" data-slide="10" style="justify-content: center;">
             <div style="text-align: center;">
                 <div style="font-size: 6rem; margin-bottom: 24px;">&#x1F33E;&#x1F916;</div>
                 <h1><span class="ag-text">Live Demo</span></h1>
@@ -900,8 +954,8 @@
             </div>
         </div>
 
-        <!-- SLIDE 11: Beyond Prototyping -->
-        <div class="slide" data-slide="10">
+        <!-- SLIDE 12: Beyond Prototyping -->
+        <div class="slide" data-slide="11">
             <span class="badge badge-primary">And Beyond</span>
             <h2>From Prototype to <span class="accent-text">Production</span></h2>
             <p class="subtitle" style="margin-bottom: 28px;">The Agentics ecosystem doesn't stop at prototyping. Here's how you go further.</p>
@@ -937,8 +991,8 @@
             </div>
         </div>
 
-        <!-- SLIDE 12: Call to Action -->
-        <div class="slide" data-slide="11">
+        <!-- SLIDE 13: Call to Action -->
+        <div class="slide" data-slide="12">
             <span class="badge badge-accent">Join the Movement</span>
             <h2>Your Journey <span class="gradient-text">Starts Today</span></h2>
             <p class="subtitle" style="margin-bottom: 32px;">The tools are free. The community is waiting. The only barrier is starting.</p>
@@ -974,8 +1028,8 @@
             </div>
         </div>
 
-        <!-- SLIDE 13: Thank You -->
-        <div class="slide title-slide" data-slide="12">
+        <!-- SLIDE 14: Thank You -->
+        <div class="slide title-slide" data-slide="13">
             <div style="font-size: 4rem; margin-bottom: 24px;">&#x1F64F;</div>
             <h1>
                 <span class="gradient-text">Thank You</span>
@@ -1002,7 +1056,7 @@
     <!-- Navigation -->
     <div class="nav-bar">
         <button onclick="prevSlide()" id="prevBtn">&larr; Previous</button>
-        <span class="slide-counter" id="slideCounter">1 / 13</span>
+        <span class="slide-counter" id="slideCounter">1 / 14</span>
         <button onclick="nextSlide()" id="nextBtn">Next &rarr;</button>
     </div>
 
