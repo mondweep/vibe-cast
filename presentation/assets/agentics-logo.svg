@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">
+  <defs>
+    <linearGradient id="infinityGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f4845f"/>
+      <stop offset="50%" style="stop-color:#e8734a"/>
+      <stop offset="100%" style="stop-color:#f4845f"/>
+    </linearGradient>
+  </defs>
+  <!-- Infinity symbol -->
+  <path d="M200,65 C230,35 270,25 290,40 C315,58 315,90 290,108 C270,122 230,112 200,82 C170,112 130,122 110,108 C85,90 85,58 110,40 C130,25 170,35 200,65 Z" 
+        fill="none" stroke="url(#infinityGrad)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Text -->
+  <text x="200" y="165" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="600">
+    <tspan fill="#e8734a">Agentics </tspan><tspan fill="#9ca3af">Foundation</tspan>
+  </text>
+</svg>
