@@ -1,3 +1,5 @@
 node_modules/
 krishimitra.db
+krishimitra.db-shm
+krishimitra.db-wal
 .env
