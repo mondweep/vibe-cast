@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KrishiMitra - The Farmer's AI Companion</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
 
         :root {
             --green-50: #f0fdf4;
@@ -39,7 +39,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, sans-serif;
             background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 50%, #f1f5f9 100%);
             min-height: 100vh;
             color: var(--slate-800);
@@ -68,9 +68,7 @@
             gap: 12px;
         }
 
-        .logo-icon {
-            font-size: 2.2rem;
-        }
+        .logo-icon { font-size: 2.2rem; }
 
         .logo h1 {
             font-size: 1.6rem;
@@ -84,6 +82,12 @@
             font-weight: 400;
         }
 
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .header-badge {
             background: rgba(255,255,255,0.15);
             border: 1px solid rgba(255,255,255,0.25);
@@ -93,11 +97,74 @@
             font-weight: 500;
         }
 
+        .lang-toggle {
+            display: flex;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .lang-btn {
+            padding: 6px 14px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: rgba(255,255,255,0.25);
+            color: white;
+        }
+
+        .lang-btn:hover:not(.active) {
+            color: white;
+        }
+
+        /* Status indicator */
+        .status-bar {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 8px 24px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-live { background: var(--green-50); color: var(--green-700); }
+        .status-live .status-dot { background: var(--green-500); }
+        .status-template { background: #fffbeb; color: var(--amber-600); }
+        .status-template .status-dot { background: var(--amber-500); animation: none; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
         /* Main */
         .main {
             max-width: 1100px;
             margin: 0 auto;
-            padding: 32px 24px;
+            padding: 24px 24px 32px;
         }
 
         /* Context Bar */
@@ -121,9 +188,7 @@
             gap: 12px;
         }
 
-        .context-icon {
-            font-size: 1.8rem;
-        }
+        .context-icon { font-size: 1.8rem; }
 
         .context-info h4 {
             font-size: 0.75rem;
@@ -170,18 +235,11 @@
             gap: 8px;
         }
 
-        .panel-body {
-            padding: 20px;
-        }
+        .panel-body { padding: 20px; }
 
         /* Form Elements */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group:last-child {
-            margin-bottom: 0;
-        }
+        .form-group { margin-bottom: 16px; }
+        .form-group:last-child { margin-bottom: 0; }
 
         label {
             display: block;
@@ -247,16 +305,6 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-        }
-
-        .btn-secondary {
-            background: var(--slate-100);
-            color: var(--slate-700);
-            border: 1px solid var(--slate-300);
-        }
-
-        .btn-secondary:hover {
-            background: var(--slate-200);
         }
 
         /* Quick Actions */
@@ -336,6 +384,14 @@
         .response-header .r-icon { font-size: 1.3rem; }
         .response-header h3 { font-size: 1rem; font-weight: 600; color: var(--green-800); }
         .response-header .r-time { margin-left: auto; font-size: 0.78rem; color: var(--slate-400); }
+        .response-header .r-source {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .source-llm { background: var(--green-100); color: var(--green-700); }
+        .source-template { background: #fef3c7; color: var(--amber-600); }
 
         .response-body {
             padding: 24px;
@@ -351,22 +407,15 @@
             margin: 20px 0 8px;
         }
 
-        .response-body h4:first-child {
-            margin-top: 0;
-        }
+        .response-body h4:first-child { margin-top: 0; }
 
         .response-body ul {
             padding-left: 20px;
             margin: 8px 0;
         }
 
-        .response-body li {
-            margin-bottom: 6px;
-        }
-
-        .response-body strong {
-            color: var(--green-700);
-        }
+        .response-body li { margin-bottom: 6px; }
+        .response-body strong { color: var(--green-700); }
 
         .response-body .highlight-box {
             background: var(--green-50);
@@ -423,10 +472,9 @@
 
         /* Responsive */
         @media (max-width: 800px) {
-            .app-layout {
-                grid-template-columns: 1fr;
-            }
+            .app-layout { grid-template-columns: 1fr; }
             .context-bar { flex-direction: column; }
+            .header-badge { display: none; }
         }
     </style>
 </head>
@@ -437,12 +485,25 @@
                 <span class="logo-icon">&#x1F33E;</span>
                 <div>
                     <h1>KrishiMitra</h1>
-                    <div class="tagline">The Farmer's AI Companion</div>
+                    <div class="tagline" id="tagline">The Farmer's AI Companion</div>
                 </div>
             </div>
-            <span class="header-badge">&#x1F916; Powered by Agentic AI</span>
+            <div class="header-right">
+                <div class="lang-toggle">
+                    <button class="lang-btn active" id="langEn" onclick="setLanguage('en')">English</button>
+                    <button class="lang-btn" id="langHi" onclick="setLanguage('hi')">हिन्दी</button>
+                </div>
+                <span class="header-badge" id="headerBadge">&#x1F916; Powered by Agentic AI</span>
+            </div>
         </div>
     </header>
+
+    <div class="status-bar">
+        <span class="status-pill" id="statusPill">
+            <span class="status-dot"></span>
+            <span id="statusText">Connecting...</span>
+        </span>
+    </div>
 
     <main class="main">
         <!-- Context Bar -->
@@ -450,28 +511,28 @@
             <div class="context-card">
                 <span class="context-icon">&#x1F4CD;</span>
                 <div class="context-info">
-                    <h4>Region</h4>
-                    <p>Rajasthan, India</p>
+                    <h4 data-en="Region" data-hi="क्षेत्र">Region</h4>
+                    <p data-en="Rajasthan, India" data-hi="राजस्थान, भारत">Rajasthan, India</p>
                 </div>
             </div>
             <div class="context-card">
                 <span class="context-icon">&#x1F321;&#xFE0F;</span>
                 <div class="context-info">
-                    <h4>Season</h4>
-                    <p id="currentSeason">Rabi (Winter Crop)</p>
+                    <h4 data-en="Season" data-hi="मौसम">Season</h4>
+                    <p id="currentSeason" data-en="Rabi (Winter Crop)" data-hi="रबी (शीत फसल)">Rabi (Winter Crop)</p>
                 </div>
             </div>
             <div class="context-card">
                 <span class="context-icon">&#x26C5;</span>
                 <div class="context-info">
-                    <h4>Weather Today</h4>
-                    <p id="currentWeather">28°C, Clear sky</p>
+                    <h4 data-en="Weather Today" data-hi="आज का मौसम">Weather Today</h4>
+                    <p id="currentWeather">Loading...</p>
                 </div>
             </div>
             <div class="context-card">
                 <span class="context-icon">&#x1F4C5;</span>
                 <div class="context-info">
-                    <h4>Date</h4>
+                    <h4 data-en="Date" data-hi="तारीख">Date</h4>
                     <p id="currentDate">12 March 2026</p>
                 </div>
             </div>
@@ -483,74 +544,74 @@
                 <!-- Input Panel -->
                 <div class="panel">
                     <div class="panel-header">
-                        <span>&#x1F33F;</span> Farm Details
+                        <span>&#x1F33F;</span> <span data-en="Farm Details" data-hi="खेत का विवरण">Farm Details</span>
                     </div>
                     <div class="panel-body">
                         <div class="form-group">
-                            <label>District</label>
-                            <select id="district">
-                                <option value="Jaipur">Jaipur</option>
-                                <option value="Jodhpur">Jodhpur</option>
-                                <option value="Udaipur">Udaipur</option>
-                                <option value="Kota">Kota</option>
-                                <option value="Bikaner">Bikaner</option>
-                                <option value="Ajmer">Ajmer</option>
-                                <option value="Alwar">Alwar</option>
-                                <option value="Bharatpur">Bharatpur</option>
-                                <option value="Sri Ganganagar">Sri Ganganagar</option>
-                                <option value="Sikar">Sikar</option>
+                            <label data-en="District" data-hi="जिला">District</label>
+                            <select id="district" onchange="onDistrictChange()">
+                                <option value="Jaipur">Jaipur (जयपुर)</option>
+                                <option value="Jodhpur">Jodhpur (जोधपुर)</option>
+                                <option value="Udaipur">Udaipur (उदयपुर)</option>
+                                <option value="Kota">Kota (कोटा)</option>
+                                <option value="Bikaner">Bikaner (बीकानेर)</option>
+                                <option value="Ajmer">Ajmer (अजमेर)</option>
+                                <option value="Alwar">Alwar (अलवर)</option>
+                                <option value="Bharatpur">Bharatpur (भरतपुर)</option>
+                                <option value="Sri Ganganagar">Sri Ganganagar (श्री गंगानगर)</option>
+                                <option value="Sikar">Sikar (सीकर)</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Soil Type</label>
+                            <label data-en="Soil Type" data-hi="मिट्टी का प्रकार">Soil Type</label>
                             <select id="soilType">
-                                <option value="Sandy (Bhur)">Sandy (Bhur)</option>
-                                <option value="Sandy Loam">Sandy Loam</option>
-                                <option value="Alluvial">Alluvial</option>
-                                <option value="Clay (Matiyar)">Clay (Matiyar)</option>
-                                <option value="Red Soil (Lal Mitti)">Red Soil (Lal Mitti)</option>
-                                <option value="Black Cotton (Kabar)">Black Cotton (Kabar)</option>
+                                <option value="Sandy (Bhur)">Sandy / बालू (भूर)</option>
+                                <option value="Sandy Loam">Sandy Loam / बलुई दोमट</option>
+                                <option value="Alluvial">Alluvial / जलोढ़</option>
+                                <option value="Clay (Matiyar)">Clay / चिकनी (मटियार)</option>
+                                <option value="Red Soil (Lal Mitti)">Red Soil / लाल मिट्टी</option>
+                                <option value="Black Cotton (Kabar)">Black Cotton / काली मिट्टी (कबर)</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Current/Planned Crop</label>
+                            <label data-en="Current/Planned Crop" data-hi="वर्तमान/नियोजित फसल">Current/Planned Crop</label>
                             <select id="crop">
-                                <option value="Wheat (Gehun)">Wheat (Gehun)</option>
-                                <option value="Mustard (Sarson)">Mustard (Sarson)</option>
-                                <option value="Bajra (Pearl Millet)">Bajra (Pearl Millet)</option>
-                                <option value="Jowar (Sorghum)">Jowar (Sorghum)</option>
-                                <option value="Groundnut (Moongfali)">Groundnut (Moongfali)</option>
-                                <option value="Cotton (Kapas)">Cotton (Kapas)</option>
-                                <option value="Cumin (Jeera)">Cumin (Jeera)</option>
-                                <option value="Coriander (Dhania)">Coriander (Dhania)</option>
-                                <option value="Gram/Chickpea (Chana)">Gram/Chickpea (Chana)</option>
-                                <option value="Barley (Jau)">Barley (Jau)</option>
+                                <option value="Wheat (Gehun)">Wheat / गेहूं</option>
+                                <option value="Mustard (Sarson)">Mustard / सरसों</option>
+                                <option value="Bajra (Pearl Millet)">Bajra / बाजरा</option>
+                                <option value="Jowar (Sorghum)">Jowar / ज्वार</option>
+                                <option value="Groundnut (Moongfali)">Groundnut / मूंगफली</option>
+                                <option value="Cotton (Kapas)">Cotton / कपास</option>
+                                <option value="Cumin (Jeera)">Cumin / जीरा</option>
+                                <option value="Coriander (Dhania)">Coriander / धनिया</option>
+                                <option value="Gram/Chickpea (Chana)">Gram / चना</option>
+                                <option value="Barley (Jau)">Barley / जौ</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Farm Size (Bigha)</label>
+                            <label data-en="Farm Size (Bigha)" data-hi="खेत का आकार (बीघा)">Farm Size (Bigha)</label>
                             <select id="farmSize">
-                                <option value="Small (1-5 Bigha)">Small (1-5 Bigha)</option>
-                                <option value="Medium (5-20 Bigha)">Medium (5-20 Bigha)</option>
-                                <option value="Large (20+ Bigha)">Large (20+ Bigha)</option>
+                                <option value="Small (1-5 Bigha)">Small / छोटा (1-5 बीघा)</option>
+                                <option value="Medium (5-20 Bigha)">Medium / मध्यम (5-20 बीघा)</option>
+                                <option value="Large (20+ Bigha)">Large / बड़ा (20+ बीघा)</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Irrigation</label>
+                            <label data-en="Irrigation" data-hi="सिंचाई">Irrigation</label>
                             <select id="irrigation">
-                                <option value="Rainfed">Rainfed</option>
-                                <option value="Tube Well">Tube Well</option>
-                                <option value="Canal (Nahar)">Canal (Nahar)</option>
-                                <option value="Drip Irrigation">Drip Irrigation</option>
-                                <option value="Sprinkler">Sprinkler</option>
+                                <option value="Rainfed">Rainfed / वर्षा आधारित</option>
+                                <option value="Tube Well">Tube Well / ट्यूबवेल</option>
+                                <option value="Canal (Nahar)">Canal / नहर</option>
+                                <option value="Drip Irrigation">Drip / ड्रिप सिंचाई</option>
+                                <option value="Sprinkler">Sprinkler / फव्वारा</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Your Question (Optional)</label>
-                            <textarea id="question" placeholder="E.g., My wheat leaves are turning yellow, what should I do?"></textarea>
+                            <label data-en="Your Question (Optional)" data-hi="आपका प्रश्न (वैकल्पिक)">Your Question (Optional)</label>
+                            <textarea id="question" data-placeholder-en="E.g., My wheat leaves are turning yellow, what should I do?" data-placeholder-hi="उदा., मेरे गेहूं की पत्तियां पीली हो रही हैं, क्या करूं?" placeholder="E.g., My wheat leaves are turning yellow, what should I do?"></textarea>
                         </div>
                         <button class="btn btn-primary" id="askBtn" onclick="getAdvice()">
-                            <span>&#x1F33E;</span> Get AI Advisory
+                            <span>&#x1F33E;</span> <span data-en="Get AI Advisory" data-hi="AI सलाह प्राप्त करें">Get AI Advisory</span>
                         </button>
                     </div>
                 </div>
@@ -558,29 +619,29 @@
                 <!-- Quick Actions -->
                 <div class="panel">
                     <div class="panel-header">
-                        <span>&#x26A1;</span> Quick Queries
+                        <span>&#x26A1;</span> <span data-en="Quick Queries" data-hi="त्वरित प्रश्न">Quick Queries</span>
                     </div>
                     <div class="panel-body">
                         <div class="quick-actions">
                             <button class="quick-btn" onclick="quickQuery('pest')">
                                 <span class="qicon">&#x1F41B;</span>
-                                <span class="qlabel">Pest & Disease Alert</span>
+                                <span class="qlabel" data-en="Pest &amp; Disease Alert" data-hi="कीट एवं रोग चेतावनी">Pest & Disease Alert</span>
                             </button>
                             <button class="quick-btn" onclick="quickQuery('water')">
                                 <span class="qicon">&#x1F4A7;</span>
-                                <span class="qlabel">Irrigation Schedule</span>
+                                <span class="qlabel" data-en="Irrigation Schedule" data-hi="सिंचाई अनुसूची">Irrigation Schedule</span>
                             </button>
                             <button class="quick-btn" onclick="quickQuery('market')">
                                 <span class="qicon">&#x1F4B0;</span>
-                                <span class="qlabel">Market Price & Mandi</span>
+                                <span class="qlabel" data-en="Market Price &amp; Mandi" data-hi="मंडी भाव">Market Price & Mandi</span>
                             </button>
                             <button class="quick-btn" onclick="quickQuery('fertilizer')">
                                 <span class="qicon">&#x1F9EA;</span>
-                                <span class="qlabel">Fertilizer Recommendation</span>
+                                <span class="qlabel" data-en="Fertilizer Recommendation" data-hi="उर्वरक सिफारिश">Fertilizer Recommendation</span>
                             </button>
                             <button class="quick-btn" onclick="quickQuery('weather')">
                                 <span class="qicon">&#x1F327;&#xFE0F;</span>
-                                <span class="qlabel">Weather Impact Advisory</span>
+                                <span class="qlabel" data-en="Weather Impact Advisory" data-hi="मौसम प्रभाव सलाह">Weather Impact Advisory</span>
                             </button>
                         </div>
                     </div>
@@ -589,9 +650,9 @@
 
             <!-- Chat Area -->
             <div class="chat-area" id="chatArea">
-                <div class="welcome-card">
-                    <h2>&#x1F33E; Namaste! Welcome to KrishiMitra</h2>
-                    <p>Your AI-powered agricultural advisor for Rajasthan. Select your farm details on the left and ask any question about crops, pests, irrigation, market prices, or best practices. Built with agentic AI to support our farming community.</p>
+                <div class="welcome-card" id="welcomeCard">
+                    <h2 id="welcomeTitle">&#x1F33E; Namaste! Welcome to KrishiMitra</h2>
+                    <p id="welcomeText">Your AI-powered agricultural advisor for Rajasthan. Select your farm details on the left and ask any question about crops, pests, irrigation, market prices, or best practices. Powered by real data from Indian government sources and AI intelligence.</p>
                 </div>
             </div>
         </div>
@@ -599,265 +660,109 @@
 
     <footer class="footer">
         KrishiMitra &middot; Built with <a href="https://agentics.org">Agentics Foundation</a> tools &middot;
+        Data: data.gov.in, Agmarknet, Open-Meteo &middot;
         AI Summit 2026, SKNAU &middot; <a href="https://linkedin.com/in/mondweepchakravorty">Mondweep Chakravorty</a>
     </footer>
 
     <script>
-        // Simulated AI responses (for demo without API key dependency)
-        const responses = {
-            general: function(district, soil, crop, irrigation, farmSize, question) {
-                return `
-<h4>&#x1F33E; KrishiMitra Advisory for ${crop} in ${district}</h4>
+        // --- Configuration ---
+        const API_BASE = window.location.origin;
+        let currentLang = 'en';
+        let serverAvailable = false;
 
-<div class="highlight-box">
-<strong>Farm Profile:</strong> ${farmSize} farm in ${district} district | Soil: ${soil} | Irrigation: ${irrigation}
-</div>
+        // --- Language Support ---
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('langEn').classList.toggle('active', lang === 'en');
+            document.getElementById('langHi').classList.toggle('active', lang === 'hi');
 
-<h4>&#x1F331; Crop Management Recommendations</h4>
-<ul>
-<li><strong>Current Stage:</strong> ${crop} is currently in the late growth/maturity stage for the Rabi season. Focus on monitoring grain filling and moisture levels.</li>
-<li><strong>Irrigation:</strong> With ${irrigation} available, maintain soil moisture at critical grain-filling stage. Avoid waterlogging as temperatures rise toward March end.</li>
-<li><strong>Nutrient Management:</strong> For ${soil} soil, consider a light foliar spray of micronutrients (Zinc Sulphate 0.5%) to boost grain quality in the final weeks.</li>
-</ul>
+            // Update all data-en/data-hi elements
+            document.querySelectorAll('[data-en]').forEach(el => {
+                el.textContent = el.getAttribute(`data-${lang}`) || el.getAttribute('data-en');
+            });
 
-<h4>&#x1F41B; Pest & Disease Watch</h4>
-<ul>
-<li><strong>Current Risk:</strong> Moderate risk of aphid infestation as temperatures warm. Inspect undersides of leaves regularly.</li>
-<li><strong>Action:</strong> If aphid population exceeds economic threshold (10-15 per plant), apply neem-based biopesticide before considering chemical options.</li>
-<li><strong>Preventive:</strong> Maintain field hygiene — remove weed hosts that harbor pests between crop rows.</li>
-</ul>
+            // Update textarea placeholder
+            const q = document.getElementById('question');
+            q.placeholder = q.getAttribute(`data-placeholder-${lang}`) || q.getAttribute('data-placeholder-en');
 
-<h4>&#x1F4B0; Market Intelligence</h4>
-<ul>
-<li><strong>Current Mandi Price (${district}):</strong> Wheat MSP is &#8377;2,425/quintal (2025-26). Ensure your produce meets FAQ grade for best price realization.</li>
-<li><strong>Timing:</strong> Consider storing harvest for 2-3 weeks post-harvest as prices typically firm up by mid-April.</li>
-<li><strong>Government Procurement:</strong> Register with e-NAM portal and local APMC for direct MSP procurement benefits.</li>
-</ul>
+            // Update tagline
+            document.getElementById('tagline').textContent = lang === 'hi' ? 'किसान का AI साथी' : "The Farmer's AI Companion";
 
-${question ? `
-<h4>&#x1F4AC; Regarding Your Question</h4>
-<div class="highlight-box">
-"${question}"
-</div>
-<p>Based on your specific concern and the farm conditions you've described (${soil} soil, ${irrigation} irrigation in ${district}), I recommend consulting with your nearest Krishi Vigyan Kendra (KVK) for a field-specific assessment. In the meantime, ensure proper drainage, maintain recommended plant spacing, and monitor the affected area daily for changes.</p>
-` : ''}
+            // Update welcome card
+            document.getElementById('welcomeTitle').innerHTML = lang === 'hi'
+                ? '&#x1F33E; नमस्ते! कृषिमित्र में आपका स्वागत है'
+                : '&#x1F33E; Namaste! Welcome to KrishiMitra';
+            document.getElementById('welcomeText').textContent = lang === 'hi'
+                ? 'राजस्थान के लिए आपका AI-संचालित कृषि सलाहकार। बाईं ओर अपने खेत का विवरण चुनें और फसल, कीट, सिंचाई, मंडी भाव या सर्वोत्तम प्रथाओं के बारे में कोई भी प्रश्न पूछें। भारत सरकार के वास्तविक डेटा और AI द्वारा संचालित।'
+                : 'Your AI-powered agricultural advisor for Rajasthan. Select your farm details on the left and ask any question about crops, pests, irrigation, market prices, or best practices. Powered by real data from Indian government sources and AI intelligence.';
+        }
 
-<div class="warning-box">
-<strong>&#x26A0;&#xFE0F; Weather Advisory:</strong> Temperatures in ${district} are expected to rise to 35°C+ over the next week. Ensure adequate irrigation scheduling and consider mulching to retain soil moisture during the heat transition period.
-</div>
+        // --- Server Health Check ---
+        async function checkServer() {
+            const pill = document.getElementById('statusPill');
+            const text = document.getElementById('statusText');
+            try {
+                const res = await fetch(`${API_BASE}/api/health`);
+                const data = await res.json();
+                serverAvailable = true;
 
-<h4>&#x2705; Action Items This Week</h4>
-<ul>
-<li>Monitor crop maturity — check grain hardness daily</li>
-<li>Schedule pre-harvest irrigation if soil moisture is below 50%</li>
-<li>Inspect for aphids and armyworm activity early morning</li>
-<li>Register on e-NAM portal for market access</li>
-<li>Prepare harvesting equipment and storage facilities</li>
-</ul>
-                `;
-            },
+                if (data.llm_available) {
+                    pill.className = 'status-pill status-live';
+                    text.textContent = currentLang === 'hi'
+                        ? `AI सक्रिय (${data.llm_provider}) | ${data.datasets.crops} फसलें | ${data.datasets.market_prices} मंडी भाव`
+                        : `AI Live (${data.llm_provider}) | ${data.datasets.crops} crops | ${data.datasets.market_prices} market prices`;
+                } else {
+                    pill.className = 'status-pill status-template';
+                    text.textContent = currentLang === 'hi'
+                        ? `डेटाबेस मोड | ${data.datasets.crops} फसलें | ${data.datasets.market_prices} मंडी भाव | AI के लिए API कुंजी जोड़ें`
+                        : `Database Mode | ${data.datasets.crops} crops | ${data.datasets.market_prices} market prices | Add API key for AI`;
+                }
 
-            pest: function(district, soil, crop, irrigation) {
-                return `
-<h4>&#x1F41B; Pest & Disease Alert — ${crop} in ${district}</h4>
-
-<div class="warning-box">
-<strong>&#x1F6A8; Current Threat Level: MODERATE</strong><br>
-Season transition from Rabi to summer brings increased pest pressure in ${district} district.
-</div>
-
-<h4>Active Threats for ${crop}</h4>
-<ul>
-<li><strong>Aphids (Chaapar):</strong> HIGH risk. Warm days and cool nights create ideal breeding conditions. Check leaf undersides daily. Economic threshold: 10-15 per plant.</li>
-<li><strong>Termites (Deemak):</strong> MODERATE risk in ${soil} soil. Look for wilting plants in patches. Apply Chlorpyrifos 20EC in irrigation water if detected.</li>
-<li><strong>Powdery Mildew:</strong> MODERATE risk with current humidity levels. White powdery spots on leaves. Apply Sulphur WP 80% @ 2g/litre if symptoms appear.</li>
-</ul>
-
-<h4>&#x1F9EA; Recommended Treatment Protocol</h4>
-<ul>
-<li><strong>First Line (Bio):</strong> Neem oil 5ml/litre + detergent 1ml/litre spray at dawn or dusk</li>
-<li><strong>Second Line (Chemical):</strong> Imidacloprid 17.8 SL @ 0.5ml/litre if bio-control insufficient after 5 days</li>
-<li><strong>Cultural:</strong> Remove heavily infested plant parts. Install yellow sticky traps at 12/acre.</li>
-</ul>
-
-<div class="highlight-box">
-<strong>&#x1F4F1; Report unusual pest sightings</strong> to the Crop Protection Unit at SKNAU or your nearest KVK for rapid response and community alerts.
-</div>
-
-<h4>&#x2705; Prevention Checklist</h4>
-<ul>
-<li>Maintain weed-free bunds and field margins</li>
-<li>Avoid excess nitrogen — it attracts sucking pests</li>
-<li>Install bird perches (20/hectare) for natural pest control</li>
-<li>Rotate crops next season to break pest cycles</li>
-</ul>
-                `;
-            },
-
-            water: function(district, soil, crop, irrigation) {
-                return `
-<h4>&#x1F4A7; Irrigation Schedule — ${crop} in ${district}</h4>
-
-<div class="highlight-box">
-<strong>Irrigation Source:</strong> ${irrigation} | <strong>Soil:</strong> ${soil}<br>
-<strong>Current Stage:</strong> Late Rabi — grain filling / maturity
-</div>
-
-<h4>Recommended Schedule (March 2026)</h4>
-<ul>
-<li><strong>Week 1 (10-16 March):</strong> Light irrigation if soil moisture below 50%. ${soil} soil drains ${soil.includes('Sandy') ? 'quickly — irrigate every 5-6 days' : 'moderately — irrigate every 8-10 days'}.</li>
-<li><strong>Week 2 (17-23 March):</strong> Critical grain-filling phase. Maintain consistent moisture. Avoid flooding.</li>
-<li><strong>Week 3 (24-31 March):</strong> Reduce irrigation as crop approaches physiological maturity. Excess water at this stage reduces grain quality.</li>
-</ul>
-
-<h4>&#x1F321;&#xFE0F; Water Efficiency Tips for ${district}</h4>
-<ul>
-<li><strong>Morning Irrigation:</strong> Water between 6-9 AM to minimize evaporation (saves 15-20% water)</li>
-<li><strong>Mulching:</strong> Apply 5-7 cm wheat straw mulch to retain soil moisture and reduce surface evaporation by up to 30%</li>
-${irrigation === 'Drip Irrigation' ? '<li><strong>Drip Advantage:</strong> Run drip system for 2-3 hours per session. Maintain 2.0-2.5 litres/hour emitter rate</li>' : ''}
-${irrigation === 'Tube Well' ? '<li><strong>Tube Well Tip:</strong> Schedule pumping during off-peak electricity hours for cost savings. Consider installing a water meter to track usage.</li>' : ''}
-</ul>
-
-<div class="warning-box">
-<strong>&#x26A0;&#xFE0F; Water Conservation Notice:</strong> Rajasthan water table is declining. Every litre saved matters. Consider transitioning to micro-irrigation for the upcoming Kharif season — government subsidies of up to 70% are available through the PM Krishi Sinchai Yojana.
-</div>
-
-<h4>&#x2705; Irrigation Action Items</h4>
-<ul>
-<li>Check soil moisture by hand — squeeze test at 6-inch depth</li>
-<li>Clean irrigation channels and check for blockages</li>
-<li>Stop irrigation 15-20 days before expected harvest</li>
-<li>Apply for micro-irrigation subsidy at agriculture department</li>
-</ul>
-                `;
-            },
-
-            market: function(district, soil, crop, irrigation) {
-                return `
-<h4>&#x1F4B0; Market Intelligence — ${crop} in ${district}</h4>
-
-<h4>Current Price Snapshot (March 2026)</h4>
-<ul>
-<li><strong>MSP (Minimum Support Price):</strong> &#8377;2,425/quintal for wheat (Rabi 2025-26)</li>
-<li><strong>${district} Mandi Average:</strong> &#8377;2,380 - &#8377;2,550/quintal depending on quality grade</li>
-<li><strong>Best Realization:</strong> FAQ (Fair Average Quality) grade fetches 5-8% premium over MSP</li>
-</ul>
-
-<div class="highlight-box">
-<strong>&#x1F4C8; Price Trend:</strong> Wheat prices expected to firm up by 3-5% through April as supply tightens. Consider short-term storage (2-4 weeks) if you have proper facilities.
-</div>
-
-<h4>&#x1F3EA; Nearest Mandis & Options</h4>
-<ul>
-<li><strong>${district} APMC Mandi:</strong> Primary market. Register for e-auction for transparent pricing.</li>
-<li><strong>e-NAM Portal:</strong> List your produce online for buyers across India. Eliminates middlemen.</li>
-<li><strong>FPO (Farmer Producer Organization):</strong> Join a local FPO to aggregate produce and negotiate better prices collectively.</li>
-<li><strong>Government Procurement Centers:</strong> Open from April 1 for MSP procurement. Carry Aadhaar, land documents, and bank passbook.</li>
-</ul>
-
-<h4>&#x1F4B5; Maximizing Returns</h4>
-<ul>
-<li><strong>Grading:</strong> Clean, grade, and bag produce properly. FAQ grade has &lt;12% moisture, &lt;2% damaged grains.</li>
-<li><strong>Storage:</strong> If storing, use Pusa bins or hermetic bags to prevent insect damage and moisture gain.</li>
-<li><strong>Value Addition:</strong> Consider making wheat flour (atta) — 20-30% higher margin than raw grain.</li>
-<li><strong>Contract Farming:</strong> Explore forward contracts for next season's crop for price certainty.</li>
-</ul>
-
-<div class="warning-box">
-<strong>&#x26A0;&#xFE0F; Beware:</strong> Avoid distress selling immediately after harvest when prices dip due to supply glut. If possible, wait 3-4 weeks for prices to stabilize.
-</div>
-                `;
-            },
-
-            fertilizer: function(district, soil, crop, irrigation) {
-                return `
-<h4>&#x1F9EA; Fertilizer Recommendation — ${crop} on ${soil} in ${district}</h4>
-
-<div class="highlight-box">
-<strong>Key Principle:</strong> Soil test first, fertilize second. Get your soil tested at the nearest Krishi Vigyan Kendra or through the Soil Health Card scheme.
-</div>
-
-<h4>General NPK Recommendation for ${crop}</h4>
-<ul>
-<li><strong>Nitrogen (N):</strong> ${soil.includes('Sandy') ? '130-140' : '120'} kg/hectare — split into 3 doses (basal + 2 top dressing)</li>
-<li><strong>Phosphorus (P₂O₅):</strong> 60 kg/hectare — full dose at sowing</li>
-<li><strong>Potash (K₂O):</strong> ${soil.includes('Sandy') ? '50' : '40'} kg/hectare — full dose at sowing</li>
-</ul>
-
-<h4>&#x1F4C5; Current Stage Recommendations (March - Late Rabi)</h4>
-<ul>
-<li><strong>At this stage:</strong> Avoid additional nitrogen — excess N causes lodging (crop falling over) and delays maturity.</li>
-<li><strong>Micronutrient Boost:</strong> Foliar spray of ZnSO₄ (0.5%) + FeSO₄ (0.5%) improves grain quality and weight.</li>
-<li><strong>Organic Option:</strong> Spray Panchgavya (3%) or Jeevamrut for organic nutrient boost.</li>
-</ul>
-
-<h4>&#x1F331; Soil Health for Next Season</h4>
-<ul>
-<li><strong>Green Manuring:</strong> After wheat harvest, sow Dhaincha (Sesbania) and incorporate before Kharif sowing. Adds 60-80 kg N/hectare naturally.</li>
-<li><strong>Crop Residue:</strong> Incorporate wheat straw instead of burning — adds organic carbon and improves ${soil} soil structure.</li>
-<li><strong>Vermicompost:</strong> Apply 2-3 tonnes/hectare for sustained nutrient release and soil biology improvement.</li>
-</ul>
-
-<div class="warning-box">
-<strong>&#x26A0;&#xFE0F; Important:</strong> Over-fertilization wastes money and pollutes groundwater. The Soil Health Card gives crop-specific, soil-specific recommendations — it's free! Visit your nearest soil testing laboratory.
-</div>
-
-<h4>&#x2705; Action Items</h4>
-<ul>
-<li>Get Soil Health Card if not already done (free government service)</li>
-<li>Apply foliar micronutrients this week if grain filling is ongoing</li>
-<li>Plan green manure crop for the gap between Rabi harvest and Kharif sowing</li>
-<li>Calculate fertilizer cost-benefit for next season's planning</li>
-</ul>
-                `;
-            },
-
-            weather: function(district, soil, crop, irrigation) {
-                return `
-<h4>&#x1F327;&#xFE0F; Weather Impact Advisory — ${district} District</h4>
-
-<div class="warning-box">
-<strong>&#x1F6A8; Seasonal Transition Alert</strong><br>
-${district} is entering the hot weather period. Rapid temperature rise from late March can stress Rabi crops and impact yields.
-</div>
-
-<h4>&#x1F321;&#xFE0F; 7-Day Forecast Impact Analysis</h4>
-<ul>
-<li><strong>Days 1-3:</strong> Max 30-33°C, Min 16-18°C. Clear skies. Good for crop maturity. Normal operations.</li>
-<li><strong>Days 4-5:</strong> Max rising to 35-37°C. Hot winds (Loo) may begin. Increase irrigation frequency.</li>
-<li><strong>Days 6-7:</strong> Max 36-38°C expected. Possible dust storms. Protect harvested produce.</li>
-</ul>
-
-<h4>&#x1F33E; Impact on ${crop}</h4>
-<ul>
-<li><strong>Heat Stress:</strong> Temperatures above 35°C during grain filling can reduce yield by 3-5% per degree. Maintain soil moisture to buffer heat impact.</li>
-<li><strong>Hot Winds:</strong> Loo winds accelerate moisture loss. Consider protective irrigation 1-2 days before predicted heat wave.</li>
-<li><strong>Harvest Timing:</strong> If crop is near maturity, consider early harvest to avoid heat-related grain shriveling.</li>
-</ul>
-
-<h4>&#x1F6E1;&#xFE0F; Protective Measures</h4>
-<ul>
-<li><strong>Irrigation:</strong> Light irrigation in the evening before a hot day reduces canopy temperature by 2-3°C</li>
-<li><strong>Mulching:</strong> Straw mulch reflects heat and keeps root zone 4-5°C cooler</li>
-<li><strong>Wind Breaks:</strong> Existing tree lines on western boundary are critical — do not remove</li>
-<li><strong>Harvest Protection:</strong> If harvesting, thresh and bag quickly. Don't leave produce in open fields during hot afternoons.</li>
-</ul>
-
-<div class="highlight-box">
-<strong>&#x1F4F1; Stay Updated:</strong> Download the Meghdoot app (IMD) for daily weather alerts. Also check Mausam.imd.gov.in for ${district}-specific forecasts.
-</div>
-
-<h4>&#x2705; This Week's Weather Actions</h4>
-<ul>
-<li>Check IMD advisory daily for heat wave warnings</li>
-<li>Ensure irrigation system is functional before heat wave</li>
-<li>Prepare storage space for early harvest if needed</li>
-<li>Monitor animals and livestock — provide shade and extra water</li>
-</ul>
-                `;
+                // Fetch weather
+                fetchWeather();
+            } catch (e) {
+                serverAvailable = false;
+                pill.className = 'status-pill status-template';
+                text.textContent = currentLang === 'hi'
+                    ? 'ऑफ़लाइन मोड — सर्वर शुरू करें: cd server && npm start'
+                    : 'Offline mode — Start server: cd server && npm start';
+                document.getElementById('currentWeather').textContent = '28°C, Clear';
             }
-        };
+        }
 
+        // --- Weather (Open-Meteo via server) ---
+        async function fetchWeather() {
+            if (!serverAvailable) return;
+            const district = document.getElementById('district').value;
+            try {
+                const res = await fetch(`${API_BASE}/api/weather/${district}`);
+                const data = await res.json();
+                if (data.current) {
+                    const temp = Math.round(data.current.temperature_2m);
+                    const weatherDesc = getWeatherDescription(data.current.weather_code);
+                    document.getElementById('currentWeather').textContent = `${temp}°C, ${weatherDesc}`;
+                }
+            } catch (e) {
+                document.getElementById('currentWeather').textContent = '28°C, Clear';
+            }
+        }
+
+        function getWeatherDescription(code) {
+            const descriptions = {
+                0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+                45: 'Foggy', 48: 'Rime fog', 51: 'Light drizzle', 53: 'Drizzle',
+                55: 'Heavy drizzle', 61: 'Light rain', 63: 'Rain', 65: 'Heavy rain',
+                71: 'Light snow', 73: 'Snow', 75: 'Heavy snow', 80: 'Rain showers',
+                81: 'Heavy rain showers', 95: 'Thunderstorm'
+            };
+            return descriptions[code] || 'Clear';
+        }
+
+        function onDistrictChange() {
+            fetchWeather();
+        }
+
+        // --- API Calls ---
         function getFormData() {
             return {
                 district: document.getElementById('district').value,
@@ -869,27 +774,27 @@ ${district} is entering the hot weather period. Rapid temperature rise from late
             };
         }
 
-        function addResponse(html, title) {
+        function addResponse(html, title, source) {
             const chatArea = document.getElementById('chatArea');
             const now = new Date();
             const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            const sourceLabel = source === 'llm' ? 'AI' : (source === 'template' ? 'DB' : '');
+            const sourceClass = source === 'llm' ? 'source-llm' : 'source-template';
 
             const card = document.createElement('div');
             card.className = 'response-card';
             card.innerHTML = `
                 <div class="response-header">
                     <span class="r-icon">&#x1F916;</span>
-                    <h3>${title || 'KrishiMitra Advisory'}</h3>
+                    <h3>${title || (currentLang === 'hi' ? 'कृषिमित्र सलाह' : 'KrishiMitra Advisory')}</h3>
+                    ${sourceLabel ? `<span class="r-source ${sourceClass}">${sourceLabel}</span>` : ''}
                     <span class="r-time">${time}</span>
                 </div>
                 <div class="response-body">${html}</div>
             `;
 
-            // Remove welcome card if present
             const welcome = chatArea.querySelector('.welcome-card');
             if (welcome) welcome.remove();
-
-            // Remove loading if present
             const loading = chatArea.querySelector('.loading');
             if (loading) loading.remove();
 
@@ -901,49 +806,104 @@ ${district} is entering the hot weather period. Rapid temperature rise from late
             const welcome = chatArea.querySelector('.welcome-card');
             if (welcome) welcome.remove();
 
+            const loadingText = currentLang === 'hi'
+                ? 'कृषिमित्र आपके खेत का डेटा विश्लेषण कर रहा है...'
+                : 'KrishiMitra is analyzing your farm data...';
+
             const loader = document.createElement('div');
             loader.className = 'loading';
-            loader.innerHTML = '<div class="spinner"></div> <span>KrishiMitra is analyzing your farm data...</span>';
+            loader.innerHTML = `<div class="spinner"></div> <span>${loadingText}</span>`;
             chatArea.prepend(loader);
         }
 
-        function getAdvice() {
+        async function getAdvice() {
             const data = getFormData();
             const btn = document.getElementById('askBtn');
             btn.disabled = true;
-
             showLoading();
 
-            setTimeout(() => {
-                const html = responses.general(data.district, data.soil, data.crop, data.irrigation, data.farmSize, data.question);
-                addResponse(html, `Advisory: ${data.crop} in ${data.district}`);
-                btn.disabled = false;
-                document.getElementById('question').value = '';
-            }, 1500);
+            if (serverAvailable) {
+                try {
+                    const res = await fetch(`${API_BASE}/api/advisory`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...data, queryType: 'general', lang: currentLang })
+                    });
+                    const result = await res.json();
+                    const title = currentLang === 'hi'
+                        ? `सलाह: ${data.crop} — ${data.district}`
+                        : `Advisory: ${data.crop} in ${data.district}`;
+                    addResponse(result.response, title, result.source);
+                } catch (e) {
+                    addResponse(`<div class="warning-box">Error: ${e.message}. Using offline mode.</div>`, 'Error', 'template');
+                }
+            } else {
+                // Offline fallback with simulated delay
+                setTimeout(() => {
+                    addResponse(getOfflineFallback(data, 'general'), `Advisory: ${data.crop} in ${data.district}`, 'template');
+                }, 800);
+            }
+
+            btn.disabled = false;
+            document.getElementById('question').value = '';
         }
 
-        function quickQuery(type) {
+        async function quickQuery(type) {
             const data = getFormData();
             showLoading();
 
             const titles = {
-                pest: 'Pest & Disease Alert',
-                water: 'Irrigation Schedule',
-                market: 'Market Intelligence',
-                fertilizer: 'Fertilizer Guide',
-                weather: 'Weather Advisory'
+                pest: currentLang === 'hi' ? 'कीट एवं रोग चेतावनी' : 'Pest & Disease Alert',
+                water: currentLang === 'hi' ? 'सिंचाई अनुसूची' : 'Irrigation Schedule',
+                market: currentLang === 'hi' ? 'मंडी भाव' : 'Market Intelligence',
+                fertilizer: currentLang === 'hi' ? 'उर्वरक मार्गदर्शन' : 'Fertilizer Guide',
+                weather: currentLang === 'hi' ? 'मौसम सलाह' : 'Weather Advisory'
             };
 
-            setTimeout(() => {
-                const html = responses[type](data.district, data.soil, data.crop, data.irrigation);
-                addResponse(html, titles[type]);
-            }, 1200);
+            if (serverAvailable) {
+                try {
+                    const res = await fetch(`${API_BASE}/api/advisory`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...data, queryType: type, lang: currentLang })
+                    });
+                    const result = await res.json();
+                    addResponse(result.response, titles[type], result.source);
+                } catch (e) {
+                    addResponse(getOfflineFallback(data, type), titles[type], 'template');
+                }
+            } else {
+                setTimeout(() => {
+                    addResponse(getOfflineFallback(data, type), titles[type], 'template');
+                }, 800);
+            }
         }
 
-        // Set current date
+        // Offline fallback (basic template when no server)
+        function getOfflineFallback(data, queryType) {
+            return `
+<h4>&#x1F33E; KrishiMitra Advisory: ${data.crop} in ${data.district}</h4>
+<div class="highlight-box">
+<strong>Farm Profile:</strong> ${data.farmSize} farm in ${data.district} | Soil: ${data.soil} | Irrigation: ${data.irrigation}
+</div>
+<h4>&#x1F4CB; Recommendations</h4>
+<ul>
+<li><strong>Current Stage:</strong> ${data.crop} is in the late Rabi season stage. Monitor grain filling and moisture levels carefully.</li>
+<li><strong>Irrigation:</strong> Maintain adequate soil moisture. Avoid waterlogging as temperatures rise.</li>
+<li><strong>MSP Reference:</strong> Wheat MSP 2025-26: &#8377;2,425/quintal. Check your nearest mandi for current prices.</li>
+</ul>
+<div class="warning-box">
+<strong>&#x26A0;&#xFE0F; Offline Mode:</strong> Start the KrishiMitra server for full AI-powered advice with real database data.
+<br><code>cd krishimitra/server && npm install && npm start</code>
+</div>`;
+        }
+
+        // --- Initialization ---
         document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN', {
             day: 'numeric', month: 'long', year: 'numeric'
         });
+
+        checkServer();
     </script>
 </body>
 </html>

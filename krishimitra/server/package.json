@@ -1,0 +1,17 @@
+{
+  "name": "krishimitra-server",
+  "version": "1.0.0",
+  "description": "KrishiMitra backend - AI-powered agricultural advisory for Rajasthan",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@google/generative-ai": "^0.21.0"
+  }
+}
