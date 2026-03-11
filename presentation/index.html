@@ -667,12 +667,12 @@
                 <div class="card">
                     <span class="icon">&#x1F30D;</span>
                     <h4>Global Community</h4>
-                    <p>100,000+ members worldwide. Apache-style meritocracy — contributions measured by participation, not dues. Chapters in London, Assam, and beyond.</p>
+                    <p>Reddit 100K+, LinkedIn 52K+. Apache-style meritocracy — contributions measured by participation, not dues. Chapters in London, Assam, and beyond.</p>
                 </div>
                 <div class="card">
                     <span class="icon">&#x1F513;</span>
                     <h4>Open Source First</h4>
-                    <p>17 open-source repos on GitHub. Flagship project: <strong>SPARC</strong> (Specification, Pseudocode, Architecture, Refinement, Completion) — a full methodology for building robust AI apps.</p>
+                    <p>13 open-source repos, 650+ stars, 100+ contributors. Flagship: <strong>SPARC</strong> (Specification, Pseudocode, Architecture, Refinement, Completion) — a full methodology for building robust AI apps.</p>
                 </div>
                 <div class="card">
                     <span class="icon">&#x1F393;</span>
@@ -681,8 +681,8 @@
                 </div>
                 <div class="card">
                     <span class="icon">&#x1F91D;</span>
-                    <h4>Industry Ecosystem</h4>
-                    <p>Connected to the broader AAIF under Linux Foundation, with Anthropic, OpenAI, and Block standardizing protocols like MCP, Goose, and AGENTS.md.</p>
+                    <h4>Paths of Impact</h4>
+                    <p>R&amp;D in agentic systems, developer resources &amp; libraries, accreditation, live workshops, global events, education, and public &amp; institutional guidance.</p>
                 </div>
             </div>
         </div>
@@ -710,7 +710,7 @@
                 </div>
             </div>
             <p class="subtitle" style="margin-top: 24px; text-align: center;">
-                The goal: become what the <strong style="color: var(--text-primary);">W3C is for the Web</strong> — open standards for AI agent interoperability.
+                Open standards for AI agent interoperability — the <strong style="color: var(--text-primary);">W3C for the AI age</strong>.
             </p>
         </div>
 
@@ -1002,7 +1002,9 @@
             if (newIndex < 0 || newIndex >= totalSlides) return;
 
             slides[currentSlide].classList.remove('active');
-            slides[currentSlide].classList.add(newIndex > currentSlide ? 'prev' : '');
+            if (newIndex > currentSlide) {
+                slides[currentSlide].classList.add('prev');
+            }
 
             currentSlide = newIndex;
 
