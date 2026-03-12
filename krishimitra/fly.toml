@@ -6,6 +6,7 @@ primary_region = "bom"  # Mumbai - closest to Jaipur
 [env]
   PORT = "3000"
   NODE_ENV = "production"
+  LLM_PROVIDER = "gemini"
 
 [http_service]
   internal_port = 3000

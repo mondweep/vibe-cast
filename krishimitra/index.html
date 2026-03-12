@@ -150,9 +150,9 @@
             animation: pulse 2s infinite;
         }
 
-        .status-live { background: var(--green-50); color: var(--green-700); }
-        .status-live .status-dot { background: var(--green-500); }
-        .status-template { background: #fffbeb; color: var(--amber-600); }
+        .status-live { background: var(--green-100); color: var(--green-800); border: 1.5px solid var(--green-500); font-size: 0.85rem; padding: 6px 16px; box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); }
+        .status-live .status-dot { background: var(--green-500); width: 8px; height: 8px; }
+        .status-template { background: #fffbeb; color: var(--amber-600); border: 1.5px solid var(--amber-500); }
         .status-template .status-dot { background: var(--amber-500); animation: none; }
 
         @keyframes pulse {
@@ -708,14 +708,15 @@
 
                 if (data.llm_available) {
                     pill.className = 'status-pill status-live';
+                    const providerName = data.llm_provider === 'gemini' ? 'Google Gemini' : 'Claude AI';
                     text.textContent = currentLang === 'hi'
-                        ? `AI सक्रिय (${data.llm_provider}) | ${data.datasets.crops} फसलें | ${data.datasets.market_prices} मंडी भाव`
-                        : `AI Live (${data.llm_provider}) | ${data.datasets.crops} crops | ${data.datasets.market_prices} market prices`;
+                        ? `✅ AI सक्रिय — ${providerName} से जुड़ा | ${data.datasets.crops} फसलें | ${data.datasets.market_prices} मंडी भाव`
+                        : `✅ AI Connected — Powered by ${providerName} | ${data.datasets.crops} crops | ${data.datasets.market_prices} market prices`;
                 } else {
                     pill.className = 'status-pill status-template';
                     text.textContent = currentLang === 'hi'
-                        ? `डेटाबेस मोड | ${data.datasets.crops} फसलें | ${data.datasets.market_prices} मंडी भाव | AI के लिए API कुंजी जोड़ें`
-                        : `Database Mode | ${data.datasets.crops} crops | ${data.datasets.market_prices} market prices | Add API key for AI`;
+                        ? `⚠️ ऑफ़लाइन मोड — केवल डेटाबेस | ${data.datasets.crops} फसलें | ${data.datasets.market_prices} मंडी भाव`
+                        : `⚠️ Offline Mode — Database only | ${data.datasets.crops} crops | ${data.datasets.market_prices} market prices`;
                 }
 
                 // Fetch weather
