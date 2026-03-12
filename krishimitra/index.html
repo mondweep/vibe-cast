@@ -456,6 +456,187 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* Refresh Button */
+        .btn-refresh {
+            background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-refresh:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-refresh:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-refresh .refresh-spin {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Refresh Modal */
+        .refresh-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .refresh-modal {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            max-width: 680px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .refresh-modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--slate-100);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            z-index: 1;
+        }
+
+        .refresh-modal-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--slate-800);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .refresh-close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--slate-200);
+            background: var(--slate-50);
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--slate-500);
+            transition: all 0.2s;
+        }
+
+        .refresh-close-btn:hover {
+            background: var(--slate-100);
+            color: var(--slate-800);
+        }
+
+        .refresh-modal-body {
+            padding: 24px;
+        }
+
+        .refresh-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .refresh-stat {
+            background: var(--slate-50);
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .refresh-stat .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--green-700);
+        }
+
+        .refresh-stat .stat-label {
+            font-size: 0.75rem;
+            color: var(--slate-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .refresh-section {
+            margin-bottom: 16px;
+        }
+
+        .refresh-section h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--slate-700);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .refresh-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .refresh-table th {
+            background: var(--slate-50);
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--slate-600);
+            border-bottom: 2px solid var(--slate-200);
+            white-space: nowrap;
+        }
+
+        .refresh-table td {
+            padding: 7px 10px;
+            border-bottom: 1px solid var(--slate-100);
+            color: var(--slate-700);
+        }
+
+        .refresh-table tr:last-child td { border-bottom: none; }
+
+        .refresh-source {
+            font-size: 0.78rem;
+            color: var(--slate-400);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .refresh-timestamp {
+            background: var(--green-50);
+            border: 1px solid var(--green-200);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: var(--green-800);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -644,6 +825,19 @@
                                 <span class="qlabel" data-en="Weather Impact Advisory" data-hi="मौसम प्रभाव सलाह">Weather Impact Advisory</span>
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Refresh Data -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>&#x1F4E1;</span> <span data-en="Live Data" data-hi="लाइव डेटा">Live Data</span>
+                    </div>
+                    <div class="panel-body">
+                        <button class="btn btn-refresh" id="refreshBtn" onclick="refreshLiveData()">
+                            <span id="refreshIcon">&#x1F504;</span> <span data-en="Fetch Latest Prices" data-hi="नवीनतम भाव प्राप्त करें">Fetch Latest Prices</span>
+                        </button>
+                        <p style="font-size: 0.78rem; color: var(--slate-400); margin-top: 8px; text-align: center;" data-en="Pulls live mandi prices from data.gov.in" data-hi="data.gov.in से लाइव मंडी भाव प्राप्त करता है">Pulls live mandi prices from data.gov.in</p>
                     </div>
                 </div>
             </div>
@@ -905,6 +1099,127 @@
         });
 
         checkServer();
+
+        // --- Live Data Refresh ---
+        async function refreshLiveData() {
+            const btn = document.getElementById('refreshBtn');
+            const icon = document.getElementById('refreshIcon');
+            btn.disabled = true;
+            icon.innerHTML = '<span class="refresh-spin">&#x1F504;</span>';
+            btn.querySelector('[data-en]').textContent = currentLang === 'hi' ? 'डेटा प्राप्त हो रहा है...' : 'Fetching data...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/refresh-data`, { method: 'POST' });
+                const data = await res.json();
+                showRefreshResults(data);
+                // Refresh status bar counts
+                checkServer();
+            } catch (e) {
+                alert('Failed to refresh data: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                icon.innerHTML = '&#x1F504;';
+                btn.querySelector('[data-en]').textContent = currentLang === 'hi' ? 'नवीनतम भाव प्राप्त करें' : 'Fetch Latest Prices';
+            }
+        }
+
+        function showRefreshResults(data) {
+            const startTime = new Date(data.startedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const s = data.summary;
+
+            // Build commodity rows
+            let commodityRows = '';
+            for (const rec of data.mandiPrices.records) {
+                const sample = rec.samples[0];
+                commodityRows += `<tr>
+                    <td><strong>${rec.commodity}</strong></td>
+                    <td>${rec.count}</td>
+                    <td>${sample ? sample.mandi : '-'}</td>
+                    <td>${sample ? '₹' + sample.modalPrice : '-'}</td>
+                    <td>${sample ? sample.date : '-'}</td>
+                </tr>`;
+            }
+
+            // Build weather rows
+            let weatherRows = '';
+            for (const w of data.weather.districts) {
+                weatherRows += `<tr>
+                    <td><strong>${w.district}</strong></td>
+                    <td>${w.temperature}°C</td>
+                    <td>${w.humidity}%</td>
+                    <td>${w.windSpeed} km/h</td>
+                </tr>`;
+            }
+
+            // Build error rows if any
+            let errorSection = '';
+            const allErrors = [...data.mandiPrices.errors.map(e => `Mandi (${e.commodity}): ${e.error}`), ...data.weather.errors.map(e => `Weather (${e.district}): ${e.error}`)];
+            if (allErrors.length > 0) {
+                errorSection = `<div class="refresh-section">
+                    <h4>⚠️ Errors (${allErrors.length})</h4>
+                    <ul style="font-size:0.82rem; color:var(--amber-600); padding-left:20px;">
+                        ${allErrors.map(e => `<li>${e}</li>`).join('')}
+                    </ul>
+                </div>`;
+            }
+
+            const overlay = document.createElement('div');
+            overlay.className = 'refresh-overlay';
+            overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+            overlay.innerHTML = `
+                <div class="refresh-modal">
+                    <div class="refresh-modal-header">
+                        <h3>📡 Live Data Refresh Results</h3>
+                        <button class="refresh-close-btn" onclick="this.closest('.refresh-overlay').remove()">✕</button>
+                    </div>
+                    <div class="refresh-modal-body">
+                        <div class="refresh-timestamp">
+                            🕐 Fetched at <strong>${startTime} IST</strong> &nbsp;·&nbsp; Completed in <strong>${s.duration}</strong>
+                        </div>
+
+                        <div class="refresh-summary">
+                            <div class="refresh-stat">
+                                <div class="stat-value">${s.mandiPricesInserted}</div>
+                                <div class="stat-label">Mandi Prices</div>
+                            </div>
+                            <div class="refresh-stat">
+                                <div class="stat-value">${s.commoditiesFetched}</div>
+                                <div class="stat-label">Commodities</div>
+                            </div>
+                            <div class="refresh-stat">
+                                <div class="stat-value">${s.weatherDistrictsUpdated}</div>
+                                <div class="stat-label">Weather Updates</div>
+                            </div>
+                            <div class="refresh-stat">
+                                <div class="stat-value">${s.totalMarketPrices}</div>
+                                <div class="stat-label">Total in DB</div>
+                            </div>
+                        </div>
+
+                        ${commodityRows ? `<div class="refresh-section">
+                            <h4>💰 Mandi Prices by Commodity</h4>
+                            <div class="refresh-source">📌 Source: <a href="https://data.gov.in" target="_blank" style="color:var(--blue-500)">data.gov.in</a> — Resource: ${data.mandiPrices.apiResource}</div>
+                            <table class="refresh-table" style="margin-top:8px">
+                                <tr><th>Commodity</th><th>Records</th><th>Sample Mandi</th><th>Modal ₹/q</th><th>Date</th></tr>
+                                ${commodityRows}
+                            </table>
+                        </div>` : ''}
+
+                        ${weatherRows ? `<div class="refresh-section">
+                            <h4>🌤️ Weather Updates</h4>
+                            <div class="refresh-source">📌 Source: <a href="https://open-meteo.com" target="_blank" style="color:var(--blue-500)">Open-Meteo</a> — Free weather API</div>
+                            <table class="refresh-table" style="margin-top:8px">
+                                <tr><th>District</th><th>Temp</th><th>Humidity</th><th>Wind</th></tr>
+                                ${weatherRows}
+                            </table>
+                        </div>` : ''}
+
+                        ${errorSection}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
     </script>
 </body>
 </html>

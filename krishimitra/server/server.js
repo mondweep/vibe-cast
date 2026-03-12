@@ -65,7 +65,7 @@ async function callClaude(systemPrompt, userMessage) {
 async function callGemini(systemPrompt, userMessage) {
     const { GoogleGenerativeAI } = require('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
@@ -441,12 +441,200 @@ app.get('/api/weather/:district', async (req, res) => {
                     try { resolve(JSON.parse(body)); }
                     catch (e) { reject(new Error('Invalid JSON')); }
                 });
-            }).on('error', reject).on('timeout', function() { this.destroy(); reject(new Error('Timeout')); });
+            }).on('error', reject).on('timeout', function () { this.destroy(); reject(new Error('Timeout')); });
         });
         res.json(data);
     } catch (err) {
         res.json({ error: 'Weather service unavailable', message: err.message });
     }
+});
+
+// --- Live Data Refresh Endpoint ---
+app.post('/api/refresh-data', async (req, res) => {
+    const results = {
+        startedAt: new Date().toISOString(),
+        mandiPrices: { records: [], errors: [], source: 'data.gov.in', apiResource: '9ef84268-d588-465a-a308-a864a43d0070' },
+        weather: { districts: [], errors: [], source: 'Open-Meteo (open-meteo.com)' },
+        summary: {}
+    };
+
+    const DATA_GOV_API_KEY = '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b';
+    const DATA_GOV_RESOURCE = '9ef84268-d588-465a-a308-a864a43d0070';
+
+    const COMMODITIES = [
+        { apiName: 'Wheat', dbName: 'Wheat' },
+        { apiName: 'Mustard', dbName: 'Mustard' },
+        { apiName: 'Gram', dbName: 'Gram' },
+        { apiName: 'Bajra(Pearl Millet)', dbName: 'Bajra' },
+        { apiName: 'Bajra', dbName: 'Bajra' },
+        { apiName: 'Barley', dbName: 'Barley' },
+        { apiName: 'Cumin', dbName: 'Cumin' },
+        { apiName: 'Coriander', dbName: 'Coriander' },
+        { apiName: 'Cotton', dbName: 'Cotton' },
+        { apiName: 'Groundnut', dbName: 'Groundnut' },
+        { apiName: 'Guar', dbName: 'Guar' },
+        { apiName: 'Guar Seed', dbName: 'Guar' },
+        { apiName: 'Maize', dbName: 'Maize' },
+        { apiName: 'Jowar(Sorghum)', dbName: 'Jowar' },
+        { apiName: 'Jowar', dbName: 'Jowar' },
+        { apiName: 'Moong', dbName: 'Moong' },
+        { apiName: 'Green Gram (Moong)', dbName: 'Moong' },
+        { apiName: 'Isabgol', dbName: 'Isabgol' },
+        { apiName: 'Sesame', dbName: 'Til' },
+        { apiName: 'Sesamum', dbName: 'Til' },
+    ];
+
+    const DISTRICT_COORDS = {
+        'Jaipur': { lat: 26.9124, lon: 75.7873 },
+        'Jodhpur': { lat: 26.2389, lon: 73.0243 },
+        'Udaipur': { lat: 24.5854, lon: 73.7125 },
+        'Kota': { lat: 25.2138, lon: 75.8648 },
+        'Bikaner': { lat: 28.0229, lon: 73.3119 },
+        'Ajmer': { lat: 26.4499, lon: 74.6399 },
+        'Alwar': { lat: 27.5530, lon: 76.6346 },
+        'Bharatpur': { lat: 27.2152, lon: 77.5030 },
+        'Sri Ganganagar': { lat: 29.9094, lon: 73.8780 },
+        'Sikar': { lat: 27.6094, lon: 75.1399 }
+    };
+
+    function fetchJSON(url) {
+        return new Promise((resolve, reject) => {
+            https.get(url, { timeout: 15000 }, (resp) => {
+                let body = '';
+                resp.on('data', chunk => body += chunk);
+                resp.on('end', () => {
+                    try { resolve(JSON.parse(body)); }
+                    catch (e) { reject(new Error('Invalid JSON response')); }
+                });
+            }).on('error', reject).on('timeout', function () { this.destroy(); reject(new Error('Request timeout')); });
+        });
+    }
+
+    // 1. Fetch Mandi Prices
+    try {
+        const seen = new Set();
+        let totalInserted = 0;
+        db.prepare("DELETE FROM market_prices WHERE source LIKE '%data.gov.in%'").run();
+
+        const insert = db.prepare(`
+            INSERT INTO market_prices (commodity, district, mandi_name, min_price, max_price, modal_price, date, source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        for (const commodity of COMMODITIES) {
+            try {
+                const url = `https://api.data.gov.in/resource/${DATA_GOV_RESOURCE}?api-key=${DATA_GOV_API_KEY}&format=json&limit=50&filters%5Bstate%5D=Rajasthan&filters%5Bcommodity%5D=${encodeURIComponent(commodity.apiName)}`;
+                const data = await fetchJSON(url);
+
+                if (data.records && data.records.length > 0) {
+                    const commodityRecords = [];
+                    for (const record of data.records) {
+                        const key = `${commodity.dbName}-${record.market}-${record.arrival_date}`;
+                        if (seen.has(key)) continue;
+                        seen.add(key);
+
+                        insert.run(
+                            commodity.dbName,
+                            record.district || 'Unknown',
+                            record.market || 'Unknown',
+                            parseFloat(record.min_price) || 0,
+                            parseFloat(record.max_price) || 0,
+                            parseFloat(record.modal_price) || 0,
+                            record.arrival_date || new Date().toISOString().split('T')[0],
+                            `data.gov.in live (${new Date().toISOString().split('T')[0]})`
+                        );
+                        totalInserted++;
+                        commodityRecords.push({
+                            commodity: commodity.dbName,
+                            district: record.district || 'Unknown',
+                            mandi: record.market || 'Unknown',
+                            minPrice: parseFloat(record.min_price) || 0,
+                            maxPrice: parseFloat(record.max_price) || 0,
+                            modalPrice: parseFloat(record.modal_price) || 0,
+                            date: record.arrival_date || 'N/A'
+                        });
+                    }
+                    if (commodityRecords.length > 0) {
+                        results.mandiPrices.records.push({
+                            commodity: commodity.dbName,
+                            apiQuery: commodity.apiName,
+                            count: commodityRecords.length,
+                            samples: commodityRecords.slice(0, 3)
+                        });
+                    }
+                }
+            } catch (err) {
+                results.mandiPrices.errors.push({ commodity: commodity.apiName, error: err.message });
+            }
+        }
+        results.mandiPrices.totalInserted = totalInserted;
+    } catch (err) {
+        results.mandiPrices.errors.push({ commodity: 'ALL', error: err.message });
+    }
+
+    // 2. Fetch Weather
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS weather_cache (
+            district TEXT PRIMARY KEY,
+            temperature REAL,
+            weather_code INTEGER,
+            humidity REAL,
+            wind_speed REAL,
+            forecast_json TEXT,
+            updated_at TEXT
+        )
+    `);
+
+    const weatherInsert = db.prepare(`
+        INSERT OR REPLACE INTO weather_cache (district, temperature, weather_code, humidity, wind_speed, forecast_json, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const [district, coords] of Object.entries(DISTRICT_COORDS)) {
+        try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=Asia/Kolkata&forecast_days=7`;
+            const data = await fetchJSON(url);
+            if (data.current) {
+                weatherInsert.run(
+                    district,
+                    data.current.temperature_2m,
+                    data.current.weather_code,
+                    data.current.relative_humidity_2m,
+                    data.current.wind_speed_10m,
+                    JSON.stringify(data.daily || {}),
+                    new Date().toISOString()
+                );
+                results.weather.districts.push({
+                    district,
+                    temperature: data.current.temperature_2m,
+                    humidity: data.current.relative_humidity_2m,
+                    windSpeed: data.current.wind_speed_10m,
+                    weatherCode: data.current.weather_code
+                });
+            }
+        } catch (err) {
+            results.weather.errors.push({ district, error: err.message });
+        }
+    }
+
+    // 3. Build summary
+    results.completedAt = new Date().toISOString();
+    const totalMarket = db.prepare('SELECT COUNT(*) as c FROM market_prices').get().c;
+    const liveCount = db.prepare("SELECT COUNT(*) as c FROM market_prices WHERE source LIKE '%data.gov.in%'").get().c;
+
+    results.summary = {
+        mandiPricesInserted: results.mandiPrices.totalInserted || 0,
+        totalMarketPrices: totalMarket,
+        liveMarketPrices: liveCount,
+        weatherDistrictsUpdated: results.weather.districts.length,
+        commoditiesFetched: results.mandiPrices.records.length,
+        errors: results.mandiPrices.errors.length + results.weather.errors.length,
+        duration: `${((new Date(results.completedAt) - new Date(results.startedAt)) / 1000).toFixed(1)}s`
+    };
+
+    console.log(`Data refresh complete: ${results.summary.mandiPricesInserted} mandi prices, ${results.summary.weatherDistrictsUpdated} weather updates in ${results.summary.duration}`);
+
+    res.json(results);
 });
 
 // Start server
