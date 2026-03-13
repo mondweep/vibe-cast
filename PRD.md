@@ -66,23 +66,55 @@ A web application that connects to your YouTube library, listens to any Sanskrit
   - Cultural context (when is this sung? what tradition?)
 - Concise by default — expandable for those who want to go deeper
 
-### FR-6: Sanskrit Learning Engine
-- **Personal Vocabulary Tracker** — every Sanskrit word you encounter is logged
-  - Words you've seen once, twice, five times, ten times
-  - Spaced repetition: words you've seen many times get subtler highlights
-  - New/rare words get prominent highlights so you notice them
+### FR-6: Sanskrit Learning Engine (Supabase-Backed, Persistent)
+
+All learning data is stored in **Supabase** (PostgreSQL + auth + real-time) so your vocabulary, progress, and history persist across sessions, devices, and time. You never lose what you've learned.
+
+#### Persistent Vocabulary Tracker
+- Every Sanskrit word you encounter is logged to your Supabase profile
+  - Timestamp of each encounter, which song, which line
+  - Encounter count: seen once, twice, five times, ten times
+  - Familiarity score: computed from frequency × recency × whether you've looked it up
+  - New/rare words get prominent highlights; familiar words get subtler treatment
 - **Word Tap** — tap any Sanskrit word for:
   - Root word (dhatu) and grammatical form
   - Simple English meaning
-  - Other songs where this word appears
+  - Other songs where this word appears (cross-referenced from your history)
   - Audio pronunciation
-- **Session Summary** — after each song:
-  - "You heard 45 Sanskrit words today"
-  - "12 were new to you"
-  - "You've now seen 'shanti' in 6 different songs"
-- **Learning Mode** — optional overlay that quizzes you:
-  - "What does this line mean?" (before showing translation)
-  - Fill-in-the-blank with Sanskrit words you've been learning
+  - "Mark as learned" / "Mark for revision" actions
+
+#### Revision Dashboard ("Revise" Tab)
+- **On-demand revision** — open any time, not just during playback
+- **Smart Revision Decks** generated from your personal history:
+  - "Words from today" — review what you just heard
+  - "Struggling words" — words you've encountered often but keep looking up
+  - "Almost learned" — words near the familiarity threshold
+  - "All words from [Song Name]" — revise by song
+  - "Words by theme" — grouped by meaning (e.g., nature, devotion, action, self)
+- **Revision Modes:**
+  - **Flashcard mode** — Sanskrit word → try to recall meaning → flip to see answer
+  - **Audio mode** — hear the word spoken in context (clip from the song) → recall meaning
+  - **Sentence mode** — see a full line with one word blanked out → fill it in
+  - **Matching mode** — match Sanskrit words to English meanings (quick drill)
+- **Spaced Repetition (SRS)** — Supabase stores review intervals per word
+  - Words you get right → shown less often
+  - Words you get wrong → shown more frequently
+  - Based on SM-2 algorithm adapted for passive-listening context
+
+#### Session Summary (after each song)
+- "You heard 45 Sanskrit words today"
+- "12 were new to you"
+- "You've now seen 'shanti' in 6 different songs"
+- "3 words are ready for revision" (link to Revise tab)
+
+#### Learning History & Progress
+- **Lifetime dashboard:**
+  - Total unique Sanskrit words encountered
+  - Words at each familiarity level (new → recognized → known → mastered)
+  - Songs listened to with translations
+  - Learning streaks (days active)
+  - Growth chart: vocabulary size over time
+- **Export** — download your full vocabulary list as CSV/PDF for offline study
 
 ### FR-7: User Controls
 - Toggle Devanagari, transliteration, or both
@@ -105,14 +137,18 @@ A web application that connects to your YouTube library, listens to any Sanskrit
 - Translations validated against scholarly sources where available
 - User feedback loop: "Was this translation helpful?" to improve over time
 
-### NFR-3: Offline / Cache
-- Songs you've played before are cached — lyrics, translations, explanations
-- Your vocabulary progress syncs across devices
+### NFR-3: Persistence & Sync
+- All vocabulary, encounter history, SRS schedules, and learning stats stored in **Supabase**
+- Data persists across sessions — close the browser, come back weeks later, everything is there
+- Real-time sync across devices (start on laptop, revise on phone)
+- Songs you've played before have cached translations for instant replay
+- Supabase Row Level Security (RLS) ensures each user only sees their own data
 
-### NFR-4: Privacy
+### NFR-4: Privacy & Auth
+- **Supabase Auth** handles user accounts (email/password, Google, or GitHub login)
 - YouTube OAuth with minimal scopes (read-only library access)
-- User's listening history stays private
-- Vocabulary data stored locally with optional cloud sync
+- User's listening history and vocabulary are private per-user (enforced by RLS)
+- Option to export or delete all personal data
 
 ---
 
@@ -156,8 +192,28 @@ A web application that connects to your YouTube library, listens to any Sanskrit
 │  └───────────────┘  └────────────┘  └─────────────┘ │
 │                                                      │
 │  ┌──────────────────────────────────────────────────┐│
-│  │  YouTube OAuth    │  Translation Cache  │ User  ││
-│  │  (library access) │  (known songs)      │ Vocab ││
+│  │  YouTube OAuth    │  Translation Cache           ││
+│  │  (library access) │  (known songs)               ││
+│  └──────────────────────────────────────────────────┘│
+└──────────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────────┐
+│                  Supabase (Cloud DB)                  │
+│                                                      │
+│  ┌─────────────┐ ┌──────────────┐ ┌───────────────┐ │
+│  │ User Auth   │ │  Vocabulary  │ │  Song Cache   │ │
+│  │ (accounts,  │ │  Store       │ │  (lyrics,     │ │
+│  │  OAuth      │ │  (words,     │ │   translations│ │
+│  │  tokens)    │ │   encounters,│ │   per song)   │ │
+│  │             │ │   SRS data,  │ │               │ │
+│  │             │ │   familiarity│ │               │ │
+│  │             │ │   scores)    │ │               │ │
+│  └─────────────┘ └──────────────┘ └───────────────┘ │
+│                                                      │
+│  ┌──────────────────────────────────────────────────┐│
+│  │  Real-time subscriptions: sync vocab across      ││
+│  │  devices, push revision reminders                ││
 │  └──────────────────────────────────────────────────┘│
 └──────────────────────────────────────────────────────┘
 ```
@@ -172,9 +228,79 @@ A web application that connects to your YouTube library, listens to any Sanskrit
 | Audio Transcription | Whisper (Sanskrit fine-tuned) + YouTube Captions API | Dual path: live transcription + existing captions as fallback |
 | Sanskrit NLP | sanskrit_parser / Vidyut | Sandhi splitting, morphological analysis, dictionary |
 | Translation + Explanation | Claude API | High-quality contextual translation with cultural knowledge |
-| Vocabulary Tracking | Local IndexedDB + optional cloud sync | Fast, private, works offline |
+| Vocabulary & Learning DB | **Supabase** (PostgreSQL + Auth + Realtime) | Persistent across sessions/devices, built-in auth, real-time sync, row-level security |
+| Spaced Repetition | SM-2 algorithm (stored in Supabase) | Proven SRS algorithm, per-word review scheduling |
 | Backend | Node.js / Python FastAPI | WebSocket support for real-time streaming |
-| Cache | PostgreSQL + Redis | Store known song translations, fast lookup |
+| Song Cache | Supabase (PostgreSQL) + Redis | Store translated songs, fast lookup for repeat plays |
+
+### Supabase Database Schema (Core Tables)
+
+```sql
+-- User profiles (extends Supabase auth.users)
+profiles
+  id              uuid (FK → auth.users)
+  display_name    text
+  created_at      timestamp
+  total_words     int        -- lifetime unique words encountered
+  current_streak  int        -- consecutive days active
+
+-- Every Sanskrit word in the system
+words
+  id              uuid
+  devanagari      text       -- संस्कृतम्
+  iast            text       -- saṃskṛtam
+  root_dhatu      text       -- root verb/noun
+  meaning_short   text       -- one-line English meaning
+  meaning_full    text       -- detailed meaning + grammar notes
+  category        text       -- theme: devotion, nature, action, self, etc.
+
+-- Your personal relationship with each word
+user_vocabulary
+  id              uuid
+  user_id         uuid (FK → profiles)
+  word_id         uuid (FK → words)
+  encounter_count int        -- how many times you've heard this word
+  first_seen_at   timestamp  -- when you first encountered it
+  last_seen_at    timestamp  -- most recent encounter
+  familiarity     float      -- 0.0 (brand new) → 1.0 (mastered)
+  marked_learned  boolean    -- manually marked as "I know this"
+  marked_revision boolean    -- manually marked for revision
+  -- SRS fields
+  srs_interval    int        -- days until next review
+  srs_ease_factor float      -- SM-2 ease factor (default 2.5)
+  srs_next_review timestamp  -- when to show this word again
+
+-- Each time you encounter a word (for detailed history)
+word_encounters
+  id              uuid
+  user_id         uuid (FK → profiles)
+  word_id         uuid (FK → words)
+  song_id         uuid (FK → songs)
+  line_number     int        -- which line in the song
+  encountered_at  timestamp
+  looked_up       boolean    -- did the user tap to see meaning?
+
+-- Cached song data
+songs
+  id              uuid
+  youtube_url     text (unique)
+  title           text
+  lyrics_json     jsonb      -- [{line: 1, devanagari, iast, english_literal, english_poetic, explanation}]
+  cached_at       timestamp
+
+-- Revision session history
+revision_sessions
+  id              uuid
+  user_id         uuid (FK → profiles)
+  started_at      timestamp
+  ended_at        timestamp
+  mode            text       -- flashcard, audio, matching, sentence
+  words_reviewed  int
+  words_correct   int
+  words_incorrect int
+```
+
+**Row Level Security:** All `user_*` tables and `word_encounters` enforce `auth.uid() = user_id` so users only access their own data.
 
 ---
 
@@ -189,6 +315,8 @@ A web application that connects to your YouTube library, listens to any Sanskrit
 | **Shloka/Stotra** | Types of Sanskrit verses — shlokas are individual verses, stotras are hymns of praise |
 | **OAuth** | A secure way for the app to access your YouTube account without you sharing your password |
 | **Whisper** | An AI model (by OpenAI) that can listen to audio and transcribe what's being said, supporting many languages including Sanskrit |
+| **Supabase** | An open-source backend service that provides a database (PostgreSQL), user authentication, and real-time sync — all in one. We use it to store your vocabulary, learning progress, and song cache so your data persists forever and syncs across devices. |
+| **Spaced Repetition (SRS)** | A learning technique where you review material at increasing intervals. Words you know well are shown rarely; words you struggle with appear more often. The SM-2 algorithm calculates optimal review timing. |
 
 ---
 
@@ -205,11 +333,15 @@ The entire MVP is built around one scenario: **you found a new Sanskrit song and
 | Line-by-line English translation synced to playback | Yes |
 | Word tap for instant meaning | Yes |
 | Basic verse explanations | Yes |
-| Personal vocabulary tracker | Yes |
+| **Supabase-backed persistent vocabulary tracker** | **Yes** |
+| **Revision dashboard (flashcards, audio, matching)** | **Yes** |
+| **Spaced repetition (SM-2) for word review scheduling** | **Yes** |
 | Session summary ("you learned 12 new words") | Yes |
-| Learning/quiz mode | Phase 2 |
-| Spaced repetition system | Phase 2 |
+| Learning progress dashboard & lifetime stats | Yes |
+| Export vocabulary as CSV/PDF | Yes |
+| Advanced quiz modes (sentence fill-in, timed drills) | Phase 2 |
 | Community song contributions | Phase 2 |
+| Push notifications for revision reminders | Phase 2 |
 | Mobile app | Phase 3 |
 
 ---
