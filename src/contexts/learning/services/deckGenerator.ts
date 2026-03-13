@@ -35,9 +35,9 @@ export async function generateDeck(userId: string, deckType: DeckType): Promise<
       break
   }
 
-  const { data } = await query.order('familiarity', { ascending: true }).limit(50)
+  const { data } = await (query.order('familiarity', { ascending: true }).limit(50) as any)
 
-  return (data || []).map((entry) => {
+  return (data || []).map((entry: any) => {
     const word = entry.words as any
     return {
       id: entry.id,

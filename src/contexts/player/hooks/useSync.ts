@@ -10,7 +10,7 @@ interface SyncState {
   setLines: (lines: LyricsLine[]) => void
 }
 
-export function useSync(videoId: string | null): SyncState {
+export function useSync(_videoId: string | null): SyncState {
   const [currentTime, setCurrentTime] = useState(0)
   const [currentLineIndex, setCurrentLineIndex] = useState(-1)
   const [isReady, setIsReady] = useState(false)

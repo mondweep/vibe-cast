@@ -32,12 +32,12 @@ export async function updateSRS(
   wordId: string,
   rating: number
 ): Promise<void> {
-  const { data } = await supabase
+  const { data } = await (supabase
     .from('user_vocabulary')
     .select('srs_interval, srs_ease_factor')
     .eq('user_id', userId)
     .eq('word_id', wordId)
-    .single()
+    .single() as any)
 
   if (!data) return
 
@@ -50,8 +50,8 @@ export async function updateSRS(
   const nextReview = new Date()
   nextReview.setDate(nextReview.getDate() + interval)
 
-  await supabase
-    .from('user_vocabulary')
+  await (supabase
+    .from('user_vocabulary') as any)
     .update({
       srs_interval: interval,
       srs_ease_factor: easeFactor,

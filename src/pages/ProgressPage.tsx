@@ -1,6 +1,6 @@
 import { useProgress } from '../contexts/learning/hooks/useProgress'
 import { Flame, BookOpen, Music, TrendingUp, Download } from 'lucide-react'
-import { FAMILIARITY_THRESHOLDS } from '../shared/lib/constants'
+// Familiarity thresholds used in useProgress hook
 
 export function ProgressPage() {
   const progress = useProgress()

@@ -66,7 +66,7 @@ export function PlayPage() {
               lines={translation.lines}
               currentLineIndex={translation.currentLineIndex}
               vocabulary={vocabulary.words}
-              onWordTap={vocabulary.handleWordTap}
+              onWordTap={(word) => vocabulary.handleWordTap({ ...word, meaning: word.iast }, translation.currentLineIndex)}
             />
             <TranslationPanel
               currentLine={translation.currentLine}

@@ -42,7 +42,7 @@ export function useYouTubeLibrary() {
     }
   }, [isConnected]);
 
-  const fetchPlaylistItems = useCallback(async (playlistId: string) => {
+  const fetchPlaylistItems = useCallback(async (_playlistId: string) => {
     setLoading(true);
     try {
       // TODO: Fetch from YouTube Data API v3

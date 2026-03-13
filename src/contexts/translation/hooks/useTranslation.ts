@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { LyricsLine } from '../../../shared/types/database.types';
 import { supabase } from '../../../shared/lib/supabaseClient';
 import { fetchCaptions } from '../services/transcriber';
@@ -35,11 +35,11 @@ export function useTranslation(videoId: string | null, currentTime: number) {
 
       try {
         // Check Supabase cache first
-        const { data: cached } = await supabase
+        const { data: cached } = await (supabase
           .from('songs')
           .select('lyrics_json, title')
           .eq('youtube_url', `https://youtube.com/watch?v=${videoId}`)
-          .single();
+          .single() as any);
 
         if (cached?.lyrics_json && !cancelled) {
           const lines = cached.lyrics_json as LyricsLine[];
@@ -49,7 +49,7 @@ export function useTranslation(videoId: string | null, currentTime: number) {
         }
 
         // Fetch captions from YouTube
-        const captions = await fetchCaptions(videoId);
+        const captions = await fetchCaptions(videoId!);
         if (cancelled) return;
 
         if (captions.length > 0) {
@@ -67,9 +67,9 @@ export function useTranslation(videoId: string | null, currentTime: number) {
           setState((prev) => ({ ...prev, lines: translatedLines, loading: false }));
 
           // Cache in Supabase
-          await supabase.from('songs').upsert({
+          await (supabase.from('songs') as any).upsert({
             youtube_url: `https://youtube.com/watch?v=${videoId}`,
-            lyrics_json: translatedLines as unknown as Record<string, unknown>[],
+            lyrics_json: translatedLines,
           });
         } else {
           // No captions — would trigger Whisper transcription

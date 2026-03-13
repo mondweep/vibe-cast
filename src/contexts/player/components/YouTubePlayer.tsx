@@ -3,7 +3,7 @@ import { PLAYBACK_POLL_INTERVAL_MS } from '../../../shared/lib/constants'
 
 declare global {
   interface Window {
-    YT: typeof YT
+    YT: any
     onYouTubeIframeAPIReady: () => void
   }
 }
@@ -17,7 +17,7 @@ interface YouTubePlayerProps {
 
 export function YouTubePlayer({ videoId, onTimeUpdate, onEnd, onReady }: YouTubePlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const playerRef = useRef<YT.Player | null>(null)
+  const playerRef = useRef<any>(null)
   const intervalRef = useRef<number | null>(null)
 
   const startPolling = useCallback(() => {
@@ -52,7 +52,7 @@ export function YouTubePlayer({ videoId, onTimeUpdate, onEnd, onReady }: YouTube
             onReady()
             startPolling()
           },
-          onStateChange: (event: YT.OnStateChangeEvent) => {
+          onStateChange: (event: any) => {
             if (event.data === window.YT.PlayerState.PLAYING) {
               startPolling()
             } else if (event.data === window.YT.PlayerState.PAUSED) {
