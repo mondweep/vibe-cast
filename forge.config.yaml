@@ -1,0 +1,69 @@
+# Forge Configuration for SanskritSync
+# Quality Engineering Pipeline Configuration
+
+project:
+  name: SanskritSync
+  type: full-stack
+  architecture: modular-monolith
+
+contexts:
+  - name: auth
+    path: src/contexts/auth
+    specs: specs/auth.feature
+  - name: player
+    path: src/contexts/player
+    specs: specs/youtube-player.feature
+  - name: translation
+    path: src/contexts/translation
+    specs: specs/translation.feature
+  - name: learning
+    path: src/contexts/learning
+    specs:
+      - specs/vocabulary.feature
+      - specs/revision.feature
+      - specs/progress.feature
+
+backend:
+  health_endpoint: /api/health
+  start_command: npm run dev
+  port: 5173
+
+testing:
+  framework: vitest
+  e2e_framework: playwright
+  specs_dir: specs/
+  coverage_threshold: 80
+
+quality_gates:
+  functional:
+    enabled: true
+    command: npx vitest run
+  behavioral:
+    enabled: true
+    specs_dir: specs/
+  coverage:
+    enabled: true
+    threshold: 80
+  security:
+    enabled: true
+    no_internal_mocking: true
+    rls_verification: true
+  accessibility:
+    enabled: true
+    standard: WCAG-AA
+  resilience:
+    enabled: true
+    network_failure_handling: true
+  contract:
+    enabled: true
+    supabase_types_check: true
+
+mocking_policy:
+  external_only: true
+  allowed_external:
+    - youtube.com
+    - api.openai.com
+    - api.anthropic.com
+  forbidden_internal:
+    - src/contexts/**
+    - src/shared/**
