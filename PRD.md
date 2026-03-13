@@ -1,169 +1,216 @@
 # PRD: Sanskrit Song Real-Time Translator
 
 ## Product Name
-**SanskritSync** — Real-Time Sanskrit Song Translation & Interpretation
+**SanskritSync** — Real-Time Sanskrit Song Translation & Learning
 
 ## Problem Statement
-Sanskrit songs played on YouTube contain rich linguistic, philosophical, and spiritual meaning that is inaccessible to most listeners. There is no tool that provides real-time, synchronized English translations and contextual explanations as a Sanskrit song plays.
+You discover a beautiful Sanskrit song on YouTube. You feel its power but have no idea what the words mean. There is no tool that listens along with you and tells you — in real time — what each line means, where it comes from, and helps you absorb Sanskrit naturally through music.
 
 ## Vision
-A web application that listens to Sanskrit songs playing on YouTube, transcribes the Sanskrit lyrics in real time, and provides line-by-line English translations with cultural and philosophical explanations — all synchronized with the audio playback.
+A web application that connects to your YouTube library, listens to any Sanskrit song as it plays, and provides real-time English translations, word-by-word breakdowns, and contextual meaning — turning every listening session into an intuitive Sanskrit learning experience.
+
+## Primary User Story
+> "I just discovered a new Sanskrit song on YouTube. I hit play. As each line is sung, I see what it means in English. I can tap any word to understand it. Over time, I start recognizing Sanskrit words on my own — I'm learning without studying."
 
 ---
 
 ## Core User Flow
 
-1. User pastes a YouTube URL or searches for a Sanskrit song
-2. The app loads the YouTube video via embedded player
-3. As the song plays, the app:
-   - Extracts or recognizes the Sanskrit audio
-   - Displays Sanskrit lyrics (Devanagari + transliteration)
-   - Shows English translation synchronized to the current line
-   - Provides contextual explanations (meaning, references, significance)
-4. User can pause, replay, and explore any line in detail
+1. User connects their YouTube account (access to playlists, liked videos, history)
+2. User picks a song from their library — or pastes any new YouTube URL they just found
+3. The song plays. **In real time**, as each line is sung:
+   - The app transcribes the Sanskrit audio (speech-to-text)
+   - Displays the Sanskrit lyrics (Devanagari + how to pronounce it)
+   - Shows the English translation synchronized to the current line
+   - Highlights key Sanskrit words with their meanings
+4. User can pause, tap any word, replay a line, or dive deeper
+5. Words the user has encountered before are tracked — building their personal Sanskrit vocabulary over time
 
 ---
 
 ## Functional Requirements
 
 ### FR-1: YouTube Integration
-- Accept YouTube URLs as input
-- Embed YouTube player with standard playback controls (play, pause, seek)
-- Extract available subtitles/captions from YouTube if present
-- Support playlists and queued songs
+- **YouTube OAuth login** — connect to user's YouTube account
+- Browse user's playlists, liked videos, and subscriptions
+- Accept any YouTube URL for newly discovered songs
+- Embed YouTube player with standard playback controls (play, pause, seek, speed)
+- Support queuing multiple songs
 
-### FR-2: Sanskrit Audio Recognition
-- Transcribe Sanskrit audio using speech-to-text (primary path)
-- Fall back to pre-existing subtitle tracks or lyric databases
+### FR-2: Real-Time Sanskrit Transcription (MVP — Phase 1)
+- **Live audio-to-text**: As the song plays, transcribe Sanskrit audio in real time
+- Use speech recognition (Whisper fine-tuned on Sanskrit) as primary engine
+- Supplement with YouTube's own captions/subtitles when available
 - Support both Vedic and Classical Sanskrit pronunciation
-- Handle common hymns, shlokas, stotras, and devotional songs
+- Handle devotional songs, shlokas, stotras, kirtans, and film songs
+- Gracefully handle mixed-language songs (Sanskrit + Hindi, Sanskrit + Tamil, etc.)
 
 ### FR-3: Lyrics Display
-- **Devanagari script** — original Sanskrit text
-- **IAST/Harvard-Kyoto transliteration** — romanized pronunciation guide
-- **Word-by-word breakdown** — sandhi splitting and individual word meanings
-- Highlight the currently playing line
+- **Devanagari script** — the original Sanskrit text as it's being sung
+- **Pronunciation guide** — romanized transliteration (IAST) so user can read along
+- **Word-by-word breakdown** — split compound words (sandhi) and show each word's meaning
+- **Currently playing line highlighted** — always know where you are in the song
 
-### FR-4: English Translation
-- Line-by-line English translation synchronized with playback
-- Two translation modes:
-  - **Literal** — direct word-for-word meaning
-  - **Poetic** — natural English rendering preserving the spirit
-- Translations appear in real time as each line is sung
+### FR-4: Real-Time English Translation
+- Line-by-line English translation appearing as each line is sung
+- Two modes available:
+  - **Literal** — "what the words actually say" (word-for-word)
+  - **Poetic** — "what it means" (natural English capturing the spirit)
+- Default to poetic mode for intuitive understanding, with literal mode one tap away
 
 ### FR-5: Contextual Explanations
-- Brief explanation for each verse covering:
-  - Philosophical/spiritual meaning
-  - Source text reference (e.g., Bhagavad Gita Ch.2 V.47)
-  - Key Sanskrit concepts (dharma, karma, moksha, etc.)
-  - Raga and tala information where applicable
-- Expandable detail panels — concise by default, rich on click
+- Brief explanation for each verse:
+  - What is the deeper meaning?
+  - Where does it come from? (e.g., "This is verse 2.47 of the Bhagavad Gita")
+  - Key concepts explained simply (dharma, karma, bhakti, moksha, etc.)
+  - Cultural context (when is this sung? what tradition?)
+- Concise by default — expandable for those who want to go deeper
 
-### FR-6: User Controls
-- Toggle between Devanagari, transliteration, or both
-- Adjust translation mode (literal vs. poetic)
-- Tap any word for instant dictionary lookup
+### FR-6: Sanskrit Learning Engine
+- **Personal Vocabulary Tracker** — every Sanskrit word you encounter is logged
+  - Words you've seen once, twice, five times, ten times
+  - Spaced repetition: words you've seen many times get subtler highlights
+  - New/rare words get prominent highlights so you notice them
+- **Word Tap** — tap any Sanskrit word for:
+  - Root word (dhatu) and grammatical form
+  - Simple English meaning
+  - Other songs where this word appears
+  - Audio pronunciation
+- **Session Summary** — after each song:
+  - "You heard 45 Sanskrit words today"
+  - "12 were new to you"
+  - "You've now seen 'shanti' in 6 different songs"
+- **Learning Mode** — optional overlay that quizzes you:
+  - "What does this line mean?" (before showing translation)
+  - Fill-in-the-blank with Sanskrit words you've been learning
+
+### FR-7: User Controls
+- Toggle Devanagari, transliteration, or both
+- Toggle translation mode (literal vs. poetic)
+- Font size controls
+- Playback speed control (slow down to absorb)
 - Bookmark favorite verses
-- Share individual verse translations
+- Share a verse translation as an image/card
 
 ---
 
 ## Non-Functional Requirements
 
 ### NFR-1: Latency
-- Translation display must lag no more than 2 seconds behind audio playback
-- Pre-fetched translations for known songs should display with zero lag
+- Translation must appear within **2 seconds** of the line being sung
+- For songs with known lyrics (cached), translations appear instantly
 
 ### NFR-2: Accuracy
-- Sanskrit transcription accuracy target: 85%+ for clear studio recordings
-- Translation quality validated against established scholarly translations
+- Sanskrit transcription target: 85%+ for clear studio recordings
+- Translations validated against scholarly sources where available
+- User feedback loop: "Was this translation helpful?" to improve over time
 
-### NFR-3: Offline Support
-- Cache previously translated songs for offline viewing
-- Downloaded translations available without network
+### NFR-3: Offline / Cache
+- Songs you've played before are cached — lyrics, translations, explanations
+- Your vocabulary progress syncs across devices
 
-### NFR-4: Accessibility
-- Adjustable font sizes for Devanagari and English text
-- High-contrast mode
-- Screen reader support for translations
+### NFR-4: Privacy
+- YouTube OAuth with minimal scopes (read-only library access)
+- User's listening history stays private
+- Vocabulary data stored locally with optional cloud sync
 
 ---
 
-## Technical Architecture (Proposed)
+## Technical Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   Frontend (Web)                │
-│  ┌───────────┐  ┌───────────┐  ┌─────────────┐ │
-│  │  YouTube   │  │  Lyrics   │  │ Explanation │ │
-│  │  Player    │  │  Panel    │  │   Panel     │ │
-│  └─────┬─────┘  └─────┬─────┘  └──────┬──────┘ │
-│        │              │               │         │
-│        └──────────┬───┘───────────────┘         │
-│                   │                             │
-│            Sync Controller                      │
-└───────────────────┬─────────────────────────────┘
-                    │
-                    ▼
-┌───────────────────────────────────────────────────┐
-│                  Backend / API                    │
-│  ┌──────────────┐  ┌───────────┐  ┌────────────┐ │
-│  │ Audio Extract│  │ Sanskrit  │  │ Translation│ │
-│  │ & Transcribe │  │ NLP Engine│  │ Engine     │ │
-│  │ (Whisper /   │  │ (Sandhi   │  │ (Claude    │ │
-│  │  Deepgram)   │  │  Splitter)│  │  API)      │ │
-│  └──────────────┘  └───────────┘  └────────────┘ │
-│                                                   │
-│  ┌──────────────────────────────────────────────┐ │
-│  │         Song & Translation Cache             │ │
-│  │         (known lyrics database)              │ │
-│  └──────────────────────────────────────────────┘ │
-└───────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                    Frontend (Web App)                 │
+│                                                      │
+│  ┌──────────┐  ┌──────────────┐  ┌────────────────┐ │
+│  │ YouTube  │  │  Live Lyrics │  │  Translation   │ │
+│  │ Player   │  │  + Highlight │  │  + Explanation │ │
+│  └────┬─────┘  └──────┬───────┘  └───────┬────────┘ │
+│       │               │                  │          │
+│  ┌────┴───────────────┴──────────────────┴────────┐ │
+│  │              Sync Controller                   │ │
+│  │   (matches audio position to lyrics/meaning)   │ │
+│  └─────────────────────┬──────────────────────────┘ │
+│                        │                            │
+│  ┌─────────────────────┴──────────────────────────┐ │
+│  │           Sanskrit Learning Engine             │ │
+│  │   (vocabulary tracker, spaced repetition,      │ │
+│  │    session stats, quiz mode)                   │ │
+│  └────────────────────────────────────────────────┘ │
+└────────────────────────┬─────────────────────────────┘
+                         │
+                         ▼
+┌──────────────────────────────────────────────────────┐
+│                   Backend / API                      │
+│                                                      │
+│  ┌───────────────┐  ┌────────────┐  ┌─────────────┐ │
+│  │ Audio Stream  │  │ Sanskrit   │  │ Translation │ │
+│  │ & Transcribe  │  │ NLP Engine │  │ Engine      │ │
+│  │               │  │            │  │             │ │
+│  │ Whisper       │  │ Sandhi     │  │ Claude API  │ │
+│  │ (Sanskrit     │  │ splitting, │  │ (contextual │ │
+│  │  fine-tuned)  │  │ morphology,│  │  translate  │ │
+│  │       +       │  │ dictionary │  │  + explain) │ │
+│  │ YouTube       │  │ lookup     │  │             │ │
+│  │ Captions API  │  │            │  │             │ │
+│  └───────────────┘  └────────────┘  └─────────────┘ │
+│                                                      │
+│  ┌──────────────────────────────────────────────────┐│
+│  │  YouTube OAuth    │  Translation Cache  │ User  ││
+│  │  (library access) │  (known songs)      │ Vocab ││
+│  └──────────────────────────────────────────────────┘│
+└──────────────────────────────────────────────────────┘
 ```
 
 ### Key Technology Choices
 
-| Component | Technology | Rationale |
-|-----------|-----------|-----------|
-| Frontend | React + TypeScript | Component-based UI, real-time updates |
-| YouTube Player | YouTube IFrame API | Official API, playback time events |
-| Audio Transcription | Whisper (fine-tuned on Sanskrit) | Best open-source multilingual ASR |
-| Sanskrit NLP | sanskrit_parser / Vidyut | Sandhi splitting, morphological analysis |
-| Translation | Claude API | High-quality contextual translation |
-| Lyrics DB | PostgreSQL + vector search | Cache known songs, fuzzy match lyrics |
-| Real-time sync | WebSocket | Low-latency server-to-client updates |
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Frontend | React + TypeScript | Real-time UI updates, component-based |
+| YouTube Player | YouTube IFrame API | Official API with playback time events |
+| YouTube Library | YouTube Data API v3 + OAuth 2.0 | Access user's playlists and liked videos |
+| Audio Transcription | Whisper (Sanskrit fine-tuned) + YouTube Captions API | Dual path: live transcription + existing captions as fallback |
+| Sanskrit NLP | sanskrit_parser / Vidyut | Sandhi splitting, morphological analysis, dictionary |
+| Translation + Explanation | Claude API | High-quality contextual translation with cultural knowledge |
+| Vocabulary Tracking | Local IndexedDB + optional cloud sync | Fast, private, works offline |
+| Backend | Node.js / Python FastAPI | WebSocket support for real-time streaming |
+| Cache | PostgreSQL + Redis | Store known song translations, fast lookup |
 
 ---
 
-## Data Strategy
+## Glossary (Plain English)
 
-### Known Song Database
-- Pre-populate with commonly searched Sanskrit songs:
-  - Bhagavad Gita verses (700 shlokas)
-  - Vishnu Sahasranama, Lalita Sahasranama
-  - Popular stotras (Shiva Tandava, Hanuman Chalisa, etc.)
-  - Carnatic and Hindustani devotional compositions
-- Community contribution pipeline for new songs
-
-### Audio Fingerprinting
-- Match playing audio against known recordings to skip transcription
-- Instantly load cached translations for recognized songs
+| Term | What It Means |
+|------|--------------|
+| **ASR (Automatic Speech Recognition)** | Technology that listens to audio and converts it to text — like how Siri understands your voice. We use this to "hear" the Sanskrit words being sung. |
+| **Sandhi** | In Sanskrit, words merge together when spoken (like "don't" = "do not" in English, but much more complex). Sandhi splitting breaks these merged words back apart so each word can be translated individually. |
+| **Devanagari** | The script used to write Sanskrit: संस्कृतम् |
+| **IAST Transliteration** | A way to write Sanskrit using Roman/English letters with accent marks, so you can read the pronunciation: saṃskṛtam |
+| **Shloka/Stotra** | Types of Sanskrit verses — shlokas are individual verses, stotras are hymns of praise |
+| **OAuth** | A secure way for the app to access your YouTube account without you sharing your password |
+| **Whisper** | An AI model (by OpenAI) that can listen to audio and transcribe what's being said, supporting many languages including Sanskrit |
 
 ---
 
-## MVP Scope (Phase 1)
+## MVP Scope (Phase 1) — "Discovery Mode"
 
-| Feature | Included |
-|---------|----------|
-| YouTube URL input + embedded player | Yes |
-| Pre-loaded translations for top 100 Sanskrit songs | Yes |
-| Devanagari + transliteration display | Yes |
+The entire MVP is built around one scenario: **you found a new Sanskrit song and want to understand it right now.**
+
+| Feature | Phase 1 |
+|---------|---------|
+| YouTube URL input — paste any song | Yes |
+| YouTube account connection (browse your library) | Yes |
+| **Real-time Sanskrit transcription as song plays** | **Yes** |
+| Devanagari + pronunciation display | Yes |
 | Line-by-line English translation synced to playback | Yes |
+| Word tap for instant meaning | Yes |
 | Basic verse explanations | Yes |
-| Word tap for dictionary lookup | Yes |
-| Real-time transcription of unknown songs | No (Phase 2) |
-| Community contributions | No (Phase 2) |
-| Mobile app | No (Phase 3) |
+| Personal vocabulary tracker | Yes |
+| Session summary ("you learned 12 new words") | Yes |
+| Learning/quiz mode | Phase 2 |
+| Spaced repetition system | Phase 2 |
+| Community song contributions | Phase 2 |
+| Mobile app | Phase 3 |
 
 ---
 
@@ -171,27 +218,28 @@ A web application that listens to Sanskrit songs playing on YouTube, transcribes
 
 | Metric | Target |
 |--------|--------|
-| Translation sync accuracy (within 2s of audio) | 90%+ |
-| User-rated translation quality (1-5) | 4.0+ |
-| Songs in pre-loaded database | 100+ at launch |
+| Real-time translation appears within 2s of audio | 90%+ of lines |
+| User-rated translation quality (1-5 scale) | 4.0+ |
+| New Sanskrit words surfaced per session | 10+ |
 | Average session duration | 10+ minutes |
-| Return users (weekly) | 40%+ |
+| Users returning weekly | 40%+ |
+| "I understood the song" satisfaction rating | 80%+ |
 
 ---
 
 ## Open Questions
 
-1. **YouTube ToS** — Audio extraction from YouTube may violate terms of service. Should we rely solely on YouTube captions + our own lyrics DB instead?
-2. **Sanskrit ASR quality** — Whisper's Sanskrit accuracy on devotional songs is unvalidated. Need a benchmark dataset.
-3. **Licensing** — Are existing scholarly translations (e.g., Swami Sivananda, Eknath Easwaran) available under open license, or do we need original translations?
-4. **Monetization** — Freemium model (free basic, paid detailed explanations) vs. fully free with donations?
+1. **YouTube audio access** — Extracting audio from YouTube may violate their ToS. Mitigation: use YouTube Captions API as primary source when captions exist; use browser audio capture (with user permission) for transcription when they don't.
+2. **Sanskrit speech recognition quality** — Whisper's Sanskrit accuracy on sung audio (not spoken) is unproven. Needs benchmarking. May need fine-tuning on devotional music specifically.
+3. **Mixed language songs** — Many "Sanskrit" songs mix in Hindi, Tamil, or other languages. The transcription engine needs to handle code-switching gracefully.
+4. **Monetization** — Free tier with basic translations vs. premium with deep explanations and learning features? Or fully free with optional donations?
 
 ---
 
-## Timeline Estimate
+## Timeline
 
-| Phase | Scope | Duration |
-|-------|-------|----------|
-| Phase 1 (MVP) | YouTube player + pre-loaded song translations + sync display | 6-8 weeks |
-| Phase 2 | Real-time Sanskrit ASR + unknown song support + community | 8-12 weeks |
-| Phase 3 | Mobile apps + offline mode + playlist support | 8-10 weeks |
+| Phase | What You Get | Duration |
+|-------|-------------|----------|
+| **Phase 1 (MVP)** | Play any Sanskrit song on YouTube → see real-time translation + start building vocabulary | 8-10 weeks |
+| **Phase 2** | Quiz mode, spaced repetition, community contributions, improved accuracy | 8-12 weeks |
+| **Phase 3** | Mobile apps, offline mode, playlist binge-learning mode | 8-10 weeks |
