@@ -28,13 +28,10 @@ Output a JSON array where each element has:
   "end_time": number (seconds),
   "devanagari": "original Sanskrit text",
   "iast": "IAST transliteration",
-  "english_literal": "word-for-word translation",
-  "english_poetic": "natural English capturing the spirit",
-  "explanation": "philosophical/cultural context, source reference",
-  "words": [{ "devanagari": "word", "iast": "transliteration", "meaning": "English", "root_dhatu": "root", "grammar": "form" }]
+  "english_poetic": "natural English capturing the spirit"
 }
 
-Return ONLY the JSON array, no markdown fences.`
+Keep the response concise. Return ONLY the JSON array, no markdown fences.`
 
 // Translate a full song
 app.post('/api/translate', async (req, res) => {
@@ -66,17 +63,14 @@ app.post('/api/translate', async (req, res) => {
       return
     }
 
-    const jsonMatch = content.text.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) {
-      res.status(500).json({ error: 'Could not parse translation', raw: content.text })
-      return
-    }
-
-    const lines = JSON.parse(jsonMatch[0])
+    const lines = extractAndParseJSON(content.text)
     res.json({ lines })
   } catch (err) {
     console.error('Translation error:', err)
-    res.status(500).json({ error: err instanceof Error ? err.message : 'Translation failed' })
+    res.status(500).json({ 
+      error: err instanceof Error ? err.message : 'Translation failed',
+      details: err instanceof Error && (err as any).message.includes('JSON') ? 'AI returned malformed JSON. Try again.' : undefined
+    })
   }
 })
 
@@ -201,6 +195,36 @@ function parseCaptions(data: Record<string, unknown>) {
     }))
 
   return [{ lines, language: 'sa' }]
+}
+
+// Helper to extract and parse JSON from AI response
+function extractAndParseJSON(text: string) {
+  // Find the first [ and last ]
+  const start = text.indexOf('[')
+  const end = text.lastIndexOf(']')
+  
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error('No JSON array found in response')
+  }
+  
+  const jsonStr = text.slice(start, end + 1)
+  try {
+    return JSON.parse(jsonStr)
+  } catch (err) {
+    console.warn('Initial JSON parse failed, attempting cleanup...')
+    // Basic cleanup: remove trailing commas before ] or }
+    const cleaned = jsonStr
+      .replace(/,\s*\]/g, ']')
+      .replace(/,\s*\}/g, '}')
+      // Try to close unclosed strings (common in truncation)
+      // This is risky but sometimes helps
+    try {
+      return JSON.parse(cleaned)
+    } catch (innerErr) {
+      console.error('Final JSON parse failed:', innerErr)
+      throw new Error(`JSON parse error: ${innerErr instanceof Error ? innerErr.message : 'Unknown error'}`)
+    }
+  }
 }
 
 // Health check
