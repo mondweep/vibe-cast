@@ -1,5 +1,4 @@
-[phases.setup]
-nixPkgs = ["nodejs_22"]
+
 
 [phases.install]
 cmds = ["rm -rf node_modules package-lock.json", "npm install"]
