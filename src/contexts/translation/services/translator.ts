@@ -52,3 +52,21 @@ export async function translateSong(
 
   return response.json();
 }
+
+/**
+ * Attempt to recognize a song by Video ID and get full translation.
+ */
+export async function recognizeAndTranslate(videoId: string): Promise<LyricsLine[]> {
+  const response = await fetch(TRANSLATE_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ videoId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Song recognition failed: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.lines;
+}

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { LyricsLine } from '../../../shared/types/database.types';
 import { supabase } from '../../../shared/lib/supabaseClient';
 import { fetchCaptions } from '../services/transcriber';
-import { translateSong } from '../services/translator';
+import { translateSong, recognizeAndTranslate } from '../services/translator';
 
 interface TranslationState {
   lines: LyricsLine[];
@@ -72,12 +72,26 @@ export function useTranslation(videoId: string | null, currentTime: number) {
             lyrics_json: translatedLines,
           });
         } else {
-          // No captions — would trigger Whisper transcription
-          setState((prev) => ({
-            ...prev,
-            loading: false,
-            error: 'No captions found. Audio transcription will be available soon.',
-          }));
+          // No captions — fallback to LLM recognition based on Video ID
+          const recognizedLines = await recognizeAndTranslate(videoId!);
+          if (cancelled) return;
+
+          if (recognizedLines && recognizedLines.length > 0) {
+            linesRef.current = recognizedLines;
+            setState((prev) => ({ ...prev, lines: recognizedLines, loading: false }));
+
+            // Cache in Supabase
+            await (supabase.from('songs') as any).upsert({
+              youtube_url: `https://youtube.com/watch?v=${videoId}`,
+              lyrics_json: recognizedLines,
+            });
+          } else {
+            setState((prev) => ({
+              ...prev,
+              loading: false,
+              error: 'No captions found and song not recognized.',
+            }));
+          }
         }
       } catch (err) {
         if (!cancelled) {
