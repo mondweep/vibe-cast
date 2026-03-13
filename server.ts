@@ -11,10 +11,7 @@ const PORT = parseInt(process.env.PORT || '3000', 10)
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 
-// Health check endpoint required by Railway
-app.get('/api/health', (req, res) => {
-  res.status(200).send({ status: 'ok' })
-})
+// Health check endpoint required by Railway - using the one at the end of file instead
 
 // --- API Routes ---
 
