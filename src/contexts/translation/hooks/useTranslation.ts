@@ -39,7 +39,7 @@ export function useTranslation(videoId: string | null, currentTime: number) {
           .from('songs')
           .select('lyrics_json, title')
           .eq('youtube_url', `https://youtube.com/watch?v=${videoId}`)
-          .single() as any);
+          .maybeSingle() as any);
 
         if (cached?.lyrics_json && !cancelled) {
           const lines = cached.lyrics_json as LyricsLine[];

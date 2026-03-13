@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { YouTubePlayer } from '../contexts/player/components/YouTubePlayer'
 import { URLInput } from '../contexts/player/components/URLInput'
 import { LyricsPanel } from '../contexts/translation/components/LyricsPanel'
@@ -18,9 +18,9 @@ export function PlayPage() {
   const translation = useTranslation(videoId, sync.currentTime)
   const vocabulary = useVocabulary(translation.currentLine, videoId)
 
-  const handleVideoEnd = () => {
+  const handleVideoEnd = useCallback(() => {
     setShowSummary(true)
-  }
+  }, [])
 
   return (
     <div className="space-y-6">
