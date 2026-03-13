@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for vibe-cast-rari-jaipur on 2026-03-12T00:15:12Z
+# fly.toml app configuration file generated for rari-jaipur-2 on 2026-03-12T01:26:56Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'vibe-cast-rari-jaipur'
+app = 'rari-jaipur-2'
 primary_region = 'bom'
 
 [build]
