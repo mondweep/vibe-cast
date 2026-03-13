@@ -57,7 +57,7 @@ app.post('/api/translate', async (req, res) => {
     }
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-sonnet-20240620',
       max_tokens: 4096,
       system: TRANSLATION_SYSTEM_PROMPT,
       messages: [{ role: 'user', content: prompt }],
@@ -89,7 +89,7 @@ app.post('/api/translate/line', async (req, res) => {
     const { text, mode } = req.body
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-sonnet-20240620',
       max_tokens: 256,
       messages: [
         {
@@ -119,7 +119,7 @@ app.post('/api/sanskrit/split', async (req, res) => {
 
     // Use Claude for sandhi splitting until dedicated NLP service is set up
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-sonnet-20240620',
       max_tokens: 1024,
       messages: [
         {
