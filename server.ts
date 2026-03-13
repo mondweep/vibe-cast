@@ -212,7 +212,7 @@ app.get('/api/health', (_req, res) => {
 })
 
 // --- Serve Frontend (production) ---
-const distPath = path.join(__dirname, 'dist')
+const distPath = path.join(process.cwd(), 'dist')
 app.use(express.static(distPath))
 
 // SPA fallback: serve index.html for all non-API routes
