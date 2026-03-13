@@ -3,6 +3,12 @@ import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import Anthropic from '@anthropic-ai/sdk'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+import fs from 'fs'
+import { transcribeAudio } from './api/routes/transcribe.js'
+
+const execPromise = promisify(exec)
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -15,62 +21,21 @@ app.use(express.json({ limit: '10mb' }))
 
 // --- API Routes ---
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
-
-const TRANSLATION_SYSTEM_PROMPT = `You are an expert Sanskrit scholar and translator. Given Sanskrit lyrics, provide line-by-line translation.
-
-Output a JSON array where each element has:
-{
-  "line": number,
-  "start_time": number (seconds),
-  "end_time": number (seconds),
-  "devanagari": "original Sanskrit text",
-  "iast": "IAST transliteration",
-  "english_poetic": "natural English capturing the spirit"
-}
-
-Keep the response concise. Return ONLY the JSON array, no markdown fences.`
+import { translateSanskritLyrics, translateSingleLine, splitSanskrit } from './api/routes/translate.js'
 
 // Translate a full song
 app.post('/api/translate', async (req, res) => {
   try {
-    const { videoId, lyrics, timestamps } = req.body
-
-    let prompt: string
-    if (lyrics) {
-      prompt = `Translate these Sanskrit lyrics line by line:\n\n${lyrics}`
-      if (timestamps) {
-        prompt += `\n\nTimestamps: ${JSON.stringify(timestamps)}`
-      } else {
-        prompt += '\n\nEstimate reasonable timestamps assuming 4-8 seconds per line, starting at 0.'
-      }
-    } else {
-      prompt = `I have a Sanskrit song (YouTube video ID: ${videoId}). Since you may know common Sanskrit songs, provide the lyrics with translation if you recognize it. Otherwise, provide a sample translation structure with a note that real-time transcription is needed.`
+    const { lyrics, timestamps } = req.body
+    if (!lyrics) {
+      return res.status(400).json({ error: 'Lyrics required for translation' })
     }
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 4096,
-      system: TRANSLATION_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const content = message.content[0]
-    if (content.type !== 'text') {
-      res.status(500).json({ error: 'Unexpected response type' })
-      return
-    }
-
-    const lines = extractAndParseJSON(content.text)
+    const lines = await translateSanskritLyrics(lyrics, timestamps)
     res.json({ lines })
   } catch (err) {
     console.error('Translation error:', err)
-    res.status(500).json({ 
-      error: err instanceof Error ? err.message : 'Translation failed',
-      details: err instanceof Error && (err as any).message.includes('JSON') ? 'AI returned malformed JSON. Try again.' : undefined
-    })
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Translation failed' })
   }
 })
 
@@ -78,25 +43,8 @@ app.post('/api/translate', async (req, res) => {
 app.post('/api/translate/line', async (req, res) => {
   try {
     const { text, mode } = req.body
-
-    const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 256,
-      messages: [
-        {
-          role: 'user',
-          content: `Translate this Sanskrit text to English (${mode} mode). Return only the translation.\n\nSanskrit: ${text}`,
-        },
-      ],
-    })
-
-    const content = message.content[0]
-    if (content.type !== 'text') {
-      res.status(500).json({ error: 'Unexpected response type' })
-      return
-    }
-
-    res.json({ translation: content.text.trim() })
+    const translation = await translateSingleLine(text, mode)
+    res.json({ translation })
   } catch (err) {
     console.error('Line translation error:', err)
     res.status(500).json({ error: err instanceof Error ? err.message : 'Translation failed' })
@@ -107,45 +55,8 @@ app.post('/api/translate/line', async (req, res) => {
 app.post('/api/sanskrit/split', async (req, res) => {
   try {
     const { text } = req.body
-
-    // Use Claude for sandhi splitting until dedicated NLP service is set up
-    const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: `Split this Sanskrit text into individual words (sandhi vigraha). For each word provide:
-- devanagari: the word in Devanagari
-- iast: IAST transliteration
-- meaning: English meaning
-- root_dhatu: root form
-- grammar: grammatical form (e.g., "noun, nominative singular")
-
-Return a JSON array. Text: ${text}`,
-        },
-      ],
-    })
-
-    const content = message.content[0]
-    if (content.type !== 'text') {
-      res.status(500).json({ error: 'Unexpected response type' })
-      return
-    }
-
-    const jsonMatch = content.text.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) {
-      // Fallback: simple whitespace split
-      const words = text.split(/\s+/).filter(Boolean).map((w: string) => ({
-        devanagari: w,
-        iast: w,
-        meaning: '',
-      }))
-      res.json(words)
-      return
-    }
-
-    res.json(JSON.parse(jsonMatch[0]))
+    const words = await splitSanskrit(text)
+    res.json(words)
   } catch (err) {
     console.error('Sandhi split error:', err)
     res.status(500).json({ error: err instanceof Error ? err.message : 'Split failed' })
@@ -197,35 +108,6 @@ function parseCaptions(data: Record<string, unknown>) {
   return [{ lines, language: 'sa' }]
 }
 
-// Helper to extract and parse JSON from AI response
-function extractAndParseJSON(text: string) {
-  // Find the first [ and last ]
-  const start = text.indexOf('[')
-  const end = text.lastIndexOf(']')
-  
-  if (start === -1 || end === -1 || end <= start) {
-    throw new Error('No JSON array found in response')
-  }
-  
-  const jsonStr = text.slice(start, end + 1)
-  try {
-    return JSON.parse(jsonStr)
-  } catch (err) {
-    console.warn('Initial JSON parse failed, attempting cleanup...')
-    // Basic cleanup: remove trailing commas before ] or }
-    const cleaned = jsonStr
-      .replace(/,\s*\]/g, ']')
-      .replace(/,\s*\}/g, '}')
-      // Try to close unclosed strings (common in truncation)
-      // This is risky but sometimes helps
-    try {
-      return JSON.parse(cleaned)
-    } catch (innerErr) {
-      console.error('Final JSON parse failed:', innerErr)
-      throw new Error(`JSON parse error: ${innerErr instanceof Error ? innerErr.message : 'Unknown error'}`)
-    }
-  }
-}
 
 // Health check
 app.get('/api/health', (_req, res) => {
@@ -242,6 +124,41 @@ app.use((req, res, next) => {
     res.sendFile(path.join(distPath, 'index.html'))
   } else {
     next()
+  }
+})
+
+// Transcription route using yt-dlp and Whisper
+app.post('/api/transcribe', async (req, res) => {
+  const { videoId } = req.get('content-type')?.includes('application/json') ? req.body : req.query
+  const actualVideoId = videoId || req.body.videoId
+
+  if (!actualVideoId) {
+    res.status(400).json({ error: 'videoId required' })
+    return
+  }
+
+  const tempFile = path.join(process.cwd(), `temp_${actualVideoId}.mp3`)
+  try {
+    console.log(`Starting transcription for ${actualVideoId}...`)
+    // Extract audio using yt-dlp
+    // We use a simplified command for speed and reliability
+    await execPromise(`yt-dlp -x --audio-format mp3 --max-filesize 15M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`)
+    
+    if (!fs.existsSync(tempFile)) {
+      throw new Error('Audio extraction failed: File not found')
+    }
+
+    const audioBuffer = fs.readFileSync(tempFile)
+    const result = await transcribeAudio(audioBuffer)
+    
+    // Cleanup
+    fs.unlinkSync(tempFile)
+    
+    res.json(result)
+  } catch (err) {
+    console.error('Transcription error:', err)
+    if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile)
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Transcription failed' })
   }
 })
 

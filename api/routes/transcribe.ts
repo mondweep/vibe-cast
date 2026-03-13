@@ -1,5 +1,6 @@
 // Audio transcription route
 // Uses Whisper API for Sanskrit speech-to-text
+import fs from 'fs'
 
 const WHISPER_API_URL = process.env.WHISPER_API_URL || 'https://api.groq.com/openai/v1/audio/transcriptions'
 
@@ -14,14 +15,17 @@ export interface TranscriptionResult {
 }
 
 export async function transcribeAudio(
-  audioBuffer: ArrayBuffer,
+  audioInput: ArrayBuffer | Buffer,
   language: string = 'sa' // Sanskrit ISO 639-1
 ): Promise<TranscriptionResult> {
   const formData = new FormData()
-  formData.append('file', new Blob([audioBuffer], { type: 'audio/webm' }), 'audio.webm')
+  
+  const blob = new Blob([audioInput as any], { type: 'audio/webm' })
+  formData.append('file', blob, 'audio.webm')
   formData.append('model', 'whisper-large-v3-turbo')
   formData.append('language', language)
   formData.append('response_format', 'verbose_json')
+  formData.append('prompt', 'Transcribe the Sanskrit audio accurately, preserving Devanagari script. Focus on Vedic chants or classical Sanskrit stotras.')
 
   const response = await fetch(WHISPER_API_URL, {
     method: 'POST',

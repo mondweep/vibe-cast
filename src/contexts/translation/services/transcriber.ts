@@ -30,6 +30,23 @@ export async function transcribeAudio(audioBlob: Blob): Promise<TranscriptionRes
   return response.json();
 }
 
+/**
+ * Transcribe a full YouTube video's audio using the backend yt-dlp + Whisper pipeline.
+ */
+export async function transcribeVideoAudio(videoId: string): Promise<TranscriptionResult> {
+  const response = await fetch('/api/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ videoId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Server transcription failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
 export interface CaptionTrack {
   lines: CaptionLine[];
   language: string;

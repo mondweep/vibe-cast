@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import type { LyricsLine } from '../../../shared/types/database.types';
 import { supabase } from '../../../shared/lib/supabaseClient';
-import { fetchCaptions } from '../services/transcriber';
-import { translateSong, recognizeAndTranslate } from '../services/translator';
+import { fetchCaptions, transcribeVideoAudio } from '../services/transcriber';
+import { translateSong } from '../services/translator';
 
 interface TranslationState {
   lines: LyricsLine[];
@@ -72,24 +72,33 @@ export function useTranslation(videoId: string | null, currentTime: number) {
             lyrics_json: translatedLines,
           });
         } else {
-          // No captions — fallback to LLM recognition based on Video ID
-          const recognizedLines = await recognizeAndTranslate(videoId!);
+          // No captions — fallback to server-side audio transcription
+          const transcription = await transcribeVideoAudio(videoId!);
           if (cancelled) return;
 
-          if (recognizedLines && recognizedLines.length > 0) {
-            linesRef.current = recognizedLines;
-            setState((prev) => ({ ...prev, lines: recognizedLines, loading: false }));
+          if (transcription.segments && transcription.segments.length > 0) {
+            const transcribedLines = transcription.segments.map((s) => ({
+              text: s.text,
+              start_time: s.start,
+              end_time: s.end,
+            }));
+
+            const translatedLines = await translateSong(transcribedLines);
+            if (cancelled) return;
+
+            linesRef.current = translatedLines;
+            setState((prev) => ({ ...prev, lines: translatedLines, loading: false }));
 
             // Cache in Supabase
             await (supabase.from('songs') as any).upsert({
               youtube_url: `https://youtube.com/watch?v=${videoId}`,
-              lyrics_json: recognizedLines,
+              lyrics_json: translatedLines,
             });
           } else {
             setState((prev) => ({
               ...prev,
               loading: false,
-              error: 'No captions found and song not recognized.',
+              error: 'Transcription failed to produce results.',
             }));
           }
         }

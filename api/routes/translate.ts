@@ -1,43 +1,51 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { LyricsLine } from '../../src/shared/types/database.types'
+import type { LyricsLine } from '../../src/shared/types/database.types.js'
 
 const anthropic = new Anthropic()
 
-const TRANSLATION_SYSTEM_PROMPT = `You are an expert Sanskrit scholar and translator. Given Sanskrit lyrics (in Devanagari or IAST), provide:
+const TRANSLATION_SYSTEM_PROMPT = `You are an expert Sanskrit scholar and translator. Given Sanskrit lyrics, provide line-by-line translation.
 
-1. Line-by-line translation in both literal and poetic modes
-2. Sandhi splitting (compound word decomposition)
-3. Word-by-word breakdown with root forms (dhatu)
-4. Cultural and philosophical context for each verse
-5. Source references (e.g., Bhagavad Gita chapter/verse)
-
-Output JSON matching this schema for each line:
+Output a JSON array where each element has:
 {
-  "line": <line_number>,
-  "start_time": <seconds>,
-  "end_time": <seconds>,
-  "devanagari": "<original text>",
-  "iast": "<IAST transliteration>",
-  "english_literal": "<word-for-word translation>",
-  "english_poetic": "<natural English capturing the spirit>",
-  "explanation": "<philosophical/cultural context>",
-  "words": [
-    {
-      "devanagari": "<word>",
-      "iast": "<transliteration>",
-      "meaning": "<English meaning>",
-      "root_dhatu": "<root verb/noun>",
-      "grammar": "<grammatical form>"
+  "line": number,
+  "start_time": number (seconds),
+  "end_time": number (seconds),
+  "devanagari": "original Sanskrit text",
+  "iast": "IAST transliteration",
+  "english_poetic": "natural English capturing the spirit"
+}
+
+Keep the response concise. Return ONLY the JSON array, no markdown fences.`
+
+function extractAndParseJSON(text: string) {
+  const start = text.indexOf('[')
+  const end = text.lastIndexOf(']')
+  
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error('No JSON array found in response')
+  }
+  
+  const jsonStr = text.slice(start, end + 1)
+  try {
+    return JSON.parse(jsonStr)
+  } catch (err) {
+    const cleaned = jsonStr
+      .replace(/,\s*\]/g, ']')
+      .replace(/,\s*\}/g, '}')
+    try {
+      return JSON.parse(cleaned)
+    } catch (innerErr) {
+      throw new Error(`JSON parse error: ${innerErr instanceof Error ? innerErr.message : 'Unknown error'}`)
     }
-  ]
-}`
+  }
+}
 
 export async function translateSanskritLyrics(
   lyrics: string,
   timestamps?: { start: number; end: number }[]
 ): Promise<LyricsLine[]> {
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: 'claude-3-haiku-20240307',
     max_tokens: 4096,
     system: TRANSLATION_SYSTEM_PROMPT,
     messages: [
@@ -58,13 +66,7 @@ ${timestamps ? `Timestamps (seconds): ${JSON.stringify(timestamps)}` : 'Estimate
     throw new Error('Unexpected response type')
   }
 
-  // Extract JSON from response
-  const jsonMatch = content.text.match(/\[[\s\S]*\]/)
-  if (!jsonMatch) {
-    throw new Error('Could not parse translation response')
-  }
-
-  return JSON.parse(jsonMatch[0]) as LyricsLine[]
+  return extractAndParseJSON(content.text) as LyricsLine[]
 }
 
 export async function translateSingleLine(
@@ -72,7 +74,7 @@ export async function translateSingleLine(
   mode: 'literal' | 'poetic'
 ): Promise<string> {
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: 'claude-3-haiku-20240307',
     max_tokens: 256,
     messages: [
       {
@@ -87,4 +89,44 @@ Sanskrit: ${text}`,
   const content = message.content[0]
   if (content.type !== 'text') throw new Error('Unexpected response')
   return content.text.trim()
+}
+
+/**
+ * Split Sanskrit text into words and provide grammatical info.
+ */
+export async function splitSanskrit(text: string): Promise<any[]> {
+  const message = await anthropic.messages.create({
+    model: 'claude-3-haiku-20240307',
+    max_tokens: 1024,
+    messages: [
+      {
+        role: 'user',
+        content: `Split this Sanskrit text into individual words (sandhi vigraha). For each word provide:
+- devanagari: the word in Devanagari
+- iast: IAST transliteration
+- meaning: English meaning
+- root_dhatu: root form
+- grammar: grammatical form (e.g., "noun, nominative singular")
+
+Return a JSON array. Text: ${text}`,
+      },
+    ],
+  })
+
+  const content = message.content[0]
+  if (content.type !== 'text') {
+    throw new Error('Unexpected response type')
+  }
+
+  const jsonMatch = content.text.match(/\[[\s\S]*\]/)
+  if (!jsonMatch) {
+    // Fallback: simple whitespace split
+    return text.split(/\s+/).filter(Boolean).map((w: string) => ({
+      devanagari: w,
+      iast: w,
+      meaning: '',
+    }))
+  }
+
+  return JSON.parse(jsonMatch[0])
 }
