@@ -5,6 +5,8 @@ const anthropic = new Anthropic()
 
 const TRANSLATION_SYSTEM_PROMPT = `You are an expert Sanskrit scholar and translator. Given Sanskrit lyrics, provide line-by-line translation.
 
+CRITICAL: DO NOT HALLUCINATE. Only translate the provided text. If no lyrics are provided, or if they appear to be generic placeholders, return an empty array []. DO NOT guess based on the video title or ID unless explicitly asked to 'identify and translate' and you are 100% certain.
+
 Output a JSON array where each element has:
 {
   "line": number,
