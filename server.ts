@@ -70,12 +70,25 @@ app.get('/api/youtube/captions/:videoId', async (req, res) => {
     const { videoId } = req.params
 
     // Try fetching with library (handles sa, hi, en, etc.)
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId)
+    // We try Hindi first as auto-generated Sanskrit is often categorized as Hindi by YouTube
+    console.log(`Attempting transcript fetch for ${videoId}...`)
+    let transcript
+    try {
+      transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'hi' })
+    } catch (e) {
+      try {
+        transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
+      } catch (e2) {
+        transcript = await YoutubeTranscript.fetchTranscript(videoId)
+      }
+    }
     
     if (!transcript || transcript.length === 0) {
+      console.log(`No transcripts found for ${videoId}.`)
       return res.json([])
     }
 
+    console.log(`Successfully fetched ${transcript.length} transcript segments.`)
     const lines = transcript.map((t: any) => ({
       text: t.text,
       start_time: t.offset / 1000,
@@ -147,8 +160,12 @@ app.post('/api/transcribe', async (req, res) => {
   try {
     console.log(`Starting transcription for ${actualVideoId}...`)
     // Extract audio using yt-dlp
-    // We use android client to bypass some bot detection and limit to 15MB
-    await execPromise(`yt-dlp --extractor-args "youtube:player-client=android" -x --audio-format mp3 --max-filesize 15M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`)
+    // Using advanced flags to bypass bot detection on server IPs
+    const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    const ytDlpCmd = `yt-dlp --user-agent "${userAgent}" --referer "https://www.google.com/" --add-header "Accept-Language: en-US,en;q=0.9" --extractor-args "youtube:player-client=mweb,web" -x --audio-format mp3 --max-filesize 12M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`
+    
+    console.log(`Executing yt-dlp for ${actualVideoId}...`)
+    await execPromise(ytDlpCmd)
     
     if (!fs.existsSync(tempFile)) {
       throw new Error('Audio extraction failed: File not found')
