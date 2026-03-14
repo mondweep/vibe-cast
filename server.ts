@@ -6,7 +6,10 @@ import Anthropic from '@anthropic-ai/sdk'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import fs from 'fs'
-import { YoutubeTranscript } from 'youtube-transcript'
+import * as YTTranscript from 'youtube-transcript'
+const YoutubeTranscript = (YTTranscript as any).YoutubeTranscript || (YTTranscript as any).default?.YoutubeTranscript || (YTTranscript as any).default || YTTranscript;
+const fetchYoutubeTranscript = YoutubeTranscript?.fetchTranscript;
+
 import { transcribeAudio } from './api/routes/transcribe.js'
 
 const FALLBACK_LYRICS: Record<string, any> = {
@@ -87,12 +90,12 @@ app.get('/api/youtube/captions/:videoId', async (req, res) => {
     console.log(`Attempting transcript fetch for ${videoId}...`)
     let transcript
     try {
-      transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'hi' })
+      transcript = await (fetchYoutubeTranscript ? fetchYoutubeTranscript(videoId, { lang: 'hi' }) : YoutubeTranscript.fetchTranscript(videoId, { lang: 'hi' }))
     } catch (e) {
       try {
-        transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
+        transcript = await (fetchYoutubeTranscript ? fetchYoutubeTranscript(videoId, { lang: 'en' }) : YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' }))
       } catch (e2) {
-        transcript = await YoutubeTranscript.fetchTranscript(videoId)
+        transcript = await (fetchYoutubeTranscript ? fetchYoutubeTranscript(videoId) : YoutubeTranscript.fetchTranscript(videoId))
       }
     }
     
