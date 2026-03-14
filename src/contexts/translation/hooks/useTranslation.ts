@@ -56,8 +56,8 @@ export function useTranslation(videoId: string | null, currentTime: number) {
           // Translate caption lines
           const captionLines = captions[0].lines.map((l) => ({
             text: l.text,
-            start_time: l.start_time,
-            end_time: l.end_time,
+            start_time: l.start_time ?? (l as any).start,
+            end_time: l.end_time ?? (l as any).end,
           }));
 
           const translatedLines = await translateSong(captionLines);
@@ -79,8 +79,8 @@ export function useTranslation(videoId: string | null, currentTime: number) {
           if (transcription.segments && transcription.segments.length > 0) {
             const transcribedLines = transcription.segments.map((s) => ({
               text: s.text,
-              start_time: s.start,
-              end_time: s.end,
+              start_time: s.start_time ?? (s as any).start,
+              end_time: s.end_time ?? (s as any).end,
             }));
 
             const translatedLines = await translateSong(transcribedLines);
