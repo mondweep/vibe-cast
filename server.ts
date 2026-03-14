@@ -7,6 +7,7 @@ import { exec } from 'child_process'
 import { promisify } from 'util'
 import fs from 'fs'
 import { transcribeAudio } from './api/routes/transcribe.js'
+import { YoutubeTranscript } from 'youtube-transcript'
 
 const execPromise = promisify(exec)
 
@@ -63,35 +64,40 @@ app.post('/api/sanskrit/split', async (req, res) => {
   }
 })
 
-// YouTube captions proxy
+// YouTube captions proxy using youtube-transcript library
 app.get('/api/youtube/captions/:videoId', async (req, res) => {
   try {
     const { videoId } = req.params
 
-    // Try fetching YouTube auto-generated captions
-    const response = await fetch(
-      `https://www.youtube.com/api/timedtext?v=${videoId}&lang=sa&fmt=json3`
-    )
-
-    if (!response.ok) {
-      // Try Hindi as fallback
-      const hindiFallback = await fetch(
-        `https://www.youtube.com/api/timedtext?v=${videoId}&lang=hi&fmt=json3`
-      )
-      if (!hindiFallback.ok) {
-        res.json([]) // No captions available
-        return
-      }
-      const data = await hindiFallback.json()
-      res.json(parseCaptions(data))
-      return
+    // Try fetching with library (handles sa, hi, en, etc.)
+    const transcript = await YoutubeTranscript.fetchTranscript(videoId)
+    
+    if (!transcript || transcript.length === 0) {
+      return res.json([])
     }
 
-    const data = await response.json()
-    res.json(parseCaptions(data))
+    const lines = transcript.map((t: any) => ({
+      text: t.text,
+      start_time: t.offset / 1000,
+      end_time: (t.offset + t.duration) / 1000
+    }))
+
+    res.json([{ lines, language: 'sa' }])
   } catch (err) {
     console.error('Caption fetch error:', err)
-    res.json([]) // Return empty on error
+    // Fallback to manual timedtext fetch if library fails
+    try {
+      const { videoId } = req.params
+      const response = await fetch(`https://www.youtube.com/api/timedtext?v=${videoId}&lang=sa&fmt=json3`)
+      if (response.ok) {
+        const data = await response.json()
+        res.json(parseCaptions(data))
+      } else {
+        res.json([])
+      }
+    } catch (innerErr) {
+      res.json([])
+    }
   }
 })
 
