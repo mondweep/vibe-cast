@@ -141,8 +141,8 @@ app.post('/api/transcribe', async (req, res) => {
   try {
     console.log(`Starting transcription for ${actualVideoId}...`)
     // Extract audio using yt-dlp
-    // We use a simplified command for speed and reliability
-    await execPromise(`yt-dlp -x --audio-format mp3 --max-filesize 15M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`)
+    // We use android client to bypass some bot detection and limit to 15MB
+    await execPromise(`yt-dlp --extractor-args "youtube:player-client=android" -x --audio-format mp3 --max-filesize 15M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`)
     
     if (!fs.existsSync(tempFile)) {
       throw new Error('Audio extraction failed: File not found')
