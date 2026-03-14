@@ -14,7 +14,12 @@ Output a JSON array where each element has:
   "end_time": number (seconds),
   "devanagari": "original Sanskrit text",
   "iast": "IAST transliteration",
-  "english_poetic": "natural English capturing the spirit"
+  "english_poetic": "natural English capturing the spirit",
+  "english_literal": "literal word-for-word translation",
+  "explanation": "brief philosophical or grammatical context",
+  "words": [
+    { "devanagari": "word", "iast": "transliteration", "meaning": "meaning" }
+  ]
 }
 
 Keep the response concise. Return ONLY the JSON array, no markdown fences.`
@@ -54,6 +59,7 @@ export async function translateSanskritLyrics(
       {
         role: 'user',
         content: `Translate these Sanskrit lyrics line by line. Return a JSON array of line objects.
+IMPORTANT: You MUST preserve the provided start_time and end_time for each line in your output.
 
 Lyrics:
 ${lyrics}
