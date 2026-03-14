@@ -6,9 +6,6 @@ import Anthropic from '@anthropic-ai/sdk'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import fs from 'fs'
-import * as YTTranscript from 'youtube-transcript'
-const YoutubeTranscript = (YTTranscript as any).YoutubeTranscript || (YTTranscript as any).default?.YoutubeTranscript || (YTTranscript as any).default || YTTranscript;
-const fetchYoutubeTranscript = YoutubeTranscript?.fetchTranscript;
 
 import { transcribeAudio } from './api/routes/transcribe.js'
 
@@ -80,53 +77,46 @@ app.post('/api/sanskrit/split', async (req, res) => {
   }
 })
 
-// YouTube captions proxy using youtube-transcript library
+// YouTube captions proxy using internal fetcher (bypassing broken library)
 app.get('/api/youtube/captions/:videoId', async (req, res) => {
   try {
     const { videoId } = req.params
 
-    // Try fetching with library (handles sa, hi, en, etc.)
-    // We try Hindi first as auto-generated Sanskrit is often categorized as Hindi by YouTube
-    console.log(`Attempting transcript fetch for ${videoId}...`)
-    let transcript
-    try {
-      transcript = await (fetchYoutubeTranscript ? fetchYoutubeTranscript(videoId, { lang: 'hi' }) : YoutubeTranscript.fetchTranscript(videoId, { lang: 'hi' }))
-    } catch (e) {
-      try {
-        transcript = await (fetchYoutubeTranscript ? fetchYoutubeTranscript(videoId, { lang: 'en' }) : YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' }))
-      } catch (e2) {
-        transcript = await (fetchYoutubeTranscript ? fetchYoutubeTranscript(videoId) : YoutubeTranscript.fetchTranscript(videoId))
-      }
-    }
+    // Attempt to fetch auto-generated captions (often in Hindi for Sanskrit)
+    console.log(`Attempting caption fetch for ${videoId}...`)
     
-    if (!transcript || transcript.length === 0) {
-      console.log(`No transcripts found for ${videoId}.`)
+    const fetchWithLang = async (lang: string) => {
+      const response = await fetch(`https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data && data.events) return data
+      }
+      return null
+    }
+
+    let data = await fetchWithLang('sa') 
+    if (!data) data = await fetchWithLang('hi')
+    if (!data) data = await fetchWithLang('en')
+
+    if (!data) {
+      console.log(`No captions found for ${videoId}.`)
       return res.json([])
     }
 
-    console.log(`Successfully fetched ${transcript.length} transcript segments.`)
-    const lines = transcript.map((t: any) => ({
-      text: t.text,
-      start_time: t.offset / 1000,
-      end_time: (t.offset + t.duration) / 1000
-    }))
+    const events = (data.events || []) as Array<any>
+    const lines = events
+      .filter((e) => e.segs)
+      .map((e) => ({
+        text: (e.segs || []).map((s: any) => s.utf8).join(''),
+        start_time: (e.tStartMs || 0) / 1000,
+        end_time: ((e.tStartMs || 0) + (e.dDurationMs || 3000)) / 1000,
+      }))
 
+    console.log(`Successfully fetched ${lines.length} caption lines.`)
     res.json([{ lines, language: 'sa' }])
   } catch (err) {
     console.error('Caption fetch error:', err)
-    // Fallback to manual timedtext fetch if library fails
-    try {
-      const { videoId } = req.params
-      const response = await fetch(`https://www.youtube.com/api/timedtext?v=${videoId}&lang=sa&fmt=json3`)
-      if (response.ok) {
-        const data = await response.json()
-        res.json(parseCaptions(data))
-      } else {
-        res.json([])
-      }
-    } catch (innerErr) {
-      res.json([])
-    }
+    res.json([])
   }
 })
 
