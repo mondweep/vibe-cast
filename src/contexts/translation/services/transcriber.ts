@@ -64,6 +64,8 @@ export interface TranscriptionResult {
     text: string;
     start: number;
     end: number;
+    start_time?: number;
+    end_time?: number;
   }[];
   language: string;
 }
