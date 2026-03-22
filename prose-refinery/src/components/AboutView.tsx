@@ -115,6 +115,20 @@ export function AboutView() {
           applying them in your workflow.
         </p>
       </section>
+
+      <section>
+        <h2 className="text-lg font-bold text-stone-900 mb-3">Inspiration</h2>
+        <p className="text-sm text-stone-700 leading-relaxed">
+          This app was inspired by discussions and questions from students at
+          the{" "}
+          <strong>Johns Hopkins Whiting School of Engineering</strong>,
+          delivered by <strong>Great Learning</strong> on Agentic AI. The
+          project grew out of mentoring the cohort of students, where
+          real-world writing challenges highlighted the need for a tool that
+          applies AI editing passes one at a time — giving writers
+          transparency and control over every suggestion.
+        </p>
+      </section>
     </div>
   );
 }
