@@ -10,8 +10,9 @@ import { StructureView } from "@/components/StructureView";
 import { PromptInspector } from "@/components/PromptInspector";
 import { IterativeChat } from "@/components/IterativeChat";
 import { PromptPlayground } from "@/components/PromptPlayground";
+import { AboutView } from "@/components/AboutView";
 
-type View = "refine" | "playground";
+type View = "refine" | "playground" | "about";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -123,12 +124,22 @@ export default function Home() {
             >
               Prompt Playground
             </button>
+            <button
+              onClick={() => setView("about")}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${
+                view === "about"
+                  ? "bg-stone-800 text-white"
+                  : "bg-stone-200 text-stone-600"
+              }`}
+            >
+              About
+            </button>
           </div>
         </div>
       </header>
 
       {/* Controls */}
-      <div className="border-b border-stone-200 bg-white px-6 py-3">
+      {view !== "about" && <div className="border-b border-stone-200 bg-white px-6 py-3">
         <div className="max-w-7xl mx-auto space-y-2">
           <div className="flex items-center gap-4">
             <span className="text-xs font-medium text-stone-500 w-12">
@@ -151,12 +162,14 @@ export default function Home() {
             />
           )}
         </div>
-      </div>
+      </div>}
 
       {/* Main content */}
       <main className="flex-1 px-6 py-4">
         <div className="max-w-7xl mx-auto">
-          {view === "playground" ? (
+          {view === "about" ? (
+            <AboutView />
+          ) : view === "playground" ? (
             <PromptPlayground
               text={text}
               pass={pass}
