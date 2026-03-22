@@ -11,8 +11,9 @@ import { PromptInspector } from "@/components/PromptInspector";
 import { IterativeChat } from "@/components/IterativeChat";
 import { PromptPlayground } from "@/components/PromptPlayground";
 import { AboutView } from "@/components/AboutView";
+import { VerifiedView } from "@/components/VerifiedView";
 
-type View = "refine" | "playground" | "about";
+type View = "refine" | "playground" | "about" | "verified";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -134,12 +135,22 @@ export default function Home() {
             >
               About
             </button>
+            <button
+              onClick={() => setView("verified")}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${
+                view === "verified"
+                  ? "bg-green-600 text-white"
+                  : "bg-stone-200 text-stone-600"
+              }`}
+            >
+              Verified
+            </button>
           </div>
         </div>
       </header>
 
       {/* Controls */}
-      {view !== "about" && <div className="border-b border-stone-200 bg-white px-6 py-3">
+      {(view === "refine" || view === "playground") && <div className="border-b border-stone-200 bg-white px-6 py-3">
         <div className="max-w-7xl mx-auto space-y-2">
           <div className="flex items-center gap-4">
             <span className="text-xs font-medium text-stone-500 w-12">
@@ -169,6 +180,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           {view === "about" ? (
             <AboutView />
+          ) : view === "verified" ? (
+            <VerifiedView />
           ) : view === "playground" ? (
             <PromptPlayground
               text={text}
@@ -281,40 +294,63 @@ export default function Home() {
       </main>
 
       {/* Footer actions */}
-      <footer className="border-t border-stone-200 bg-white px-6 py-3">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          {view === "refine" && pass !== "iterate" && (
-            <>
-              <button
-                onClick={handleRefine}
-                disabled={loading || !text.trim()}
-                className="px-6 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                {loading ? "Refining..." : "Refine"}
-              </button>
-              <div className="flex gap-2">
-                {result && result.suggestions.length > 0 && (
-                  <>
-                    <button
-                      onClick={handleAcceptAll}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
-                    >
-                      Accept All
-                    </button>
-                    <button
-                      onClick={applyAccepted}
-                      disabled={
-                        !Object.values(acceptedMap).some(Boolean)
-                      }
-                      className="px-4 py-2 bg-stone-800 text-white rounded-lg text-sm font-medium hover:bg-stone-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Apply Selected
-                    </button>
-                  </>
-                )}
-              </div>
-            </>
-          )}
+      {view === "refine" && pass !== "iterate" && (
+        <div className="border-t border-stone-200 bg-white px-6 py-3">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <button
+              onClick={handleRefine}
+              disabled={loading || !text.trim()}
+              className="px-6 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              {loading ? "Refining..." : "Refine"}
+            </button>
+            <div className="flex gap-2">
+              {result && result.suggestions.length > 0 && (
+                <>
+                  <button
+                    onClick={handleAcceptAll}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+                  >
+                    Accept All
+                  </button>
+                  <button
+                    onClick={applyAccepted}
+                    disabled={
+                      !Object.values(acceptedMap).some(Boolean)
+                    }
+                    className="px-4 py-2 bg-stone-800 text-white rounded-lg text-sm font-medium hover:bg-stone-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Apply Selected
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Credits footer */}
+      <footer className="border-t border-stone-200 bg-stone-50 px-6 py-2">
+        <div className="max-w-7xl mx-auto flex justify-between items-center text-xs text-stone-500">
+          <span>
+            Built by{" "}
+            <a
+              href="https://www.linkedin.com/in/mondweepchakravorty/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-stone-700 hover:text-stone-900 underline"
+            >
+              Mondweep Chakravorty
+            </a>
+          </span>
+          <a
+            href="https://github.com/mondweep/vibe-cast/tree/claude/nonfiction-writing-refinement-session-O2dnP"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-stone-700 hover:text-stone-900 underline"
+          >
+            View on GitHub
+          </a>
         </div>
       </footer>
     </div>
