@@ -1,5 +1,4 @@
 [build]
-  base = "prose-refinery"
   command = "npm run build"
   publish = ".next"
 
