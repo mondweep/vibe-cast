@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  terracraft:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./output:/app/output
+    environment:
+      - PORT=3000
+      - MAX_AREA_KM2=25
+      - DEFAULT_SCALE=1.0
+      - MAX_CONCURRENT=2
+      - CLEANUP_HOURS=1
+    restart: unless-stopped

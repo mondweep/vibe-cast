@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TerraCraft - Real World to Minecraft</title>
+  <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Leaflet.draw -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="map"></div>
+
+  <button id="sidebar-toggle">&#9776;</button>
+
+  <div id="sidebar" class="open">
+    <div id="sidebar-header">
+      <div class="logo-icon">T</div>
+      <div>
+        <h1>TerraCraft</h1>
+        <div class="subtitle">Real World to Minecraft</div>
+      </div>
+    </div>
+
+    <div id="sidebar-content">
+      <!-- Instruction -->
+      <div class="instruction" id="instruction-text">
+        Draw a rectangle on the map to select an area, or use the default Times Square selection. Adjust settings below and click Generate.
+      </div>
+
+      <!-- Area info -->
+      <div class="info-row">
+        <span class="label">Area</span>
+        <span class="value" id="area-value">--</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Blocks</span>
+        <span class="value" id="blocks-value">--</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Est. Time</span>
+        <span class="value" id="time-value">--</span>
+      </div>
+
+      <div class="area-warning" id="area-warning"></div>
+
+      <hr class="divider">
+
+      <!-- Scale -->
+      <div class="form-group">
+        <label for="scale-select">Scale</label>
+        <select id="scale-select">
+          <option value="1.0">1:1 (1 block = 1 meter)</option>
+          <option value="0.5">1:2 (1 block = 2 meters)</option>
+          <option value="0.25">1:4 (1 block = 4 meters)</option>
+          <option value="0.1">1:10 (1 block = 10 meters)</option>
+        </select>
+      </div>
+
+      <!-- Ground level -->
+      <div class="form-group">
+        <label for="ground-level">Ground Level (Y)</label>
+        <select id="ground-level">
+          <option value="-10">Auto (-10)</option>
+          <option value="-62">Deep (-62)</option>
+          <option value="0">Sea Level (0)</option>
+          <option value="62">High (62)</option>
+          <option value="100">Very High (100)</option>
+        </select>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Advanced options -->
+      <div>
+        <div class="collapsible-header" id="advanced-header">
+          <span class="section-title">Advanced Options</span>
+          <span class="chevron">&#9660;</span>
+        </div>
+        <div class="collapsible-body" id="advanced-body">
+          <div class="form-group">
+            <label for="llm-provider">LLM Provider (optional)</label>
+            <select id="llm-provider">
+              <option value="">None</option>
+              <option value="openai">OpenAI</option>
+              <option value="gemini">Google Gemini</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="llm-key">API Key</label>
+            <input type="password" id="llm-key" placeholder="For building enrichment (optional)">
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+            When an API key is provided, building metadata (levels, materials, roof types) will be enriched using AI based on the selected region's architectural style.
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Generate button -->
+      <button id="generate-btn" disabled>Generate World</button>
+
+      <!-- Progress -->
+      <div id="progress-section">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span id="progress-percent" style="font-size: 13px; font-weight: 600;">0%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill"></div>
+        </div>
+        <div id="progress-text"></div>
+      </div>
+
+      <!-- Download -->
+      <div id="download-section">
+        <button id="download-btn">Download Minecraft World (.zip)</button>
+      </div>
+
+      <!-- Error -->
+      <div id="error-section"></div>
+
+      <!-- Footer -->
+      <div style="font-size: 10px; color: var(--text-muted); text-align: center; padding-top: 4px;">
+        Powered by <a href="https://github.com/louis-e/arnis" style="color: var(--text-secondary);" target="_blank">Arnis</a>
+        &middot; Data from <a href="https://www.openstreetmap.org" style="color: var(--text-secondary);" target="_blank">OSM</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
