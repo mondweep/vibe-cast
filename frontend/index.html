@@ -33,6 +33,50 @@
     </div>
 
     <div id="sidebar-content">
+      <!-- About -->
+      <div>
+        <div class="collapsible-header open" id="about-header">
+          <span class="section-title">About</span>
+          <span class="chevron">&#9660;</span>
+        </div>
+        <div class="collapsible-body open" id="about-body">
+          <div class="about-content">
+            <p><strong>TerraCraft</strong> turns any real-world location into a playable <strong>Minecraft Java Edition</strong> world.</p>
+            <div class="about-steps">
+              <div class="about-step">
+                <span class="about-step-num">1</span>
+                <span>Select an area on the map by drawing a rectangle, or use the default Times Square selection</span>
+              </div>
+              <div class="about-step">
+                <span class="about-step-num">2</span>
+                <span>Choose a scale and adjust generation settings</span>
+              </div>
+              <div class="about-step">
+                <span class="about-step-num">3</span>
+                <span>Click <strong>Generate World</strong> and wait for processing</span>
+              </div>
+              <div class="about-step">
+                <span class="about-step-num">4</span>
+                <span>Download the .zip and place it in your Minecraft <code>saves/</code> folder</span>
+              </div>
+            </div>
+            <div class="about-details">
+              <p>Generated worlds include real buildings, roads, water, trees, and terrain elevation sourced from <strong>OpenStreetMap</strong> and satellite data. Requires <strong>Minecraft 1.18+</strong> (Java Edition).</p>
+              <p>Optionally provide an OpenAI or Gemini API key to enrich buildings with realistic heights, materials, and roof styles using AI.</p>
+            </div>
+            <div class="about-limits">
+              <span>Max area: 25 km&sup2;</span>
+              <span class="about-sep">&middot;</span>
+              <span>Max blocks: 25M</span>
+              <span class="about-sep">&middot;</span>
+              <span>Scales: 1:1 to 1:10</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
       <!-- Instruction -->
       <div class="instruction" id="instruction-text">
         Draw a rectangle on the map to select an area, or use the default Times Square selection. Adjust settings below and click Generate.
