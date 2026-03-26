@@ -877,37 +877,51 @@ thinking: medium
 ### A. Glossary
 
 #### Domain Terms
+- **ACC:** Adaptive Cruise Control — Automated system that adjusts vehicle speed to maintain safe following distance
 - **ADAS:** Advanced Driver Assistance Systems — Electronic systems that assist drivers in driving and parking functions using automated technology
+- **AI:** Artificial Intelligence — Computer systems performing tasks typically requiring human intelligence (perception, reasoning, learning)
 - **CAM:** Cooperative Awareness Message — V2X message broadcast by vehicles sharing position, speed, heading (1-10 Hz)
-- **CAN:** Controller Area Network — Robust vehicle data bus standard for microcontroller communication without a host computer
+- **CAN:** Controller Area Network — Robust vehicle data bus standard for microcontroller communication without a host computer (250 kbps-1 Mbps)
+- **C-V2X:** Cellular Vehicle-to-Everything — 4G/5G-based V2X communication protocol (alternative to DSRC)
 - **DENM:** Decentralized Environmental Notification Message — V2X event-triggered messages for hazards, warnings, road conditions
+- **DSRC:** Dedicated Short-Range Communications — IEEE 802.11p wireless protocol for V2X (5.9 GHz, 300m range)
 - **FCW:** Forward Collision Warning — System that alerts driver of imminent collision with vehicle ahead
 - **FMEA:** Failure Modes and Effects Analysis — Systematic method for identifying potential failures and their impact
+- **FOV:** Field of View — Angular extent of observable scene through camera (e.g., 120°, 140°)
+- **FPS:** Frames Per Second — Video/image capture rate (e.g., 30 FPS, 60 FPS)
+- **GDPR:** General Data Protection Regulation — EU privacy law governing personal data processing
+- **GNSS:** Global Navigation Satellite System — Umbrella term for GPS, GLONASS, Galileo, BeiDou satellite positioning
+- **GPS:** Global Positioning System — US satellite-based navigation providing location, speed, heading
+- **Hz:** Hertz — Frequency unit (cycles per second); e.g., 77 GHz radar, 1-10 Hz CAM broadcasts
+- **IEEE:** Institute of Electrical and Electronics Engineers — Standards organization (e.g., IEEE 802.11p for V2X)
+- **IR:** Infrared — Light beyond visible spectrum used for night-vision cameras
+- **ISO:** International Organization for Standardization — Global standards body (e.g., ISO 16750-3 automotive environmental)
+- **LLM:** Large Language Model — AI model trained on text to generate human-like responses (e.g., Llama, GPT, Claude)
+- **LTE:** Long-Term Evolution — 4G cellular standard (Cat-4: 150 Mbps download, suitable for V2X)
+- **ML:** Machine Learning — Subset of AI where systems learn from data without explicit programming
+- **NHTSA:** National Highway Traffic Safety Administration — US federal agency for vehicle safety standards
+- **OBD-II:** On-Board Diagnostics II — Standardized vehicle diagnostics port (mandated 1996+) for CAN bus access
 - **OTA:** Over-The-Air — Remote wireless delivery of software/firmware updates without physical connection
+- **PII:** Personally Identifiable Information — Data that identifies individual (name, address, license plate); must be anonymized
+- **RPM:** Revolutions Per Minute — Engine/wheel rotation speed measurement
 - **V2X:** Vehicle-to-Everything — Communication between vehicle and any entity (infrastructure, other vehicles, pedestrians, network)
 
-#### Technical Concepts
+#### Technical Concepts & Protocols
 
-**Kalman Filtering:**  
-A recursive algorithm that estimates the state of a dynamic system from a series of noisy measurements. In AVSS context:
-- **Use case:** Track moving objects (vehicles, pedestrians) detected by radar/camera
-- **How it works:** Combines sensor measurements with predicted motion model to produce optimal state estimate (position, velocity)
-- **Why important:** Smooths noisy radar/camera data, predicts object trajectories for collision prediction
-- **Example:** Radar detects car at 50m, 100 km/h. Kalman filter predicts position 1 second later accounting for noise/uncertainty
+**CAN (Controller Area Network):**  
+Robust multi-master serial bus for vehicle ECU (Electronic Control Unit) communication without host computer.
+- **Use case:** Access real-time vehicle telemetry (speed, RPM, brake pressure, steering angle) via OBD-II port
+- **How it works:** Broadcast message-based protocol; each message has ID (priority), data field (0-8 bytes), CRC checksum
+- **Bit rates:** 125 kbps (low-speed CAN), 500 kbps (high-speed CAN), 1 Mbps (CAN FD — Flexible Data-rate)
+- **Why important:** Standard interface to vehicle's internal state; mandated on all cars sold in US (1996+), EU (2001+)
+- **Example:** CAN message ID 0x0C (RPM): data bytes `[0x1A, 0xF0]` = 6896 RPM
 
 **CFAR (Constant False Alarm Rate):**  
-A detection algorithm used in radar signal processing to maintain consistent false alarm rate despite varying noise levels.
+Detection algorithm for radar signal processing that maintains consistent false alarm rate despite varying noise levels.
 - **Use case:** Identify real targets (vehicles) from radar returns while filtering clutter (rain, road reflections)
-- **How it works:** Adaptive threshold that adjusts to local noise level — if return exceeds threshold, classify as target
+- **How it works:** Adaptive threshold adjusts to local noise level — if return exceeds threshold, classify as target
 - **Why important:** Critical for reliable radar operation in varied weather/environment conditions
 - **Example:** In heavy rain, CFAR increases threshold to avoid false alarms from raindrops; in clear conditions, lowers threshold for max sensitivity
-
-**ZeroMQ:**  
-High-performance asynchronous messaging library for distributed/concurrent applications.
-- **Use case:** Inter-process communication between OpenClaw agent instances on edge device
-- **How it works:** Provides socket abstractions (pub-sub, request-reply, push-pull) with automatic reconnection, queuing
-- **Why important:** Low-latency (<1ms local IPC), minimal overhead, language-agnostic (Python, C++, Node.js)
-- **Example:** Vision Agent publishes detected objects to topic, Master Orchestrator subscribes and receives within milliseconds
 
 **gRPC (gRPC Remote Procedure Call):**  
 Modern open-source RPC framework using HTTP/2 and Protocol Buffers.
@@ -915,6 +929,12 @@ Modern open-source RPC framework using HTTP/2 and Protocol Buffers.
 - **How it works:** Client calls methods on remote server as if local function; supports streaming, authentication, load balancing
 - **Why important:** Type-safe APIs (via Protobuf), bi-directional streaming, built-in health checks, easier for cross-language agents
 - **Example:** Master Orchestrator calls `VisionAgent.GetDetectedObjects()` RPC, receives structured response with object list
+
+**IPC (Inter-Process Communication):**  
+Methods for processes to exchange data (shared memory, sockets, message queues).
+- **Use case:** Agent-to-agent communication on same device (Vision → Orchestrator)
+- **Why important:** Much faster than network (<1ms vs. 10-100ms TCP); critical for real-time coordination
+- **Example:** ZeroMQ IPC socket: `ipc:///tmp/vision-to-orchestrator.sock`
 
 **ISO 16750-3:**  
 International standard defining environmental conditions for automotive electronic equipment.
@@ -926,6 +946,64 @@ International standard defining environmental conditions for automotive electron
   - Free fall: 1m drop test
 - **Why important:** Consumer electronics (Raspberry Pi) must be ruggedized to meet this standard for automotive use
 - **Example:** Custom enclosure with vibration-damping mounts, shock-resistant SSD, conformal coating on PCBs
+
+**Kalman Filtering:**  
+Recursive algorithm that estimates the state of a dynamic system from a series of noisy measurements.
+- **Use case:** Track moving objects (vehicles, pedestrians) detected by radar/camera
+- **How it works:** Combines sensor measurements with predicted motion model to produce optimal state estimate (position, velocity)
+- **Why important:** Smooths noisy radar/camera data, predicts object trajectories for collision prediction
+- **Example:** Radar detects car at 50m, 100 km/h. Kalman filter predicts position 1 second later accounting for noise/uncertainty
+
+**MIPI CSI (Mobile Industry Processor Interface Camera Serial Interface):**  
+High-speed serial interface standard for connecting cameras to processors.
+- **Use case:** Connect 1080p/4K cameras to Raspberry Pi or Jetson via ribbon cable
+- **Speed:** Up to 2.5 Gbps per lane (CSI-2 supports 1-4 lanes)
+- **Why important:** Lower latency and power vs. USB; native support on ARM SoCs; up to 4 cameras on Jetson
+- **Example:** Raspberry Pi Camera Module v2 connects via 15-pin MIPI CSI-2 port
+
+**Protobuf (Protocol Buffers):**  
+Language-neutral, platform-neutral serialization format developed by Google.
+- **Use case:** Efficient structured data exchange between agents (smaller/faster than JSON)
+- **How it works:** Define message schema (.proto file), compile to language-specific code, serialize/deserialize
+- **Why important:** 3-10x smaller than JSON, 20-100x faster parsing; used by gRPC
+- **Example:** `message VisionEvent { uint64 timestamp = 1; repeated Object objects = 2; }`
+
+**Quantization (Q4, Q8):**  
+Model compression technique reducing weight precision (e.g., float32 → 4-bit integers).
+- **Use case:** Shrink LLM size for edge deployment (Llama 3.2 3B: 12GB → 2GB with Q4)
+- **How it works:** Map continuous weight values to discrete levels; Q4 = 16 levels, Q8 = 256 levels
+- **Why important:** 4-6x smaller models fit in edge device RAM, 2-4x faster inference
+- **Trade-off:** Slight accuracy loss (<2% on benchmarks), but acceptable for vehicle reasoning tasks
+- **Example:** Llama 3.2 3B Q4_K_M (2GB) vs. FP16 (7GB) — both run on Jetson, Q4 3x faster
+
+**tok/s (Tokens per Second):**  
+LLM inference speed metric (tokens generated per second).
+- **Use case:** Measure agent reasoning latency
+- **Calculation:** For 50-token response: 25 tok/s = 2 seconds, 50 tok/s = 1 second
+- **Why important:** Determines if LLM meets <200ms real-time target for safety-critical reasoning
+- **Example:** Llama 3.2 3B on Jetson Orin: 25 tok/s → 50 tokens in 2 seconds (too slow for critical path, OK for analysis)
+
+**UART (Universal Asynchronous Receiver-Transmitter):**  
+Simple serial communication protocol for short-distance, low-speed data transfer.
+- **Use case:** Connect GPS module, CAN interface, or debug console to edge device
+- **Speed:** 9600 bps (slow), 115200 bps (common), up to 921600 bps (high-speed)
+- **Why important:** Simple 2-wire interface (TX, RX); widely supported; good for low-bandwidth sensors
+- **Example:** GPS module sends NMEA sentences at 9600 baud over UART to parse location
+
+**USB (Universal Serial Bus):**  
+Industry-standard interface for connecting peripherals (cameras, storage, modems).
+- **Versions:** USB 2.0 (480 Mbps), USB 3.0 (5 Gbps), USB 3.1 (10 Gbps), USB-C (up to 40 Gbps)
+- **Use case:** Connect webcams (USB 2.0 sufficient for 1080p30), CAN interface, 4G modem, external SSD
+- **Why important:** Universal support, hot-plug, power delivery (5V, up to 100W with USB-C PD)
+- **Example:** USB 2.0 webcam streams 1080p30 H.264 (~25 Mbps) well within 480 Mbps bandwidth
+
+**ZeroMQ:**  
+High-performance asynchronous messaging library for distributed/concurrent applications.
+- **Use case:** Inter-process communication between OpenClaw agent instances on edge device
+- **How it works:** Provides socket abstractions (pub-sub, request-reply, push-pull) with automatic reconnection, queuing
+- **Patterns:** PUB-SUB (1-to-many broadcast), REQ-REP (request-response), PUSH-PULL (load balancing)
+- **Why important:** Low-latency (<1ms local IPC), minimal overhead, language-agnostic (Python, C++, Node.js)
+- **Example:** Vision Agent publishes detected objects to `zmq.PUB` socket, Master Orchestrator subscribes via `zmq.SUB` and receives within milliseconds
 
 ### B. References
 - IEEE 802.11p: Wireless Access in Vehicular Environments (WAVE)
@@ -942,12 +1020,70 @@ International standard defining environmental conditions for automotive electron
 
 ---
 
-## Document History
+## Revision History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2026-03-26 | Mondweep Chakravorty | Initial PRD |
-| 1.1 | 2026-03-26 | Mondweep Chakravorty | Added expanded glossary (Kalman, CFAR, ZeroMQ, gRPC, ISO 16750-3); comprehensive Offline/Online Architecture section with local LLM strategy |
+### Version 1.2 (2026-03-26)
+**Major Changes:**
+- **Glossary Expansion:** Added 20+ new acronyms and technical terms
+  - Hardware interfaces: USB, UART, MIPI CSI, IPC
+  - AI/ML: tok/s (tokens per second), quantization (Q4/Q8), Protobuf
+  - Automotive: ACC, OBD-II, RPM, FOV, FPS
+  - Networking: C-V2X, DSRC, LTE, IEEE, GNSS, GPS
+  - Standards: ISO, NHTSA, GDPR, PII
+- **Technical Concept Details:** Expanded explanations with practical examples
+  - CAN bus message format and bit rates (125 kbps - 1 Mbps)
+  - MIPI CSI camera interface (2.5 Gbps per lane, up to 4 cameras on Jetson)
+  - UART speeds (9600 - 921600 baud) for GPS/CAN interface
+  - USB versions (USB 2.0/3.0/3.1/C) and bandwidth requirements
+  - Quantization impact (Q4: 4-6x size reduction, 2-4x speedup, <2% accuracy loss)
+  - tok/s benchmarks for latency estimation (25 tok/s = 2s for 50 tokens)
+
+**Minor Changes:**
+- Added revision history section for tracking document evolution
+- Reorganized glossary into "Domain Terms" and "Technical Concepts & Protocols"
+- Clarified ZeroMQ patterns (PUB-SUB, REQ-REP, PUSH-PULL)
+
+### Version 1.1 (2026-03-26)
+**Major Changes:**
+- **Offline/Online Architecture:** Comprehensive section on offline-first design
+  - 4-tier processing model (Critical/Near Real-Time/Async/V2X)
+  - Local LLM strategy (Llama 3.2 3B, Phi-3 Mini, TinyLlama)
+  - Hybrid edge+cloud model with graceful degradation
+  - Feasibility benchmarks (Llama 3.2 3B: 50ms for 50 tokens on Jetson Orin)
+- **Glossary Additions:** Kalman filtering, CFAR, ZeroMQ, gRPC, ISO 16750-3
+- **Storage & Bandwidth:** Detailed breakdown of 256GB SSD usage and mobile data budget
+
+**Minor Changes:**
+- OpenClaw agent configuration examples with local LLM mode
+- Communication protocol comparison (ZeroMQ vs. gRPC)
+
+### Version 1.0 (2026-03-26)
+**Initial Release:**
+- Executive summary and problem statement
+- Multi-agent architecture (4 OpenClaw instances)
+- Hardware BOM (~£1,250)
+- 3-phase roadmap (12 months)
+- Functional and non-functional requirements
+- Self-learning framework
+- Risk mitigation strategies
+- Initial glossary (8 terms)
+
+---
+
+## Document Metadata
+
+| Field | Value |
+|-------|-------|
+| **Document ID** | PRD-AVSS-001 |
+| **Current Version** | 1.2 |
+| **Status** | Draft |
+| **Classification** | Public (Open-Source) |
+| **Primary Author** | Mondweep Chakravorty (mondweep@dxsure.uk) |
+| **Repository** | https://github.com/mondweep/vibe-cast |
+| **Branch** | `agentics/vehicle-safety-innovation` |
+| **License** | Apache 2.0 (anticipated) |
+| **Review Cycle** | Weekly (while active development) |
+| **Stakeholders** | Agentics Foundation (London Chapter), DxSure LTD |
 
 ---
 
