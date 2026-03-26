@@ -431,6 +431,237 @@ subagents:
 
 ---
 
+## Offline/Online Architecture
+
+### Critical Design Principle: Offline-First
+
+**Safety-critical functions MUST operate without internet connectivity.** The vehicle may travel through:
+- Rural areas (no cell coverage)
+- Tunnels (signal blackout)
+- Underground parking (no connectivity)
+- Network congestion (latency spikes)
+
+Therefore, all real-time processing (object detection, collision prediction, driver alerts) runs **100% on-device** using local models.
+
+### Edge AI Model Strategy
+
+#### Local LLM Options for OpenClaw Agents
+
+**Problem:** Cloud-based LLMs (Claude, GPT-4) require internet, add latency (200-500ms), and incur per-request costs — unsuitable for real-time safety.
+
+**Solution:** Run quantized open-source LLMs locally on edge device for agent reasoning.
+
+| Model | Size | Hardware | Inference Speed | Use Case |
+|-------|------|----------|-----------------|----------|
+| **Llama 3.2 3B (Instruct)** | 2GB (Q4) | Jetson Orin Nano | 20-30 tok/s | Master Orchestrator reasoning |
+| **Phi-3 Mini (3.8B)** | 2.3GB (Q4) | Jetson Orin Nano | 25-35 tok/s | Telemetry Agent analysis |
+| **Mistral 7B (Instruct)** | 4GB (Q4) | Jetson Orin Nano | 12-18 tok/s | Advanced planning (optional) |
+| **TinyLlama 1.1B** | 0.6GB (Q4) | Raspberry Pi 5 | 15-25 tok/s | Lightweight agents (Radar, Telemetry) |
+
+*Q4 = 4-bit quantization; tok/s = tokens per second*
+
+#### Hybrid Architecture: Local + Cloud
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    EDGE DEVICE (Vehicle)                     │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  REAL-TIME SAFETY (Offline, <200ms latency)          │  │
+│  │                                                        │  │
+│  │  Vision Agent:  YOLOv8 + Local LLM (Llama 3.2 3B)    │  │
+│  │  Radar Agent:   CFAR + Kalman + Local LLM (TinyLlama)│  │
+│  │  Telemetry:     CAN Parser + Local LLM (Phi-3)       │  │
+│  │  Orchestrator:  Risk Fusion + Local LLM (Llama 3.2)  │  │
+│  │                                                        │  │
+│  │  → Driver Alerts: 100% offline, always available      │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  NON-CRITICAL (Online-optional, low priority)         │  │
+│  │                                                        │  │
+│  │  - Model updates (OTA, daily/weekly)                  │  │
+│  │  - Cloud-based learning (aggregate fleet data)        │  │
+│  │  - V2X communication (hazard sharing)                 │  │
+│  │  - Remote diagnostics                                 │  │
+│  │  - LLM reasoning enhancement (Claude API fallback)    │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                                                              │
+└──────────────────────┬───────────────────────────────────────┘
+                       │ 4G/5G/WiFi (when available)
+                       ▼
+            ┌──────────────────────┐
+            │   CLOUD SERVICES     │
+            │  (Optional, async)   │
+            │                      │
+            │  - Model training    │
+            │  - Fleet analytics   │
+            │  - OTA updates       │
+            │  - V2X coordination  │
+            └──────────────────────┘
+```
+
+### Processing Tiers
+
+#### Tier 1: Critical Real-Time (Offline, <200ms)
+**Runs on:** Edge device, always  
+**Connectivity:** None required  
+**Examples:**
+- Object detection (Vision Agent: YOLOv8)
+- Collision prediction (Radar Agent: Kalman + CFAR)
+- Risk scoring (Orchestrator: fusion model)
+- Driver alerts (audio/visual warnings)
+
+**Models:**
+- Vision: YOLOv8n (nano) — 3.2M params, 6ms inference on Jetson
+- Radar: Classical algorithms (CFAR, Kalman) — no LLM needed
+- LLM reasoning: Llama 3.2 3B (Q4) — 50-100ms per call
+
+#### Tier 2: Near Real-Time Analysis (Offline, 1-5s)
+**Runs on:** Edge device, low priority  
+**Connectivity:** None required  
+**Examples:**
+- Driver behavior classification (aggressive, cautious, distracted)
+- Route risk profiling (this road segment has 3 near-misses historically)
+- Context-aware threshold adjustment (rain detected → lower FCW threshold)
+
+**Models:**
+- Local LLM: Phi-3 Mini or Llama 3.2 3B for reasoning
+- XGBoost/Random Forest for behavior classification (lightweight, <10ms)
+
+#### Tier 3: Asynchronous Learning (Online-preferred, minutes-hours)
+**Runs on:** Edge device OR cloud  
+**Connectivity:** Opportunistic (WiFi at home, 4G when available)  
+**Examples:**
+- Model retraining (weekly batch jobs)
+- Fleet-level analytics (crowdsourced hazard map)
+- OTA updates (new models, firmware)
+- Cloud-enhanced reasoning (complex scenarios fallback to Claude API)
+
+**Models:**
+- Training: PyTorch/TensorFlow on cloud GPU
+- Inference: Updated models downloaded to edge device
+
+#### Tier 4: V2X Communication (Online, event-driven)
+**Runs on:** Edge device (broadcast) + V2X infrastructure  
+**Connectivity:** 802.11p DSRC or C-V2X cellular  
+**Examples:**
+- CAM broadcast (vehicle position/speed, 1 Hz)
+- DENM alerts (hazard warnings, event-triggered)
+- Infrastructure notifications (traffic lights, construction)
+
+**Latency:** <100ms, but non-blocking (system operates normally if V2X unavailable)
+
+### OpenClaw Configuration: Local LLM Mode
+
+#### Agent #1: Vision Agent (Local LLM)
+```yaml
+name: vision-agent
+model: local/llama-3.2-3b-instruct  # Runs on-device via llama.cpp
+model_config:
+  context_length: 2048
+  temperature: 0.3
+  quantization: Q4_K_M
+thinking: low
+offline_mode: true  # Never calls cloud API
+plugins:
+  - image-analysis (uses YOLOv8, not LLM-based vision)
+  - object-detection (local TensorRT or ONNX runtime)
+```
+
+#### Agent #4: Master Orchestrator (Hybrid)
+```yaml
+name: master-orchestrator
+model: local/llama-3.2-3b-instruct  # Primary: local
+model_fallback: anthropic/claude-sonnet-4-5  # Fallback: cloud (if online + low priority task)
+model_config:
+  prefer_offline: true
+  cloud_timeout_ms: 5000  # Don't wait >5s for cloud
+  offline_graceful_degrade: true  # Simplify reasoning if offline
+thinking: medium
+```
+
+### Communication: Online/Offline Handling
+
+#### Inter-Agent Communication (Always Offline)
+- **Protocol:** ZeroMQ (local IPC sockets) or gRPC (localhost)
+- **Latency:** <1ms (local memory, no network)
+- **Reliability:** 99.99% (process crashes only, watchdog auto-restart)
+
+#### V2X Communication (Online-Optional)
+- **Protocol:** 802.11p or C-V2X
+- **Fallback:** System operates normally without V2X (offline-first)
+- **Use case:** Hazard sharing, cooperative awareness (nice-to-have, not critical)
+
+#### Cloud Communication (Online-Optional, Async)
+- **Protocol:** HTTPS (TLS 1.3) over 4G/5G/WiFi
+- **Use case:** OTA updates, model training, fleet analytics
+- **Fallback:** Queue locally, sync when connectivity restored
+- **Rate limiting:** Max 100 MB/day upload (to avoid mobile data overage)
+
+### Graceful Degradation Strategy
+
+| Scenario | System Behavior |
+|----------|-----------------|
+| **Full offline (no internet)** | All safety features work at 100% capacity using local models |
+| **Intermittent connectivity** | Queue non-critical data (logs, analytics), sync opportunistically |
+| **Cloud API timeout** | Local LLM handles reasoning, no user-visible impact |
+| **Local LLM overloaded** | Drop non-critical agent tasks (e.g., skip driver behavior analysis), prioritize safety alerts |
+| **Vision Agent crash** | Orchestrator continues with radar + telemetry, issues "degraded mode" warning |
+| **All agents crash** | Watchdog restarts system within 10 seconds; vehicle remains manually drivable |
+
+### Model Deployment & Updates
+
+#### Initial Deployment (Factory/Install)
+1. Flash edge device with base OS (Jetpack or Raspberry Pi OS)
+2. Pre-install quantized LLMs (Llama 3.2 3B, Phi-3, TinyLlama)
+3. Pre-install vision models (YOLOv8, lane detection)
+4. Load OpenClaw with local model configuration
+
+#### OTA Updates (Weekly/Monthly)
+1. **Connectivity check:** Wait for WiFi or low-cost 4G
+2. **Download:** Fetch updated models (delta updates to save bandwidth)
+3. **Validation:** Verify checksums, test on synthetic data
+4. **Staged rollout:** Install on 10% of fleet, monitor for 48h, then roll to rest
+5. **Rollback:** Automatic if crash rate increases >5%
+
+### Feasibility Assessment: Local LLM Performance
+
+#### Benchmark: Llama 3.2 3B on Jetson Orin Nano (8GB)
+
+| Task | Tokens | Latency (Q4) | Acceptable? |
+|------|--------|--------------|-------------|
+| Risk assessment reasoning (simple) | 50 | 50ms | ✅ Yes (<200ms target) |
+| Driver behavior classification | 100 | 100ms | ✅ Yes (non-critical path) |
+| Complex scenario analysis | 300 | 300ms | ⚠️ Marginal (consider cloud fallback) |
+| Multi-agent coordination prompt | 150 | 150ms | ✅ Yes |
+
+**Conclusion:** Llama 3.2 3B (Q4 quantized) is **feasible** for real-time agent reasoning on Jetson Orin Nano, meeting <200ms latency for critical paths.
+
+#### Alternative: Raspberry Pi 5 + Coral TPU
+
+- **LLM:** TinyLlama 1.1B (Q4) → 40-60ms per 50 tokens (acceptable)
+- **Vision:** Coral TPU accelerates YOLOv8 (15 FPS, sufficient)
+- **Trade-off:** Lighter reasoning capability, lower cost (£300 vs. £400)
+
+**Recommendation:** Start with Jetson Orin Nano (more headroom), evaluate Raspberry Pi for cost-optimized v2.
+
+### Storage & Bandwidth Considerations
+
+#### Local Storage (256GB SSD)
+- **Models:** 10 GB (LLMs, vision models, radar algorithms)
+- **Logs:** 50 GB (30 days rolling, compressed)
+- **Video:** 100 GB (7 days rolling, H.265 compressed)
+- **System:** 20 GB (OS, OpenClaw, dependencies)
+- **Spare:** 76 GB (future models, user data)
+
+#### Mobile Data Usage (4G/5G)
+- **Daily upload:** 10-50 MB (logs, anonymized events) — acceptable
+- **OTA update:** 500 MB-2 GB (monthly, prefer WiFi)
+- **V2X:** <1 MB/hour (CAM/DENM messages, minimal)
+
+---
+
 ## Self-Learning Framework
 
 ### Learning Objectives
@@ -644,14 +875,57 @@ subagents:
 ## Appendices
 
 ### A. Glossary
-- **ADAS:** Advanced Driver Assistance Systems
-- **CAM:** Cooperative Awareness Message (V2X standard)
-- **CAN:** Controller Area Network (vehicle data bus)
-- **DENM:** Decentralized Environmental Notification Message (V2X standard)
-- **FCW:** Forward Collision Warning
-- **FMEA:** Failure Modes and Effects Analysis
-- **OTA:** Over-The-Air (remote software updates)
-- **V2X:** Vehicle-to-Everything (communication protocol)
+
+#### Domain Terms
+- **ADAS:** Advanced Driver Assistance Systems — Electronic systems that assist drivers in driving and parking functions using automated technology
+- **CAM:** Cooperative Awareness Message — V2X message broadcast by vehicles sharing position, speed, heading (1-10 Hz)
+- **CAN:** Controller Area Network — Robust vehicle data bus standard for microcontroller communication without a host computer
+- **DENM:** Decentralized Environmental Notification Message — V2X event-triggered messages for hazards, warnings, road conditions
+- **FCW:** Forward Collision Warning — System that alerts driver of imminent collision with vehicle ahead
+- **FMEA:** Failure Modes and Effects Analysis — Systematic method for identifying potential failures and their impact
+- **OTA:** Over-The-Air — Remote wireless delivery of software/firmware updates without physical connection
+- **V2X:** Vehicle-to-Everything — Communication between vehicle and any entity (infrastructure, other vehicles, pedestrians, network)
+
+#### Technical Concepts
+
+**Kalman Filtering:**  
+A recursive algorithm that estimates the state of a dynamic system from a series of noisy measurements. In AVSS context:
+- **Use case:** Track moving objects (vehicles, pedestrians) detected by radar/camera
+- **How it works:** Combines sensor measurements with predicted motion model to produce optimal state estimate (position, velocity)
+- **Why important:** Smooths noisy radar/camera data, predicts object trajectories for collision prediction
+- **Example:** Radar detects car at 50m, 100 km/h. Kalman filter predicts position 1 second later accounting for noise/uncertainty
+
+**CFAR (Constant False Alarm Rate):**  
+A detection algorithm used in radar signal processing to maintain consistent false alarm rate despite varying noise levels.
+- **Use case:** Identify real targets (vehicles) from radar returns while filtering clutter (rain, road reflections)
+- **How it works:** Adaptive threshold that adjusts to local noise level — if return exceeds threshold, classify as target
+- **Why important:** Critical for reliable radar operation in varied weather/environment conditions
+- **Example:** In heavy rain, CFAR increases threshold to avoid false alarms from raindrops; in clear conditions, lowers threshold for max sensitivity
+
+**ZeroMQ:**  
+High-performance asynchronous messaging library for distributed/concurrent applications.
+- **Use case:** Inter-process communication between OpenClaw agent instances on edge device
+- **How it works:** Provides socket abstractions (pub-sub, request-reply, push-pull) with automatic reconnection, queuing
+- **Why important:** Low-latency (<1ms local IPC), minimal overhead, language-agnostic (Python, C++, Node.js)
+- **Example:** Vision Agent publishes detected objects to topic, Master Orchestrator subscribes and receives within milliseconds
+
+**gRPC (gRPC Remote Procedure Call):**  
+Modern open-source RPC framework using HTTP/2 and Protocol Buffers.
+- **Use case:** Alternative to ZeroMQ for agent communication; structured API contracts between agents
+- **How it works:** Client calls methods on remote server as if local function; supports streaming, authentication, load balancing
+- **Why important:** Type-safe APIs (via Protobuf), bi-directional streaming, built-in health checks, easier for cross-language agents
+- **Example:** Master Orchestrator calls `VisionAgent.GetDetectedObjects()` RPC, receives structured response with object list
+
+**ISO 16750-3:**  
+International standard defining environmental conditions for automotive electronic equipment.
+- **Scope:** Mechanical loads (vibration, shock, free fall)
+- **Use case:** Ensures edge compute hardware survives vehicle operating conditions
+- **Key requirements:**
+  - Vibration: 10-2000 Hz, up to 30g amplitude
+  - Shock: 50g peak, 11ms duration
+  - Free fall: 1m drop test
+- **Why important:** Consumer electronics (Raspberry Pi) must be ruggedized to meet this standard for automotive use
+- **Example:** Custom enclosure with vibration-damping mounts, shock-resistant SSD, conformal coating on PCBs
 
 ### B. References
 - IEEE 802.11p: Wireless Access in Vehicular Environments (WAVE)
@@ -673,6 +947,7 @@ subagents:
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-03-26 | Mondweep Chakravorty | Initial PRD |
+| 1.1 | 2026-03-26 | Mondweep Chakravorty | Added expanded glossary (Kalman, CFAR, ZeroMQ, gRPC, ISO 16750-3); comprehensive Offline/Online Architecture section with local LLM strategy |
 
 ---
 
