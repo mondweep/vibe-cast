@@ -1,0 +1,82 @@
+[
+  {
+    "condition": "rain",
+    "temperature_c": 12,
+    "humidity_pct": 85,
+    "wind_speed_kmh": 8,
+    "time_of_day": "night",
+    "timestamp": "2026-03-30T22:00:00Z"
+  },
+  {
+    "condition": "sunny",
+    "temperature_c": 28,
+    "humidity_pct": 40,
+    "wind_speed_kmh": 5,
+    "time_of_day": "morning",
+    "timestamp": "2026-03-30T09:00:00Z"
+  },
+  {
+    "condition": "stormy",
+    "temperature_c": 18,
+    "humidity_pct": 95,
+    "wind_speed_kmh": 65,
+    "time_of_day": "evening",
+    "timestamp": "2026-03-30T19:00:00Z"
+  },
+  {
+    "condition": "cloudy",
+    "temperature_c": 15,
+    "humidity_pct": 60,
+    "wind_speed_kmh": 10,
+    "time_of_day": "afternoon",
+    "timestamp": "2026-03-30T14:00:00Z"
+  },
+  {
+    "condition": "snowy",
+    "temperature_c": -15,
+    "humidity_pct": 70,
+    "wind_speed_kmh": 12,
+    "time_of_day": "morning",
+    "timestamp": "2026-03-30T08:00:00Z"
+  },
+  {
+    "condition": "foggy",
+    "temperature_c": 8,
+    "humidity_pct": 92,
+    "wind_speed_kmh": 3,
+    "time_of_day": "morning",
+    "timestamp": "2026-03-30T06:30:00Z"
+  },
+  {
+    "condition": "windy",
+    "temperature_c": 22,
+    "humidity_pct": 35,
+    "wind_speed_kmh": 80,
+    "time_of_day": "afternoon",
+    "timestamp": "2026-03-30T13:00:00Z"
+  },
+  {
+    "condition": "clear_night",
+    "temperature_c": 16,
+    "humidity_pct": 45,
+    "wind_speed_kmh": 6,
+    "time_of_day": "night",
+    "timestamp": "2026-03-30T23:30:00Z"
+  },
+  {
+    "condition": "sunny",
+    "temperature_c": 38,
+    "humidity_pct": 25,
+    "wind_speed_kmh": 15,
+    "time_of_day": "afternoon",
+    "timestamp": "2026-03-31T15:00:00Z"
+  },
+  {
+    "condition": "rain",
+    "temperature_c": 5,
+    "humidity_pct": 88,
+    "wind_speed_kmh": 20,
+    "time_of_day": "evening",
+    "timestamp": "2026-03-31T18:00:00Z"
+  }
+]
