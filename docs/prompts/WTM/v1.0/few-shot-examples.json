@@ -1,0 +1,74 @@
+[
+  {
+    "input": {
+      "condition": "rain",
+      "temperature_c": 18,
+      "humidity_pct": 78,
+      "wind_speed_kmh": 10,
+      "time_of_day": "afternoon"
+    },
+    "output": {
+      "genre": "lo-fi",
+      "energy": 0.35,
+      "valence": -0.1,
+      "tempo_bpm_range": [68, 82],
+      "descriptors": ["reflective", "melancholic", "gentle"],
+      "color_palette": ["#4a6fa5", "#7b9ec7", "#a3b8d4"]
+    },
+    "explanation": "Rain maps to lo-fi/jazz with low energy and slightly negative valence. Afternoon rain evokes a reflective, gentle mood."
+  },
+  {
+    "input": {
+      "condition": "sunny",
+      "temperature_c": 28,
+      "humidity_pct": 40,
+      "wind_speed_kmh": 8,
+      "time_of_day": "morning"
+    },
+    "output": {
+      "genre": "electronic",
+      "energy": 0.78,
+      "valence": 0.72,
+      "tempo_bpm_range": [118, 132],
+      "descriptors": ["upbeat", "radiant", "energetic"],
+      "color_palette": ["#f5a623", "#f7d354"]
+    },
+    "explanation": "Sunny maps to electronic with high energy and strong positive valence. Morning sun brings an upbeat, radiant feel."
+  },
+  {
+    "input": {
+      "condition": "stormy",
+      "temperature_c": 12,
+      "humidity_pct": 92,
+      "wind_speed_kmh": 55,
+      "time_of_day": "evening"
+    },
+    "output": {
+      "genre": "rock",
+      "energy": 0.88,
+      "valence": -0.55,
+      "tempo_bpm_range": [135, 155],
+      "descriptors": ["intense", "turbulent", "dramatic", "raw"],
+      "color_palette": ["#2c2c3a", "#5a3e7a", "#8b4e9e"]
+    },
+    "explanation": "Stormy maps to rock/classical with very high energy and negative valence. Humidity > 80% applies valence modifier (-0.1), shifting base valence from -0.45 to -0.55."
+  },
+  {
+    "input": {
+      "condition": "clear_night",
+      "temperature_c": 15,
+      "humidity_pct": 55,
+      "wind_speed_kmh": 5,
+      "time_of_day": "night"
+    },
+    "output": {
+      "genre": "jazz",
+      "energy": 0.30,
+      "valence": 0.35,
+      "tempo_bpm_range": [72, 88],
+      "descriptors": ["contemplative", "smooth", "nocturnal"],
+      "color_palette": ["#1a1a2e", "#16213e", "#0f3460"]
+    },
+    "explanation": "Clear night maps to jazz/lo-fi with low energy and slightly positive valence. Night time brings a contemplative, smooth mood."
+  }
+]
