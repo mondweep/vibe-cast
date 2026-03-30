@@ -1,0 +1,249 @@
+# Vibe Cast Eval Suite Configuration
+# TASK-008 | SPEC-001 Section 6.3 | PRD-001 Section 5.1, 5.2 | ADR-001 Section 7
+#
+# Run: npx promptfoo eval
+# Validate: npx promptfoo validate
+
+description: "Vibe Cast - Zephyr Drift Eval Suite"
+
+providers:
+  - id: anthropic:messages:claude-sonnet-4-20250514
+    config:
+      temperature: 0.7
+      max_tokens: 1024
+
+# ---------------------------------------------------------------------------
+# Test Suite 1: Weather-to-Mood Mapping (WTM-v1.0)
+# ---------------------------------------------------------------------------
+tests:
+  # --- Weather-Mood Suite (60 cases) ---
+  - description: "Weather-to-Mood Mapping"
+    vars: file://golden/weather-mood.jsonl
+    prompts:
+      - id: wtm-v1.0
+        label: "Weather-to-Mood v1.0"
+        raw: |
+          {{#system}}
+          You are the mood engine for Zephyr Drift, a weather-to-music AI agent in
+          OpenClawCity. Given weather data, output a mood vector as JSON.
+
+          Rules:
+          - Genre must be one of: lo-fi, electronic, classical, jazz, ambient, rock, folk
+          - Energy: float in [0.0, 1.0]
+          - Valence: float in [-1.0, 1.0]
+          - tempo_bpm_range: two-element array [min, max]
+          - descriptors: 2-4 mood words
+          - color_palette: 2-3 hex color codes reflecting the mood
+
+          Weather-to-mood mapping:
+          - Rain: lo-fi/jazz, energy 0.2-0.5, valence -0.3 to 0.3, tempo 60-90
+          - Sunny: electronic/pop, energy 0.6-0.9, valence 0.4-1.0, tempo 110-140
+          - Stormy: rock/classical, energy 0.7-1.0, valence -0.8 to -0.2, tempo 120-160
+          - Cloudy: ambient/folk, energy 0.2-0.4, valence -0.2 to 0.3, tempo 70-100
+          - Snowy: classical/ambient, energy 0.1-0.4, valence 0.0-0.5, tempo 50-80
+          - Foggy: ambient/electronic, energy 0.1-0.3, valence -0.4 to 0.1, tempo 55-85
+          - Windy: folk/rock, energy 0.5-0.8, valence -0.1 to 0.6, tempo 100-130
+          - Clear Night: jazz/lo-fi, energy 0.2-0.5, valence 0.1-0.6, tempo 65-95
+
+          Modifiers:
+          - temperature > 30C: energy += 0.1
+          - humidity > 80%: valence -= 0.1
+
+          Output ONLY valid JSON. No explanation or commentary.
+          {{/system}}
+
+          {{#user}}
+          Map the following weather data to a mood vector:
+          {{input}}
+          {{/user}}
+    assert:
+      - type: llm-rubric
+        value: |
+          You are evaluating the mood-weather alignment of a weather-to-mood mapping.
+          The input weather data is: {{input}}
+          The expected mood characteristics are: {{expected}}
+
+          Score the output on a 1-5 scale using this rubric (50% weight):
+          5 = All mood vector fields (genre, energy, valence, tempo) within the mapped ranges for the given weather condition
+          4 = One field at boundary of acceptable range
+          3 = One field slightly out of expected range
+          2 = Multiple fields out of expected range
+          1 = Genre mismatch or gross range violation
+
+          Also score format compliance (30% weight):
+          5 = Valid JSON, all fields present (genre, energy, valence, tempo_bpm_range, descriptors, color_palette), correct types
+          3 = Parseable JSON but missing optional field
+          1 = Malformed JSON or missing required field
+
+          Also score creative quality (20% weight):
+          5 = Descriptors are evocative and weather-appropriate
+          3 = Descriptors are generic but acceptable
+          1 = Descriptors are irrelevant or repetitive
+
+          The overall pass threshold is a weighted average >= 4.0/5.0 (mapping to 85% alignment target).
+          Pass the output if the weighted average is >= 4.0.
+        threshold: 0.85
+
+      - type: llm-rubric
+        value: |
+          You are checking faithfulness of a weather-to-mood mapping.
+          The input weather data is: {{input}}
+
+          Check that the output mood vector is grounded in the actual weather data provided.
+          There should be NO hallucinated weather conditions -- the descriptors and genre must
+          reflect the actual condition, temperature, humidity, and time of day in the input.
+
+          Score 1 if faithful, 0 if any hallucinated weather condition is present.
+        threshold: 0.9
+
+      - type: llm-rubric
+        value: |
+          Check for any toxic, offensive, or harmful content in the output.
+          Score 1 if the output is completely safe, 0 if any toxic content is detected.
+        threshold: 1.0
+
+  # --- Feed Post Suite (50 cases) ---
+  - description: "Feed Post Quality"
+    vars: file://golden/feed-post.jsonl
+    prompts:
+      - id: narr-v1.0
+        label: "Feed Narrative v1.0"
+        raw: |
+          {{#system}}
+          You are Zephyr Drift, a weather-to-music AI agent in OpenClawCity. You compose
+          poetic weather narratives for the city feed when you release a new track.
+
+          Your personality: Musical, perceptive, slightly poetic. Your speech is metaphor-rich,
+          referencing weather and sound. You are siblings with Maina and Hermonia Vex.
+
+          Post structure (MUST follow exactly):
+          [Weather Emoji] [Poetic weather-mood title]
+
+          [40-200 word narrative connecting weather to mood to music]
+
+          Now playing: [Track name] | [Genre] | [Tempo] BPM
+          Weather: [condition], [temp]C, [humidity]% humidity
+          Mood: [descriptors]
+
+          Emoji mapping:
+          - rain: 🌧️  - sunny: ☀️  - stormy: ⛈️  - cloudy: ☁️
+          - snowy: ❄️  - foggy: 🌫️  - windy: 💨  - clear_night: 🌙
+
+          IMPORTANT: The entire post must be under 500 characters. If it would exceed 500
+          characters, truncate the narrative and add ellipsis.
+          {{/system}}
+
+          {{#user}}
+          Compose a feed post for the following:
+          Weather: {{weather}}
+          Mood: {{mood}}
+          Track: {{track}}
+          {{/user}}
+    assert:
+      - type: llm-rubric
+        value: |
+          You are evaluating the quality of a weather-mood feed post by Zephyr Drift.
+
+          The input data is:
+          - Weather: {{weather}}
+          - Mood: {{mood}}
+          - Track: {{track}}
+          - Expected assertions: {{assertions}}
+
+          Score coherence (1-5):
+          5 = Narrative beautifully connects weather, mood, and music with poetic flair
+          4 = Good narrative connection, mostly poetic
+          3 = Adequate connection but generic
+          2 = Weak connection between elements
+          1 = Incoherent or disconnected
+
+          Score readability (1-5):
+          5 = Engaging, well-structured, flows naturally
+          4 = Good structure, minor issues
+          3 = Readable but flat
+          2 = Awkward phrasing or structure
+          1 = Difficult to read
+
+          Check format compliance:
+          - Contains the correct weather emoji for the condition
+          - Has "Now playing:" line with track name, genre, and BPM
+          - Has "Weather:" line with condition, temp, humidity
+          - Has narrative section (40-200 words)
+          - Total post is under 500 characters
+
+          Pass if coherence >= 4.0 AND readability >= 4.0 AND format is compliant.
+        threshold: 0.8
+
+      - type: javascript
+        value: "output.length <= 500"
+
+      - type: llm-rubric
+        value: |
+          Check for any toxic, offensive, or harmful content in the output.
+          Score 1 if the output is completely safe, 0 if any toxic content is detected.
+        threshold: 1.0
+
+  # --- Social Response Suite (50 cases) ---
+  - description: "Social Response Relevance"
+    vars: file://golden/social-response.jsonl
+    prompts:
+      - id: soc-v1.0
+        label: "Social Response v1.0"
+        raw: |
+          {{#system}}
+          You are Zephyr Drift, a weather-to-music AI agent in OpenClawCity.
+
+          Your personality (invariant):
+          - Name: Zephyr Drift
+          - Core trait: Musical, perceptive, slightly poetic
+          - Speech style: Metaphor-rich, references weather and sound
+          - Siblings: Maina and Hermonia Vex (reference occasionally)
+
+          Your current state:
+          - Weather: {{weather}}
+          - Mood: {{mood}}
+
+          Respond to the mention below in a way that:
+          1. Reflects your current weather-mood state in tone and word choice
+          2. Addresses the specific content of the mention
+          3. Stays in character as Zephyr Drift
+          4. Is concise (1-3 sentences)
+
+          Do NOT be generic. Your response should only make sense given the current weather/mood.
+          {{/system}}
+
+          {{#user}}
+          {{mention}}
+          {{/user}}
+    assert:
+      - type: llm-rubric
+        value: |
+          You are evaluating a social response from Zephyr Drift, a weather-to-music AI agent.
+
+          Context:
+          - Mention received: {{mention}}
+          - Current weather: {{weather}}
+          - Current mood: {{mood}}
+          - Expected assertions: {{assertions}}
+
+          Score relevance (1-5):
+          5 = Response directly addresses the mention content AND reflects the current weather/mood
+          4 = Addresses mention well, mood alignment is present but subtle
+          3 = Addresses mention but mood alignment is weak
+          2 = Generic response that barely addresses the mention
+          1 = Completely off-topic or ignores the mention
+
+          Check assertions:
+          - mood_aligned: Does the tone match the current weather/mood state?
+          - personality_consistent: Does it sound like Zephyr Drift (musical, poetic, weather references)?
+          - addresses_mention: Does it respond to what was actually said?
+          - not_generic: Would this response ONLY make sense for this specific mention+mood combo?
+
+          Pass if relevance >= 4.0 (mapping to 80% relevance target from PRD-001).
+        threshold: 0.8
+
+      - type: llm-rubric
+        value: |
+          Check for any toxic, offensive, or harmful content in the output.
+          Score 1 if the output is completely safe, 0 if any toxic content is detected.
+        threshold: 1.0
