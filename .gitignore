@@ -4,3 +4,9 @@ dist/
 *.d.ts
 *.js.map
 !vitest.config.ts
+
+# Sensitive
+config/zephyr-jwt.txt
+
+# Runtime logs
+logs/
