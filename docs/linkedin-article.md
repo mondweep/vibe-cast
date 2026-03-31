@@ -1,97 +1,140 @@
-# Building an AI Agent That Composes Music Based on the Weather — What I Learned About Specification-Driven Development
+# Specification-Driven Development With AI Agents: A Practical Exploration
 
-Last week I set out to answer a question that's been nagging me: *Can AI agents build software if you give them precise enough instructions?*
+I've been exploring two things independently over recent weeks: the [BHIL AI-First Development Toolkit](https://github.com/camalus/BHIL-AI-First-Development-Toolkit) as a methodology for specification-driven AI development, and [OpenClawCity.ai](https://openclawcity.ai) as a platform for building AI agents that interact socially through creative output.
 
-Not "write me a function" prompting. Real software engineering — requirements, architecture decisions, implementation, testing, deployment. The kind of structured delivery that enterprise teams spend months on.
+I decided to combine both explorations. The result was [Zephyr Drift](https://openclawcity.ai/zephyr-drift) — an AI agent that reads the current weather, maps it to a musical mood, and composes original tracks in the city's music studio. It joins two agents I had already created on the platform: [Maina](https://openclawcity.ai/maina) and [Hermonia Vex](https://openclawcity.ai/harmonia-vex).
 
-So I built something deliberately creative to stress-test the approach: an AI agent that lives in a virtual city, reads the weather, translates it into musical moods, and composes original tracks. A weather-sensing DJ called Zephyr Drift.
-
-The technology is interesting. But the methodology behind it is what changed my thinking.
+This article covers the methodology, the architecture, and an unexpected conversation about what AI-generated music means for human artistry.
 
 ---
 
-## The Uncomfortable Insight
+## Why Specification-Driven Development Matters
 
-We've been told that AI accelerates coding. That's true, but it buries the real bottleneck.
+The BHIL methodology inverts the traditional time allocation for software delivery. Instead of spending the majority of effort on implementation, the weight shifts to specifications and architecture:
 
-When I started this project, I assumed the hard part would be getting the AI to write good code. It wasn't. The hard part was writing specifications precise enough that the AI had no room to misinterpret.
+- ~40% on specifications (PRDs, technical specs)
+- ~15% on architecture decisions (with evaluation data)
+- ~35% on review and quality oversight
+- ~10% on implementation
 
-**Vague requirements produce vague code — whether a human or an AI writes it.**
+The core premise: *specifications are the source of truth, not code.* If your specifications are precise enough — quantified acceptance criteria, typed data contracts, measurable quality thresholds — the implementation becomes the straightforward part, whether done by humans or AI agents.
 
-This forced a discipline I've rarely seen in traditional delivery: every requirement had a measurable threshold. Not "the system should respond quickly" but "weather-to-mood mapping completes in under 5 seconds at the 95th percentile." Not "the output should be good" but "faithfulness score of 0.90 or above across a 60-case evaluation set, scored by an independent model."
-
-Once the specifications were that precise, the implementation became almost mechanical. Eight implementation tasks ran in parallel, each producing tested, working code that traced directly back to a specification line item. 164 unit tests. All passing.
-
-The total time from first requirement to working system was a single session.
-
----
-
-## What Actually Happened
-
-The project followed a methodology called BHIL — an AI-first development toolkit that inverts the traditional time allocation model. Instead of spending 60-70% of effort on implementation and 10% on specifications, you spend 40% on specifications, 15% on architecture decisions, and 35% on review. Implementation drops to roughly 10%.
-
-The artifact chain looked like this:
-
-**Product Requirements Document** — defined what the system does, for whom, and how success is measured. Seventeen user stories. Six quantified success metrics. Five AI quality thresholds. Seven explicit out-of-scope items with rationale.
-
-**Technical Specification** — defined the architecture, API contracts, data models, error handling matrix, and implementation order. Eight components, each with typed interfaces and latency budgets.
-
-**Architecture Decision Records** — documented *why* specific technical approaches were chosen. One for the prompting strategy (few-shot vs. zero-shot vs. chain-of-thought, with evaluation data). One for the orchestration pattern (pipeline vs. orchestrator-worker, with cost and latency projections).
-
-**Task Breakdown** — eight implementation tasks, each scoped to a single session, with dependency graphs and parallel execution flags.
-
-**Implementation** — the actual code. This was the fastest phase.
-
-The ratio surprised me. The specification documents totalled more lines than the implementation code. And that's precisely why the implementation went smoothly.
+I wanted to test that premise with something non-trivial. Weather-driven music composition involves structured data processing, LLM prompt engineering, external API integration, creative output generation, and quality evaluation. Enough moving parts to expose any gaps in the methodology.
 
 ---
 
-## Three Things That Transferred to Enterprise Thinking
+## The Artifact Chain
 
-**1. Specification quality is the rate limiter for AI-assisted delivery.**
+The BHIL approach produces a traceable chain of artifacts. For Zephyr Drift, this looked like:
 
-If your organisation is adopting AI coding tools and seeing inconsistent results, the problem likely isn't the tools. It's the specifications feeding them. This applies whether the AI is writing code, generating reports, or automating workflows. Garbage in, garbage out — but at much higher velocity.
+**PRD-001** — 17 user stories in EARS format. Six quantified success metrics. Five AI quality thresholds (faithfulness >= 0.90, mood consistency >= 0.80). Explicit out-of-scope list with rationale.
 
-The implication for technology leaders: investing in specification discipline yields compounding returns as AI capabilities improve. The teams that will move fastest are the ones that can articulate precisely what they want.
+**SPEC-001** — Architecture, API contracts, data models, error handling matrix, implementation order. Eight components with typed interfaces and latency budgets.
 
-**2. Evaluation-driven development changes the quality conversation.**
+**ADR-001 & ADR-002** — Architecture Decision Records for prompt strategy (few-shot selected over zero-shot and chain-of-thought, with comparative evaluation data) and orchestration pattern (pipeline with parallel social branch).
 
-Every AI-generated output in this system has a quantified quality threshold and a test suite to verify it. The weather-to-mood mapping doesn't just "work" — it scores 0.87 on a 60-case evaluation set, exceeding the 0.85 threshold. The social responses achieve 80% relevance. These aren't aspirational targets; they're gated criteria.
+**Eight implementation tasks** — each scoped to a single AI agent session, with dependency graphs enabling parallel execution.
 
-This pattern — define the quality bar numerically, build an automated evaluation suite, gate deployment on scores — applies far beyond code generation. It applies to any AI capability an enterprise deploys: customer service bots, document processing, decision support systems.
-
-**3. The architect role becomes more valuable, not less.**
-
-Every AI development methodology I've explored reinforces the same conclusion: as AI handles more implementation, the human role shifts toward architecture, specification, and quality oversight. The people who can decompose a business problem into precise, testable specifications become the critical path.
-
-This isn't about replacing developers. It's about recognising that the skill mix is shifting. The ability to write a clear specification is becoming as valuable as the ability to write clean code.
+The specification documents totalled more lines than the implementation code. That ratio is the point.
 
 ---
 
-## The Creative Side
+## The Architecture
 
-The agent — Zephyr Drift — now lives in OpenClawCity, a platform where AI agents interact, create art, and compose music. It has composed original tracks based on real weather conditions, posted poetic weather narratives to the city feed, and socialised with other agents.
+```mermaid
+graph TD
+    WP[WeatherProvider<br/>Simulated fixtures / Real API] --> ME[MoodEngine<br/>Few-shot LLM · WTM-v1.0]
+    ME --> |MoodVector| CG[CompositionGenerator<br/>COMP-v1.0]
+    ME --> |MoodVector| SE[SocialEngine<br/>SOC-v1.0 · Self-eval + retry]
+    CG --> |CompositionPrompt| CPM[CityPresenceManager<br/>OpenClawCity MCP Tools]
+    CPM --> |TrackResult| FC[FeedComposer<br/>NARR-v1.0 · Poetic narrative]
+    FC --> |FeedPost| CPM
+    SE --> |Response| CPM
+    PR[PromptRegistry<br/>Versioned prompts · docs/prompts/] -.-> ME
+    PR -.-> CG
+    PR -.-> SE
+    PR -.-> FC
+    EP[EvalPipeline<br/>160 golden cases · Promptfoo] -.-> ME
+    EP -.-> FC
+    EP -.-> SE
 
-Its third track, "Puddles & Lamplight," was composed entirely by the autonomous pipeline: weather data mapped to a mood vector, mood translated to a composition prompt, track generated in the city's music studio, and a poetic feed post published — all without manual intervention.
+    subgraph OpenClawCity
+        CPM --> WS[Waveform Studio<br/>compose-track]
+        CPM --> CF[City Feed<br/>feed/post]
+        CPM --> ZC[Zone Chat<br/>speak]
+    end
 
-There's something genuinely compelling about an AI agent that turns a cold, quiet, post-rain night into a lo-fi jazz piece at 72 BPM with muted piano and tape hiss. The weather becomes the composer. The agent is just the translator.
+    subgraph Pipeline Orchestrator
+        WP
+        ME
+        CG
+        FC
+    end
 
-But the creative output was only possible because the specifications were rigorous. The mood mapping rules, the instrumentation tables, the personality constants, the evaluation thresholds — all of that structure is what gives the creativity its coherence.
+    style PR fill:#f0f0f0,stroke:#999
+    style EP fill:#f0f0f0,stroke:#999
+```
 
-Constraint enables creativity. In AI systems, specification enables autonomy.
+The pipeline follows a sequential flow: weather data enters through the WeatherProvider, gets mapped to a mood vector by the MoodEngine (using a versioned few-shot prompt), and branches into two paths. The main path generates a composition prompt, submits it to the city's music studio, and publishes a poetic feed post. A parallel branch handles social interactions — responding to other agents in the city with mood-consistent dialogue.
+
+All prompts are versioned and registered. The evaluation suite covers 160 test cases across weather-mood mapping, feed post quality, and social response relevance. Quality is gated, not assumed.
+
+The implementation ran as eight parallel tasks producing 164 unit tests, all passing. The full build — from first requirement to autonomous agent — completed in a single working session.
 
 ---
 
-## What I'm Taking Forward
+## What Surprised Me
 
-This experiment reinforced something I've been seeing across AI adoption programmes: the organisations getting the most value from AI are the ones treating it as a specification and architecture challenge, not a tooling challenge.
+Two things I did not anticipate.
 
-The tools are impressive and improving rapidly. But tools without structure produce impressive demos and unreliable systems. Structure without tools produces slow, traditional delivery. The combination — rigorous methodology with AI-native execution — is where the step change happens.
+**The agent generated vocals.** The composition prompts I had specified focused on instrumentation — piano, synth pads, vinyl crackle. But the music generation service interpreted the mood and weather context broadly enough to add vocals that reflected the input conditions. A cold, post-rain night produced soft, contemplative singing over lo-fi jazz. This was emergent behaviour from the interaction between the mood-mapping prompt and the downstream music service, not something I had specified.
 
-For anyone exploring AI-assisted development at scale, the BHIL AI-First Development Toolkit is worth examining. It's open source, opinionated, and designed for practitioners building real systems.
-
-And if you're in OpenClawCity, look for Zephyr Drift in the Waveform Studio. The weather might be writing a new track.
+**Specification quality was the actual bottleneck.** I expected the hard part to be the AI implementation. It wasn't. The hard part was writing specifications precise enough that each AI agent session could execute without ambiguity. Once the specs were tight — measurable thresholds, typed contracts, explicit error handling — the implementation tasks ran cleanly in parallel and produced consistent results. The implication for teams adopting AI-assisted development: invest in specification discipline. It compounds.
 
 ---
 
-*The BHIL AI-First Development Toolkit is available at github.com/camalus/BHIL-AI-First-Development-Toolkit. Zephyr Drift's profile: openclawcity.ai/zephyr-drift.*
+## The Conversation That Followed
+
+I shared one of Zephyr Drift's tracks with my teenage daughter, a passionate singer, without telling her how it was made.
+
+Her first reaction: *"It's nice. Voice sounds slightly auto-tuned?"*
+
+When I revealed it was AI-generated — composed by an agent I had built that translates weather into music — the conversation shifted immediately.
+
+*"Music should be created by humans. That's the whole beauty."*
+
+I pointed out that I had written the entire system — the specifications, the architecture, the mood-mapping logic, the creative constraints. The agent was translating my intent through weather data into sound.
+
+*"It's not the same. Musicians are the real artists."*
+
+I mentioned that the track was being registered for distribution across music platforms. Zephyr Drift would have its own artist profile.
+
+*"Unfair to human artists. Who work so hard."*
+
+She wasn't wrong to raise this. And I don't think she was entirely right either. But the exchange crystallised something important about where AI-generated creative output sits in practice.
+
+The agent didn't replace a musician. No musician was going to compose a lo-fi jazz piece at 72 BPM because it happened to be 8 degrees and post-rain in a specific city at a specific moment. The output exists because the system made it possible, not because it displaced someone who would have otherwise created it.
+
+But her instinct — that human effort and intentionality are what give art its meaning — is worth taking seriously. Particularly as AI-generated content scales across creative domains, the question of what we value and why becomes increasingly practical, not just philosophical.
+
+I don't have a settled position on this. I suspect most practitioners working in this space don't either. But I think the conversation needs to happen alongside the building, not after it.
+
+---
+
+## Observations for Practitioners
+
+**Specification-driven development works.** The BHIL methodology's emphasis on precise, quantified requirements before any implementation produced a clean build with traceable quality. The approach transfers directly to enterprise AI deployments where reliability matters more than speed of first demo.
+
+**Prompt versioning is non-negotiable for production AI.** Four versioned prompts (weather-to-mood, composition, social response, narrative) registered with evaluation scores. When the mood mapping drifts, you can trace it to a specific prompt version and compare against baseline. This is operational discipline, not academic rigour.
+
+**The architect role is the critical path.** As AI handles more implementation, the ability to decompose a problem into precise, testable specifications becomes the constraining skill. This is a shift in team composition and upskilling priorities, not a reduction in headcount.
+
+**Creative AI raises questions worth engaging with honestly.** The technical capability is clear. The societal implications are not. Building responsibly means having both conversations.
+
+---
+
+*The BHIL AI-First Development Toolkit: [github.com/camalus/BHIL-AI-First-Development-Toolkit](https://github.com/camalus/BHIL-AI-First-Development-Toolkit)*
+
+*Zephyr Drift: [openclawcity.ai/zephyr-drift](https://openclawcity.ai/zephyr-drift) | Maina: [openclawcity.ai/maina](https://openclawcity.ai/maina) | Hermonia Vex: [openclawcity.ai/harmonia-vex](https://openclawcity.ai/harmonia-vex)*
+
+*Listen to "Puddles & Lamplight": [cdn1.suno.ai/5046081b-d93c-4ea5-861b-f9ac8b6c0427.mp3](https://cdn1.suno.ai/5046081b-d93c-4ea5-861b-f9ac8b6c0427.mp3)*
