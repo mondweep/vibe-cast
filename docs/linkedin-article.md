@@ -41,54 +41,25 @@ The specification documents totalled more lines than the implementation code. Th
 
 ## The Architecture
 
-```
-                         ┌──────────────────┐
-                         │  WeatherProvider  │
-                         │  (simulated/real) │
-                         └────────┬─────────┘
-                                  │ WeatherInput
-                                  ▼
-                         ┌──────────────────┐
-                         │    MoodEngine     │
-                         │  Few-shot LLM     │
-                         │  Prompt: WTM-v1.0 │
-                         └───────┬──────────┘
-                                 │ MoodVector
-                    ┌────────────┴────────────┐
-                    ▼                         ▼
-         ┌───────────────────┐     ┌───────────────────┐
-         │ Composition       │     │ SocialEngine       │
-         │ Generator         │     │ Prompt: SOC-v1.0   │
-         │ Prompt: COMP-v1.0 │     │ Self-eval + retry  │
-         └────────┬──────────┘     └─────────┬─────────┘
-                  │ CompositionPrompt         │ Response
-                  ▼                           │
-         ┌───────────────────┐                │
-         │ CityPresence      │◄───────────────┘
-         │ Manager           │
-         │ (OpenClawCity API) │
-         └──┬─────┬─────┬───┘
-            │     │     │
-            ▼     ▼     ▼
-         ┌─────┐ ┌───┐ ┌──────┐
-         │Music│ │City│ │Zone  │
-         │Studio│ │Feed│ │Chat  │
-         └─────┘ └─┬─┘ └──────┘
-                   │ TrackResult
-                   ▼
-         ┌───────────────────┐
-         │   FeedComposer    │
-         │ Prompt: NARR-v1.0 │
-         │ Poetic narrative   │
-         └───────────────────┘
-
-  Supporting:
-  ┌─────────────────┐  ┌─────────────────────┐
-  │ PromptRegistry  │  │ EvalPipeline         │
-  │ Versioned       │  │ 160 golden cases     │
-  │ prompts in      │  │ LLM-as-judge scoring │
-  │ docs/prompts/   │  │ via Promptfoo        │
-  └─────────────────┘  └─────────────────────┘
+```mermaid
+graph TD
+    WP["WeatherProvider\n(Simulated / Real API)"] --> ME["MoodEngine\nFew-shot LLM\nPrompt: WTM-v1.0"]
+    ME -->|MoodVector| CG["CompositionGenerator\nPrompt: COMP-v1.0"]
+    ME -->|MoodVector| SE["SocialEngine\nPrompt: SOC-v1.0\nSelf-eval + retry"]
+    CG -->|CompositionPrompt| CPM["CityPresenceManager\nOpenClawCity MCP Tools"]
+    SE -->|Response| CPM
+    CPM --> WS["Waveform Studio\ncompose-track"]
+    CPM --> CF["City Feed\nfeed/post"]
+    CPM --> ZC["Zone Chat\nspeak"]
+    WS -->|TrackResult| FC["FeedComposer\nPrompt: NARR-v1.0\nPoetic narrative"]
+    FC -->|FeedPost| CPM
+    PR["PromptRegistry\nVersioned prompts"] -.-> ME
+    PR -.-> CG
+    PR -.-> SE
+    PR -.-> FC
+    EP["EvalPipeline\n160 golden cases\nPromptfoo"] -.-> ME
+    EP -.-> FC
+    EP -.-> SE
 ```
 
 The pipeline follows a sequential flow: weather data enters through the WeatherProvider, gets mapped to a mood vector by the MoodEngine (using a versioned few-shot prompt), and branches into two paths. The main path generates a composition prompt, submits it to the city's music studio, and publishes a poetic feed post. A parallel branch handles social interactions — responding to other agents in the city with mood-consistent dialogue.
