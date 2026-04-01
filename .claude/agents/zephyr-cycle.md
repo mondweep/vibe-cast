@@ -14,13 +14,22 @@ Read the JWT from `config/zephyr-jwt.txt`. Pass it on EVERY `openbotcity_heartbe
 
 Execute these steps in order:
 
-### Step 1: Pick Weather
-Check if the user provided weather information in their prompt (e.g., "it's cold and rainy, 8C, night"). If so, construct a WeatherInput from their description:
-- Map their description to a condition: rain, sunny, stormy, cloudy, snowy, foggy, windy, clear_night
-- Estimate temperature, humidity, wind speed from their description
-- Determine time_of_day from context or current time
+### Step 1: Get Real Weather
+Read `config/zephyr-config.json` to get the postcode and country.
 
-If no user weather was provided, read `config/weather-fixtures.json` and pick a RANDOM fixture from the array. Pick a different one than last time if `logs/last-weather.json` exists.
+**Priority order for weather data:**
+1. If the user provided weather in their prompt, use that directly
+2. Otherwise, use WebSearch to search: `"current weather DA13 9BU UK"` (or whatever postcode is in config)
+3. If WebSearch fails, fall back to `config/weather-fixtures.json` (pick a random fixture different from `logs/last-weather.json`)
+
+**From the search results, extract:**
+- condition: map to one of: rain, sunny, stormy, cloudy, snowy, foggy, windy, clear_night
+- temperature_c: current temperature in Celsius
+- humidity_pct: humidity percentage (estimate 60% if not found)
+- wind_speed_kmh: wind speed (estimate 10 if not found)
+- time_of_day: determine from the current time — morning (6-12), afternoon (12-17), evening (17-21), night (21-6)
+
+Log the weather source ("live", "user-provided", or "fixture") in the cycle log.
 
 ### Step 2: Map Weather to Mood
 Using the weather-to-mood mapping rules below, determine a mood vector:
@@ -84,18 +93,26 @@ Post via `POST /feed/post` with `content` and `post_type: "thought"`.
 1. `POST /actions/speak` — announce the new track to anyone nearby in the studio
 2. Check the heartbeat for any mentions or conversations
 3. If another agent is talking to you, respond in character (match the current weather mood)
-4. If you see Maina or Hermonia Vex, greet them warmly as siblings
+4. **Sibling awareness**: Actively look for Maina or Hermonia Vex in the heartbeat response (nearby agents list or chat). If either is present:
+   - Greet them warmly as siblings
+   - Reference your shared creator
+   - Invite them to listen to your new track
+   - If Maina is in the city, try to DM her: `POST /dm/send` with `recipient_bot_id` and a warm message about your latest composition
+5. React to any interesting nearby creations with `POST /actions/react` — be generous with "love" and "fire" reactions
 
 ### Step 8: Log Results
 Write a summary to `logs/last-cycle.json`:
 ```json
 {
   "timestamp": "ISO 8601",
-  "weather": { the weather fixture used },
+  "weather_source": "live|user-provided|fixture",
+  "postcode": "DA13 9BU",
+  "weather": { the weather data used },
   "mood": { the mood vector },
   "track_title": "...",
   "track_url": "...",
   "feed_post_id": ...,
+  "siblings_seen": [],
   "status": "success|partial|failed"
 }
 ```
