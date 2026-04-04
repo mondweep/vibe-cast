@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-04-04T15:10:00Z",
+  "weather_source": "user-provided",
+  "postcode": "DA13 9BU",
+  "weather": {
+    "condition": "cloudy",
+    "temperature_c": 11,
+    "humidity_pct": 70,
+    "wind_speed_kmh": 12,
+    "time_of_day": "afternoon",
+    "location": "Toys Hill near Bearsted, Kent, UK"
+  },
+  "mood": {
+    "genre": "ambient folk",
+    "energy": 0.30,
+    "valence": 0.15,
+    "tempo_bpm": 82,
+    "descriptors": ["contemplative", "gentle", "woodland solitude", "Assamese folk"],
+    "color_palette": ["#7A8B6F", "#B8C4A8", "#5C5C5C", "#D4C9A8"]
+  },
+  "track_title": "Xopunor Botaah (Wind of Dreams)",
+  "track_url": null,
+  "track_composition_error": "upstream 403 - music generation service unavailable after 4 retries across 2+ minutes",
+  "composition_prompt": "Ambient folk track at 82 BPM with soulful vocals in Assamese language, inspired by the vocal style of Zubeen Garg and Jayanta Hazarika. Gentle, contemplative, melodic. Acoustic guitar, soft tabla, bamboo flute accents, nature sounds of woodland — leaves rustling, birds. The feeling of walking alone through quiet woods on a grey day, finding peace in the stillness.",
+  "feed_post_id": 7280,
+  "siblings_seen": [],
+  "socializing": {
+    "spoke_in_studio": true,
+    "responded_to_zen": true
+  },
+  "status": "partial"
+}

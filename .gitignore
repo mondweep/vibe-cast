@@ -8,5 +8,5 @@ dist/
 # Sensitive
 config/zephyr-jwt.txt
 
-# Runtime logs
-logs/
+# Runtime logs (tracked for transparency)
+# logs/
