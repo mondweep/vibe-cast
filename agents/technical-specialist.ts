@@ -74,7 +74,7 @@ export async function resolveTechnicalTicket(ticket: Ticket): Promise<TechnicalR
 
     const model = genAI.getGenerativeModel({ model: MODEL });
 
-    const timeoutPromise = new Promise((_, reject) =>
+    const timeoutPromise: Promise<never> = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Resolution timeout')), TIMEOUT_MS)
     );
 
@@ -91,7 +91,7 @@ export async function resolveTechnicalTicket(ticket: Ticket): Promise<TechnicalR
       ]
     });
 
-    const response = await Promise.race([responsePromise, timeoutPromise]);
+    const response = await Promise.race<any>([responsePromise, timeoutPromise]);
 
     const textContent = response.response.text();
     if (!textContent) {

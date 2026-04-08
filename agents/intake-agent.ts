@@ -78,7 +78,7 @@ export async function classifyTicket(ticket: Ticket): Promise<TicketClassificati
     const model = genAI.getGenerativeModel({ model: MODEL });
 
     // Create timeout promise
-    const timeoutPromise = new Promise((_, reject) =>
+    const timeoutPromise: Promise<never> = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Classification timeout')), TIMEOUT_MS)
     );
 
@@ -96,7 +96,7 @@ export async function classifyTicket(ticket: Ticket): Promise<TicketClassificati
       ]
     });
 
-    const response = await Promise.race([responsePromise, timeoutPromise]);
+    const response = await Promise.race<any>([responsePromise, timeoutPromise]);
 
     // Extract text from response
     const textContent = response.response.text();
