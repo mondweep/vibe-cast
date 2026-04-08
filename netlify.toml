@@ -1,11 +1,12 @@
 [build]
-command = "npm run build"
+command = "npm install && npm run build"
 functions = "netlify/functions"
 publish = ".next"
 
 [build.environment]
-NODE_VERSION = "18"
+NODE_VERSION = "18.17.0"
 NODE_ENV = "production"
+NPM_VERSION = "9"
 
 [[redirects]]
 from = "/api/*"
