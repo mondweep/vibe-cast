@@ -1,0 +1,274 @@
+{
+  "mockTickets": [
+    {
+      "id": "ticket-001",
+      "customerName": "Alice Johnson",
+      "email": "alice@techstartup.io",
+      "subject": "Credit card declined on renewal",
+      "description": "I tried to renew my Pro subscription but got a 'card declined' error. Money was deducted from my account but the subscription didn't activate. I need this fixed ASAP as my team relies on this tool.",
+      "expectedCategory": "billing",
+      "expectedPriority": "critical"
+    },
+    {
+      "id": "ticket-002",
+      "customerName": "Bob Chen",
+      "email": "bob.chen@devshop.com",
+      "subject": "API integration documentation missing",
+      "description": "I'm trying to integrate your REST API but the webhook section of the docs is completely blank. I need to know how to receive real-time updates when users upload files. Can you point me to the right docs?",
+      "expectedCategory": "technical",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-003",
+      "customerName": "Carol Williams",
+      "email": "carol@nonprofit.org",
+      "subject": "I was overcharged - duplicate charges",
+      "description": "Last month I was charged twice for the same month. I only have one subscription but I see two line items on my invoice dated Dec 1st and Dec 3rd. Both for $99. Please refund the duplicate.",
+      "expectedCategory": "billing",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-004",
+      "customerName": "David Park",
+      "email": "david.park@bigcorp.co.uk",
+      "subject": "Can't login to dashboard - 403 error",
+      "description": "Since yesterday morning I've been getting 403 Forbidden errors when trying to access my dashboard. My password is correct (I reset it). I'm seeing this on Chrome and Firefox. Other team members can login fine. What's going on?",
+      "expectedCategory": "account",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-005",
+      "customerName": "Emma Rodriguez",
+      "email": "emma@creative.studio",
+      "subject": "Feature request: bulk upload",
+      "description": "It would be amazing if we could upload 100+ files at once. Right now we can only do 10 per batch. Our workflow involves processing large batches daily.",
+      "expectedCategory": "feature-request",
+      "expectedPriority": "medium"
+    },
+    {
+      "id": "ticket-006",
+      "customerName": "Frank Mueller",
+      "email": "frank@devshop.eu",
+      "subject": "502 Bad Gateway on all requests",
+      "description": "For the last 30 minutes, every API call returns 502 Bad Gateway. Our production system is down. This is urgent!",
+      "expectedCategory": "technical",
+      "expectedPriority": "critical"
+    },
+    {
+      "id": "ticket-007",
+      "customerName": "Grace Lee",
+      "email": "grace@fintech.sg",
+      "subject": "Subscription downgrade not working",
+      "description": "I tried to downgrade from Enterprise to Pro last week but my billing still shows Enterprise pricing. I was charged $999 instead of $99. My account settings show Pro but the invoice is wrong.",
+      "expectedCategory": "billing",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-008",
+      "customerName": "Henry Kimani",
+      "email": "henry.kimani@startup.ke",
+      "subject": "Password reset email not arriving",
+      "description": "I clicked 'forgot password' but never received the reset email. I've checked spam folder, it's not there. I need to access my account urgently.",
+      "expectedCategory": "account",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-009",
+      "customerName": "Iris Nakamura",
+      "email": "iris@analytics.jp",
+      "subject": "Batch processing timeout - 50k records",
+      "description": "When I try to process 50,000 records, the batch times out after 5 minutes. Is there a size limit? How do I process larger datasets?",
+      "expectedCategory": "technical",
+      "expectedPriority": "medium"
+    },
+    {
+      "id": "ticket-010",
+      "customerName": "Jack Morrison",
+      "email": "jack@marketing.agency.uk",
+      "subject": "Can I export billing history?",
+      "description": "I need to export my invoices for the last 12 months for accounting purposes. I don't see an export option in the settings. Where is it?",
+      "expectedCategory": "billing",
+      "expectedPriority": "low"
+    },
+    {
+      "id": "ticket-011",
+      "customerName": "Katsuki Tanaka",
+      "email": "katsuki@manga.studio",
+      "subject": "Team member can't accept invite",
+      "description": "I invited someone@domain.com to my team workspace but they're getting an error 'User does not have access to team feature'. I'm on the Pro plan which should support team collaboration. What's wrong?",
+      "expectedCategory": "account",
+      "expectedPriority": "medium"
+    },
+    {
+      "id": "ticket-012",
+      "customerName": "Lisa Thompson",
+      "email": "lisa@nonprofit.us",
+      "subject": "Non-profit discount eligibility",
+      "description": "We're a registered 501(c)(3). Do you offer non-profit discounts? If so, how do I apply? Our budget is limited and a discount would help us expand the tool to more team members.",
+      "expectedCategory": "billing",
+      "expectedPriority": "medium"
+    },
+    {
+      "id": "ticket-013",
+      "customerName": "Marcus Johnson",
+      "email": "marcus@webagency.au",
+      "subject": "OAuth/SSO integration broken",
+      "description": "We have OAuth setup for GitHub login but since this morning logins fail with 'Callback URL mismatch'. I haven't changed anything on our side. Can you check your OAuth config?",
+      "expectedCategory": "technical",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-014",
+      "customerName": "Natalie Ortiz",
+      "email": "natalie@legal.firm",
+      "subject": "GDPR data export request",
+      "description": "I need all my personal data in machine-readable format per GDPR. I don't see a download option. How do I request this?",
+      "expectedCategory": "account",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-015",
+      "customerName": "Oliver Stone",
+      "email": "oliver@filmstudio.ca",
+      "subject": "Refund request - trial didn't work out",
+      "description": "I tried the 14-day free trial but it wasn't right for our workflow. I was charged on day 15 even though I cancelled before the trial ended. Can I get a refund?",
+      "expectedCategory": "billing",
+      "expectedPriority": "medium"
+    },
+    {
+      "id": "ticket-016",
+      "customerName": "Priya Patel",
+      "email": "priya@consulting.in",
+      "subject": "Export data to CSV not working",
+      "description": "The 'Export to CSV' button on the dashboard does nothing. No file downloads, no error message. I need to export my data for a client report.",
+      "expectedCategory": "technical",
+      "expectedPriority": "medium"
+    },
+    {
+      "id": "ticket-017",
+      "customerName": "Quinn Wells",
+      "email": "quinn@ecommerce.nz",
+      "subject": "Upgrade to Enterprise - custom domain",
+      "description": "If I upgrade to Enterprise, can I get a custom domain for my user portal? Like portal.mycompany.com instead of mycompany.portal.com?",
+      "expectedCategory": "feature-request",
+      "expectedPriority": "low"
+    },
+    {
+      "id": "ticket-018",
+      "customerName": "Robert Kim",
+      "email": "robert@manufacturing.kr",
+      "subject": "Invoice shows wrong amount",
+      "description": "My latest invoice shows $199 but I should be charged $99 (Pro plan). My account settings correctly show Pro. This has been wrong for 2 months. Please fix and issue a refund for the overcharge.",
+      "expectedCategory": "billing",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-019",
+      "customerName": "Sophia Garcia",
+      "email": "sophia@education.es",
+      "subject": "Student/educational license",
+      "description": "Are there discounted licenses for educational institutions? We'd like to teach students your platform but can't afford full commercial pricing.",
+      "expectedCategory": "billing",
+      "expectedPriority": "low"
+    },
+    {
+      "id": "ticket-020",
+      "customerName": "Thomas Anderson",
+      "email": "thomas@isp.us",
+      "subject": "Rate limiting - hitting limits too fast",
+      "description": "Our app hits rate limits even with only 10 req/sec. The docs say limits are 100 req/sec. Is something broken on the API?",
+      "expectedCategory": "technical",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-021",
+      "customerName": "Uma Singh",
+      "email": "uma@advertising.in",
+      "subject": "Account deleted accidentally - restore?",
+      "description": "I accidentally deleted my entire workspace. Is there a recovery option or backup I can restore? I deleted it 5 minutes ago - hopefully it's not permanent?",
+      "expectedCategory": "account",
+      "expectedPriority": "critical"
+    },
+    {
+      "id": "ticket-022",
+      "customerName": "Vincent Fournier",
+      "email": "vincent@fashion.fr",
+      "subject": "Currency/localization support",
+      "description": "Your platform only shows USD pricing. Can I see pricing in EUR? Our team is in France and it makes budgeting difficult.",
+      "expectedCategory": "feature-request",
+      "expectedPriority": "medium"
+    },
+    {
+      "id": "ticket-023",
+      "customerName": "Wendy Chen",
+      "email": "wendy@healthcare.tw",
+      "subject": "HIPAA compliance - where's BAA?",
+      "description": "We want to use your service for patient data but need a Business Associate Agreement for HIPAA compliance. Do you offer one?",
+      "expectedCategory": "billing",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-024",
+      "customerName": "Xavier Moreno",
+      "email": "xavier@logistics.mx",
+      "subject": "Integration with Zapier broken",
+      "description": "Our Zapier integration suddenly stopped working. We get 'Invalid API key' but the key hasn't changed. What happened?",
+      "expectedCategory": "technical",
+      "expectedPriority": "high"
+    },
+    {
+      "id": "ticket-025",
+      "customerName": "Yuki Yamamoto",
+      "email": "yuki@marketing.jp",
+      "subject": "License key management - seat limits",
+      "description": "We have an Enterprise license but want to increase seats from 10 to 20. How do we do this and what's the pricing?",
+      "expectedCategory": "billing",
+      "expectedPriority": "medium"
+    },
+    {
+      "id": "ticket-026",
+      "customerName": "Zachary Roberts",
+      "email": "zachary@saas.co",
+      "subject": "Database backup - how often?",
+      "description": "What's your database backup frequency and retention policy? Critical for our disaster recovery planning.",
+      "expectedCategory": "technical",
+      "expectedPriority": "medium"
+    },
+    {
+      "id": "ticket-027",
+      "customerName": "Aisha Mohammed",
+      "email": "aisha@fintech.ae",
+      "subject": "Annual billing discount - when available?",
+      "description": "Do you offer discounts for annual upfront payment? We want to commit long-term but need a better rate.",
+      "expectedCategory": "billing",
+      "expectedPriority": "low"
+    },
+    {
+      "id": "ticket-028",
+      "customerName": "Brett Dawson",
+      "email": "brett@construction.au",
+      "subject": "Offline mode capability",
+      "description": "Can the platform work offline? Our team sometimes works on job sites without reliable internet. Sync when back online?",
+      "expectedCategory": "feature-request",
+      "expectedPriority": "low"
+    },
+    {
+      "id": "ticket-029",
+      "customerName": "Camille Dubois",
+      "email": "camille@agency.ch",
+      "subject": "White-label/reseller program",
+      "description": "We want to resell your platform to our clients under our brand. Is there a white-label program and what are the terms?",
+      "expectedCategory": "billing",
+      "expectedPriority": "low"
+    },
+    {
+      "id": "ticket-030",
+      "customerName": "Diego Sanchez",
+      "email": "diego@media.cl",
+      "subject": "Video/multimedia support - upload limit",
+      "description": "We need to upload HD video files but get 'File size exceeds limit'. What's the max file size? Can we increase it?",
+      "expectedCategory": "technical",
+      "expectedPriority": "medium"
+    }
+  ]
+}

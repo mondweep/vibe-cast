@@ -1,0 +1,191 @@
+{
+  "mockCustomers": [
+    {
+      "id": "cust-001",
+      "email": "alice@techstartup.io",
+      "name": "Alice Johnson",
+      "company": "TechStartup Inc",
+      "subscriptionTier": "pro",
+      "monthlyBudget": 99,
+      "accountCreated": "2025-06-15",
+      "accountStatus": "active",
+      "paymentMethod": "visa_ending_4242",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2026-05-08",
+      "accountBalance": 0,
+      "recentCharges": [
+        { "date": "2026-04-08", "amount": 99, "description": "Pro subscription renewal" },
+        { "date": "2026-03-08", "amount": 99, "description": "Pro subscription renewal" }
+      ],
+      "issuesCount": 1
+    },
+    {
+      "id": "cust-002",
+      "email": "bob.chen@devshop.com",
+      "name": "Bob Chen",
+      "company": "DevShop",
+      "subscriptionTier": "team",
+      "monthlyBudget": 299,
+      "accountCreated": "2024-01-10",
+      "accountStatus": "active",
+      "paymentMethod": "amex_ending_0005",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2026-05-10",
+      "accountBalance": 0,
+      "recentCharges": [
+        { "date": "2026-04-10", "amount": 299, "description": "Team subscription renewal" }
+      ],
+      "issuesCount": 0
+    },
+    {
+      "id": "cust-003",
+      "email": "carol@nonprofit.org",
+      "name": "Carol Williams",
+      "company": "Community Helpers Non-profit",
+      "subscriptionTier": "basic",
+      "monthlyBudget": 29,
+      "accountCreated": "2023-08-20",
+      "accountStatus": "active",
+      "paymentMethod": "mastercard_ending_5555",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2026-05-20",
+      "accountBalance": -99,
+      "recentCharges": [
+        { "date": "2026-03-20", "amount": 29, "description": "Basic subscription renewal" },
+        { "date": "2026-03-20", "amount": 29, "description": "Duplicate charge - billing bug" }
+      ],
+      "issuesCount": 1
+    },
+    {
+      "id": "cust-004",
+      "email": "david.park@bigcorp.co.uk",
+      "name": "David Park",
+      "company": "BigCorp UK",
+      "subscriptionTier": "enterprise",
+      "monthlyBudget": 2999,
+      "accountCreated": "2022-11-05",
+      "accountStatus": "active",
+      "paymentMethod": "wire_transfer",
+      "billingCycle": "annual",
+      "nextBillingDate": "2027-02-05",
+      "accountBalance": 0,
+      "permissionsLevel": "admin",
+      "teamSize": 45,
+      "recentCharges": [
+        { "date": "2026-02-05", "amount": 35988, "description": "Enterprise annual renewal" }
+      ],
+      "issuesCount": 0
+    },
+    {
+      "id": "cust-005",
+      "email": "emma@creative.studio",
+      "name": "Emma Rodriguez",
+      "company": "Creative Studio Co",
+      "subscriptionTier": "pro",
+      "monthlyBudget": 99,
+      "accountCreated": "2025-02-01",
+      "accountStatus": "active",
+      "paymentMethod": "visa_ending_7777",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2026-05-01",
+      "accountBalance": 0,
+      "recentCharges": [
+        { "date": "2026-04-01", "amount": 99, "description": "Pro subscription renewal" }
+      ],
+      "issuesCount": 0
+    },
+    {
+      "id": "cust-006",
+      "email": "frank@devshop.eu",
+      "name": "Frank Mueller",
+      "company": "DevShop EU",
+      "subscriptionTier": "team",
+      "monthlyBudget": 299,
+      "accountCreated": "2024-03-12",
+      "accountStatus": "active",
+      "paymentMethod": "sepa_debit",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2026-05-12",
+      "accountBalance": 0,
+      "recentCharges": [
+        { "date": "2026-04-12", "amount": 299, "description": "Team subscription renewal" }
+      ],
+      "issuesCount": 0
+    },
+    {
+      "id": "cust-007",
+      "email": "grace@fintech.sg",
+      "name": "Grace Lee",
+      "company": "FinTech Singapore",
+      "subscriptionTier": "pro",
+      "monthlyBudget": 99,
+      "accountCreated": "2025-09-15",
+      "accountStatus": "active",
+      "paymentMethod": "visa_ending_2222",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2026-05-15",
+      "accountBalance": -900,
+      "recentCharges": [
+        { "date": "2026-04-15", "amount": 999, "description": "Enterprise upgrade charged - should be Pro $99" },
+        { "date": "2026-03-15", "amount": 99, "description": "Pro subscription renewal" }
+      ],
+      "issuesCount": 1
+    },
+    {
+      "id": "cust-008",
+      "email": "henry.kimani@startup.ke",
+      "name": "Henry Kimani",
+      "company": "Nairobi Startup",
+      "subscriptionTier": "basic",
+      "monthlyBudget": 29,
+      "accountCreated": "2025-12-01",
+      "accountStatus": "active",
+      "paymentMethod": "visa_ending_9999",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2026-05-01",
+      "accountBalance": 0,
+      "passwordResetAttempts": 3,
+      "lastPasswordReset": "2026-03-15",
+      "recentCharges": [
+        { "date": "2026-04-01", "amount": 29, "description": "Basic subscription renewal" }
+      ],
+      "issuesCount": 0
+    },
+    {
+      "id": "cust-009",
+      "email": "iris@analytics.jp",
+      "name": "Iris Nakamura",
+      "company": "Analytics Japan Corp",
+      "subscriptionTier": "team",
+      "monthlyBudget": 299,
+      "accountCreated": "2024-05-20",
+      "accountStatus": "active",
+      "paymentMethod": "jcb_ending_3333",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2026-05-20",
+      "accountBalance": 0,
+      "recentCharges": [
+        { "date": "2026-04-20", "amount": 299, "description": "Team subscription renewal" }
+      ],
+      "issuesCount": 0
+    },
+    {
+      "id": "cust-010",
+      "email": "jack@marketing.agency.uk",
+      "name": "Jack Morrison",
+      "company": "Marketing Agency UK",
+      "subscriptionTier": "pro",
+      "monthlyBudget": 99,
+      "accountCreated": "2024-07-10",
+      "accountStatus": "active",
+      "paymentMethod": "visa_ending_1111",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2026-05-10",
+      "accountBalance": 0,
+      "recentCharges": [
+        { "date": "2026-04-10", "amount": 99, "description": "Pro subscription renewal" }
+      ],
+      "issuesCount": 0
+    }
+  ]
+}
