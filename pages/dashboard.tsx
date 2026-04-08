@@ -138,8 +138,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <h2 style={{ fontSize: '20px', marginBottom: '20px' }}>Live Ticket Queue</h2>
-          <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <h2 style={{ fontSize: '20px', marginBottom: '20px' }}>Live Ticket Queue (Full Batch)</h2>
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', maxHeight: '600px', overflowY: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead style={{ backgroundColor: '#f9fafb' }}>
                 <tr style={{ textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#4b5563', fontSize: '13px' }}>
@@ -151,7 +151,7 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {tickets?.tickets.slice(0, 15).map(ticket => (
+                {tickets?.tickets.map(ticket => (
                   <tr
                     key={ticket.id}
                     style={{
