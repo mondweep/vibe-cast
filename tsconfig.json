@@ -10,6 +10,8 @@
     "strict": false,
     "noEmit": true,
     "incremental": true,
+    "target": "es2017",
+    "downlevelIteration": true,
     "module": "esnext",
     "esModuleInterop": true,
     "moduleResolution": "node",
