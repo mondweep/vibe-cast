@@ -8,7 +8,7 @@ import { emitEvent } from '@/lib/events';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const AGENT_ID = 'technical-specialist';
-const MODEL = 'gemini-2.0-flash';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 const TIMEOUT_MS = 15000;
 
 /**

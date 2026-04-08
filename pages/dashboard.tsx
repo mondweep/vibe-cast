@@ -7,6 +7,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'about'>('dashboard');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,11 +43,6 @@ export default function Dashboard() {
       const response = await fetch('/api/agents/process-all', { method: 'POST' });
       const data = await response.json();
       console.log('Processing complete:', data);
-
-      // Refresh data
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
     } catch (error) {
       console.error('Processing failed:', error);
       alert('Processing failed. Check console for details.');
@@ -63,216 +59,308 @@ export default function Dashboard() {
   const resolvedRate = tickets?.total ? ((tickets.resolved / tickets.total) * 100).toFixed(1) : '0';
 
   return (
-    <div style={{ padding: '40px', fontFamily: 'sans-serif', maxWidth: '1400px', margin: '0 auto' }}>
+    <div style={{ padding: '40px', fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: '1400px', margin: '0 auto', color: '#1f2937' }}>
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1 style={{ margin: 0 }}>🎯 Support Triage Dashboard</h1>
-        <button
-          onClick={handleProcessAll}
-          disabled={isProcessing}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: isProcessing ? '#ccc' : '#10b981',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: isProcessing ? 'not-allowed' : 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
-        >
-          {isProcessing ? '⏳ Processing...' : '▶️ Process All'}
-        </button>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '20px', marginBottom: '40px' }}>
-        <MetricCard title="Total Tickets" value={tickets?.total || 0} color="#3b82f6" />
-        <MetricCard title="Pending" value={tickets?.pending || 0} color="#f59e0b" />
-        <MetricCard title="Resolved" value={tickets?.resolved || 0} color="#10b981" />
-        <MetricCard title="Escalated" value={tickets?.escalated || 0} color="#ef4444" />
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '40px' }}>
-        <MetricCard title="Resolution Rate" value={`${resolvedRate}%`} color="#8b5cf6" />
-        <MetricCard title="Total Cost" value={`$${totalCost.toFixed(4)}`} color="#6366f1" />
-      </div>
-
-      <h2>Agent Status</h2>
-      <div style={{ overflowX: 'auto', marginBottom: '40px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #ccc', backgroundColor: '#f9fafb' }}>
-              <th style={{ textAlign: 'left', padding: '12px', fontWeight: '600' }}>Agent</th>
-              <th style={{ textAlign: 'right', padding: '12px', fontWeight: '600' }}>Tokens Used</th>
-              <th style={{ textAlign: 'right', padding: '12px', fontWeight: '600' }}>Budget Remaining</th>
-              <th style={{ textAlign: 'right', padding: '12px', fontWeight: '600' }}>% Used</th>
-            </tr>
-          </thead>
-          <tbody>
-            {agents?.agents.map(agent => (
-              <tr key={agent.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '12px' }}>
-                  <code style={{ fontSize: '12px', color: '#666' }}>{agent.id}</code>
-                </td>
-                <td style={{ textAlign: 'right', padding: '12px' }}>{agent.tokensUsed.toLocaleString()}</td>
-                <td style={{ textAlign: 'right', padding: '12px' }}>
-                  {(agent.monthlyBudget - agent.tokensUsed).toLocaleString()}
-                </td>
-                <td style={{ textAlign: 'right', padding: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
-                    <div style={{ width: '60px', height: '6px', backgroundColor: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          height: '100%',
-                          width: `${Math.min(agent.percentBudgetUsed, 100)}%`,
-                          backgroundColor: agent.percentBudgetUsed > 80 ? '#ef4444' : agent.percentBudgetUsed > 50 ? '#f59e0b' : '#10b981'
-                        }}
-                      />
-                    </div>
-                    <span style={{ fontSize: '12px', minWidth: '40px' }}>{agent.percentBudgetUsed.toFixed(1)}%</span>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Recent Tickets</h2>
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #ccc', backgroundColor: '#f9fafb' }}>
-              <th style={{ textAlign: 'left', padding: '12px', fontWeight: '600' }}>ID</th>
-              <th style={{ textAlign: 'left', padding: '12px', fontWeight: '600' }}>Customer</th>
-              <th style={{ textAlign: 'left', padding: '12px', fontWeight: '600' }}>Subject</th>
-              <th style={{ textAlign: 'left', padding: '12px', fontWeight: '600' }}>Category</th>
-              <th style={{ textAlign: 'left', padding: '12px', fontWeight: '600' }}>Priority</th>
-              <th style={{ textAlign: 'left', padding: '12px', fontWeight: '600' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets?.tickets.slice(0, 15).map(ticket => (
-              <tr
-                key={ticket.id}
-                style={{
-                  borderBottom: '1px solid #eee',
-                  cursor: 'pointer',
-                  backgroundColor: selectedTicket?.id === ticket.id ? '#f0f9ff' : 'transparent',
-                  transition: 'background-color 0.2s'
-                }}
-                onClick={() => setSelectedTicket(ticket)}
-              >
-                <td style={{ padding: '12px', fontSize: '12px', color: '#666' }}>{ticket.id}</td>
-                <td style={{ padding: '12px' }}>{ticket.customer_name}</td>
-                <td style={{ padding: '12px' }}>{ticket.subject.substring(0, 50)}</td>
-                <td style={{ padding: '12px' }}>
-                  {ticket.category ? (
-                    <span style={{
-                      padding: '4px 8px',
-                      backgroundColor: getCategoryColor(ticket.category),
-                      color: 'white',
-                      borderRadius: '4px',
-                      fontSize: '12px'
-                    }}>
-                      {ticket.category}
-                    </span>
-                  ) : '-'}
-                </td>
-                <td style={{ padding: '12px' }}>
-                  {ticket.priority ? (
-                    <span style={{
-                      padding: '4px 8px',
-                      backgroundColor: getPriorityColor(ticket.priority),
-                      color: 'white',
-                      borderRadius: '4px',
-                      fontSize: '12px'
-                    }}>
-                      {ticket.priority}
-                    </span>
-                  ) : '-'}
-                </td>
-                <td style={{ padding: '12px' }}>
-                  <span style={{
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    backgroundColor: getStatusColor(ticket.status),
-                    color: 'white',
-                    fontSize: '12px'
-                  }}>
-                    {ticket.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {selectedTicket && (
-        <div style={{ marginTop: '40px', padding: '20px', backgroundColor: '#f0f9ff', borderRadius: '4px', border: '1px solid #0284c7' }}>
-          <h3 style={{ marginTop: 0 }}>📌 {selectedTicket.subject}</h3>
-          <p><strong>Customer:</strong> {selectedTicket.customer_name} ({selectedTicket.email})</p>
-          <p><strong>Description:</strong> {selectedTicket.description}</p>
-          {selectedTicket.resolution && (
-            <p><strong>Resolution:</strong> {selectedTicket.resolution}</p>
-          )}
+        <div>
+          <h1 style={{ margin: 0, fontSize: '28px', color: '#111827' }}>🎯 Support Triage Demo</h1>
+          <p style={{ margin: '5px 0 0', color: '#6b7280' }}>Autonomous Multi-Agent Orchestration</p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} label="Dashboard" />
+          <TabButton active={activeTab === 'about'} onClick={() => setActiveTab('about')} label="How it Works" />
           <button
-            onClick={() => setSelectedTicket(null)}
+            onClick={handleProcessAll}
+            disabled={isProcessing}
             style={{
-              padding: '8px 16px',
-              backgroundColor: '#0284c7',
+              padding: '10px 24px',
+              backgroundColor: isProcessing ? '#9ca3af' : '#10b981',
               color: 'white',
               border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
+              borderRadius: '6px',
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+              marginLeft: '20px'
             }}
           >
-            Close
+            {isProcessing ? '⏳ Processing Batch...' : '▶️ Run Autonomous Cycle'}
           </button>
         </div>
+      </div>
+
+      {activeTab === 'dashboard' ? (
+        <>
+          {/* Metrics Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
+            <MetricCard title="Total Tickets" value={tickets?.total || 0} color="#3b82f6" icon="🎫" />
+            <MetricCard title="Pending AI" value={tickets?.pending || 0} color="#f59e0b" icon="⏳" />
+            <MetricCard title="Resolved" value={tickets?.resolved || 0} color="#10b981" icon="✅" />
+            <MetricCard title="Escalated" value={tickets?.escalated || 0} color="#ef4444" icon="🚨" />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '40px' }}>
+            <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '16px' }}>Agent Token Usage</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontSize: '13px' }}>
+                    <th style={{ padding: '12px 0' }}>Specialist Agent</th>
+                    <th style={{ padding: '12px 0', textAlign: 'right' }}>Tokens</th>
+                    <th style={{ padding: '12px 0', textAlign: 'right' }}>Budget Load</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {agents?.agents.map(agent => (
+                    <tr key={agent.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                      <td style={{ padding: '12px 0' }}>
+                        <code style={{ fontSize: '13px', color: '#4b5563', fontWeight: 'bold' }}>{agent.id}</code>
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '12px 0', color: '#111827' }}>{agent.tokensUsed.toLocaleString()}</td>
+                      <td style={{ textAlign: 'right', padding: '12px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                          <div style={{ width: '80px', height: '8px', backgroundColor: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div
+                              style={{
+                                height: '100%',
+                                width: `${Math.min(agent.percentBudgetUsed, 100)}%`,
+                                backgroundColor: agent.percentBudgetUsed > 80 ? '#ef4444' : agent.percentBudgetUsed > 50 ? '#f59e0b' : '#10b981'
+                              }}
+                            />
+                          </div>
+                          <span style={{ fontSize: '12px', fontWeight: '500', color: '#374151' }}>{agent.percentBudgetUsed.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+               <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '5px' }}>Total Inference Cost</div>
+                  <div style={{ fontSize: '42px', fontWeight: '800', color: '#6366f1' }}>${totalCost.toFixed(4)}</div>
+                  <div style={{ marginTop: '15px', padding: '4px 12px', backgroundColor: '#eef2ff', color: '#6366f1', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
+                    Resolution Rate: {resolvedRate}%
+                  </div>
+               </div>
+            </div>
+          </div>
+
+          <h2 style={{ fontSize: '20px', marginBottom: '20px' }}>Live Ticket Queue</h2>
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ backgroundColor: '#f9fafb' }}>
+                <tr style={{ textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#4b5563', fontSize: '13px' }}>
+                  <th style={{ padding: '16px' }}>ID</th>
+                  <th style={{ padding: '16px' }}>Customer</th>
+                  <th style={{ padding: '16px' }}>Subject</th>
+                  <th style={{ padding: '16px' }}>Category</th>
+                  <th style={{ padding: '16px' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tickets?.tickets.slice(0, 15).map(ticket => (
+                  <tr
+                    key={ticket.id}
+                    style={{
+                      borderBottom: '1px solid #f3f4f6',
+                      cursor: 'pointer',
+                      backgroundColor: selectedTicket?.id === ticket.id ? '#f3f4f6' : 'transparent',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onClick={() => setSelectedTicket(ticket)}
+                  >
+                    <td style={{ padding: '16px', fontSize: '12px', color: '#9ca3af' }}>{ticket.id.split('-').pop()}</td>
+                    <td style={{ padding: '16px', fontWeight: '500' }}>{ticket.customer_name}</td>
+                    <td style={{ padding: '16px' }}>{ticket.subject.substring(0, 60)}...</td>
+                    <td style={{ padding: '16px' }}>
+                      <Tag color={getCategoryColor(ticket.category)} label={ticket.category || 'unclassified'} />
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <StatusBadge status={ticket.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {selectedTicket && (
+            <div style={{
+              position: 'fixed', bottom: '20px', right: '20px', width: '450px',
+              backgroundColor: 'white', padding: '30px', borderRadius: '16px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              border: '1px solid #e5e7eb', zIndex: 100
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '18px' }}>{selectedTicket.subject}</h3>
+                <button onClick={() => setSelectedTicket(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '20px' }}>×</button>
+              </div>
+              <div style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.6' }}>
+                <p><strong>Customer:</strong> {selectedTicket.customer_name} ({selectedTicket.email})</p>
+                <div style={{ padding: '15px', backgroundColor: '#f9fafb', borderRadius: '8px', marginBottom: '15px' }}>
+                  {selectedTicket.description}
+                </div>
+                {selectedTicket.resolution && (
+                  <div style={{ padding: '15px', backgroundColor: '#ecfdf5', border: '1px solid #10b981', borderRadius: '8px' }}>
+                    <p style={{ margin: '0 0 5px', color: '#065f46', fontWeight: 'bold' }}>🤖 Agent Response:</p>
+                    {selectedTicket.resolution}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <AboutView />
       )}
 
-      <div style={{ marginTop: '40px', padding: '15px', backgroundColor: '#f0f0f0', borderRadius: '4px', fontSize: '12px' }}>
-        <small>Last updated: {agents?.timestamp} • Auto-refresh: every 2 seconds • Demo Mode: All data is simulated</small>
+      <footer style={{ marginTop: '60px', padding: '40px 0', borderTop: '1px solid #e5e7eb', textAlign: 'center', color: '#6b7280', fontSize: '13px', lineHeight: '2' }}>
+        <p style={{ margin: 0 }}>
+          Created by <strong>Mondweep Chakravorty</strong> • 
+          <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none', marginLeft: '5px' }}>Connect on LinkedIn</a> • 
+          <a href="https://github.com/mondweep/vibe-cast" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none', marginLeft: '5px' }}>GitHub Repository</a>
+        </p>
+        <p style={{ margin: '5px 0 0', fontStyle: 'italic' }}>
+          Inspired by a discussion at the London Chapter's Agentics Foundation meetup (8th April 2026).
+        </p>
+        <div style={{ marginTop: '15px' }}>
+          Last sync: {new Date().toLocaleTimeString()} • Autonomous Cycle polls every 2s • Built with Gemini Flash
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function AboutView() {
+  return (
+    <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+      <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '16px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+        <section style={{ marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '24px', color: '#111827' }}>What is the Support Triage Demo?</h2>
+          <p style={{ fontSize: '16px', lineHeight: '1.7', color: '#4b5563', maxWidth: '800px' }}>
+            This demo showcases an <strong>autonomous multi-agent system</strong> designed to handle customer support tickets 
+            at scale without human intervention. The system doesn't just categorize tickets; it analyzes intent, 
+            applies specialist knowledge, and generates technical or account-based resolutions in real-time.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: '60px' }}>
+          <h3 style={{ fontSize: '18px', color: '#374151', marginBottom: '30px' }}>The Agentic Lifecycle</h3>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            <FlowStep icon="📩" title="Ingestion" desc="Tickets arrive as raw data (mocked from 30 scenarios)." />
+            <Arrow />
+            <FlowStep icon="🧠" title="Intake Agent" desc="Gemini classifies category, priority, and sentiment." bg="#dbeafe" color="#1e40af" />
+            <Arrow />
+            <FlowStep icon="👮" title="Specialists" desc="Specific LLMs handle Billing, Technical, or Account logic." bg="#dcfce7" color="#166534" />
+            <Arrow />
+            <FlowStep icon="📝" title="Resolution" desc="Status updated and resolution reasoning is saved to DB." bg="#fef3c7" color="#92400e" />
+          </div>
+        </section>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+          <section>
+            <h3 style={{ fontSize: '18px', color: '#111827' }}>Multi-Agent Strategy</h3>
+            <ul style={{ paddingLeft: '20px', color: '#4b5563', lineHeight: '2' }}>
+              <li><strong>Intake Agent</strong>: The "Front Desk". Standardizes all incoming chaos.</li>
+              <li><strong>Technical Specialist</strong>: Deep-dives into bug reports and system errors.</li>
+              <li><strong>Billing Specialist</strong>: Understands trial logic, payments, and refunds.</li>
+              <li><strong>Escalation Manager</strong>: The safety net. Identifies issues requiring a human.</li>
+            </ul>
+          </section>
+          
+          <section>
+            <h3 style={{ fontSize: '18px', color: '#111827' }}>Real-time Visualization</h3>
+            <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#6b7280' }}>
+              The Dashboard uses a <strong>polling mechanism</strong> (2s intervals) to track the "Autonomous Cycle". 
+              As tickets are processed by the backend Gemini agents, the database state updates immediately. 
+              The Metrics cards and Agent Status bars reflect token consumption and resolution progress live, 
+              simulating a production environment at scale.
+            </p>
+          </section>
+        </div>
       </div>
     </div>
   );
 }
 
-function MetricCard({ title, value, color = '#3b82f6' }: { title: string; value: number | string; color?: string }) {
+function FlowStep({ icon, title, desc, bg = '#f3f4f6', color = '#1f2937' }: any) {
   return (
-    <div style={{
-      padding: '20px',
-      backgroundColor: 'white',
-      borderRadius: '4px',
-      border: `3px solid ${color}`,
-      textAlign: 'center',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-    }}>
-      <div style={{ fontSize: '13px', color: '#666', marginBottom: '10px', fontWeight: '500' }}>{title}</div>
-      <div style={{ fontSize: '36px', fontWeight: 'bold', color }}>{value}</div>
+    <div style={{ flex: 1, minWidth: '180px', padding: '20px', backgroundColor: bg, borderRadius: '12px', border: `1px solid ${bg === '#f3f4f6' ? '#e5e7eb' : 'transparent'}`, textAlign: 'center' }}>
+      <div style={{ fontSize: '32px', marginBottom: '10px' }}>{icon}</div>
+      <div style={{ fontWeight: 'bold', fontSize: '15px', color, marginBottom: '5px' }}>{title}</div>
+      <div style={{ fontSize: '12px', color: '#4b5563' }}>{desc}</div>
     </div>
   );
 }
 
-function getCategoryColor(category: string): string {
+function Arrow() {
+  return <div style={{ fontSize: '24px', color: '#9ca3af' }}>➔</div>;
+}
+
+function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '10px 16px',
+        backgroundColor: active ? '#f3f4f6' : 'transparent',
+        color: active ? '#111827' : '#6b7280',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '14px',
+        fontWeight: active ? '600' : '400',
+        transition: 'all 0.2s'
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function MetricCard({ title, value, color, icon }: any) {
+  return (
+    <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>{title}</span>
+        <span style={{ fontSize: '18px' }}>{icon}</span>
+      </div>
+      <div style={{ fontSize: '28px', fontWeight: '800', color }}>{value}</div>
+    </div>
+  );
+}
+
+function Tag({ color, label }: { color: string; label: string }) {
+  return (
+    <span style={{ padding: '4px 10px', backgroundColor: color + '15', color, borderRadius: '20px', fontSize: '12px', fontWeight: '600', border: `1px solid ${color}40`, textTransform: 'uppercase' }}>
+      {label}
+    </span>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const color = getStatusColor(status);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: color }} />
+      <span style={{ fontSize: '13px', color: '#374151', textTransform: 'capitalize' }}>{status}</span>
+    </div>
+  );
+}
+
+function getCategoryColor(category: string | null): string {
   const colors: { [key: string]: string } = {
     'billing': '#f59e0b',
     'technical': '#3b82f6',
     'account': '#8b5cf6',
     'feature-request': '#10b981'
   };
-  return colors[category] || '#6b7280';
-}
-
-function getPriorityColor(priority: string): string {
-  const colors: { [key: string]: string } = {
-    'critical': '#dc2626',
-    'high': '#ea580c',
-    'medium': '#f59e0b',
-    'low': '#10b981'
-  };
-  return colors[priority] || '#6b7280';
+  return (category && colors[category]) || '#6b7280';
 }
 
 function getStatusColor(status: string): string {

@@ -1,8 +1,12 @@
 [build]
-command = "npm install && npm run build"
-publish = ".next"
+  command = "npm install && npm run build"
+  publish = ".next"
 
 [build.environment]
-NODE_VERSION = "18.17.0"
-NODE_ENV = "production"
-NODE_OPTIONS = "--max_old_space_size=4096"
+  NODE_VERSION = "20"
+  NODE_ENV = "production"
+  NODE_OPTIONS = "--max_old_space_size=4096"
+
+[functions]
+  external_node_modules = ["better-sqlite3"]
+  node_bundler = "esbuild"
