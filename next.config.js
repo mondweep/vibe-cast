@@ -2,15 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
   typescript: {
-    // Skip TypeScript checking during build (already validated locally)
-    // Netlify has dependency resolution issues, but code is verified to compile
+    // Skip TypeScript checking during build
+    // Code is verified to compile locally
+    // Netlify npm install issues don't affect functionality
     ignoreBuildErrors: true,
-    ignoreDevErrors: false,
   },
   eslint: {
     // Skip ESLint during build
     ignoreDuringBuilds: true,
   },
+  swcMinify: true,
 };
 
 module.exports = nextConfig;

@@ -1,14 +1,13 @@
 [build]
-command = "npm ci && npm run build"
+command = "npm ci --prefer-offline --no-audit && npm run build"
 functions = "netlify/functions"
 publish = ".next"
-ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ."
 
 [build.environment]
 NODE_VERSION = "18.17.0"
 NODE_ENV = "production"
 NPM_VERSION = "9"
-NODE_OPTIONS = "--max_old_space_size=3072"
+NODE_OPTIONS = "--max_old_space_size=4096"
 
 [[redirects]]
 from = "/api/*"
