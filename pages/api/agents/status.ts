@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAgentStatus } from '@/lib/db';
+import { getAgentStatus, getAgentActivities } from '@/lib/db';
 import { AgentsStatusResponse, AgentStatus } from '@/lib/types';
 
 const AGENTS = ['intake-agent', 'billing-specialist', 'technical-specialist', 'account-manager', 'escalation-manager'];
@@ -10,13 +10,15 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Agents
   }
 
   try {
+    const activities = getAgentActivities();
     const agents: AgentStatus[] = AGENTS.map(agentId => {
       const status = getAgentStatus(agentId);
 
       return {
         id: agentId,
-        status: 'idle',
+        status: activities[agentId] ? 'processing' : 'idle',
         currentTicketId: null,
+        currentActivity: activities[agentId] || null,
         tokensUsed: status.tokensUsed,
         monthlyBudget: status.monthlyBudget,
         percentBudgetUsed: status.percentBudgetUsed,

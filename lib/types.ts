@@ -106,6 +106,7 @@ export interface AgentStatus {
   id: string;
   status: 'idle' | 'processing';
   currentTicketId: string | null;
+  currentActivity: string | null;
   tokensUsed: number;
   monthlyBudget: number;
   percentBudgetUsed: number;

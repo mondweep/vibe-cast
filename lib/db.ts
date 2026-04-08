@@ -37,6 +37,15 @@ export function initDB(): Database.Database {
     seedDatabase();
   }
 
+  // Create agent_activity table if not exists
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS agent_activity (
+      agent_id TEXT PRIMARY KEY,
+      message TEXT,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   return db;
 }
 
@@ -271,6 +280,31 @@ export function addAgentLog(log: {
   );
 
   return queryOne<AgentLog>('SELECT * FROM agent_logs WHERE id = ?', [id]) as AgentLog;
+}
+
+/**
+ * Set current activity for an agent (Heartbeat)
+ */
+export function setAgentActivity(agentId: string, message: string | null): void {
+  const db = initDB();
+  if (message) {
+    db.prepare('INSERT OR REPLACE INTO agent_activity (agent_id, message, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)')
+      .run(agentId, message);
+  } else {
+    db.prepare('DELETE FROM agent_activity WHERE agent_id = ?').run(agentId);
+  }
+}
+
+/**
+ * Get all current agent activities
+ */
+export function getAgentActivities(): { [id: string]: string } {
+  const rows = query<{ agent_id: string; message: string }>('SELECT agent_id, message FROM agent_activity');
+  const result: { [id: string]: string } = {};
+  for (const row of rows) {
+    result[row.agent_id] = row.message;
+  }
+  return result;
 }
 
 /**

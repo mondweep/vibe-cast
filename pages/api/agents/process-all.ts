@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getTickets } from '@/lib/db';
+import { getTickets, setAgentActivity } from '@/lib/db';
 import { classifyTickets } from '@/agents/intake-agent';
 import { resolveBillingTicket } from '@/agents/billing-specialist';
 import { resolveTechnicalTicket } from '@/agents/technical-specialist';
@@ -21,15 +21,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Step 1: Classify unclassified tickets
     const unclassified = getTickets('new', 1000, 0);
     console.log(`\n🚀 PHASE 1: Classifying ${unclassified.length} tickets...`);
+    
+    if (unclassified.length > 0) {
+      setAgentActivity('intake-agent', `Classifying ${unclassified.length} new tickets...`);
+    }
+    
     const classified = await classifyTickets(unclassified);
+    setAgentActivity('intake-agent', null);
 
-    // Step 2: Resolve by category (Limited to 5 per batch for Netlify timeout safety)
-    console.log(`\n🚀 PHASE 2: Resolving classified tickets (Batch of 5)...`);
-    const ticketsToResolve = getTickets('classified', 5, 0); 
+    // Step 2: Resolve by category (Uncapped for Cloud Run)
+    console.log(`\n🚀 PHASE 2: Resolving classified tickets (Full batch)...`);
+    const ticketsToResolve = getTickets('classified', 100, 0); 
 
     let resolved = 0;
     for (const ticket of ticketsToResolve) {
+      const agentId = `${ticket.category}-specialist` === 'technical-specialist' ? 'technical-specialist' :
+                      `${ticket.category}-specialist` === 'billing-specialist' ? 'billing-specialist' :
+                      ticket.category === 'account' ? 'account-manager' : null;
+      
       try {
+        if (agentId) {
+          setAgentActivity(agentId, `Analyzing Ticket #${ticket.id.split('-').pop()}: "${ticket.subject}"`);
+        }
+
         switch (ticket.category) {
           case 'billing':
             await resolveBillingTicket(ticket);
@@ -44,18 +58,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Feature requests skip specialist resolution
             break;
         }
+
+        if (agentId) {
+          setAgentActivity(agentId, null);
+        }
         resolved++;
       } catch (error) {
         console.error(`Failed to resolve ${ticket.id}:`, error);
+        if (agentId) setAgentActivity(agentId, null);
       }
-
-      // Delay between requests
-      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     // Step 3: Process escalations
     console.log(`\n🚀 PHASE 3: Processing escalations...`);
+    setAgentActivity('escalation-manager', 'Reviewing system escalations...');
     const escalationResults = await processEscalations();
+    setAgentActivity('escalation-manager', null);
 
     const elapsedMs = Date.now() - startTime;
     const totalTickets = getTickets('', 1000, 0).length;

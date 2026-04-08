@@ -7,21 +7,25 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'about'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'activity' | 'about'>('dashboard');
+  const [logs, setLogs] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ticketsRes, agentsRes] = await Promise.all([
+        const [ticketsRes, agentsRes, logsRes] = await Promise.all([
           fetch('/api/tickets'),
-          fetch('/api/agents/status')
+          fetch('/api/agents/status'),
+          fetch('/api/tickets/logs?limit=50')
         ]);
 
         const ticketsData = await ticketsRes.json();
         const agentsData = await agentsRes.json();
+        const logsData = await logsRes.json();
 
         setTickets(ticketsData);
         setAgents(agentsData);
+        setLogs(logsData.logs || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -71,6 +75,7 @@ export default function Dashboard() {
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} label="Dashboard" />
+          <TabButton active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} label="Live Activity" />
           <TabButton active={activeTab === 'about'} onClick={() => setActiveTab('about')} label="How it Works" />
           <button
             onClick={handleProcessAll}
@@ -103,42 +108,23 @@ export default function Dashboard() {
             <MetricCard title="Escalated" value={tickets?.escalated || 0} color="#ef4444" icon="🚨" />
           </div>
 
+          {/* Pipeline & Agents */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginBottom: '40px' }}>
+            <WorkforcePipeline 
+              newCount={tickets?.total ? (tickets.total - (tickets.pending + tickets.resolved + tickets.escalated)) : 0}
+              intakeCount={tickets?.pending || 0}
+              resolutionCount={tickets?.resolved || 0}
+            />
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '40px' }}>
             <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '16px' }}>Agent Token Usage</h3>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontSize: '13px' }}>
-                    <th style={{ padding: '12px 0' }}>Specialist Agent</th>
-                    <th style={{ padding: '12px 0', textAlign: 'right' }}>Tokens</th>
-                    <th style={{ padding: '12px 0', textAlign: 'right' }}>Budget Load</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {agents?.agents.map(agent => (
-                    <tr key={agent.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                      <td style={{ padding: '12px 0' }}>
-                        <code style={{ fontSize: '13px', color: '#4b5563', fontWeight: 'bold' }}>{agent.id}</code>
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '12px 0', color: '#111827' }}>{agent.tokensUsed.toLocaleString()}</td>
-                      <td style={{ textAlign: 'right', padding: '12px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
-                          <div style={{ width: '80px', height: '8px', backgroundColor: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div
-                              style={{
-                                height: '100%',
-                                width: `${Math.min(agent.percentBudgetUsed, 100)}%`,
-                                backgroundColor: agent.percentBudgetUsed > 80 ? '#ef4444' : agent.percentBudgetUsed > 50 ? '#f59e0b' : '#10b981'
-                              }}
-                            />
-                          </div>
-                          <span style={{ fontSize: '12px', fontWeight: '500', color: '#374151' }}>{agent.percentBudgetUsed.toFixed(1)}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '16px' }}>Specialist Workforce Status</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                {agents?.agents.map(agent => (
+                  <AgentCard key={agent.id} agent={agent} />
+                ))}
+              </div>
             </div>
 
             <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
@@ -217,6 +203,8 @@ export default function Dashboard() {
             </div>
           )}
         </>
+      ) : activeTab === 'activity' ? (
+        <ActivityView agents={agents?.agents || []} logs={logs} />
       ) : (
         <AboutView />
       )}
@@ -370,6 +358,149 @@ function StatusBadge({ status }: { status: string }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: color }} />
       <span style={{ fontSize: '13px', color: '#374151', textTransform: 'capitalize' }}>{status}</span>
+    </div>
+  );
+}
+
+function WorkforcePipeline({ newCount, intakeCount, resolutionCount }: any) {
+  return (
+    <div style={{ backgroundColor: '#1e293b', padding: '30px', borderRadius: '16px', color: 'white' }}>
+      <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+        <PipelineStage icon="📩" label="Incoming" count="Live" sub="New Tickets" />
+        <PipelineArrow />
+        <PipelineStage icon="🤖" label="Classification" count={intakeCount} sub="Intake Fleet" active={intakeCount > 0} />
+        <PipelineArrow />
+        <PipelineStage icon="⚡" label="Processing" count="..." sub="Specialists" active={intakeCount > 0} />
+        <PipelineArrow />
+        <PipelineStage icon="✅" label="Resolution" count={resolutionCount} sub="Resolved" />
+      </div>
+    </div>
+  );
+}
+
+function PipelineStage({ icon, label, count, sub, active }: any) {
+  return (
+    <div style={{ textAlign: 'center', zIndex: 1, flex: 1 }}>
+      <div style={{ 
+        width: '60px', height: '60px', backgroundColor: active ? '#3b82f6' : '#334155', 
+        borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+        fontSize: '24px', margin: '0 auto 12px', transition: 'all 0.3s',
+        boxShadow: active ? '0 0 20px rgba(59, 130, 246, 0.5)' : 'none',
+        animation: active ? 'pulse 2s infinite' : 'none'
+      }}>
+        {icon}
+      </div>
+      <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '2px' }}>{label}</div>
+      <div style={{ fontSize: '18px', fontWeight: '800', color: active ? '#60a5fa' : '#94a3b8' }}>{count}</div>
+      <div style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{sub}</div>
+    </div>
+  );
+}
+
+function PipelineArrow() {
+  return <div style={{ alignSelf: 'center', fontSize: '20px', color: '#334155', marginTop: '-20px' }}>→</div>;
+}
+
+function AgentCard({ agent }: { agent: any }) {
+  const isThinking = agent.status === 'processing';
+  return (
+    <div style={{ 
+      padding: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', 
+      backgroundColor: isThinking ? '#f0f9ff' : 'white',
+      boxShadow: isThinking ? '0 0 15px rgba(59, 130, 246, 0.1)' : 'none',
+      transition: 'all 0.3s'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#6b7280' }}>{agent.id.replace('-agent', '').replace('-specialist', '').replace('-', ' ').toUpperCase()}</div>
+        {isThinking && <span style={{ width: '8px', height: '8px', backgroundColor: '#3b82f6', borderRadius: '50%', animation: 'pulse 1s infinite' }} />}
+      </div>
+      
+      <div style={{ height: '40px', marginBottom: '10px', display: 'flex', alignItems: 'center' }}>
+        {isThinking ? (
+          <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: '500', fontStyle: 'italic', lineHeight: '1.4' }}>
+            Thinking: {agent.currentActivity}
+          </div>
+        ) : (
+          <div style={{ fontSize: '11px', color: '#9ca3af' }}>Standby...</div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#6b7280' }}>
+        <span>Utilization: {agent.percentBudgetUsed.toFixed(1)}%</span>
+        <span>{agent.tokensUsed.toLocaleString()} tokens</span>
+      </div>
+      <div style={{ width: '100%', height: '4px', backgroundColor: '#f3f4f6', borderRadius: '2px', marginTop: '6px', overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${agent.percentBudgetUsed}%`, backgroundColor: '#3b82f6' }} />
+      </div>
+    </div>
+  );
+}
+
+function ActivityView({ agents, logs }: { agents: any[], logs: any[] }) {
+  const activeAgents = agents.filter(a => a.status === 'processing');
+
+  return (
+    <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+        {/* Active Heartbeats */}
+        <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #e5e7eb', height: 'fit-content' }}>
+          <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: '#ef4444' }}>●</span> Live Heartbeats
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {activeAgents.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: '#9ca3af', border: '2px dashed #f3f4f6', borderRadius: '12px' }}>
+                System Idle. No active heartbeats.
+              </div>
+            ) : (
+              activeAgents.map(agent => (
+                <div key={agent.id} style={{ padding: '15px', backgroundColor: '#f8fafc', borderRadius: '12px', borderLeft: '4px solid #3b82f6' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '5px' }}>{agent.id}</div>
+                  <div style={{ fontSize: '12px', color: '#1e40af', fontStyle: 'italic' }}>Thinking: {agent.currentActivity}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Historic Detail */}
+        <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #e5e7eb' }}>
+          <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '16px' }}>Agent Reasoning History</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '800px', overflowY: 'auto', paddingRight: '10px' }}>
+            {logs.map(log => (
+              <div key={log.id} style={{ padding: '20px', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px solid #f3f4f6' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <code style={{ fontSize: '11px', color: '#6366f1', fontWeight: 'bold', backgroundColor: '#eef2ff', padding: '2px 6px', borderRadius: '4px' }}>{log.agent_id}</code>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>{log.action}</span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#9ca3af' }}>{new Date(log.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.6', whiteSpace: 'pre-wrap', backgroundColor: 'white', padding: '15px', borderRadius: '8px', border: '1px solid #f3f4f6' }}>
+                  {log.reasoning}
+                </div>
+                {log.tokens_used && (
+                  <div style={{ marginTop: '10px', fontSize: '10px', color: '#9ca3af', textAlign: 'right' }}>
+                    Inference Cost: {log.tokens_used} tokens
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <style jsx global>{`
+        @keyframes pulse {
+          0% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.05); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
