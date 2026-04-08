@@ -23,9 +23,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log(`\n🚀 PHASE 1: Classifying ${unclassified.length} tickets...`);
     const classified = await classifyTickets(unclassified);
 
-    // Step 2: Resolve by category
-    console.log(`\n🚀 PHASE 2: Resolving classified tickets...`);
-    const ticketsToResolve = getTickets('classified', 1000, 0);
+    // Step 2: Resolve by category (Limited to 5 per batch for Netlify timeout safety)
+    console.log(`\n🚀 PHASE 2: Resolving classified tickets (Batch of 5)...`);
+    const ticketsToResolve = getTickets('classified', 5, 0); 
 
     let resolved = 0;
     for (const ticket of ticketsToResolve) {
