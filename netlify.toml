@@ -1,6 +1,5 @@
 [build]
 command = "npm ci --prefer-offline --no-audit && npm run build"
-functions = "netlify/functions"
 publish = ".next"
 
 [build.environment]
@@ -8,25 +7,3 @@ NODE_VERSION = "18.17.0"
 NODE_ENV = "production"
 NPM_VERSION = "9"
 NODE_OPTIONS = "--max_old_space_size=4096"
-
-[[redirects]]
-from = "/api/*"
-to = "/.netlify/functions/api/:splat"
-status = 200
-
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
-
-[functions]
-node_bundler = "esbuild"
-included_files = ["public/schema.sql", "mock-data/**"]
-
-[[headers]]
-for = "/api/*"
-[headers.values]
-"Content-Type" = "application/json"
-"Access-Control-Allow-Origin" = "*"
-"Access-Control-Allow-Methods" = "GET, POST, PATCH, DELETE"
-"Access-Control-Allow-Headers" = "Content-Type"
