@@ -6,7 +6,7 @@ Quick reference for deploying to Netlify.
 
 ## Pre-Deployment (2 min)
 
-- [ ] Have Claude API key ready (from https://console.anthropic.com)
+- [ ] Have Gemini API key ready (from https://aistudio.google.com/app/apikeys - FREE!)
 - [ ] Have GitHub account logged in
 - [ ] Have Netlify account created (https://netlify.com)
 
@@ -50,8 +50,8 @@ After deployment starts:
 2. Click **"Build & Deploy"** → **"Environment"**
 3. Click **"Edit variables"**
 4. Add variable:
-   - Name: `CLAUDE_API_KEY`
-   - Value: `sk-ant-xxxxxxxxxxxxx` (your key)
+   - Name: `GEMINI_API_KEY`
+   - Value: Your Gemini API key (from https://aistudio.google.com/app/apikeys)
 5. Click **"Save"**
 6. Go to **"Deploys"** tab
 7. Click **"Trigger deploy"** → **"Deploy site"**

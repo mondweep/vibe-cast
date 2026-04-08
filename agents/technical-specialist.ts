@@ -1,16 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import { Anthropic } from 'anthropic';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Ticket, TechnicalResolution } from '@/lib/types';
 import { updateTicket, addAgentLog, updateAgentTokens } from '@/lib/db';
 import { emitEvent } from '@/lib/events';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const AGENT_ID = 'technical-specialist';
-const MODEL = 'claude-3-5-sonnet-20241022';
+const MODEL = 'gemini-2.0-flash';
 const TIMEOUT_MS = 15000;
 
 /**
@@ -74,30 +72,33 @@ export async function resolveTechnicalTicket(ticket: Ticket): Promise<TechnicalR
 
     console.log(`🔧 [${AGENT_ID}] Resolving technical ticket: ${ticket.id}`);
 
-    const responsePromise = anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 1500,
-      system: system,
-      messages: [
-        {
-          role: 'user',
-          content: userMessage
-        }
-      ]
-    });
+    const model = genAI.getGenerativeModel({ model: MODEL });
 
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Resolution timeout')), TIMEOUT_MS)
     );
 
+    const responsePromise = model.generateContent({
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: `${system}\n\n${userMessage}`
+            }
+          ]
+        }
+      ]
+    });
+
     const response = await Promise.race([responsePromise, timeoutPromise]);
 
-    const textContent = response.content.find(c => c.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text response from Claude');
+    const textContent = response.response.text();
+    if (!textContent) {
+      throw new Error('No text response from Gemini');
     }
 
-    const parsed = parseResolution(textContent.text);
+    const parsed = parseResolution(textContent);
 
     const resolution: TechnicalResolution = {
       ticketId: ticket.id,
@@ -109,7 +110,7 @@ export async function resolveTechnicalTicket(ticket: Ticket): Promise<TechnicalR
       escalationReason: parsed.escalationReason
     };
 
-    const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
+    const tokensUsed = 600; // Estimate
     const elapsedMs = Date.now() - startTime;
 
     addAgentLog({

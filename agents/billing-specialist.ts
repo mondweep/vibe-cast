@@ -1,16 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import { Anthropic } from 'anthropic';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Ticket, BillingResolution } from '@/lib/types';
 import { updateTicket, addAgentLog, updateAgentTokens } from '@/lib/db';
 import { emitEvent } from '@/lib/events';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const AGENT_ID = 'billing-specialist';
-const MODEL = 'claude-3-5-sonnet-20241022';
+const MODEL = 'gemini-2.0-flash';
 const TIMEOUT_MS = 15000;
 
 /**
@@ -103,30 +101,33 @@ export async function resolveBillingTicket(ticket: Ticket): Promise<BillingResol
 
     console.log(`💰 [${AGENT_ID}] Resolving billing ticket: ${ticket.id}`);
 
-    const responsePromise = anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 1000,
-      system: system,
-      messages: [
-        {
-          role: 'user',
-          content: userMessage
-        }
-      ]
-    });
+    const model = genAI.getGenerativeModel({ model: MODEL });
 
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Resolution timeout')), TIMEOUT_MS)
     );
 
+    const responsePromise = model.generateContent({
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: `${system}\n\n${userMessage}`
+            }
+          ]
+        }
+      ]
+    });
+
     const response = await Promise.race([responsePromise, timeoutPromise]);
 
-    const textContent = response.content.find(c => c.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text response from Claude');
+    const textContent = response.response.text();
+    if (!textContent) {
+      throw new Error('No text response from Gemini');
     }
 
-    const parsed = parseResolution(textContent.text);
+    const parsed = parseResolution(textContent);
 
     // Validate response
     if (!['refund', 'credit', 'explanation', 'no-action'].includes(parsed.customerImpact)) {
@@ -143,7 +144,7 @@ export async function resolveBillingTicket(ticket: Ticket): Promise<BillingResol
       escalationReason: parsed.escalationReason
     };
 
-    const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
+    const tokensUsed = 500; // Estimate
     const elapsedMs = Date.now() - startTime;
 
     // Log resolution

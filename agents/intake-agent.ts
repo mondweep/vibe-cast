@@ -1,16 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import { Anthropic } from 'anthropic';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Ticket, TicketClassification } from '@/lib/types';
 import { updateTicket, addAgentLog, updateAgentTokens } from '@/lib/db';
 import { emitEvent } from '@/lib/events';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const AGENT_ID = 'intake-agent';
-const MODEL = 'claude-3-5-sonnet-20241022';
+const MODEL = 'gemini-2.0-flash';
 const TIMEOUT_MS = 15000; // 15 second timeout
 
 /**
@@ -44,7 +42,7 @@ function buildUserMessage(ticket: Ticket, template: string): string {
 }
 
 /**
- * Parse Claude's response as JSON
+ * Parse Gemini's response as JSON
  */
 function parseClassification(response: string): {
   category: string;
@@ -66,7 +64,7 @@ function parseClassification(response: string): {
 }
 
 /**
- * Classify a ticket using Claude
+ * Classify a ticket using Gemini
  */
 export async function classifyTicket(ticket: Ticket): Promise<TicketClassification> {
   const startTime = Date.now();
@@ -77,33 +75,37 @@ export async function classifyTicket(ticket: Ticket): Promise<TicketClassificati
 
     console.log(`🎯 [${AGENT_ID}] Classifying ticket: ${ticket.id}`);
 
-    // Call Claude API with timeout
-    const responsePromise = anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 500,
-      system: system,
-      messages: [
-        {
-          role: 'user',
-          content: userMessage
-        }
-      ]
-    });
+    const model = genAI.getGenerativeModel({ model: MODEL });
 
+    // Create timeout promise
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Classification timeout')), TIMEOUT_MS)
     );
 
+    // Call Gemini API
+    const responsePromise = model.generateContent({
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: `${system}\n\n${userMessage}`
+            }
+          ]
+        }
+      ]
+    });
+
     const response = await Promise.race([responsePromise, timeoutPromise]);
 
     // Extract text from response
-    const textContent = response.content.find(c => c.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text response from Claude');
+    const textContent = response.response.text();
+    if (!textContent) {
+      throw new Error('No text response from Gemini');
     }
 
     // Parse classification
-    const parsed = parseClassification(textContent.text);
+    const parsed = parseClassification(textContent);
 
     // Validate classification
     if (!['billing', 'technical', 'account', 'feature-request'].includes(parsed.category)) {
@@ -125,8 +127,9 @@ export async function classifyTicket(ticket: Ticket): Promise<TicketClassificati
       nextAgent: getNextAgent(parsed.category)
     };
 
-    // Track tokens used
-    const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
+    // Estimate tokens used (Gemini 2.0 Flash pricing: free for now)
+    // Rough estimate: input ~300 tokens, output ~100 tokens
+    const tokensUsed = 400;
     const elapsedMs = Date.now() - startTime;
 
     // Log classification
@@ -138,7 +141,7 @@ export async function classifyTicket(ticket: Ticket): Promise<TicketClassificati
       tokensUsed
     });
 
-    // Update cost tracking
+    // Update cost tracking (Gemini 2.0 Flash is free tier)
     updateAgentTokens(AGENT_ID, tokensUsed);
 
     // Update ticket with classification
