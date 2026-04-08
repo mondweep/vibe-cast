@@ -81,6 +81,16 @@ export default function Home() {
             title="Inference Cost Tracking" 
             desc="Real-time monitoring of token consumption and estimated costs for every agentic decision." 
           />
+          <Card 
+            icon="📐" 
+            title="BHIL Framework" 
+            desc="Driven by the AI-first BHIL methodology, emphasizing high-fidelity specs as the core source of truth." 
+          />
+          <Card 
+            icon="🖇️" 
+            title="PaperClipAI Context" 
+            desc="Leveraging PaperClipAI for complex context management across our multi-agent specialist pipeline." 
+          />
         </div>
 
         {/* How it Works / Brief Diagram */}

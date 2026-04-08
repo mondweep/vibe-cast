@@ -2,7 +2,7 @@
 
 **Status**: COMPLETED & VERIFIED ✅
 
-This project demonstrates a production-ready **Autonomous Multi-Agent Orchestration** system built with Next.js, SQLite, and the Gemini 1.5/2.5 Flash API. It automates the entire lifecycle of a support ticket—from ingestion and classification to specialized resolution and intelligent escalation.
+This project demonstrates a production-ready **Autonomous Multi-Agent Orchestration** system built with Next.js, [PaperClipAI](https://github.com/paperclipai/paperclip), [BHIL Framework](https://github.com/mondweep/vibe-cast/blob/BHIL-tinkerinh/.claude/commands/bhil.md), SQLite, and the Gemini 1.5/2.5 Flash API. It automates the entire lifecycle of a support ticket—from ingestion and classification to specialized resolution and intelligent escalation.
 
 ## 🚀 Quick Start
 

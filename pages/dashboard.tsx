@@ -262,6 +262,24 @@ function AboutView() {
           </div>
         </section>
 
+        <section style={{ marginBottom: '60px' }}>
+          <h3 style={{ fontSize: '18px', color: '#111827' }}>Technical Stack & Frameworks</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '15px' }}>
+            <div style={{ padding: '20px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#0f172a' }}>📐 BHIL Methodology</div>
+              <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#64748b', margin: 0 }}>
+                This project implements the <a href="https://github.com/mondweep/vibe-cast/blob/BHIL-tinkerinh/.claude/commands/bhil.md" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', fontWeight: '600' }}>BHIL Framework</a>—a systematic AI-first development approach where specifications are the source of truth.
+              </p>
+            </div>
+            <div style={{ padding: '20px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#0f172a' }}>🖇️ PaperClipAI</div>
+              <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#64748b', margin: 0 }}>
+                Context orchestration is enhanced via <a href="https://github.com/paperclipai/paperclip" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', fontWeight: '600' }}>PaperClipAI</a>, ensuring specialists maintain high-fidelity memory across the agentic lifecycle.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
           <section>
             <h3 style={{ fontSize: '18px', color: '#111827' }}>Multi-Agent Strategy</h3>
