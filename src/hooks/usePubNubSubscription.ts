@@ -28,7 +28,7 @@ export function usePubNubSubscription<T>(
   const [message, setMessage] = useState<T | null>(null);
   const [pubnub] = useState(() => {
     const subscribeKey = options?.subscribeKey ||
-      import.meta.env.REACT_APP_PUBNUB_SUBSCRIBE_KEY ||
+      import.meta.env.VITE_PUBNUB_SUBSCRIBE_KEY ||
       process.env.REACT_APP_PUBNUB_SUBSCRIBE_KEY;
 
     if (!subscribeKey) {
