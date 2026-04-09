@@ -29,7 +29,7 @@ export function useApiCall() {
     async <T,>(
       endpoint: string,
       body?: any,
-      headers?: Record<string, string>,
+      options?: { headers?: Record<string, string>, method?: string },
     ): Promise<T> => {
       setState({ loading: true, error: null });
 
@@ -45,13 +45,17 @@ export function useApiCall() {
           throw new Error('Session ID not found. Please refresh the page.');
         }
 
+        // Base64 encode the API key to handle non-ISO-8859-1 characters (e.g., π)
+        // using TextEncoder ensures UTF-8 is correctly handled before btoa
+        const encodedApiKey = btoa(String.fromCharCode(...new TextEncoder().encode(apiKey)));
+
         const response = await fetch(endpoint, {
-          method: body ? 'POST' : 'GET',
+          method: options?.method || (body ? 'POST' : 'GET'),
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': apiKey,
+            'x-api-key': encodedApiKey,
             'x-session-id': sessionId,
-            ...headers,
+            ...(options?.headers || {}),
           },
           body: body ? JSON.stringify(body) : undefined,
         });

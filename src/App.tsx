@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { SearchView } from './components/SearchView';
 import { ContributeView } from './components/ContributeView';
 import { Dashboard } from './components/Dashboard';
+import { AboutView } from './components/AboutView';
 import './App.css';
 
-type View = 'dashboard' | 'search' | 'contribute' | 'auth';
+type View = 'dashboard' | 'search' | 'contribute' | 'about' | 'auth';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('auth');
@@ -23,6 +24,15 @@ function App() {
       setApiKey(existingApiKey);
       setCurrentView('dashboard');
     } else {
+      // Check for API key in environment variables (Vite loads VITE_*)
+      const envApiKey = import.meta.env.VITE_PI_NETWORK_API_KEY;
+      if (envApiKey) {
+        console.log('Using API key from environment variables');
+        setApiKey(envApiKey);
+        sessionStorage.setItem('piNetworkApiKey', envApiKey);
+        setCurrentView('dashboard');
+      }
+
       // Generate new session ID
       const newSessionId = `session_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`;
       setSessionId(newSessionId);
@@ -81,6 +91,12 @@ function App() {
               onClick={() => setCurrentView('contribute')}
             >
               ✍️ Contribute
+            </button>
+            <button
+              className={`nav-btn ${currentView === 'about' ? 'active' : ''}`}
+              onClick={() => setCurrentView('about')}
+            >
+              ℹ️ About
             </button>
             <button className="nav-btn logout-btn" onClick={handleLogout}>
               🚪 Logout
@@ -161,13 +177,18 @@ function App() {
           <SearchView sessionId={sessionId} />
         ) : currentView === 'contribute' ? (
           <ContributeView sessionId={sessionId} />
+        ) : currentView === 'about' ? (
+          <AboutView />
         ) : null}
       </main>
 
       <footer className="App-footer">
         <p>
-          🔮 Pi Network Explorer • Powered by React, Netlify Functions, and PubNub • Built with BHIL
-          Methodology
+          🔮 Pi Network Explorer • Powered by React, Netlify Functions, and PubNub • Built with BHIL Methodology
+        </p>
+        <p style={{ marginTop: '10px', fontSize: '0.9rem' }}>
+          Created by <a href="https://www.linkedin.com/in/mondweepchakravorty" target="_blank" rel="noopener noreferrer" style={{ color: '#61dafb', textDecoration: 'none' }}>Mondweep Chakravorty</a> • 
+          View repository on <a href="https://github.com/mondweep/vibe-cast" target="_blank" rel="noopener noreferrer" style={{ color: '#61dafb', textDecoration: 'none' }}>GitHub</a>
         </p>
       </footer>
     </div>

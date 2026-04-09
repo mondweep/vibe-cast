@@ -58,13 +58,22 @@ export async function searchPiNetwork(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      const response = await fetch(`${piNetworkUrl}/api/search`, {
-        method: 'POST',
+      const bearerToken = `Bearer ${encodeURIComponent(apiKey)}`;
+
+      const url = new URL(`${piNetworkUrl}/v1/memories/search`);
+      url.searchParams.append('q', query);
+      url.searchParams.append('limit', limit.toString());
+      url.searchParams.append('offset', offset.toString());
+      if (domain) {
+        url.searchParams.append('domain', domain);
+      }
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': bearerToken,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
 
@@ -94,21 +103,35 @@ export async function searchPiNetwork(
 
       const result = await response.json();
 
+      // API returns a raw array of memory objects
+      const results = Array.isArray(result) ? result : (result.results || result.memories || []);
+
       // Validate response shape
-      if (!Array.isArray(result.results)) {
+      if (!Array.isArray(results)) {
         throw new PiNetworkApiError(
           'INVALID_RESPONSE',
-          'Response missing results array',
+          'Unexpected response format from Pi Network API',
           500,
         );
       }
 
-      console.log(`[PI_API] Search succeeded: ${result.results.length} results`);
+      console.log(`[PI_API] Search succeeded: ${results.length} results`);
 
       return {
-        results: result.results,
-        totalCount: result.totalCount || result.results.length,
-        executionTime: result.executionTime || 0,
+        results: results.map((m: any) => ({
+          id: m.id,
+          title: m.title || 'Untitled',
+          content: m.content || '',
+          score: m.score ?? m.bayesian_score ?? 0.5,
+          domain: typeof m.category === 'string' 
+            ? m.category 
+            : (m.category?.custom || m.domain || 'general'),
+          authorPseudonym: m.author_pseudonym || m.authorId || 'anonymous',
+          createdAt: m.created_at || m.createdAt || new Date().toISOString(),
+          votes: m.votes || { up: 0, down: 0 },
+        })),
+        totalCount: results.length,
+        executionTime: 0,
       };
     } catch (error: any) {
       lastError = error;
@@ -171,13 +194,38 @@ export async function contributeToPiNetwork(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    const response = await fetch(`${piNetworkUrl}/api/memories`, {
+    const bearerToken = `Bearer ${encodeURIComponent(apiKey)}`;
+
+    const ALLOWED_CATEGORIES = new Set([
+      'architecture', 'pattern', 'solution', 'convention', 'security', 'performance', 
+      'tooling', 'debug', 'sota', 'discovery', 'hypothesis', 'cross_domain', 
+      'neural_architecture', 'compression', 'self_learning', 'reinforcement_learning', 
+      'graph_intelligence', 'distributed_systems', 'edge_computing', 'hardware_acceleration', 
+      'quantum', 'neuromorphic', 'bio_computing', 'cognitive_science', 'formal_methods', 
+      'geopolitics', 'climate', 'biomedical', 'space', 'finance', 'meta_cognition', 
+      'benchmark', 'consciousness', 'information_decomposition'
+    ]);
+
+    const providedDomain = (memory.domain || 'general').toLowerCase();
+    const categoryPayload = ALLOWED_CATEGORIES.has(providedDomain) 
+      ? providedDomain 
+      : { custom: providedDomain };
+
+    // The API expects 'category' instead of 'domain', and requires specific enum variants
+    const apiPayload = {
+      title: memory.title,
+      content: memory.content,
+      category: categoryPayload,
+      tags: memory.tags || [],
+    };
+
+    const response = await fetch(`${piNetworkUrl}/v1/memories`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': bearerToken,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(memory),
+      body: JSON.stringify(apiPayload),
       signal: controller.signal,
     });
 
@@ -232,10 +280,12 @@ export async function voteOnMemory(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    const response = await fetch(`${piNetworkUrl}/api/memories/${memoryId}/vote`, {
+    const bearerToken = `Bearer ${encodeURIComponent(apiKey)}`;
+
+    const response = await fetch(`${piNetworkUrl}/v1/memories/${memoryId}/vote`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': bearerToken,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ vote }),
@@ -298,4 +348,79 @@ export class PiNetworkApiError extends Error implements PiNetworkError {
  */
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Fetch a full, unabridged memory by its exact ID directly from pi.ruv.io
+ */
+export async function getMemoryById(
+  memoryId: string,
+  options: FetchOptions,
+): Promise<any> {
+  const { apiKey, timeout = 5000 } = options;
+  const piNetworkUrl = process.env.PI_NETWORK_API_URL || 'https://pi.ruv.io';
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const bearerToken = `Bearer ${encodeURIComponent(apiKey)}`;
+
+    const response = await fetch(`${piNetworkUrl}/v1/memories/${memoryId}`, {
+      method: 'GET',
+      headers: { 'Authorization': bearerToken },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new PiNetworkApiError('API_ERROR', errorText, response.status);
+    }
+    
+    return await response.json();
+  } catch (error: any) {
+    if (error instanceof PiNetworkApiError) throw error;
+    if (error.name === 'AbortError') throw new PiNetworkApiError('TIMEOUT', `Request timeout`, 408);
+    throw new PiNetworkApiError('NETWORK_ERROR', error.message, 0);
+  }
+}
+
+/**
+ * Permanently delete a memory by ID (requires the author's precise API key)
+ */
+export async function deleteMemoryById(
+  memoryId: string,
+  options: FetchOptions,
+): Promise<boolean> {
+  const { apiKey, timeout = 5000 } = options;
+  const piNetworkUrl = process.env.PI_NETWORK_API_URL || 'https://pi.ruv.io';
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const bearerToken = `Bearer ${encodeURIComponent(apiKey)}`;
+
+    const response = await fetch(`${piNetworkUrl}/v1/memories/${memoryId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': bearerToken },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new PiNetworkApiError('FORBIDDEN', 'You do not have permission to delete this memory', response.status);
+      }
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new PiNetworkApiError('API_ERROR', errorText, response.status);
+    }
+    
+    return true; // 204 No Content typically means success
+  } catch (error: any) {
+    if (error instanceof PiNetworkApiError) throw error;
+    if (error.name === 'AbortError') throw new PiNetworkApiError('TIMEOUT', `Request timeout`, 408);
+    throw new PiNetworkApiError('NETWORK_ERROR', error.message, 0);
+  }
 }

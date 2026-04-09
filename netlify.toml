@@ -10,6 +10,7 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+  force = true
 
 [env]
   [env.development]
@@ -25,5 +26,5 @@
 # Development environment settings
 [dev]
   command = "npm run dev"
-  port = 5173
+  port = 8888
   targetPort = 5173

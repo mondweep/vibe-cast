@@ -13,6 +13,7 @@ import { useState, useCallback, useMemo } from 'react';
 import type { SearchResult } from '../types';
 import { usePubNubSubscription } from '../hooks/usePubNubSubscription';
 import { useApiCall, getErrorMessage } from '../hooks/useApiCall';
+import { MemoryCard } from './MemoryCard';
 import './SearchView.css';
 
 interface SearchViewProps {
@@ -23,12 +24,13 @@ export function SearchView({ sessionId }: SearchViewProps) {
   const [query, setQuery] = useState('');
   const [domain, setDomain] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
   const { call, error, loading } = useApiCall();
 
   // Subscribe to search results from PubNub
   const searchResponse = usePubNubSubscription<any>(`search_results_${sessionId}`);
   const results: SearchResult[] = useMemo(
-    () => (searchResponse && 'results' in searchResponse ? searchResponse.results : []),
+    () => (searchResponse && Array.isArray(searchResponse.results) ? searchResponse.results : []),
     [searchResponse],
   );
 
@@ -46,7 +48,7 @@ export function SearchView({ sessionId }: SearchViewProps) {
       try {
         await call('/api/search', {
           query: query.trim(),
-          limit: 20,
+          limit: 10,
           offset: 0,
           domain: domain || undefined,
         });
@@ -120,6 +122,20 @@ export function SearchView({ sessionId }: SearchViewProps) {
           {isSearching && <span className="loading-spinner">⚙️</span>}
         </h3>
 
+        {results.length > 0 && (
+          <div className="truncation-notice" style={{
+            backgroundColor: 'rgba(255, 165, 0, 0.1)',
+            borderLeft: '4px solid #ffa500',
+            padding: '10px 15px',
+            marginBottom: '20px',
+            borderRadius: '4px',
+            fontSize: '0.9rem',
+            color: '#e69500'
+          }}>
+            <strong>Note:</strong> Result content is truncated below 600 characters due to the current technical infrastructure limitations of this demonstration app.
+          </div>
+        )}
+
         {results.length === 0 ? (
           <div className="empty-state">
             <p>
@@ -128,34 +144,14 @@ export function SearchView({ sessionId }: SearchViewProps) {
           </div>
         ) : (
           <div className="results-grid">
-            {results.map((result) => (
-              <div key={result.id} className="result-card">
-                <div className="result-header">
-                  <h4>{result.title}</h4>
-                  <div className="result-meta">
-                    <span className="relevance-score">
-                      📊 {Math.round(result.score * 100)}%
-                    </span>
-                    {result.domain && <span className="domain">📁 {result.domain}</span>}
-                  </div>
-                </div>
-
-                <p className="result-content">{result.content}</p>
-
-                <div className="result-footer">
-                  <div className="votes">
-                    <button className="vote-btn upvote" title="Upvote">
-                      👍 {result.votes.up}
-                    </button>
-                    <button className="vote-btn downvote" title="Downvote">
-                      👎 {result.votes.down}
-                    </button>
-                  </div>
-                  <span className="timestamp">
-                    {new Date(result.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
+            {results
+              .filter(result => !deletedIds.includes(result?.id))
+              .map((result) => (
+              <MemoryCard 
+                key={result?.id || Math.random().toString()} 
+                initialResult={result} 
+                onDeleted={(id) => setDeletedIds(prev => [...prev, id])}
+              />
             ))}
           </div>
         )}

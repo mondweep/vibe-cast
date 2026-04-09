@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
-import { contributeToPiNetwork, PiNetworkApiError } from '../../src/services/piNetworkAPI';
-import { getPubNubClient, publishMessage, getChannelName } from '../../src/services/pubnubService';
+import { contributeToPiNetwork, PiNetworkApiError } from '../src/services/piNetworkAPI';
+import { getPubNubClient, publishMessage, getChannelName } from '../src/services/pubnubService';
+import { corsHeaders, isPreflight, preflightResponse } from '../src/utils/cors';
 
 /**
  * Contribute Netlify Function
@@ -19,17 +20,35 @@ interface ContributeRequest {
 }
 
 export const handler: Handler = async (event) => {
+  // Handle OPTIONS preflight request
+  if (isPreflight(event)) {
+    return preflightResponse;
+  }
+
   try {
     // Validate required headers
-    const apiKey = event.headers['x-api-key'];
+    const encodedApiKey = event.headers['x-api-key'];
     const sessionId = event.headers['x-session-id'];
 
-    if (!apiKey || !sessionId) {
+    if (!encodedApiKey || !sessionId) {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'Missing required headers: x-api-key, x-session-id',
         }),
+      };
+    }
+
+    // Decode API key from Base64
+    let apiKey: string;
+    try {
+      apiKey = Buffer.from(encodedApiKey, 'base64').toString('utf8');
+    } catch (e) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({ error: 'Invalid API key encoding' }),
       };
     }
 
@@ -40,6 +59,7 @@ export const handler: Handler = async (event) => {
     } catch (e) {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({ error: 'Invalid JSON in request body' }),
       };
     }
@@ -50,6 +70,7 @@ export const handler: Handler = async (event) => {
     if (!title || typeof title !== 'string') {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({ error: 'Title is required and must be a string' }),
       };
     }
@@ -57,6 +78,7 @@ export const handler: Handler = async (event) => {
     if (title.length < 1 || title.length > 200) {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'Title must be between 1 and 200 characters',
         }),
@@ -66,6 +88,7 @@ export const handler: Handler = async (event) => {
     if (!content || typeof content !== 'string') {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({ error: 'Content is required and must be a string' }),
       };
     }
@@ -73,6 +96,7 @@ export const handler: Handler = async (event) => {
     if (content.length < 10 || content.length > 5000) {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'Content must be between 10 and 5000 characters',
         }),
@@ -82,6 +106,7 @@ export const handler: Handler = async (event) => {
     if (!domain || typeof domain !== 'string') {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({ error: 'Domain is required and must be a string' }),
       };
     }
@@ -122,9 +147,7 @@ export const handler: Handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: corsHeaders,
       body: JSON.stringify({
         status: 'published',
         channel,
@@ -138,6 +161,7 @@ export const handler: Handler = async (event) => {
     if (error instanceof PiNetworkApiError) {
       return {
         statusCode: error.status,
+        headers: corsHeaders,
         body: JSON.stringify({
           error: error.code,
           message: error.message,
@@ -149,6 +173,7 @@ export const handler: Handler = async (event) => {
     // Generic server error
     return {
       statusCode: 500,
+      headers: corsHeaders,
       body: JSON.stringify({
         error: 'CONTRIBUTION_FAILED',
         message: error.message || 'Contribution failed',

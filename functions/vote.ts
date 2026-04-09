@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { voteOnMemory, PiNetworkApiError } from '../../src/services/piNetworkAPI';
+import { voteOnMemory, PiNetworkApiError } from '../src/services/piNetworkAPI';
+import { corsHeaders, isPreflight, preflightResponse } from '../src/utils/cors';
 
 /**
  * Vote Netlify Function
@@ -16,16 +17,34 @@ interface VoteRequest {
 }
 
 export const handler: Handler = async (event) => {
+  // Handle OPTIONS preflight request
+  if (isPreflight(event)) {
+    return preflightResponse;
+  }
+
   try {
     // Validate required headers
-    const apiKey = event.headers['x-api-key'];
+    const encodedApiKey = event.headers['x-api-key'];
 
-    if (!apiKey) {
+    if (!encodedApiKey) {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'Missing required header: x-api-key',
         }),
+      };
+    }
+
+    // Decode API key from Base64
+    let apiKey: string;
+    try {
+      apiKey = Buffer.from(encodedApiKey, 'base64').toString('utf8');
+    } catch (e) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({ error: 'Invalid API key encoding' }),
       };
     }
 
@@ -36,6 +55,7 @@ export const handler: Handler = async (event) => {
     } catch (e) {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({ error: 'Invalid JSON in request body' }),
       };
     }
@@ -46,6 +66,7 @@ export const handler: Handler = async (event) => {
     if (!memoryId || typeof memoryId !== 'string') {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({ error: 'memoryId is required and must be a string' }),
       };
     }
@@ -53,6 +74,7 @@ export const handler: Handler = async (event) => {
     if (vote !== 1 && vote !== -1) {
       return {
         statusCode: 400,
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'Vote must be 1 (upvote) or -1 (downvote)',
         }),
@@ -75,9 +97,7 @@ export const handler: Handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: corsHeaders,
       body: JSON.stringify({
         memoryId: result.memoryId || memoryId,
         voteCount: result.voteCount || 0,
@@ -92,6 +112,7 @@ export const handler: Handler = async (event) => {
     if (error instanceof PiNetworkApiError) {
       return {
         statusCode: error.status,
+        headers: corsHeaders,
         body: JSON.stringify({
           error: error.code,
           message: error.message,
@@ -103,6 +124,7 @@ export const handler: Handler = async (event) => {
     // Generic server error
     return {
       statusCode: 500,
+      headers: corsHeaders,
       body: JSON.stringify({
         error: 'VOTE_FAILED',
         message: error.message || 'Vote failed',
