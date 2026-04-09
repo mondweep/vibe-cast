@@ -1,62 +1,175 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { SearchView } from './components/SearchView';
+import { ContributeView } from './components/ContributeView';
+import { Dashboard } from './components/Dashboard';
 import './App.css';
 
+type View = 'dashboard' | 'search' | 'contribute' | 'auth';
+
 function App() {
-  const [count, setCount] = useState(0);
+  const [currentView, setCurrentView] = useState<View>('auth');
+  const [apiKey, setApiKey] = useState('');
+  const [tempApiKey, setTempApiKey] = useState('');
+  const [sessionId, setSessionId] = useState('');
+  const [error, setError] = useState('');
+
+  // Initialize session on mount
+  useEffect(() => {
+    const existingSessionId = sessionStorage.getItem('sessionId');
+    const existingApiKey = sessionStorage.getItem('piNetworkApiKey');
+
+    if (existingSessionId && existingApiKey) {
+      setSessionId(existingSessionId);
+      setApiKey(existingApiKey);
+      setCurrentView('dashboard');
+    } else {
+      // Generate new session ID
+      const newSessionId = `session_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`;
+      setSessionId(newSessionId);
+      sessionStorage.setItem('sessionId', newSessionId);
+    }
+  }, []);
+
+  const handleApiKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!tempApiKey.trim()) {
+      setError('Please enter your Pi Network API key');
+      return;
+    }
+
+    // Store API key in sessionStorage (never in localStorage for security)
+    sessionStorage.setItem('piNetworkApiKey', tempApiKey);
+    setApiKey(tempApiKey);
+    setTempApiKey('');
+    setCurrentView('dashboard');
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('piNetworkApiKey');
+    setApiKey('');
+    setTempApiKey('');
+    setCurrentView('auth');
+    setError('');
+  };
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>🔮 Pi Network Explorer</h1>
-        <p>A decentralized collective intelligence platform</p>
+        <div className="header-content">
+          <h1>🔮 Pi Network Explorer</h1>
+          <p>A decentralized collective intelligence platform</p>
+        </div>
+
+        {apiKey && (
+          <nav className="main-nav">
+            <button
+              className={`nav-btn ${currentView === 'dashboard' ? 'active' : ''}`}
+              onClick={() => setCurrentView('dashboard')}
+            >
+              📊 Dashboard
+            </button>
+            <button
+              className={`nav-btn ${currentView === 'search' ? 'active' : ''}`}
+              onClick={() => setCurrentView('search')}
+            >
+              🔍 Search
+            </button>
+            <button
+              className={`nav-btn ${currentView === 'contribute' ? 'active' : ''}`}
+              onClick={() => setCurrentView('contribute')}
+            >
+              ✍️ Contribute
+            </button>
+            <button className="nav-btn logout-btn" onClick={handleLogout}>
+              🚪 Logout
+            </button>
+          </nav>
+        )}
       </header>
 
-      <main>
-        <section className="welcome">
-          <h2>Welcome to the Pi Network Explorer</h2>
-          <p>
-            This application enables exploration, querying, and contribution to the π (Pi) Network—a
-            decentralized collective intelligence platform powered by real-time updates.
-          </p>
+      <main className="main-content">
+        {currentView === 'auth' ? (
+          <div className="auth-container">
+            <section className="auth-section">
+              <h2>🔐 Connect to Pi Network</h2>
+              <p>Enter your Pi Network API key to get started</p>
 
-          <div className="features">
-            <h3>Core Features (Coming Soon)</h3>
-            <ul>
-              <li>🔍 Knowledge Exploration - Search the pi network knowledge graph</li>
-              <li>✍️ Knowledge Contribution - Submit new memories to the network</li>
-              <li>🧪 API Testing Sandbox - Explore REST API endpoints interactively</li>
-              <li>📊 Real-Time Dashboard - Live activity feed with network stats</li>
-              <li>🔐 Authentication - Secure API key management</li>
-            </ul>
+              <form onSubmit={handleApiKeySubmit} className="auth-form">
+                <div className="form-group">
+                  <label htmlFor="apiKey">API Key</label>
+                  <input
+                    id="apiKey"
+                    type="password"
+                    value={tempApiKey}
+                    onChange={(e) => {
+                      setTempApiKey(e.target.value);
+                      setError('');
+                    }}
+                    placeholder="Enter your pi.ruv.io API key"
+                    autoFocus
+                  />
+                </div>
+
+                {error && <div className="error-message">{error}</div>}
+
+                <button type="submit">Connect</button>
+              </form>
+
+              <div className="auth-info">
+                <h3>About API Keys</h3>
+                <p>
+                  You can get your API key from{' '}
+                  <a href="https://pi.ruv.io" target="_blank" rel="noopener noreferrer">
+                    pi.ruv.io
+                  </a>
+                  . Your key is stored securely in session storage only.
+                </p>
+              </div>
+            </section>
+
+            <section className="features-preview">
+              <h2>What you can do</h2>
+              <div className="features-grid">
+                <div className="feature-card">
+                  <div className="feature-icon">🔍</div>
+                  <h3>Search Knowledge</h3>
+                  <p>Query the network's collective knowledge graph with semantic search</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">✍️</div>
+                  <h3>Contribute</h3>
+                  <p>Share your insights and memories with the network</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">🗳️</div>
+                  <h3>Vote</h3>
+                  <p>Rate knowledge quality and improve collective intelligence</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">📊</div>
+                  <h3>Real-Time Updates</h3>
+                  <p>Watch the network evolve with live activity feeds</p>
+                </div>
+              </div>
+            </section>
           </div>
-
-          <div className="status">
-            <h3>Project Status</h3>
-            <p>
-              <strong>Phase:</strong> TASK-001 (Project Scaffold)
-            </p>
-            <p>
-              This is the initial scaffold. UI components and API integrations are being built out
-              according to SPEC-001.
-            </p>
-          </div>
-
-          <button onClick={() => setCount((count) => count + 1)}>
-            Build counter: {count}
-          </button>
-        </section>
-
-        <section className="tech-stack">
-          <h3>Tech Stack</h3>
-          <ul>
-            <li>Frontend: React + TypeScript + Vite</li>
-            <li>Backend: Node.js + Netlify Functions</li>
-            <li>Real-time: PubNub pub/sub messaging</li>
-            <li>Hosting: Netlify</li>
-            <li>Methodology: BHIL AI-First Development</li>
-          </ul>
-        </section>
+        ) : currentView === 'dashboard' ? (
+          <Dashboard sessionId={sessionId} />
+        ) : currentView === 'search' ? (
+          <SearchView sessionId={sessionId} />
+        ) : currentView === 'contribute' ? (
+          <ContributeView sessionId={sessionId} />
+        ) : null}
       </main>
+
+      <footer className="App-footer">
+        <p>
+          🔮 Pi Network Explorer • Powered by React, Netlify Functions, and PubNub • Built with BHIL
+          Methodology
+        </p>
+      </footer>
     </div>
   );
 }
