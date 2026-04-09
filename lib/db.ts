@@ -123,6 +123,28 @@ function seedDatabase(): void {
 }
 
 /**
+ * Reset database to initial demo state
+ */
+export function resetDatabase(): void {
+  const db = initDB();
+  
+  // Disable foreign key constraints during clear
+  db.pragma('foreign_keys = OFF');
+  
+  // Clear all data
+  db.prepare('DELETE FROM agent_logs').run();
+  db.prepare('DELETE FROM cost_tracking').run();
+  db.prepare('DELETE FROM agent_activity').run();
+  db.prepare('DELETE FROM tickets').run();
+  
+  // Re-enable foreign keys
+  db.pragma('foreign_keys = ON');
+  
+  // Re-seed with fresh mock data
+  seedDatabase();
+}
+
+/**
  * Get database instance
  */
 export function getDB(): Database.Database {

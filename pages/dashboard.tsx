@@ -58,6 +58,20 @@ export default function Dashboard() {
     }
   };
 
+  const handleReset = async () => {
+    if (!confirm('Are you sure you want to reset the demo? All logs and resolutions will be cleared.')) return;
+    
+    try {
+      const response = await fetch('/api/admin/reset', { method: 'POST' });
+      if (response.ok) {
+        console.log('Demo reset complete');
+        // The 2s fetchData interval will refresh the metrics automatically
+      }
+    } catch (error) {
+      console.error('Error resetting demo:', error);
+    }
+  };
+
   if (loading) {
     return <div style={{ padding: '40px' }}>Loading dashboard...</div>;
   }
@@ -77,6 +91,22 @@ export default function Dashboard() {
           <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} label="Dashboard" />
           <TabButton active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} label="Live Activity" />
           <TabButton active={activeTab === 'about'} onClick={() => setActiveTab('about')} label="How it Works" />
+          <button
+            onClick={handleReset}
+            style={{
+              padding: '10px 18px',
+              backgroundColor: '#fee2e2',
+              color: '#ef4444',
+              border: '1px solid #fecaca',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: '600',
+              marginLeft: '20px'
+            }}
+          >
+            🔄 Reset Demo
+          </button>
           <button
             onClick={handleProcessAll}
             disabled={isProcessing}
