@@ -1,0 +1,29 @@
+# Netlify configuration for Pi Network Explorer
+# Reference: ADR-001 (Netlify hosting decision)
+
+[build]
+  command = "npm run build"
+  functions = "functions"
+  publish = "dist"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[env]
+  [env.development]
+    PUBNUB_PUBLISH_KEY = ""
+    PUBNUB_SUBSCRIBE_KEY = ""
+    PI_NETWORK_API_URL = "https://pi.ruv.io"
+
+  [env.production]
+    PUBNUB_PUBLISH_KEY = ""
+    PUBNUB_SUBSCRIBE_KEY = ""
+    PI_NETWORK_API_URL = "https://pi.ruv.io"
+
+# Development environment settings
+[dev]
+  command = "npm run dev"
+  port = 5173
+  targetPort = 5173

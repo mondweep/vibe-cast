@@ -1,0 +1,42 @@
+{
+  "name": "vibe-cast",
+  "version": "1.0.0",
+  "description": "Pi Network Explorer - A decentralized collective intelligence platform",
+  "main": "index.js",
+  "type": "module",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:36763/git/mondweep/vibe-cast"
+  },
+  "keywords": [
+    "pi-network",
+    "collective-intelligence",
+    "decentralized",
+    "knowledge-graph"
+  ],
+  "author": "Pi Network Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "pubnub": "^10.2.9",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^5.1.5",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8"
+  }
+}
