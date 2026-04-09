@@ -1,6 +1,6 @@
 # TASK-001: Project Scaffold & Infrastructure Setup
 
-**Status:** pending  
+**Status:** complete  
 **SPEC:** SPEC-001  
 **ADRs:** ADR-001, ADR-002, ADR-003  
 **Depends On:** None (can start immediately)  

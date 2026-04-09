@@ -1,6 +1,6 @@
 # TASK-002: Implement Netlify API Functions
 
-**Status:** pending  
+**Status:** complete  
 **SPEC:** SPEC-001  
 **ADRs:** ADR-001, ADR-002  
 **Depends On:** TASK-001 (project scaffold)  
