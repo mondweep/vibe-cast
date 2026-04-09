@@ -1,12 +1,14 @@
 import { Handler } from '@netlify/functions';
+import { contributeToPiNetwork, PiNetworkApiError } from '../../src/services/piNetworkAPI';
+import { getPubNubClient, publishMessage, getChannelName } from '../../src/services/pubnubService';
 
 /**
  * Contribute Netlify Function
  *
  * Submits new knowledge (memories) to the pi.ruv.io network.
- * Confirmation is published to PubNub channel for real-time feedback.
+ * Confirmation is published to PubNub channel for real-time feedback (<500ms latency).
  *
- * Reference: SPEC-001 API Contracts
+ * Reference: SPEC-001 API Contracts, ADR-002 (PubNub real-time)
  */
 
 interface ContributeRequest {
@@ -16,14 +18,7 @@ interface ContributeRequest {
   tags?: string[];
 }
 
-interface ContributionResponse {
-  memoryId: string;
-  status: 'accepted' | 'pending' | 'rejected';
-  message: string;
-  timestamp: string;
-}
-
-export const handler: Handler = async (event, context) => {
+export const handler: Handler = async (event) => {
   try {
     // Validate required headers
     const apiKey = event.headers['x-api-key'];
@@ -93,17 +88,37 @@ export const handler: Handler = async (event, context) => {
 
     console.log(`[CONTRIBUTE] Title: "${title}", Domain: "${domain}", SessionId: ${sessionId}`);
 
-    // TODO: Implement pi.ruv.io API integration
-    // This is a stub that returns mock confirmation for development
-    const mockResponse: ContributionResponse = {
-      memoryId: `mem_${Date.now()}`,
-      status: 'accepted',
-      message: 'Knowledge accepted into the network',
-      timestamp: new Date().toISOString(),
-    };
+    // Submit to pi network
+    const result = await contributeToPiNetwork(
+      {
+        title,
+        content,
+        domain,
+        tags,
+      },
+      {
+        apiKey,
+        timeout: 8000, // 8 seconds per SPEC-001
+      },
+    );
 
-    // TODO: Publish to PubNub channel `contribution_updates_${sessionId}`
-    // Using PubNub SDK to deliver confirmation in real-time
+    console.log(`[CONTRIBUTE] Submitted memory: ${result.memoryId || 'unknown'}`);
+
+    // Initialize PubNub and publish confirmation
+    const pubNub = getPubNubClient();
+    const channel = getChannelName('contribution_updates', sessionId);
+
+    await publishMessage(pubNub, {
+      channel,
+      message: {
+        memoryId: result.memoryId,
+        status: result.status || 'accepted',
+        message: result.message || 'Knowledge accepted into the network',
+        timestamp: new Date().toISOString(),
+      },
+    });
+
+    console.log(`[CONTRIBUTE] Published confirmation to PubNub channel: ${channel}`);
 
     return {
       statusCode: 200,
@@ -112,17 +127,32 @@ export const handler: Handler = async (event, context) => {
       },
       body: JSON.stringify({
         status: 'published',
-        channel: `contribution_updates_${sessionId}`,
+        channel,
+        memoryId: result.memoryId,
       }),
     };
   } catch (error: any) {
     console.error('[CONTRIBUTE] Error:', error);
 
+    // Handle known Pi Network API errors
+    if (error instanceof PiNetworkApiError) {
+      return {
+        statusCode: error.status,
+        body: JSON.stringify({
+          error: error.code,
+          message: error.message,
+          timestamp: error.timestamp,
+        }),
+      };
+    }
+
+    // Generic server error
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: 'Contribution failed',
-        details: error.message,
+        error: 'CONTRIBUTION_FAILED',
+        message: error.message || 'Contribution failed',
+        timestamp: new Date().toISOString(),
       }),
     };
   }

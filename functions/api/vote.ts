@@ -1,9 +1,11 @@
 import { Handler } from '@netlify/functions';
+import { voteOnMemory, PiNetworkApiError } from '../../src/services/piNetworkAPI';
 
 /**
  * Vote Netlify Function
  *
  * Submits a vote (upvote or downvote) for an existing memory in the pi.ruv.io network.
+ * Vote is applied immediately; confirmation returned directly (no async PubNub needed for votes).
  *
  * Reference: SPEC-001 API Contracts
  */
@@ -13,14 +15,7 @@ interface VoteRequest {
   vote: 1 | -1; // 1 for upvote, -1 for downvote
 }
 
-interface VoteResponse {
-  memoryId: string;
-  voteCount: number;
-  userVote: 1 | -1 | null;
-  timestamp: string;
-}
-
-export const handler: Handler = async (event, context) => {
+export const handler: Handler = async (event) => {
   try {
     // Validate required headers
     const apiKey = event.headers['x-api-key'];
@@ -64,32 +59,54 @@ export const handler: Handler = async (event, context) => {
       };
     }
 
-    console.log(`[VOTE] MemoryId: "${memoryId}", Vote: ${vote}`);
+    console.log(
+      `[VOTE] MemoryId: "${memoryId}", Vote: ${vote > 0 ? 'upvote' : 'downvote'}`,
+    );
 
-    // TODO: Implement pi.ruv.io API integration
-    // This is a stub that returns mock vote confirmation for development
-    const mockResponse: VoteResponse = {
-      memoryId,
-      voteCount: 42,
-      userVote: vote,
-      timestamp: new Date().toISOString(),
-    };
+    // Submit vote to pi network
+    const result = await voteOnMemory(memoryId, vote, {
+      apiKey,
+      timeout: 5000, // Votes are quick operations
+    });
+
+    console.log(
+      `[VOTE] Vote recorded: ${result.voteCount || 0} total votes on memory`,
+    );
 
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(mockResponse),
+      body: JSON.stringify({
+        memoryId: result.memoryId || memoryId,
+        voteCount: result.voteCount || 0,
+        userVote: vote,
+        timestamp: new Date().toISOString(),
+      }),
     };
   } catch (error: any) {
     console.error('[VOTE] Error:', error);
 
+    // Handle known Pi Network API errors
+    if (error instanceof PiNetworkApiError) {
+      return {
+        statusCode: error.status,
+        body: JSON.stringify({
+          error: error.code,
+          message: error.message,
+          timestamp: error.timestamp,
+        }),
+      };
+    }
+
+    // Generic server error
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: 'Vote failed',
-        details: error.message,
+        error: 'VOTE_FAILED',
+        message: error.message || 'Vote failed',
+        timestamp: new Date().toISOString(),
       }),
     };
   }

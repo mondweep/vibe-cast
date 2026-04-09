@@ -1,12 +1,14 @@
 import { Handler } from '@netlify/functions';
+import { searchPiNetwork, PiNetworkApiError } from '../../src/services/piNetworkAPI';
+import { getPubNubClient, publishMessage, getChannelName } from '../../src/services/pubnubService';
 
 /**
  * Search Netlify Function
  *
  * Queries the pi.ruv.io network for knowledge matching a search query.
- * Results are published to PubNub channel for real-time delivery.
+ * Results are published to PubNub channel for real-time delivery (<500ms latency).
  *
- * Reference: SPEC-001 API Contracts
+ * Reference: SPEC-001 API Contracts, ADR-002 (PubNub real-time)
  */
 
 interface SearchRequest {
@@ -16,21 +18,7 @@ interface SearchRequest {
   domain?: string;
 }
 
-interface SearchResult {
-  id: string;
-  title: string;
-  content: string;
-  score: number;
-  domain: string;
-}
-
-interface SearchResponse {
-  results: SearchResult[];
-  totalCount: number;
-  executionTime: number;
-}
-
-export const handler: Handler = async (event, context) => {
+export const handler: Handler = async (event) => {
   try {
     // Validate required headers
     const apiKey = event.headers['x-api-key'];
@@ -66,26 +54,30 @@ export const handler: Handler = async (event, context) => {
       };
     }
 
-    console.log(`[SEARCH] Query: "${query}", sessionId: ${sessionId}`);
+    console.log(`[SEARCH] Query: "${query}", SessionId: ${sessionId}`);
 
-    // TODO: Implement pi.ruv.io API integration
-    // This is a stub that returns mock data for development
-    const mockResponse: SearchResponse = {
-      results: [
-        {
-          id: '1',
-          title: 'Example Knowledge 1',
-          content: 'This is example knowledge matching your query',
-          score: 0.95,
-          domain: domain || 'general',
-        },
-      ],
-      totalCount: 1,
-      executionTime: 150,
-    };
+    // Query pi network
+    const searchResults = await searchPiNetwork(query, {
+      apiKey,
+      limit,
+      offset,
+      domain,
+      timeout: 8000, // 8 seconds per SPEC-001, fits within Netlify 10s timeout
+      retries: 2,
+    });
 
-    // TODO: Publish to PubNub channel `search_results_${sessionId}`
-    // Using PubNub SDK to deliver results in real-time
+    console.log(`[SEARCH] Found ${searchResults.results.length} results`);
+
+    // Initialize PubNub and publish results
+    const pubNub = getPubNubClient();
+    const channel = getChannelName('search_results', sessionId);
+
+    await publishMessage(pubNub, {
+      channel,
+      message: searchResults,
+    });
+
+    console.log(`[SEARCH] Published results to PubNub channel: ${channel}`);
 
     return {
       statusCode: 200,
@@ -94,17 +86,35 @@ export const handler: Handler = async (event, context) => {
       },
       body: JSON.stringify({
         status: 'published',
-        channel: `search_results_${sessionId}`,
+        channel,
+        resultCount: searchResults.results.length,
       }),
     };
   } catch (error: any) {
     console.error('[SEARCH] Error:', error);
 
+    // Handle known Pi Network API errors
+    if (error instanceof PiNetworkApiError) {
+      const statusCode = error.status;
+      const isClientError = statusCode >= 400 && statusCode < 500;
+
+      return {
+        statusCode,
+        body: JSON.stringify({
+          error: error.code,
+          message: error.message,
+          timestamp: error.timestamp,
+        }),
+      };
+    }
+
+    // Generic server error
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: 'Search failed',
-        details: error.message,
+        error: 'SEARCH_FAILED',
+        message: error.message || 'Search failed',
+        timestamp: new Date().toISOString(),
       }),
     };
   }
