@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local analysis reports
+# The script currently defaults to ~/tuin/analysis/tokens, 
+# but we ignore any local report files just in case.
+token_report.md
+prompts/
