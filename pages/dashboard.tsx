@@ -76,7 +76,12 @@ export default function Dashboard() {
     return <div style={{ padding: '40px' }}>Loading dashboard...</div>;
   }
 
-  const totalCost = agents?.agents.reduce((sum, a) => sum + (a.tokensUsed * 0.003 / 1000), 0) || 0;
+  // Gemini 2.5 Flash: $0.0001875/1K input tokens, $0.00075/1K output tokens (~80/20 split)
+  const totalCost = agents?.agents.reduce((sum, a) => {
+    const inputCost  = Math.round(a.tokensUsed * 0.8) * 0.0001875 / 1000;
+    const outputCost = Math.round(a.tokensUsed * 0.2) * 0.00075    / 1000;
+    return sum + inputCost + outputCost;
+  }, 0) || 0;
   const resolvedRate = tickets?.total ? ((tickets.resolved / tickets.total) * 100).toFixed(1) : '0';
 
   return (
@@ -159,8 +164,9 @@ export default function Dashboard() {
 
             <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '5px' }}>Total Inference Cost</div>
-                  <div style={{ fontSize: '42px', fontWeight: '800', color: '#6366f1' }}>${totalCost.toFixed(4)}</div>
+                  <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '5px' }}>Total Inference Cost (Gemini 2.5 Flash)</div>
+                  <div style={{ fontSize: '36px', fontWeight: '800', color: '#6366f1' }}>${totalCost.toFixed(6)}</div>
+                  <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Real-time from API · 80% input / 20% output</div>
                   <div style={{ marginTop: '15px', padding: '4px 12px', backgroundColor: '#eef2ff', color: '#6366f1', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
                     Resolution Rate: {resolvedRate}%
                   </div>

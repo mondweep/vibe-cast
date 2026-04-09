@@ -400,7 +400,13 @@ export function getTicketCounts(): { total: number; pending: number; resolved: n
  */
 export function updateAgentTokens(agentId: string, tokensUsed: number): void {
   const month = new Date().toISOString().slice(0, 7);
-  const costPerToken = 0.003 / 1000; // claude-3-5-sonnet pricing estimate
+  // Gemini 2.5 Flash pricing (as of April 2026):
+  // Input:  $0.0001875 / 1K tokens
+  // Output: $0.0007500 / 1K tokens
+  // Assume ~80% input / 20% output split for typical agentic prompts
+  const inputTokens  = Math.round(tokensUsed * 0.8);
+  const outputTokens = Math.round(tokensUsed * 0.2);
+  const estimatedCostDelta = (inputTokens * 0.0001875 + outputTokens * 0.00075) / 1000;
 
   const existing = queryOne<any>(
     'SELECT tokens_used FROM cost_tracking WHERE agent_id = ? AND month = ?',
@@ -409,11 +415,11 @@ export function updateAgentTokens(agentId: string, tokensUsed: number): void {
 
   if (existing) {
     const newTotal = (existing.tokens_used || 0) + tokensUsed;
-    const estimatedCost = newTotal * costPerToken;
+    const newEstimatedCost = (existing.estimated_cost || 0) + estimatedCostDelta;
 
     run(
       'UPDATE cost_tracking SET tokens_used = ?, estimated_cost = ? WHERE agent_id = ? AND month = ?',
-      [newTotal, estimatedCost, agentId, month]
+      [newTotal, newEstimatedCost, agentId, month]
     );
   }
 }

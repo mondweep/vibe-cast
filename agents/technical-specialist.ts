@@ -110,7 +110,9 @@ export async function resolveTechnicalTicket(ticket: Ticket): Promise<TechnicalR
       escalationReason: parsed.escalationReason
     };
 
-    const tokensUsed = 600; // Estimate
+    // Read real token usage from the Gemini API response
+    const usage = response.response.usageMetadata;
+    const tokensUsed = (usage?.promptTokenCount || 0) + (usage?.candidatesTokenCount || 0) || 600;
     const elapsedMs = Date.now() - startTime;
 
     addAgentLog({

@@ -144,7 +144,9 @@ export async function resolveBillingTicket(ticket: Ticket): Promise<BillingResol
       escalationReason: parsed.escalationReason
     };
 
-    const tokensUsed = 500; // Estimate
+    // Read real token usage from the Gemini API response
+    const usage = response.response.usageMetadata;
+    const tokensUsed = (usage?.promptTokenCount || 0) + (usage?.candidatesTokenCount || 0) || 500;
     const elapsedMs = Date.now() - startTime;
 
     // Log resolution

@@ -127,9 +127,9 @@ export async function classifyTicket(ticket: Ticket): Promise<TicketClassificati
       nextAgent: getNextAgent(parsed.category)
     };
 
-    // Estimate tokens used (Gemini 2.0 Flash pricing: free for now)
-    // Rough estimate: input ~300 tokens, output ~100 tokens
-    const tokensUsed = 400;
+    // Read real token usage from the Gemini API response
+    const usage = response.response.usageMetadata;
+    const tokensUsed = (usage?.promptTokenCount || 0) + (usage?.candidatesTokenCount || 0) || 400;
     const elapsedMs = Date.now() - startTime;
 
     // Log classification

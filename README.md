@@ -82,11 +82,9 @@ Built with ⚡ by the Antigravity Team.
 
 ### Q1: Are the Inference Costs shown on the dashboard real?
 
-**No — they are illustrative estimates.** The cost figure displayed is a simulation for demonstration purposes. There are two layers of approximation:
+**Yes — as of the current version, the costs are accurate.** Each agent reads token usage directly from the Gemini API response (`usageMetadata.promptTokenCount` + `usageMetadata.candidatesTokenCount`) and the cost formula applies **Gemini 2.5 Flash's actual pricing** with an 80% input / 20% output token split.
 
-1. **Token counts are hardcoded**: Each agent logs a fixed estimate (e.g., 400 tokens for Intake, 500 for Billing) rather than reading the actual token usage returned by the Gemini API. The real count depends on the length of the system prompt, the ticket description, and the model's response.
-
-2. **The price-per-token formula is wrong**: The code uses `$0.003 / 1,000 tokens` — which is historically the pricing for **Claude 3.5 Sonnet** (the comment in the source code even says so). This is a left-over placeholder that has never been updated to reflect Gemini's pricing.
+> **Earlier versions used two incorrect placeholders**: a hardcoded token estimate (400–600 per ticket) and Claude 3.5 Sonnet's pricing ($0.003/1K tokens). Both have been corrected.
 
 ---
 
@@ -118,11 +116,11 @@ A single "Run Autonomous Cycle" for 30 tickets makes roughly **30–90 API calls
 
 ---
 
-### Q4: How could you make the cost tracking accurate?
+### Q4: How is the cost calculated?
 
-It is straightforward to fix in a future iteration:
-1. **Read real token counts**: The Gemini SDK returns `usageMetadata.promptTokenCount` and `usageMetadata.candidatesTokenCount` in every response — these just need to be passed to `updateAgentTokens()` instead of the hardcoded estimates.
-2. **Apply the correct price**: Replace `$0.003/1K` with Gemini 2.5 Flash's current pricing, split between input (`$0.0001875/1K`) and output (`$0.0007500/1K`) tokens.
+The system now uses accurate, real-time tracking:
+1. **Real token counts**: The Gemini SDK returns `usageMetadata.promptTokenCount` and `usageMetadata.candidatesTokenCount` in every response — both are summed and stored per agent.
+2. **Correct pricing**: Gemini 2.5 Flash's current price split (input: `$0.0001875/1K`, output: `$0.00075/1K`) with an assumed 80/20 input/output split per call.
 
 ---
 

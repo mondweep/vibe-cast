@@ -156,7 +156,9 @@ export async function resolveAccountTicket(ticket: Ticket): Promise<AccountResol
       escalationRequired: parsed.escalationRequired || parsed.securityIssueDetected || false
     };
 
-    const tokensUsed = 400; // Estimate
+    // Read real token usage from the Gemini API response
+    const usage = response.response.usageMetadata;
+    const tokensUsed = (usage?.promptTokenCount || 0) + (usage?.candidatesTokenCount || 0) || 400;
     const elapsedMs = Date.now() - startTime;
 
     addAgentLog({
