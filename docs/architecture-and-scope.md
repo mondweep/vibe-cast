@@ -43,6 +43,113 @@ flowchart TD
     style SEARCH_APIS fill:#2d3436,stroke:#636e72,color:#e0e0e0
 ```
 
+## Understanding AIQ, NIM, and How They Fit Alongside Claude and Gemini
+
+### What is AIQ?
+
+**AIQ is not an acronym with a formal expansion.** It is NVIDIA's branding for their **AI-Q Blueprint** -- a reference architecture for building research agents. The name is a play on "AI + IQ" (intelligence quotient).
+
+AIQ is not a model. It is a **pre-built, configurable multi-agent research system** -- an orchestrator, tools, search integrations, and models wired together into a pipeline that produces citation-backed research reports.
+
+### What is NIM?
+
+**NIM = Neural Inference Microservices.** It is NVIDIA's equivalent of calling the OpenAI API or Anthropic API, but for NVIDIA's own models. You send a prompt to `integrate.api.nvidia.com/v1`, it runs on NVIDIA's cloud GPUs, and you get a response back. You can also self-host NIM containers on your own GPUs for full control.
+
+### AIQ vs Calling Claude / Gemini / GPT Directly
+
+When you use Claude Code or Gemini, you interact with a single model:
+
+```
+You -> Claude/Gemini/GPT -> Answer
+```
+
+When you use AIQ, a multi-agent pipeline handles your query:
+
+```
+You -> Intent Classifier (Nemotron)  -> Decides depth (shallow vs deep)
+     -> Clarifier Agent              -> Asks you scoping questions
+     -> Planner (GPT-OSS 120B)      -> Creates a multi-section research plan
+     -> Researcher (Nemotron)        -> Searches web (Tavily)
+                                     -> Searches papers (Serper)
+                                     -> Synthesises findings per section
+                                     -> Cites all sources
+     -> Final Report with 41 citations
+```
+
+**AIQ is not a smarter model. It is an automated research workflow that uses models as components.**
+
+### Why Not Just Use Claude / Gemini / GPT for Everything?
+
+| Capability | Claude Code | Gemini | NVIDIA AIQ | NVIDIA NIM |
+|-----------|------------|--------|-----------|-----------|
+| **What it is** | General-purpose AI assistant | Multimodal AI assistant | Multi-agent research pipeline | Inference API for NVIDIA models |
+| **Best at** | Code generation, reasoning, pair programming | Long documents, images, Google ecosystem | Automated deep research with citations | Embeddings, RAG pipelines, production inference |
+| **Searches the web?** | No (unless you add tools) | Limited | Yes (Tavily + Serper built-in) | No (it's just an inference API) |
+| **Produces citations?** | Only if you ask carefully | Only if you ask carefully | Automatically, with numbered references | N/A |
+| **Multi-step research?** | You drive each step manually | You drive each step manually | Automated: plan -> research -> synthesise | N/A |
+| **Self-hostable?** | No | No | Yes (Docker/Helm) | Yes (NIM containers on your GPUs) |
+| **Reasoning quality** | Excellent (best-in-class) | Very good | Good (Nemotron is capable but not top-tier) | Depends on model chosen |
+
+### The Honest Assessment
+
+**Claude, GPT, and Gemini are better general-purpose reasoners.** They produce higher quality analysis when you give them a well-crafted prompt. You should keep using them for coding, complex reasoning, creative work, and general assistance.
+
+**NVIDIA's value is in three specific areas:**
+
+1. **AIQ as a ready-made research agent.** You do not build the orchestration, citation tracking, or multi-step research pipeline. It is pre-built. You ask a question and get a cited report. Building equivalent functionality on top of Claude or Gemini would take significant engineering effort.
+
+2. **NIM for embeddings and RAG.** NVIDIA's embedding models (`llama-nemotron-embed-vl-1b-v2`) are excellent for building knowledge bases. If you are building a system that needs to search through documents, NIM embeddings + a vector database is a strong, cost-effective choice.
+
+3. **Self-hosting and scale.** If you ever need to run inference on your own hardware (for privacy, cost, or latency reasons), NIM containers are the way to do it. You cannot self-host Claude or GPT.
+
+### Where Each Tool Fits in Your Workflow
+
+```mermaid
+graph TD
+    subgraph WORKFLOW["Your Daily Workflow"]
+        TASK["New Task or Project"]
+    end
+
+    subgraph RESEARCH["Phase 1: Research"]
+        AIQ_R["NVIDIA AIQ<br/>Deep research with citations<br/>Market analysis, literature review<br/>Technology comparison"]
+    end
+
+    subgraph BUILD["Phase 2: Build"]
+        CLAUDE_B["Claude Code<br/>Write code, debug, refactor<br/>Architecture decisions<br/>Pair programming"]
+        GEMINI_B["Gemini<br/>Analyse images/documents<br/>Long-context processing<br/>Google ecosystem tasks"]
+    end
+
+    subgraph DEPLOY["Phase 3: Deploy"]
+        NIM_D["NVIDIA NIM<br/>Embeddings for knowledge base<br/>Inference API for production<br/>Self-hosted if needed"]
+        VERCEL["Vercel / Cloud<br/>Frontend deployment<br/>Serverless functions"]
+    end
+
+    TASK --> AIQ_R
+    AIQ_R -->|"Findings & citations"| CLAUDE_B
+    AIQ_R -->|"Multimodal content"| GEMINI_B
+    CLAUDE_B --> NIM_D
+    CLAUDE_B --> VERCEL
+    GEMINI_B --> VERCEL
+
+    style WORKFLOW fill:#1a1a2e,stroke:#e0e0e0,color:#e0e0e0
+    style RESEARCH fill:#76b900,stroke:#333,color:#000
+    style BUILD fill:#2d3436,stroke:#636e72,color:#e0e0e0
+    style DEPLOY fill:#0a3d62,stroke:#3c6382,color:#e0e0e0
+```
+
+### Summary
+
+| Tool | Role | When to use |
+|------|------|-------------|
+| **Claude Code** | Primary coding assistant | Every day -- writing, debugging, prototyping |
+| **Gemini** | Multimodal assistant | When you need image analysis, long docs, Google integration |
+| **NVIDIA AIQ** | Research engine | Before starting a project -- get cited research, competitive analysis, literature reviews |
+| **NVIDIA NIM** | Inference backbone | When building production apps -- embeddings, RAG, self-hosted inference |
+
+**NVIDIA complements your existing tools. It does not replace them.**
+
+---
+
 ## Deep Research Flow (Detailed)
 
 ```mermaid
