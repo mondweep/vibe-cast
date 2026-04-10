@@ -1,2 +1,5 @@
 aiq-repo/
 aiq-main/
+.env
+*.db
+__pycache__/
