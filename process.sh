@@ -118,10 +118,10 @@ echo "  Done. Metallic harshness reduced."
 echo ""
 
 # --- Stage 5: Dereverberation ------------------------------------------------
-echo "[5/7] Reducing hall reverb/echo (strength=${DEREVERB_STRENGTH}, patch=${DEREVERB_PATCH_MS}ms)..."
+echo "[5/7] Reducing hall reverb/echo (strength=${DEREVERB_STRENGTH}, patch=${DEREVERB_PATCH})..."
 DEREVERBED_AUDIO="${TMP_DIR}/dereverbed.wav"
 ffmpeg -y -i "$EQ_AUDIO" \
-    -af "anlmdn=s=${DEREVERB_STRENGTH}:p=${DEREVERB_PATCH_MS}:m=15" \
+    -af "anlmdn=s=${DEREVERB_STRENGTH}:p=${DEREVERB_PATCH}:m=15" \
     -acodec pcm_s16le "$DEREVERBED_AUDIO" \
     -loglevel warning -stats
 echo "  Done. Reverb tails suppressed."
@@ -167,7 +167,7 @@ echo "  Stages applied:"
 echo "    1. Frequency band filter (${HIGHPASS_FREQ}Hz - ${LOWPASS_FREQ}Hz)"
 echo "    2. FFT denoise (${DENOISE_LEVEL}dB reduction)"
 echo "    3. Metallic resonance EQ (${METAL_EQ_BAND1_FREQ}/${METAL_EQ_BAND2_FREQ}/${METAL_EQ_BAND3_FREQ}Hz)"
-echo "    4. Dereverberation (strength ${DEREVERB_STRENGTH})"
+echo "    4. Dereverberation (strength ${DEREVERB_STRENGTH}, patch ${DEREVERB_PATCH})"
 echo "    5. Dynamic compression (${COMP_RATIO}:1 ratio)"
 echo "    6. Loudness normalization (${TARGET_LOUDNESS} LUFS)"
 echo ""

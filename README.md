@@ -84,9 +84,9 @@ DEREVERB_STRENGTH=0.01     # strong
 DEREVERB_STRENGTH=0.05     # very aggressive (may affect music quality)
 ```
 
-For a large hall, also increase the patch size:
+For a large hall, also increase the patch radius:
 ```bash
-DEREVERB_PATCH_MS=2000     # catches longer reverb tails
+DEREVERB_PATCH=0.08        # catches longer reverb tails (max 0.1)
 ```
 
 ### If the audio sounds muffled or dull after processing
