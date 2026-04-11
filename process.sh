@@ -3,7 +3,7 @@
 # Music Video Noise Removal Pipeline
 # =============================================================================
 # Multi-stage audio cleanup for live performance phone recordings
-# Targets: hall echo/reverb, background noise, phone mic limitations
+# Targets: metallic hiss from hall reflections, background hiss, reverb
 #
 # Usage:  ./process.sh              (uses config.env defaults)
 #         ./process.sh my-video.mp4 (override input filename)
@@ -66,7 +66,7 @@ echo ""
 mkdir -p "$TMP_DIR" "$(dirname "$OUTPUT_PATH")"
 
 # --- Probe input file --------------------------------------------------------
-echo "[0/6] Analyzing input file..."
+echo "[0/7] Analyzing input file..."
 AUDIO_INFO=$(ffprobe -v quiet -select_streams a:0 -show_entries stream=codec_name,sample_rate,channels -of csv=p=0 "$INPUT_PATH" 2>/dev/null || true)
 VIDEO_INFO=$(ffprobe -v quiet -select_streams v:0 -show_entries stream=codec_name,width,height -of csv=p=0 "$INPUT_PATH" 2>/dev/null || true)
 DURATION=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$INPUT_PATH" 2>/dev/null || echo "unknown")
@@ -77,7 +77,7 @@ echo "  Duration: ${DURATION}s"
 echo ""
 
 # --- Stage 1: Extract audio --------------------------------------------------
-echo "[1/6] Extracting audio track..."
+echo "[1/7] Extracting audio track..."
 EXTRACTED_AUDIO="${TMP_DIR}/extracted.wav"
 ffmpeg -y -i "$INPUT_PATH" -vn -acodec pcm_s16le -ar 48000 -ac 2 "$EXTRACTED_AUDIO" \
     -loglevel warning -stats
@@ -85,7 +85,7 @@ echo "  Done. Extracted to WAV (48kHz, 16-bit, stereo)"
 echo ""
 
 # --- Stage 2: High-pass / Low-pass filter ------------------------------------
-echo "[2/6] Applying frequency band filter (${HIGHPASS_FREQ}Hz - ${LOWPASS_FREQ}Hz)..."
+echo "[2/7] Applying frequency band filter (${HIGHPASS_FREQ}Hz - ${LOWPASS_FREQ}Hz)..."
 FILTERED_AUDIO="${TMP_DIR}/filtered.wav"
 ffmpeg -y -i "$EXTRACTED_AUDIO" \
     -af "highpass=f=${HIGHPASS_FREQ}:p=2,lowpass=f=${LOWPASS_FREQ}:p=2" \
@@ -95,7 +95,7 @@ echo "  Done. Removed sub-${HIGHPASS_FREQ}Hz rumble and above-${LOWPASS_FREQ}Hz 
 echo ""
 
 # --- Stage 3: FFT Denoise ----------------------------------------------------
-echo "[3/6] Applying FFT-based noise reduction (${DENOISE_LEVEL}dB, type=${NOISE_TYPE})..."
+echo "[3/7] Applying FFT-based noise reduction (${DENOISE_LEVEL}dB, type=${NOISE_TYPE})..."
 DENOISED_AUDIO="${TMP_DIR}/denoised.wav"
 ffmpeg -y -i "$FILTERED_AUDIO" \
     -af "afftdn=nr=${DENOISE_LEVEL}:nt=${NOISE_TYPE}" \
@@ -104,18 +104,31 @@ ffmpeg -y -i "$FILTERED_AUDIO" \
 echo "  Done. Steady-state noise reduced."
 echo ""
 
-# --- Stage 4: Dereverberation ------------------------------------------------
-echo "[4/6] Reducing hall reverb/echo (strength=${DEREVERB_STRENGTH}, patch=${DEREVERB_PATCH_MS}ms)..."
-DEREVERBED_AUDIO="${TMP_DIR}/dereverbed.wav"
+# --- Stage 4: Metallic resonance EQ ------------------------------------------
+echo "[4/7] Cutting metallic resonance frequencies..."
+echo "       Band 1: ${METAL_EQ_BAND1_FREQ}Hz (${METAL_EQ_BAND1_GAIN}dB, Q=${METAL_EQ_BAND1_Q})"
+echo "       Band 2: ${METAL_EQ_BAND2_FREQ}Hz (${METAL_EQ_BAND2_GAIN}dB, Q=${METAL_EQ_BAND2_Q})"
+echo "       Band 3: ${METAL_EQ_BAND3_FREQ}Hz (${METAL_EQ_BAND3_GAIN}dB, Q=${METAL_EQ_BAND3_Q})"
+EQ_AUDIO="${TMP_DIR}/eq.wav"
 ffmpeg -y -i "$DENOISED_AUDIO" \
+    -af "equalizer=f=${METAL_EQ_BAND1_FREQ}:width_type=q:w=${METAL_EQ_BAND1_Q}:g=${METAL_EQ_BAND1_GAIN},equalizer=f=${METAL_EQ_BAND2_FREQ}:width_type=q:w=${METAL_EQ_BAND2_Q}:g=${METAL_EQ_BAND2_GAIN},equalizer=f=${METAL_EQ_BAND3_FREQ}:width_type=q:w=${METAL_EQ_BAND3_Q}:g=${METAL_EQ_BAND3_GAIN}" \
+    -acodec pcm_s16le "$EQ_AUDIO" \
+    -loglevel warning -stats
+echo "  Done. Metallic harshness reduced."
+echo ""
+
+# --- Stage 5: Dereverberation ------------------------------------------------
+echo "[5/7] Reducing hall reverb/echo (strength=${DEREVERB_STRENGTH}, patch=${DEREVERB_PATCH_MS}ms)..."
+DEREVERBED_AUDIO="${TMP_DIR}/dereverbed.wav"
+ffmpeg -y -i "$EQ_AUDIO" \
     -af "anlmdn=s=${DEREVERB_STRENGTH}:p=${DEREVERB_PATCH_MS}:m=15" \
     -acodec pcm_s16le "$DEREVERBED_AUDIO" \
     -loglevel warning -stats
 echo "  Done. Reverb tails suppressed."
 echo ""
 
-# --- Stage 5: Dynamic compression --------------------------------------------
-echo "[5/6] Applying dynamic compression (threshold=${COMP_THRESHOLD}dB, ratio=${COMP_RATIO}:1)..."
+# --- Stage 6: Dynamic compression --------------------------------------------
+echo "[6/7] Applying dynamic compression (threshold=${COMP_THRESHOLD}dB, ratio=${COMP_RATIO}:1)..."
 COMPRESSED_AUDIO="${TMP_DIR}/compressed.wav"
 ffmpeg -y -i "$DEREVERBED_AUDIO" \
     -af "acompressor=threshold=${COMP_THRESHOLD}dB:ratio=${COMP_RATIO}:attack=${COMP_ATTACK}:release=${COMP_RELEASE}:makeup=2" \
@@ -124,8 +137,8 @@ ffmpeg -y -i "$DEREVERBED_AUDIO" \
 echo "  Done. Dynamics evened out."
 echo ""
 
-# --- Stage 6: Recombine and normalize ----------------------------------------
-echo "[6/6] Normalizing loudness and recombining with video..."
+# --- Stage 7: Recombine and normalize ----------------------------------------
+echo "[7/7] Normalizing loudness and recombining with video..."
 ffmpeg -y -i "$INPUT_PATH" -i "$COMPRESSED_AUDIO" \
     -c:v ${VIDEO_CODEC} \
     -c:a ${AUDIO_CODEC} -b:a ${AUDIO_BITRATE} \
@@ -153,9 +166,10 @@ echo ""
 echo "  Stages applied:"
 echo "    1. Frequency band filter (${HIGHPASS_FREQ}Hz - ${LOWPASS_FREQ}Hz)"
 echo "    2. FFT denoise (${DENOISE_LEVEL}dB reduction)"
-echo "    3. Dereverberation (strength ${DEREVERB_STRENGTH})"
-echo "    4. Dynamic compression (${COMP_RATIO}:1 ratio)"
-echo "    5. Loudness normalization (${TARGET_LOUDNESS} LUFS)"
+echo "    3. Metallic resonance EQ (${METAL_EQ_BAND1_FREQ}/${METAL_EQ_BAND2_FREQ}/${METAL_EQ_BAND3_FREQ}Hz)"
+echo "    4. Dereverberation (strength ${DEREVERB_STRENGTH})"
+echo "    5. Dynamic compression (${COMP_RATIO}:1 ratio)"
+echo "    6. Loudness normalization (${TARGET_LOUDNESS} LUFS)"
 echo ""
 echo "  Not happy with the result? Edit config.env and re-run."
 echo "  See README.md for a tuning guide."

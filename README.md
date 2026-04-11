@@ -1,13 +1,13 @@
 # Music Video Noise Removal
 
-Audio cleanup pipeline for live performance phone recordings. Reduces hall echo/reverb, background noise, and phone microphone artifacts using FFmpeg.
+Audio cleanup pipeline for live performance phone recordings. Targets the metallic hissing and background noise caused by hall reflections and phone microphone limitations. Uses FFmpeg.
 
 ## Problem
 
 A live orchestra/singing performance recorded on a phone in a hall picks up:
-- Hall reverb and echo (sound bouncing off walls/ceiling)
-- Background crowd noise and ambient sounds
-- Phone mic distortion (clipping, limited dynamic range)
+- Metallic hissing/ringing from high-frequency reflections off hard hall surfaces
+- Steady background hiss from the phone mic amplifying room ambience
+- Hall reverb tails that blur the audio
 
 ## Prerequisites
 
@@ -36,15 +36,16 @@ To use a different filename:
 
 ## Processing Pipeline
 
-The script applies 5 stages sequentially:
+The script applies 6 stages sequentially:
 
 | Stage | Filter | What it does |
 |-------|--------|-------------|
 | 1 | High-pass / Low-pass | Removes low rumble and high-frequency hiss |
-| 2 | FFT Denoise (`afftdn`) | Reduces steady background noise (hum, murmur) |
-| 3 | Dereverberation (`anlmdn`) | Suppresses hall echo and reverb tails |
-| 4 | Dynamic Compression | Evens out loud/quiet passages |
-| 5 | Loudness Normalization | Brings output to standard broadcast loudness |
+| 2 | FFT Denoise (`afftdn`) | Reduces steady background hiss (broadband noise) |
+| 3 | Metallic Resonance EQ (`equalizer`) | Cuts the harsh metallic frequencies (2-5kHz) caused by hall reflections |
+| 4 | Dereverberation (`anlmdn`) | Suppresses hall echo and reverb tails |
+| 5 | Dynamic Compression | Gently evens out level jumps from processing |
+| 6 | Loudness Normalization | Brings output to standard broadcast loudness |
 
 The original video is copied without re-encoding (fast, lossless). Only the audio is processed.
 
@@ -52,11 +53,32 @@ The original video is copied without re-encoding (fast, lossless). Only the audi
 
 All parameters are in `config.env`. Edit values and re-run `./process.sh`.
 
+### If metallic/tinny sound persists
+
+Increase the EQ cut depth on the harshness bands:
+```bash
+# In config.env — make the cuts deeper
+METAL_EQ_BAND1_GAIN=-8     # stronger cut at 2.5kHz
+METAL_EQ_BAND2_GAIN=-6     # stronger cut at 4.5kHz
+```
+
+Or widen the cut to catch a broader range:
+```bash
+METAL_EQ_BAND1_Q=0.8       # wider Q = broader frequency cut
+```
+
+### If background hiss persists
+
+Increase FFT denoise level:
+```bash
+DENOISE_LEVEL=25           # heavy (listen for artifacts)
+DENOISE_LEVEL=30           # very heavy
+```
+
 ### If you still hear echo/reverb
 
 Increase dereverberation strength:
 ```bash
-# In config.env — try progressively stronger values
 DEREVERB_STRENGTH=0.005    # moderate
 DEREVERB_STRENGTH=0.01     # strong
 DEREVERB_STRENGTH=0.05     # very aggressive (may affect music quality)
@@ -67,44 +89,31 @@ For a large hall, also increase the patch size:
 DEREVERB_PATCH_MS=2000     # catches longer reverb tails
 ```
 
-### If background noise persists
+### If the audio sounds muffled or dull after processing
 
-Increase FFT denoise level:
+The EQ cuts or low-pass may be too aggressive:
 ```bash
-DENOISE_LEVEL=18           # moderate-heavy
-DENOISE_LEVEL=25           # heavy (may introduce artifacts)
+LOWPASS_FREQ=14000         # let more treble back in
+METAL_EQ_BAND1_GAIN=-3    # lighten the EQ cuts
+METAL_EQ_BAND2_GAIN=-2
 ```
 
-### If vocals are drowned out by orchestra
+### If processing introduces new artifacts (warbling, pumping)
 
-Lower the compression threshold to catch more of the dynamic range:
+Reduce aggressiveness:
 ```bash
-COMP_THRESHOLD=-25
-COMP_RATIO=4
-```
-
-### If the audio sounds muffled or dull
-
-Widen the frequency band:
-```bash
-HIGHPASS_FREQ=60           # let more bass through
-LOWPASS_FREQ=18000         # let more treble through
-```
-
-### If there are processing artifacts (metallic sound, warbling)
-
-Reduce the aggressiveness of each stage:
-```bash
-DENOISE_LEVEL=8
+DENOISE_LEVEL=15
 DEREVERB_STRENGTH=0.0005
+METAL_EQ_BAND1_GAIN=-3
 ```
 
 ### General advice
 
 - Change **one parameter at a time** and listen to the result
 - Start with the defaults and adjust from there
-- The dereverberation stage has the biggest impact on hall echo
-- Heavy noise reduction will always trade off against audio naturalness
+- The **metallic resonance EQ** (stage 3) has the biggest impact on the tinny/hissing sound
+- The **FFT denoise** (stage 2) targets the steady background hiss
+- Heavy processing always trades off against audio naturalness
 
 ## File Structure
 
