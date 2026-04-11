@@ -1,0 +1,26 @@
+# Large media files — keep local, do not push to GitHub
+input/*.mp4
+input/*.mov
+input/*.avi
+input/*.mkv
+input/*.webm
+input/*.m4v
+input/*.3gp
+
+output/*.mp4
+output/*.mov
+output/*.avi
+output/*.mkv
+output/*.webm
+output/*.m4v
+output/*.wav
+output/*.flac
+output/*.mp3
+
+# Temporary processing files
+tmp/
+*.tmp
+*.log
+
+# Extracted audio intermediates
+*.wav.bak
