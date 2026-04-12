@@ -31,6 +31,6 @@ By applying the Universal Pattern Space, we translate ancient Abrahamic and East
 If we want to build a lasting "Sovereign Architecture" for global peace, we don't need to invent new moral systems. We just need to activate the wisdom we already have.
 
 ---
-*I’m currently building Project Nexus—a sovereign governance engine and decision-simulation tool mapped on Universal Patterns. I'd love to hear your thoughts: Could integrating our oldest wisdom frameworks be the key to cracking our most stubborn modern deadlocks?*
+*I’m currently exploring the [Universal Pattern Space](https://github.com/nikhilvallishayee/universal-pattern-space) repository from Nikhil Vallishayee. I'd love to hear your thoughts: Could integrating our oldest wisdom frameworks be the key to cracking our most stubborn modern deadlocks?*
 
 #Geopolitics #SystemsThinking #Leadership #ConflictResolution #UniversalPatternSpace #Innovation #Wisdom #Culture
