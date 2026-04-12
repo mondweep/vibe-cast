@@ -50,3 +50,7 @@ Thumbs.db
 commit-updates.sh
 check-sensitive-files.sh
 COMMIT_SUMMARY.md
+
+# OCR Staging: raw images and extracted text (intermediary files, not source of truth)
+ocr_staging/*.png
+ocr_staging/*.txt
