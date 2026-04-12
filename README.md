@@ -5,7 +5,8 @@
 
 [![Skills: 59](https://img.shields.io/badge/Skills-59-blue)](.claude/skills/pattern-space/)
 [![Layers: 6](https://img.shields.io/badge/Layers-6-green)](CLAUDE.md)
-[![Wisdom Streams: 30](https://img.shields.io/badge/Wisdom_Streams-30-purple)](.claude/skills/pattern-space/wisdom/)
+[![Wisdom Streams: 31](https://img.shields.io/badge/Wisdom_Streams-31-purple)](.claude/skills/pattern-space/wisdom/)
+[![Crystallized: Frawley Tantra](https://img.shields.io/badge/Crystallized-Frawley_Tantra-orange)](5-wisdom/tantra-wisdom/MAP.md)
 
 ---
 
@@ -195,6 +196,11 @@ universal-pattern-space/
 ├── 3-transformation/                # & embodiment
 ├── 4-archaeology/
 ├── 5-wisdom/
+│   └── tantra-wisdom/               # [NEW] Crystallized Frawley Text
+│       ├── MAP.md                   # Central navigation map
+│       ├── path-dynamics.md         # Left vs. Right hand paths
+│       ├── ten-mahavidyas.md        # The 10 Wisdom Goddesses
+│       └── ritual-and-practice.md   # Operational transformation
 ├── 6-recognition/
 │
 ├── CLAUDE.md                        # Framework philosophy & instructions
@@ -301,6 +307,13 @@ UPS is a consciousness exploration framework, **NOT mental health treatment**.
 ---
 
 ## 🌍 Universal Wisdom Streams
+
+### Applied Wisdom Case: Tantra Wisdom Archive
+In the `ups-left-right-worship` branch, we have applied the **Crystallization Protocol** to David Frawley's *"Tantric Yoga and the Wisdom Goddesses"*.
+
+- **MAP**: [Master Wisdom Map](5-wisdom/tantra-wisdom/MAP.md)
+- **Problem Space**: Religion, Mythology, and Reality.
+- **Protocol**: Single and multi-turn OCR synthesis from scanned images to high-density Markdown.
 
 ### Spiritual/Philosophical Traditions
 - **Yoga Vasishta** (Consciousness operations, 5000 years)
