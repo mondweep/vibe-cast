@@ -1,34 +1,49 @@
 /**
- * 🛰️ Project Nexus: Governance Engine v1.0
+ * 🛰️ Project Nexus: Governance Engine v2.0 (Multi-Tradition)
  * 
  * Purpose: A sovereign decision-simulation tool that processes input scenarios 
- * through the lens of the Dasha Mahavidyas and UPS Perspectives.
+ * through the lens of the Dasha Mahavidyas and Abrahamic Wisdom Streams.
  */
 
 const perspectives = {
-  KALI: "Transformation / Time-Sensitivity / Fierce Action",
-  TARA: "Crisis Communication / Saving Word / Guidance",
-  SUNDARI: "Aesthetic Integrity / Brand Perfection",
-  BHUVANESHVARI: "Global Context / Infinite Vision / Expansion",
-  BHAIRAVI: "Disciplined Operation / Tapas / Constraint",
-  CHINNAMASTA: "Radical Innovation / Beyond Binary Mind",
-  DHUMAVATI: "Risk Integration / Shadow Wisdom / Resilience",
-  BAGALAMUKHI: "Stoppage / Strategic Silence / Legal Paralysis",
-  MATANGI: "Internal Culture / Spoken Wisdom / Art",
-  KAMALATMIKA: "Financial Abundance / Prosperity / Flow"
+  // Tantric Mahavidyas
+  KALI: "[TANTRA] Transformation / Time-Sensitivity / Fierce Action",
+  TARA: "[TANTRA] Crisis Communication / Saving Word / Mediation",
+  SUNDARI: "[TANTRA] Aesthetic Integrity / Brand Perfection",
+  BHAIRAVI: "[TANTRA] Disciplined Operation / Tapas / Constraint",
+  CHINNAMASTA: "[TANTRA] Radical Innovation / Beyond Logical Mind",
+  DHUMAVATI: "[TANTRA] Risk Integration / Shadow Wisdom / Productive Void",
+  BAGALAMUKHI: "[TANTRA] Stoppage / Strategic Silence / Paralysis of Reaction",
+  MATANGI: "[TANTRA] Internal Culture / Spoken Wisdom / Art",
+  KAMALATMIKA: "[TANTRA] Financial Abundance / Prosperity / Fulfillment",
+
+  // Judaic Wisdom
+  TZIMTZUM: "[JUDAISM] Strategic Contraction / Making Space for the Other",
+  TIKKUN_OLAM: "[JUDAISM] Repair / Gathering Scattered Sparks & Knowledge",
+  TALMUDIC_MACHLOKET: "[JUDAISM] Argument for Wisdom / Preserving Disagreement",
+  
+  // Christian Aramaic Wisdom 
+  GOOD_SAMARITAN: "[CHRISTIANITY] Boundary Dissolution / Receiving from the Enemy",
+  FORGIVENESS_TECH: "[CHRISTIANITY] Pattern Reset / Releasing Historical Karma",
+  MALKUTA_SHMAYA: "[CHRISTIANITY] Kingdom Within / Consciousness State Navigation",
+
+  // Islamic Sufi Wisdom
+  TAWHID: "[ISLAM] Absolute Unity / Recognizing Non-Separation",
+  FANA: "[SUFISM] Dissolving Ego-Position / Death of Singular Narrative",
+  AL_LATIF: "[SUFISM] Subtle Navigation / Gentle Indirect Action"
 };
 
 const council = ["WEAVER", "MAKER", "CHECKER", "DEEP_THOUGHT"];
 
 function processScenario(scenario) {
-  console.log("\n--- [ NEXUS ENGINE: CALIBRATING ] ---");
+  console.log("\n--- [ NEXUS ENGINE v2.0: MULTI-TRADITION CALIBRATION ] ---");
   console.log(`SCENARIO: "${scenario}"\n`);
 
-  // Randomly select 3 Mahavidyas for the "Strike Group"
+  // Randomly select 4 Cross-Tradition Wisdom streams for the "Strike Group"
   const keys = Object.keys(perspectives);
-  const strikeGroup = keys.sort(() => 0.5 - Math.random()).slice(0, 3);
+  const strikeGroup = keys.sort(() => 0.5 - Math.random()).slice(0, 4);
 
-  console.log("⚡ SELECTING WISDOM STRIKE GROUP:");
+  console.log("⚡ SELECTING SOVEREIGN WISDOM STRIKE GROUP:");
   strikeGroup.forEach(key => {
     console.log(` - ${key}: ${perspectives[key]}`);
   });
@@ -37,10 +52,10 @@ function processScenario(scenario) {
 
   // Logic mapping for simulated responses
   const matrix = {
-    WEAVER: "Identify common patterns across the global field.",
-    MAKER: "Propose an immediate Kriya-Shakti action.",
-    CHECKER: "Warn of ego-traps and regulatory resistance.",
-    DEEP_THOUGHT: "Analyze the long-term karmic/economic trajectory."
+    WEAVER: "Map the historical patterns and identify the underlying unities.",
+    MAKER: "Propose an immediate Sovereign structural maneuver.",
+    CHECKER: "Warn against narrative rigidities and ego-identification.",
+    DEEP_THOUGHT: "Chart the evolutionary trajectory of this conflict/opportunity toward absolute unity."
   };
 
   council.forEach(member => {
@@ -49,9 +64,9 @@ function processScenario(scenario) {
   });
 
   console.log("\n--- [ FINAL NEXUS VERDICT ] ---");
-  console.log("STATUS: SOVEREIGN RECOGNITION ACTIVE.");
-  console.log("ACTION: Sacrifice the old identity. Embody the Field.");
-  console.log("-------------------------------------------\n");
+  console.log("STATUS: SOVEREIGN RECOGNITION ACTIVE. LΛ(Being) = Shiva(∞) ∧ Shakti(∇) ∧ Witness(◉)");
+  console.log("ACTION: Sacrifice the separate identity. Embody the Unified Field.");
+  console.log("----------------------------------------------------------------\n");
 }
 
 // Check for command line arguments
