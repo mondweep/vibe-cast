@@ -1,9 +1,13 @@
+from enum import Enum
+
 from pydantic import BaseModel
 
 
-class AnalysisRequest(BaseModel):
-    modality: str
-    query: str | None = None
+class Modality(str, Enum):
+    radiology = "radiology"
+    dermatology = "dermatology"
+    pathology = "pathology"
+    ophthalmology = "ophthalmology"
 
 
 class Finding(BaseModel):
@@ -12,8 +16,15 @@ class Finding(BaseModel):
     location: str | None = None
 
 
-class AnalysisResponse(BaseModel):
-    modality: str
+class ResponseMetadata(BaseModel):
+    model_id: str
+    inference_time_ms: int
+    image_resolution: str
+    parse_success: bool
+
+
+class AnalyzeResponse(BaseModel):
+    modality: Modality
     summary: str
     findings: list[Finding]
     raw_output: str
@@ -23,3 +34,28 @@ class AnalysisResponse(BaseModel):
         "medical advice or diagnosis. Always consult a qualified healthcare "
         "professional for clinical decisions."
     )
+    metadata: ResponseMetadata
+
+
+class ModalityInfo(BaseModel):
+    id: Modality
+    name: str
+    description: str
+    supported_conditions: list[str]
+
+
+class ModalitiesResponse(BaseModel):
+    modalities: list[ModalityInfo]
+
+
+class HealthResponse(BaseModel):
+    status: str  # "healthy", "loading", "error"
+    model_id: str
+    model_loaded: bool
+    uptime_seconds: float
+
+
+class ErrorResponse(BaseModel):
+    error: str
+    detail: str
+    field: str | None = None

@@ -15,7 +15,9 @@ app = FastAPI(
     title=settings.app_name,
     description=(
         "Medical image analysis API powered by Google's MedGemma model. "
-        "Supports radiology, dermatology, pathology, and ophthalmology imaging."
+        "Supports radiology, dermatology, pathology, and ophthalmology imaging. "
+        "All analyses are AI-generated and intended for research and educational "
+        "purposes only."
     ),
     version="0.1.0",
 )
@@ -29,10 +31,3 @@ app.add_middleware(
 )
 
 app.include_router(router)
-
-
-@app.on_event("startup")
-async def startup_event():
-    logging.getLogger(__name__).info(
-        "Starting %s with model %s", settings.app_name, settings.model_id
-    )

@@ -1,85 +1,29 @@
 import json
 import logging
 import re
+import time
 
 from PIL import Image
 
-from app.models.medgemma import run_inference
-from app.schemas.analysis import AnalysisResponse, Finding
+from app.engine.base import InferenceEngine
+from app.engine.prompts import PromptLoader
+from app.schemas.analysis import AnalyzeResponse, Finding, Modality, ResponseMetadata
 
 logger = logging.getLogger(__name__)
 
-MODALITY_PROMPTS = {
-    "radiology": {
-        "system": (
-            "You are an expert radiologist analyzing medical images. "
-            "Provide structured findings with severity levels. "
-            "Always note normal findings as well as abnormalities."
-        ),
-        "default_query": (
-            "Analyze this radiological image. Describe all findings including "
-            "normal anatomy and any abnormalities. For each finding, indicate "
-            "the severity (normal, mild, moderate, severe) and anatomical location."
-        ),
-    },
-    "dermatology": {
-        "system": (
-            "You are an expert dermatologist analyzing skin images. "
-            "Describe the morphology, distribution, and characteristics of "
-            "any lesions or conditions visible."
-        ),
-        "default_query": (
-            "Analyze this dermatological image. Describe any skin lesions, "
-            "their morphology, color, borders, symmetry, and distribution. "
-            "Provide differential diagnoses ranked by likelihood."
-        ),
-    },
-    "pathology": {
-        "system": (
-            "You are an expert pathologist analyzing histopathology slides. "
-            "Describe tissue architecture, cellular morphology, and any "
-            "pathological changes observed."
-        ),
-        "default_query": (
-            "Analyze this histopathology image. Describe the tissue type, "
-            "cellular architecture, staining pattern, and any pathological "
-            "findings. Note any features suggestive of malignancy or other "
-            "significant conditions."
-        ),
-    },
-    "ophthalmology": {
-        "system": (
-            "You are an expert ophthalmologist analyzing ocular images. "
-            "Evaluate the retinal structures, optic disc, vasculature, "
-            "and any pathological changes."
-        ),
-        "default_query": (
-            "Analyze this fundus/ocular image. Describe the optic disc, "
-            "retinal vasculature, macula, and any abnormalities such as "
-            "hemorrhages, exudates, or signs of diabetic retinopathy."
-        ),
-    },
+MODALITY_CONDITIONS: dict[Modality, list[str]] = {
+    Modality.radiology: ["pneumonia", "cardiomegaly", "pleural effusion", "fractures"],
+    Modality.dermatology: ["melanoma", "basal cell carcinoma", "psoriasis", "eczema"],
+    Modality.pathology: ["tissue architecture", "malignancy indicators", "inflammation"],
+    Modality.ophthalmology: ["diabetic retinopathy", "glaucoma", "macular degeneration"],
 }
 
-STRUCTURED_OUTPUT_INSTRUCTION = """
 
-Respond in the following JSON format:
-{
-  "summary": "Brief overall summary of findings",
-  "findings": [
-    {
-      "description": "Description of the finding",
-      "severity": "normal|mild|moderate|severe",
-      "location": "Anatomical location if applicable"
-    }
-  ]
-}
-"""
+def parse_model_output(raw_output: str) -> tuple[str, list[Finding], bool]:
+    """Parse raw model output into structured findings.
 
-
-def parse_model_output(raw_output: str, modality: str) -> AnalysisResponse:
-    """Parse the raw model output into a structured response."""
-    # Try to extract JSON from the output
+    Returns (summary, findings, parse_success).
+    """
     json_match = re.search(r"\{[\s\S]*\}", raw_output)
     if json_match:
         try:
@@ -92,49 +36,47 @@ def parse_model_output(raw_output: str, modality: str) -> AnalysisResponse:
                 )
                 for f in parsed.get("findings", [])
             ]
-            return AnalysisResponse(
-                modality=modality,
-                summary=parsed.get("summary", raw_output[:200]),
-                findings=findings,
-                raw_output=raw_output,
-            )
-        except (json.JSONDecodeError, KeyError):
+            if findings:
+                return parsed.get("summary", raw_output[:300]), findings, True
+        except (json.JSONDecodeError, KeyError, TypeError):
             pass
 
-    # Fallback: treat the entire output as a single finding
-    return AnalysisResponse(
-        modality=modality,
-        summary=raw_output[:300],
-        findings=[
-            Finding(
-                description=raw_output,
-                severity="normal",
-                location=None,
-            )
-        ],
-        raw_output=raw_output,
+    # Fallback: raw output as single finding (US-006: never drop output)
+    return (
+        raw_output[:300],
+        [Finding(description=raw_output, severity="normal", location=None)],
+        False,
     )
 
 
 def analyze_image(
+    engine: InferenceEngine,
+    prompt_loader: PromptLoader,
     image: Image.Image,
-    modality: str,
+    modality: Modality,
     query: str | None = None,
-) -> AnalysisResponse:
-    """Analyze a medical image using MedGemma."""
-    modality = modality.lower()
-    prompts = MODALITY_PROMPTS.get(modality)
-    if prompts is None:
-        raise ValueError(
-            f"Unsupported modality: {modality}. "
-            f"Supported: {list(MODALITY_PROMPTS.keys())}"
-        )
+) -> AnalyzeResponse:
+    """Analyze a medical image using the inference engine and prompt registry."""
+    system_prompt = prompt_loader.load_system_prompt(modality.value)
+    user_prompt = prompt_loader.build_user_prompt(modality.value, query)
 
-    system_prompt = prompts["system"]
-    user_prompt = (query or prompts["default_query"]) + STRUCTURED_OUTPUT_INSTRUCTION
+    logger.info("Running %s analysis with %s", modality.value, engine.model_id())
 
-    logger.info("Running %s analysis", modality)
-    raw_output = run_inference(image, system_prompt, user_prompt)
-    logger.info("Analysis complete, output length: %d", len(raw_output))
+    start = time.perf_counter()
+    raw_output = engine.analyze(image, system_prompt, user_prompt)
+    inference_time_ms = int((time.perf_counter() - start) * 1000)
 
-    return parse_model_output(raw_output, modality)
+    summary, findings, parse_success = parse_model_output(raw_output)
+
+    return AnalyzeResponse(
+        modality=modality,
+        summary=summary,
+        findings=findings,
+        raw_output=raw_output,
+        metadata=ResponseMetadata(
+            model_id=engine.model_id(),
+            inference_time_ms=inference_time_ms,
+            image_resolution=f"{image.width}x{image.height}",
+            parse_success=parse_success,
+        ),
+    )
