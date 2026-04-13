@@ -217,7 +217,9 @@ ls -la output/
 cat output/marketing-content-*.json | jq '.'
 ```
 
-## Troubleshooting
+### Build Fix Log
+
+A detailed record of errors encountered during initial setup and their resolutions can be found in **[BUILD-FIX-LOG.md](BUILD-FIX-LOG.md)**.
 
 ### "Invalid Foundry configuration"
 - Check appsettings.json

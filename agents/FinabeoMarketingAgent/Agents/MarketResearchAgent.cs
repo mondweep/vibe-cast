@@ -77,9 +77,9 @@ Provide insights that would be relevant to financial services, insurance, and te
             _logger.LogInformation("Sending request to Foundry for market research");
 
             // Call Foundry through IChatClient
-            var response = await _chatClient.CompleteAsync(messages);
+            var response = await _chatClient.GetResponseAsync(messages);
 
-            var analysisText = response.Message.Content;
+            var analysisText = response.Text;
             _logger.LogInformation($"Received response from Foundry: {analysisText.Substring(0, Math.Min(200, analysisText.Length))}...");
 
             // Parse JSON response

@@ -1,8 +1,11 @@
 using Azure.AI.Projects;
+using Azure;
 using Azure.Identity;
+using System.ClientModel;
 using FinabeoMarketingAgent.Agents;
 using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Workflow;
+using Microsoft.Agents.AI.Foundry;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,10 +49,10 @@ try
     // Create Foundry client
     var client = new AIProjectClient(
         new Uri(foundryConfig.Endpoint),
-        new AzureKeyCredential(foundryConfig.ApiKey));
+        new DefaultAzureCredential());
 
     // Get chat client for GPT-4o
-    var chatClient = client.GetChatClient("gpt-4o");
+    var chatClient = client.ProjectOpenAIClient.GetChatClient("gpt-4o").AsIChatClient();
 
     logger.LogInformation("✓ Connected to Foundry");
     logger.LogInformation($"✓ Loaded {finabeoServices.Count} Finabeo services\n");

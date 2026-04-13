@@ -91,7 +91,7 @@ public class WorkflowResult
     public DateTime? CompletedAt { get; set; }
 
     [JsonPropertyName("duration_seconds")]
-    public double DurationSeconds => (CompletedAt ?? DateTime.UtcNow - StartedAt).TotalSeconds;
+    public double DurationSeconds => ((CompletedAt ?? DateTime.UtcNow) - StartedAt).TotalSeconds;
 
     [JsonPropertyName("market_analysis")]
     public MarketAnalysis? MarketAnalysis { get; set; }

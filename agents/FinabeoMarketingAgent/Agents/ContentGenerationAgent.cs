@@ -103,8 +103,8 @@ Include specific, actionable insights. Make it compelling for enterprise executi
 
             _logger.LogInformation("Sending request to Foundry for content generation");
 
-            var response = await _chatClient.CompleteAsync(messages);
-            var contentText = response.Message.Content;
+            var response = await _chatClient.GetResponseAsync(messages);
+            var contentText = response.Text;
 
             _logger.LogInformation($"Received content response, length: {contentText.Length}");
 

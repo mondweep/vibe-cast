@@ -81,8 +81,8 @@ Which service should we focus on this week?")
 
             _logger.LogInformation("Sending request to Foundry for service alignment");
 
-            var response = await _chatClient.CompleteAsync(messages);
-            var alignmentText = response.Message.Content;
+            var response = await _chatClient.GetResponseAsync(messages);
+            var alignmentText = response.Text;
 
             _logger.LogInformation($"Received alignment response: {alignmentText.Substring(0, Math.Min(200, alignmentText.Length))}...");
 
