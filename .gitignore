@@ -1,0 +1,16 @@
+# .gitignore
+
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Secrets
+appsettings.local.json
+.env
+
+# OS
+.DS_Store
+Thumbs.db
