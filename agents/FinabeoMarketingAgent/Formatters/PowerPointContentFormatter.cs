@@ -66,7 +66,8 @@ public class PowerPointContentFormatter
                 var slideLayoutPart = slideMasterPart.AddNewPart<SlideLayoutPart>();
                 InitSlideLayoutPart(slideLayoutPart);
 
-                // 5. Link Layout to Master
+                // 5. BIDIRECTIONAL LINK: Link Layout to Master AND Master to Layout
+                slideLayoutPart.AddPart(slideMasterPart);
                 slideMasterPart.SlideMaster.SlideLayoutIdList!.Append(new SlideLayoutId 
                 { 
                     Id = 2147483649U, 
@@ -80,11 +81,13 @@ public class PowerPointContentFormatter
 
                 // 7. Add View Properties (Mandatory for clean opening and visibility)
                 var viewPropsPart = presentationPart.AddNewPart<ViewPropertiesPart>();
-                viewPropsPart.ViewProperties = new ViewProperties(
-                    new NormalViewProperties()
-                );
+                viewPropsPart.ViewProperties = new ViewProperties(new NormalViewProperties());
 
-                // 8. Generate Slides
+                // 8. Add Presentation Properties (Mandatory for consistency)
+                var presPropsPart = presentationPart.AddNewPart<PresentationPropertiesPart>();
+                presPropsPart.PresentationProperties = new PresentationProperties();
+
+                // 9. Generate Slides
                 AddSlide(presentationPart, slideLayoutPart, 256U, (part) => 
                     CreateTitleSlide(part, "Finabeo: Market-Service Alignment", "Executive Strategy Brief", workflowResult));
 
@@ -131,28 +134,43 @@ public class PowerPointContentFormatter
         var slideMaster = new SlideMaster(
             new CommonSlideData(new ShapeTree(
                 new NonVisualGroupShapeProperties(
-                    new NonVisualDrawingProperties { Id = 1U, Name = "" },
+                    new NonVisualDrawingProperties { Id = 1U, Name = "MasterGroup" },
                     new NonVisualGroupShapeDrawingProperties(),
                     new ApplicationNonVisualDrawingProperties()),
                 new GroupShapeProperties(new A.TransformGroup())
             )),
-            new ColorMap { Background1 = A.ColorSchemeIndexValues.Light1, Text1 = A.ColorSchemeIndexValues.Dark1, Background2 = A.ColorSchemeIndexValues.Light2, Text2 = A.ColorSchemeIndexValues.Dark2, Accent1 = A.ColorSchemeIndexValues.Accent1, Accent2 = A.ColorSchemeIndexValues.Accent2, Accent3 = A.ColorSchemeIndexValues.Accent3, Accent4 = A.ColorSchemeIndexValues.Accent4, Accent5 = A.ColorSchemeIndexValues.Accent5, Accent6 = A.ColorSchemeIndexValues.Accent6, Hyperlink = A.ColorSchemeIndexValues.Hyperlink, FollowedHyperlink = A.ColorSchemeIndexValues.FollowedHyperlink },
+            new ColorMap 
+            { 
+                Background1 = A.ColorSchemeIndexValues.Light1, 
+                Text1 = A.ColorSchemeIndexValues.Dark1, 
+                Background2 = A.ColorSchemeIndexValues.Light2, 
+                Text2 = A.ColorSchemeIndexValues.Dark2, 
+                Accent1 = A.ColorSchemeIndexValues.Accent1, 
+                Accent2 = A.ColorSchemeIndexValues.Accent2, 
+                Accent3 = A.ColorSchemeIndexValues.Accent3, 
+                Accent4 = A.ColorSchemeIndexValues.Accent4, 
+                Accent5 = A.ColorSchemeIndexValues.Accent5, 
+                Accent6 = A.ColorSchemeIndexValues.Accent6, 
+                Hyperlink = A.ColorSchemeIndexValues.Hyperlink, 
+                FollowedHyperlink = A.ColorSchemeIndexValues.FollowedHyperlink 
+            },
             new SlideLayoutIdList(),
             new TextStyles()
         );
         slideMasterPart.SlideMaster = slideMaster;
     }
 
-    private void InitSlideLayoutPart(SlideLayoutPart slideLayoutPart)
+    private void InitSlideLayoutPart(SlideLayoutPart layoutPart)
     {
-        slideLayoutPart.SlideLayout = new SlideLayout(
+        layoutPart.SlideLayout = new SlideLayout(
             new CommonSlideData(new ShapeTree(
                 new NonVisualGroupShapeProperties(
-                    new NonVisualDrawingProperties { Id = 1U, Name = "Group 1" },
+                    new NonVisualDrawingProperties { Id = 1U, Name = "LayoutGroup" },
                     new NonVisualGroupShapeDrawingProperties(),
                     new ApplicationNonVisualDrawingProperties()),
                 new GroupShapeProperties(new A.TransformGroup())
-            ))
+            )),
+            new ColorMapOverride(new A.MasterColorMapping())
         );
     }
 

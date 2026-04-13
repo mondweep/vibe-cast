@@ -231,18 +231,36 @@ Design requirements:
   <circle cx=""{width - 100}"" cy=""120"" r=""60"" fill=""#FFB81C"" opacity=""0.2""/>
   <path d=""M {width - 150} {height - 150} L {width - 50} {height - 150} L {width - 100} {height - 50} Z"" fill=""#FFFFFF"" opacity=""0.1""/>
   
-  <!-- Tech Mesh (Connecting Nodes) -->
-  <g stroke=""#FFFFFF"" stroke-width=""1"" opacity=""0.15"">
-    <circle cx=""100"" cy=""{height - 100}"" r=""4"" fill=""#FFFFFF""/>
-    <circle cx=""150"" cy=""{height - 180}"" r=""4"" fill=""#FFFFFF""/>
-    <circle cx=""220"" cy=""{height - 120}"" r=""4"" fill=""#FFFFFF""/>
-    <line x1=""100"" y1=""{height - 100}"" x2=""150"" y2=""{height - 180}""/>
-    <line x1=""150"" y1=""{height - 180}"" x2=""220"" y2=""{height - 120}""/>
-    <line x1=""220"" y1=""{height - 120}"" x2=""100"" y2=""{height - 100}""/>
+  <!-- Content Mockup (Bar Chart) -->
+  <g transform=""translate({width - 350}, {height - 280})"" opacity=""0.8"">
+    <rect x=""0"" y=""100"" width=""35"" height=""80"" fill=""#FFB81C"" rx=""4""/>
+    <rect x=""50"" y=""60"" width=""35"" height=""120"" fill=""#00B4D8"" rx=""4""/>
+    <rect x=""100"" y=""130"" width=""35"" height=""50"" fill=""#FFFFFF"" rx=""4""/>
+    <rect x=""150"" y=""80"" width=""35"" height=""100"" fill=""#FFB81C"" rx=""4""/>
+    <rect x=""200"" y=""40"" width=""35"" height=""140"" fill=""#00B4D8"" rx=""4""/>
+    <line x1=""0"" y1=""185"" x2=""240"" y2=""185"" stroke=""#FFFFFF"" stroke-width=""3""/>
+  </g>
+
+  <!-- Data Shield (Branded Element) -->
+  <g transform=""translate({width - 150}, 80)"" opacity=""0.3"">
+    <path d=""M 30 0 L 60 20 L 60 70 L 30 90 L 0 70 L 0 20 Z"" fill=""#FFB81C""/>
+    <path d=""M 10 30 L 30 20 L 50 30 L 50 60 L 30 70 L 10 60 Z"" fill=""#003366""/>
+  </g>
+
+  <!-- Tech Mesh (High-Visibility Connections) -->
+  <g stroke=""#00B4D8"" stroke-width=""3"" opacity=""0.6"">
+    <circle cx=""100"" cy=""{height - 100}"" r=""8"" fill=""#FFB81C""/>
+    <circle cx=""200"" cy=""{height - 220}"" r=""8"" fill=""#FFFFFF""/>
+    <circle cx=""300"" cy=""{height - 140}"" r=""8"" fill=""#00B4D8""/>
+    <line x1=""100"" y1=""{height - 100}"" x2=""200"" y2=""{height - 220}""/>
+    <line x1=""200"" y1=""{height - 220}"" x2=""300"" y2=""{height - 140}""/>
+    <line x1=""300"" y1=""{height - 140}"" x2=""100"" y2=""{height - 100}""/>
   </g>
 
   <!-- Digital Horizon -->
-  <line x1=""0"" y1=""{height - 80}"" x2=""{width}"" y2=""{height - 80}"" stroke=""#FFB81C"" stroke-width=""0.5"" opacity=""0.3""/>
+  <rect x=""0"" y=""{height - 100}"" width=""{width}"" height=""4"" fill=""url(#bgGradient)"" opacity=""0.2""/>
+  <rect x=""0"" y=""{height - 80}"" width=""{width}"" height=""3"" fill=""#FFB81C"" opacity=""0.5""/>
+  <rect x=""100"" y=""{height - 75}"" width=""300"" height=""1"" fill=""#00B4D8"" opacity=""0.4""/>
 
   <!-- Footer Branding -->
   <text x=""70"" y=""{height - 60}"" font-family=""Open Sans, Arial, sans-serif"" font-size=""16"" font-weight=""600"" fill=""#FFFFFF"" opacity=""0.8"">
