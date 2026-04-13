@@ -231,10 +231,22 @@ Design requirements:
   <circle cx=""{width - 100}"" cy=""120"" r=""60"" fill=""#FFB81C"" opacity=""0.2""/>
   <path d=""M {width - 150} {height - 150} L {width - 50} {height - 150} L {width - 100} {height - 50} Z"" fill=""#FFFFFF"" opacity=""0.1""/>
   
-  <!-- Content Mockup (Bar Chart) -->
-  <g transform=""translate({width - 350}, {height - 280})"" opacity=""0.8"">
+  <!-- Article Excerpt Preview -->
+  <g transform=""translate(80, 240)"" opacity=""0.4"">
+    <rect x=""0"" y=""0"" width=""400"" height=""4"" fill=""#FFFFFF"" rx=""2""/>
+    <rect x=""0"" y=""15"" width=""380"" height=""4"" fill=""#FFFFFF"" rx=""2""/>
+    <rect x=""0"" y=""30"" width=""420"" height=""4"" fill=""#FFFFFF"" rx=""2""/>
+    <rect x=""0"" y=""45"" width=""350"" height=""4"" fill=""#FFFFFF"" rx=""2""/>
+  </g>
+
+  <!-- Content Mockup (Bar Chart with Metrics) -->
+  <g transform=""translate({width - 350}, {height - 300})"" opacity=""0.8"">
+    <text x=""0"" y=""90"" font-family=""Montserrat, Arial, sans-serif"" font-size=""14"" font-weight=""700"" fill=""#FFB81C"">+240% ROI</text>
     <rect x=""0"" y=""100"" width=""35"" height=""80"" fill=""#FFB81C"" rx=""4""/>
+    
+    <text x=""50"" y=""50"" font-family=""Montserrat, Arial, sans-serif"" font-size=""14"" font-weight=""700"" fill=""#00B4D8"">35% Svg</text>
     <rect x=""50"" y=""60"" width=""35"" height=""120"" fill=""#00B4D8"" rx=""4""/>
+    
     <rect x=""100"" y=""130"" width=""35"" height=""50"" fill=""#FFFFFF"" rx=""4""/>
     <rect x=""150"" y=""80"" width=""35"" height=""100"" fill=""#FFB81C"" rx=""4""/>
     <rect x=""200"" y=""40"" width=""35"" height=""140"" fill=""#00B4D8"" rx=""4""/>

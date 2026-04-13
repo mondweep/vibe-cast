@@ -58,15 +58,15 @@ public class PowerPointContentFormatter
                 var slideMasterPart = presentationPart.AddNewPart<SlideMasterPart>();
                 InitSlideMasterPart(slideMasterPart);
 
-                // 3. Add Theme to Master
+                // 3. Add Theme to Master (Full Scheme for desktop PowerPoint)
                 var themePart = slideMasterPart.AddNewPart<ThemePart>();
                 themePart.Theme = CreateTheme();
 
-                // 4. Create Slide Layout
+                // 4. Create Slide Layout (Explicit Type)
                 var slideLayoutPart = slideMasterPart.AddNewPart<SlideLayoutPart>();
                 InitSlideLayoutPart(slideLayoutPart);
 
-                // 5. BIDIRECTIONAL LINK: Link Layout to Master AND Master to Layout
+                // 5. Explicit Linkage
                 slideLayoutPart.AddPart(slideMasterPart);
                 slideMasterPart.SlideMaster.SlideLayoutIdList!.Append(new SlideLayoutId 
                 { 
@@ -74,20 +74,18 @@ public class PowerPointContentFormatter
                     RelationshipId = slideMasterPart.GetIdOfPart(slideLayoutPart) 
                 });
 
-                // 6. Setup Master and Layout connections in Presentation
+                // 6. Presentation Metadata
                 presentation.SlideMasterIdList!.Append(
                     new SlideMasterId { Id = 2147483648U, RelationshipId = presentationPart.GetIdOfPart(slideMasterPart) }
                 );
 
-                // 7. Add View Properties (Mandatory for clean opening and visibility)
                 var viewPropsPart = presentationPart.AddNewPart<ViewPropertiesPart>();
                 viewPropsPart.ViewProperties = new ViewProperties(new NormalViewProperties());
-
-                // 8. Add Presentation Properties (Mandatory for consistency)
+                
                 var presPropsPart = presentationPart.AddNewPart<PresentationPropertiesPart>();
                 presPropsPart.PresentationProperties = new PresentationProperties();
 
-                // 9. Generate Slides
+                // 7. Generate Slides
                 AddSlide(presentationPart, slideLayoutPart, 256U, (part) => 
                     CreateTitleSlide(part, "Finabeo: Market-Service Alignment", "Executive Strategy Brief", workflowResult));
 
@@ -171,7 +169,7 @@ public class PowerPointContentFormatter
                 new GroupShapeProperties(new A.TransformGroup())
             )),
             new ColorMapOverride(new A.MasterColorMapping())
-        );
+        ) { Type = SlideLayoutValues.Blank };
     }
 
     private void CreateTitleSlide(SlidePart slidePart, string title, string subtitle, WorkflowResult result)
@@ -307,37 +305,55 @@ public class PowerPointContentFormatter
 
     private A.Theme CreateTheme()
     {
-        var theme = new A.Theme { Name = "Office Theme" };
-        var themeElements = new A.ThemeElements();
-        
-        var colorScheme = new A.ColorScheme { Name = "Office" };
-        colorScheme.Append(new A.Dark1Color(new A.SystemColor { Val = A.SystemColorValues.WindowText, LastColor = "000000" }));
-        colorScheme.Append(new A.Light1Color(new A.SystemColor { Val = A.SystemColorValues.Window, LastColor = "FFFFFF" }));
-        colorScheme.Append(new A.Dark2Color(new A.RgbColorModelHex { Val = "44546A" }));
-        colorScheme.Append(new A.Light2Color(new A.RgbColorModelHex { Val = "E7E6E6" }));
-        colorScheme.Append(new A.Accent1Color(new A.RgbColorModelHex { Val = "003366" })); // FINABEO Navy
-        colorScheme.Append(new A.Accent2Color(new A.RgbColorModelHex { Val = "ED7D31" }));
-        colorScheme.Append(new A.Accent3Color(new A.RgbColorModelHex { Val = "A5A5A5" }));
-        colorScheme.Append(new A.Accent4Color(new A.RgbColorModelHex { Val = "FFC000" }));
-        colorScheme.Append(new A.Accent5Color(new A.RgbColorModelHex { Val = "5B9BD5" }));
-        colorScheme.Append(new A.Accent6Color(new A.RgbColorModelHex { Val = "70AD47" }));
-        colorScheme.Append(new A.Hyperlink(new A.RgbColorModelHex { Val = "0563C1" }));
-        colorScheme.Append(new A.FollowedHyperlinkColor(new A.RgbColorModelHex { Val = "954F72" }));
-        
-        themeElements.Append(colorScheme);
-        themeElements.Append(new A.FontScheme(
-            new A.MajorFont(new A.LatinFont { Typeface = "Calibri Light" }),
-            new A.MinorFont(new A.LatinFont { Typeface = "Calibri" })
-        ) { Name = "Office" });
-        
-        themeElements.Append(new A.FormatScheme(
-            new A.FillStyleList(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor })),
-            new A.LineStyleList(new A.Outline(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor })) { Width = 6350 }),
-            new A.EffectStyleList(new A.EffectStyle(new A.EffectList())),
-            new A.BackgroundFillStyleList(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor }))
-        ) { Name = "Office" });
-        
-        theme.Append(themeElements);
-        return theme;
+        var themeElements = new A.ThemeElements(
+            new A.ColorScheme(
+                new A.Dark1Color(new A.SystemColor { Val = A.SystemColorValues.WindowText, LastColor = "000000" }),
+                new A.Light1Color(new A.SystemColor { Val = A.SystemColorValues.Window, LastColor = "FFFFFF" }),
+                new A.Dark2Color(new A.RgbColorModelHex { Val = "1F4E78" }),
+                new A.Light2Color(new A.RgbColorModelHex { Val = "E7E6E6" }),
+                new A.Accent1Color(new A.RgbColorModelHex { Val = "003366" }), // Finabeo Navy
+                new A.Accent2Color(new A.RgbColorModelHex { Val = "00B4D8" }), // Cyan
+                new A.Accent3Color(new A.RgbColorModelHex { Val = "FFB81C" }), // Finabeo Gold
+                new A.Accent4Color(new A.RgbColorModelHex { Val = "A5A5A5" }),
+                new A.Accent5Color(new A.RgbColorModelHex { Val = "264478" }),
+                new A.Accent6Color(new A.RgbColorModelHex { Val = "7E9CC5" }),
+                new A.Hyperlink(new A.RgbColorModelHex { Val = "0563C1" }),
+                new A.FollowedHyperlinkColor(new A.RgbColorModelHex { Val = "954F72" })
+            ) { Name = "Finabeo Office" },
+            new A.FontScheme(
+                new A.MajorFont(new A.LatinFont { Typeface = "Montserrat" }, new A.EastAsianFont { Typeface = "" }, new A.ComplexScriptFont { Typeface = "" }),
+                new A.MinorFont(new A.LatinFont { Typeface = "Open Sans" }, new A.EastAsianFont { Typeface = "" }, new A.ComplexScriptFont { Typeface = "" })
+            ) { Name = "Finabeo Fonts" },
+            new A.FormatScheme(
+                new A.FillStyleList(
+                    new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor }),
+                    new A.GradientFill(
+                        new A.GradientStopList(
+                            new A.GradientStop(new A.SchemeColor { Val = A.SchemeColorValues.PhColor }) { Position = 0 },
+                            new A.GradientStop(new A.SchemeColor { Val = A.SchemeColorValues.PhColor }) { Position = 100000 }
+                        ),
+                        new A.LinearGradientFill { Angle = 5400000, Scaled = false }
+                    ),
+                    new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor })
+                ),
+                new A.LineStyleList(
+                    new A.Outline(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor })) { Width = 6350, CapType = A.LineCapValues.Flat, CompoundLineType = A.CompoundLineValues.Single },
+                    new A.Outline(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor })) { Width = 12700 },
+                    new A.Outline(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor })) { Width = 19050 }
+                ),
+                new A.EffectStyleList(
+                    new A.EffectStyle(new A.EffectList()),
+                    new A.EffectStyle(new A.EffectList()),
+                    new A.EffectStyle(new A.EffectList())
+                ),
+                new A.BackgroundFillStyleList(
+                    new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor }),
+                    new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor }),
+                    new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor })
+                )
+            ) { Name = "Finabeo Format" }
+        );
+
+        return new A.Theme(themeElements) { Name = "Finabeo Standard" };
     }
 }
