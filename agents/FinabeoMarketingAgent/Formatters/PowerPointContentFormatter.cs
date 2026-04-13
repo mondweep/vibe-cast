@@ -46,13 +46,13 @@ public class PowerPointContentFormatter
             {
                 var presentationPart = presentationDocument.AddPresentationPart();
                 
-                // 1. Initialize Presentation with Standard Metadata
-                presentationPart.Presentation = new Presentation(
-                    new SlideSize { Cx = 12192000, Cy = 6858000, Type = SlideSizeValues.Screen16x9 },
-                    new NotesSize { Cx = 6858000, Cy = 9144000 },
-                    new SlideMasterIdList(),
-                    new SlideIdList()
-                );
+                // 1. Initialize Presentation Parts
+                var presentation = new Presentation();
+                presentation.Append(new SlideSize { Cx = 12192000, Cy = 6858000, Type = SlideSizeValues.Screen16x9 });
+                presentation.Append(new NotesSize { Cx = 6858000, Cy = 9144000 });
+                presentation.Append(new SlideMasterIdList());
+                presentation.Append(new SlideIdList());
+                presentationPart.Presentation = presentation;
 
                 // 2. Create Slide Master
                 var slideMasterPart = presentationPart.AddNewPart<SlideMasterPart>();
@@ -74,13 +74,15 @@ public class PowerPointContentFormatter
                 });
 
                 // 6. Setup Master and Layout connections in Presentation
-                presentationPart.Presentation.SlideMasterIdList!.Append(
+                presentation.SlideMasterIdList!.Append(
                     new SlideMasterId { Id = 2147483648U, RelationshipId = presentationPart.GetIdOfPart(slideMasterPart) }
                 );
 
-                // 7. Add View Properties (Critical for preventing Repair prompt)
+                // 7. Add View Properties (Mandatory for clean opening and visibility)
                 var viewPropsPart = presentationPart.AddNewPart<ViewPropertiesPart>();
-                viewPropsPart.ViewProperties = new ViewProperties();
+                viewPropsPart.ViewProperties = new ViewProperties(
+                    new NormalViewProperties()
+                );
 
                 // 8. Generate Slides
                 AddSlide(presentationPart, slideLayoutPart, 256U, (part) => 
@@ -146,7 +148,7 @@ public class PowerPointContentFormatter
         slideLayoutPart.SlideLayout = new SlideLayout(
             new CommonSlideData(new ShapeTree(
                 new NonVisualGroupShapeProperties(
-                    new NonVisualDrawingProperties { Id = 1U, Name = "" },
+                    new NonVisualDrawingProperties { Id = 1U, Name = "Group 1" },
                     new NonVisualGroupShapeDrawingProperties(),
                     new ApplicationNonVisualDrawingProperties()),
                 new GroupShapeProperties(new A.TransformGroup())
@@ -156,24 +158,40 @@ public class PowerPointContentFormatter
 
     private void CreateTitleSlide(SlidePart slidePart, string title, string subtitle, WorkflowResult result)
     {
-        var slide = new Slide(new CommonSlideData(new ShapeTree(
-            new NonVisualGroupShapeProperties(new NonVisualDrawingProperties { Id = 1U, Name = "" }, new NonVisualGroupShapeDrawingProperties(), new ApplicationNonVisualDrawingProperties()),
-            new GroupShapeProperties(new A.TransformGroup()),
-            new Background(new BackgroundProperties(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Accent1 }))),
-            CreateTextShape(2, 914400, 1828800, 8229600, 1200000, "FINABEO", 6000, "FFFFFF", true),
-            CreateTextShape(3, 914400, 3200000, 8229600, 2000000, title, 4400, "FFFFFF"),
-            CreateTextShape(4, 914400, 5943600, 8229600, 685800, DateTime.UtcNow.ToString("MMMM dd, yyyy"), 2400, "00B4D8")
-        )));
+        var slide = new Slide(
+            new CommonSlideData(
+                new Background(new BackgroundProperties(
+                    new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Accent1 })
+                )),
+                new ShapeTree(
+                    new NonVisualGroupShapeProperties(
+                        new NonVisualDrawingProperties { Id = 1U, Name = "TitleGroup" }, 
+                        new NonVisualGroupShapeDrawingProperties(), 
+                        new ApplicationNonVisualDrawingProperties()),
+                    new GroupShapeProperties(new A.TransformGroup()),
+                    CreateTextShape(2, 914400, 1828800, 8229600, 1200000, "FINABEO", 6000, A.SchemeColorValues.Light1, true),
+                    CreateTextShape(3, 914400, 3200000, 8229600, 2000000, title, 4400, A.SchemeColorValues.Light1),
+                    CreateTextShape(4, 914400, 5943600, 8229600, 685800, DateTime.UtcNow.ToString("MMMM dd, yyyy"), 2400, A.SchemeColorValues.Accent4)
+                )
+            )
+        );
         slidePart.Slide = slide;
     }
 
     private void CreateMarketInsightsSlide(SlidePart slidePart, MarketAnalysis? analysis)
     {
-        var slide = new Slide(new CommonSlideData(new ShapeTree(
-            new NonVisualGroupShapeProperties(new NonVisualDrawingProperties { Id = 1U, Name = "" }, new NonVisualGroupShapeDrawingProperties(), new ApplicationNonVisualDrawingProperties()),
-            new GroupShapeProperties(new A.TransformGroup()),
-            CreateTextShape(2, 457200, 274638, 8763600, 914400, "Market Insights & Trends", 4400, "003366", true)
-        )));
+        var slide = new Slide(
+            new CommonSlideData(
+                new ShapeTree(
+                    new NonVisualGroupShapeProperties(
+                        new NonVisualDrawingProperties { Id = 1U, Name = "InsightsGroup" }, 
+                        new NonVisualGroupShapeDrawingProperties(), 
+                        new ApplicationNonVisualDrawingProperties()),
+                    new GroupShapeProperties(new A.TransformGroup()),
+                    CreateTextShape(2, 457200, 274638, 8763600, 914400, "Market Insights & Trends", 4400, A.SchemeColorValues.Accent1, true)
+                )
+            )
+        );
 
         var yPosition = 1300000;
         uint shapeId = 3;
@@ -182,8 +200,8 @@ public class PowerPointContentFormatter
             foreach (var insight in analysis.MarketInsights.Take(2))
             {
                 var text = $"📊 {insight.Trend}\n\nPain: {insight.PainPoint}\n\nOpportunity: {insight.OpportunityDescription}";
-                slide.CommonSlideData.ShapeTree!.Append(CreateTextShape(shapeId++, 457200, yPosition, 8763600, 2400000, text, 1600));
-                yPosition += 2600000; // Increased spacing to prevent overlap
+                slide.CommonSlideData!.ShapeTree!.Append(CreateTextShape(shapeId++, 457200, yPosition, 8763600, 2400000, text, 1600, A.SchemeColorValues.Dark1));
+                yPosition += 2600000; 
             }
         }
         slidePart.Slide = slide;
@@ -191,11 +209,18 @@ public class PowerPointContentFormatter
 
     private void CreateServiceAlignmentSlide(SlidePart slidePart, ServiceAlignment? alignment)
     {
-        var slide = new Slide(new CommonSlideData(new ShapeTree(
-            new NonVisualGroupShapeProperties(new NonVisualDrawingProperties { Id = 1U, Name = "" }, new NonVisualGroupShapeDrawingProperties(), new ApplicationNonVisualDrawingProperties()),
-            new GroupShapeProperties(new A.TransformGroup()),
-            CreateTextShape(2, 457200, 274638, 8763600, 914400, "Finabeo Service Alignment", 4400, "003366", true)
-        )));
+        var slide = new Slide(
+            new CommonSlideData(
+                new ShapeTree(
+                    new NonVisualGroupShapeProperties(
+                        new NonVisualDrawingProperties { Id = 1U, Name = "AlignmentGroup" }, 
+                        new NonVisualGroupShapeDrawingProperties(), 
+                        new ApplicationNonVisualDrawingProperties()),
+                    new GroupShapeProperties(new A.TransformGroup()),
+                    CreateTextShape(2, 457200, 274638, 8763600, 914400, "Finabeo Service Alignment", 4400, A.SchemeColorValues.Accent1, true)
+                )
+            )
+        );
 
         var yPosition = 1300000;
         uint shapeId = 3;
@@ -204,8 +229,8 @@ public class PowerPointContentFormatter
             foreach (var service in alignment.FinabeoServices)
             {
                 var text = $"✓ {service.ServiceName} ({service.AlignmentScore*100:F0}% Fit)\n\n{service.WhyFit}\n\nKey Benefits:\n• {string.Join("\n• ", service.KeyBenefitsToHighlight ?? new List<string>())}";
-                slide.CommonSlideData.ShapeTree!.Append(CreateTextShape(shapeId++, 457200, yPosition, 8763600, 2600000, text, 1500));
-                yPosition += 2800000; // Increased spacing
+                slide.CommonSlideData!.ShapeTree!.Append(CreateTextShape(shapeId++, 457200, yPosition, 8763600, 2600000, text, 1500, A.SchemeColorValues.Dark1));
+                yPosition += 2800000; 
             }
         }
         slidePart.Slide = slide;
@@ -213,23 +238,30 @@ public class PowerPointContentFormatter
 
     private void CreateStrategySlide(SlidePart slidePart, WorkflowResult result)
     {
-        var slide = new Slide(new CommonSlideData(new ShapeTree(
-            new NonVisualGroupShapeProperties(new NonVisualDrawingProperties { Id = 1U, Name = "" }, new NonVisualGroupShapeDrawingProperties(), new ApplicationNonVisualDrawingProperties()),
-            new GroupShapeProperties(new A.TransformGroup()),
-            CreateTextShape(2, 457200, 274638, 8763600, 914400, "Go-to-Market Strategy", 4400, "003366", true)
-        )));
+        var slide = new Slide(
+            new CommonSlideData(
+                new ShapeTree(
+                    new NonVisualGroupShapeProperties(
+                        new NonVisualDrawingProperties { Id = 1U, Name = "StrategyGroup" }, 
+                        new NonVisualGroupShapeDrawingProperties(), 
+                        new ApplicationNonVisualDrawingProperties()),
+                    new GroupShapeProperties(new A.TransformGroup()),
+                    CreateTextShape(2, 457200, 274638, 8763600, 914400, "Go-to-Market Strategy", 4400, A.SchemeColorValues.Accent1, true)
+                )
+            )
+        );
 
         var strategyText = $"Target Focus:\n• {result.ServiceAlignment?.RecommendedFocus ?? "Enterprise reach"}\n\nKey Themes:\n• {string.Join("\n• ", result.ServiceAlignment?.ContentThemes?.Take(4) ?? new List<string>())}\n\nEngagement Rule:\n• Lead with FinOps ROI to fund Agentic AI pilots.";
-        slide.CommonSlideData.ShapeTree!.Append(CreateTextShape(3, 457200, 1371600, 8763600, 4500000, strategyText, 1800));
+        slide.CommonSlideData!.ShapeTree!.Append(CreateTextShape(3, 457200, 1371600, 8763600, 4500000, strategyText, 1800, A.SchemeColorValues.Dark1));
 
         slidePart.Slide = slide;
     }
 
-    private DocumentFormat.OpenXml.Presentation.Shape CreateTextShape(uint id, long x, long y, long width, long height, string text, int fontSize, string color = "003366", bool isBold = false)
+    private DocumentFormat.OpenXml.Presentation.Shape CreateTextShape(uint id, long x, long y, long width, long height, string text, int fontSize, A.SchemeColorValues color, bool isBold = false)
     {
         var shape = new DocumentFormat.OpenXml.Presentation.Shape(
             new NonVisualShapeProperties(
-                new NonVisualDrawingProperties { Id = id, Name = "Text Box " + id },
+                new NonVisualDrawingProperties { Id = id, Name = "Shape " + id },
                 new NonVisualShapeDrawingProperties(new A.ShapeLocks { NoGrouping = true }),
                 new ApplicationNonVisualDrawingProperties()
             ),
@@ -247,7 +279,7 @@ public class PowerPointContentFormatter
         {
             var rPr = new A.RunProperties { Language = "en-US", FontSize = fontSize };
             if (isBold) rPr.Bold = true;
-            rPr.Append(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Accent1 }));
+            rPr.Append(new A.SolidFill(new A.SchemeColor { Val = color }));
             rPr.Append(new A.LatinFont { Typeface = "Montserrat" });
 
             shape.TextBody!.Append(new A.Paragraph(new A.ParagraphProperties { Level = 0 }, new A.Run(rPr, new A.Text(line))));
@@ -265,7 +297,7 @@ public class PowerPointContentFormatter
         colorScheme.Append(new A.Light1Color(new A.SystemColor { Val = A.SystemColorValues.Window, LastColor = "FFFFFF" }));
         colorScheme.Append(new A.Dark2Color(new A.RgbColorModelHex { Val = "44546A" }));
         colorScheme.Append(new A.Light2Color(new A.RgbColorModelHex { Val = "E7E6E6" }));
-        colorScheme.Append(new A.Accent1Color(new A.RgbColorModelHex { Val = "4472C4" }));
+        colorScheme.Append(new A.Accent1Color(new A.RgbColorModelHex { Val = "003366" })); // FINABEO Navy
         colorScheme.Append(new A.Accent2Color(new A.RgbColorModelHex { Val = "ED7D31" }));
         colorScheme.Append(new A.Accent3Color(new A.RgbColorModelHex { Val = "A5A5A5" }));
         colorScheme.Append(new A.Accent4Color(new A.RgbColorModelHex { Val = "FFC000" }));

@@ -191,41 +191,65 @@ Design requirements:
 
         return $@"
 <svg width=""{width}"" height=""{height}"" xmlns=""http://www.w3.org/2000/svg"">
-  <!-- Background -->
   <defs>
     <linearGradient id=""bgGradient"" x1=""0%"" y1=""0%"" x2=""0%"" y2=""100%"">
       <stop offset=""0%"" style=""stop-color:#003366;stop-opacity:1"" />
       <stop offset=""100%"" style=""stop-color:#00B4D8;stop-opacity:1"" />
     </linearGradient>
+    <pattern id=""grid"" width=""40"" height=""40"" patternUnits=""userSpaceOnUse"">
+      <path d=""M 40 0 L 0 0 0 40"" fill=""none"" stroke=""white"" stroke-width=""0.5"" opacity=""0.1""/>
+    </pattern>
   </defs>
 
+  <!-- Background -->
   <rect width=""{width}"" height=""{height}"" fill=""url(#bgGradient)""/>
+  <rect width=""{width}"" height=""{height}"" fill=""url(#grid)""/>
 
   <!-- Brand bar -->
   <rect width=""{width}"" height=""40"" fill=""#FFB81C"" opacity=""0.9""/>
-
-  <!-- Logo text -->
-  <text x=""30"" y=""30"" font-family=""Montserrat, Arial, sans-serif"" font-size=""24"" font-weight=""bold"" fill=""#FFFFFF"">
+  <text x=""30"" y=""28"" font-family=""Montserrat, Arial, sans-serif"" font-size=""20"" font-weight=""bold"" fill=""#003366"">
     FINABEO
   </text>
 
-  <!-- Main content -->
-  <rect x=""40"" y=""80"" width=""{width - 80}"" height=""{height - 140}"" fill=""rgba(255,255,255,0.1)"" rx=""10""/>
+  <!-- Content Box -->
+  <rect x=""40"" y=""80"" width=""{width - 80}"" height=""{height - 180}"" fill=""rgba(255,255,255,0.05)"" stroke=""rgba(255,255,255,0.2)"" stroke-width=""2"" rx=""15""/>
 
   <!-- Title -->
-  <text x=""60"" y=""150"" font-family=""Montserrat, Arial, sans-serif"" font-size=""48"" font-weight=""bold"" fill=""#FFFFFF"" text-anchor=""start"">
-    <tspan x=""60"" dy=""0"">{EscapeXml(titleTruncated.Substring(0, Math.Min(30, titleTruncated.Length)))}</tspan>
-    {(titleTruncated.Length > 30 ? $"<tspan x='60' dy='60'>{EscapeXml(titleTruncated.Substring(30))}</tspan>" : "")}
+  <text x=""70"" y=""160"" font-family=""Montserrat, Arial, sans-serif"" font-size=""48"" font-weight=""bold"" fill=""#FFFFFF"">
+    <tspan x=""70"" dy=""0"">{EscapeXml(titleTruncated.Substring(0, Math.Min(30, titleTruncated.Length)))}</tspan>
+    {(titleTruncated.Length > 30 ? $"<tspan x='70' dy='65'>{EscapeXml(titleTruncated.Substring(30))}</tspan>" : "")}
   </text>
 
-  <!-- Subtitle -->
-  <text x=""60"" y=""{height - 70}"" font-family=""Open Sans, Arial, sans-serif"" font-size=""18"" fill=""#FFFFFF"" opacity=""0.9"">
-    Enterprise FinOps &amp; Agentic AI Partner
-  </text>
+  <!-- Decorate with 'Data' lines -->
+  <g opacity=""0.4"">
+    <rect x=""70"" y=""300"" width=""400"" height=""8"" fill=""#FFB81C"" rx=""4""/>
+    <rect x=""70"" y=""320"" width=""250"" height=""8"" fill=""#00B4D8"" rx=""4""/>
+    <rect x=""70"" y=""340"" width=""320"" height=""8"" fill=""#FFFFFF"" rx=""4""/>
+  </g>
 
-  <!-- Decorative elements -->
-  <circle cx=""{width - 80}"" cy=""60"" r=""40"" fill=""#FFB81C"" opacity=""0.3""/>
-  <circle cx=""50"" cy=""{height - 50}"" r=""30"" fill=""#FFFFFF"" opacity=""0.2""/>
+  <!-- Aesthetic Shapes -->
+  <circle cx=""{width - 100}"" cy=""120"" r=""60"" fill=""#FFB81C"" opacity=""0.2""/>
+  <path d=""M {width - 150} {height - 150} L {width - 50} {height - 150} L {width - 100} {height - 50} Z"" fill=""#FFFFFF"" opacity=""0.1""/>
+  
+  <!-- Tech Mesh (Connecting Nodes) -->
+  <g stroke=""#FFFFFF"" stroke-width=""1"" opacity=""0.15"">
+    <circle cx=""100"" cy=""{height - 100}"" r=""4"" fill=""#FFFFFF""/>
+    <circle cx=""150"" cy=""{height - 180}"" r=""4"" fill=""#FFFFFF""/>
+    <circle cx=""220"" cy=""{height - 120}"" r=""4"" fill=""#FFFFFF""/>
+    <line x1=""100"" y1=""{height - 100}"" x2=""150"" y2=""{height - 180}""/>
+    <line x1=""150"" y1=""{height - 180}"" x2=""220"" y2=""{height - 120}""/>
+    <line x1=""220"" y1=""{height - 120}"" x2=""100"" y2=""{height - 100}""/>
+  </g>
+
+  <!-- Digital Horizon -->
+  <line x1=""0"" y1=""{height - 80}"" x2=""{width}"" y2=""{height - 80}"" stroke=""#FFB81C"" stroke-width=""0.5"" opacity=""0.3""/>
+
+  <!-- Footer Branding -->
+  <text x=""70"" y=""{height - 60}"" font-family=""Open Sans, Arial, sans-serif"" font-size=""16"" font-weight=""600"" fill=""#FFFFFF"" opacity=""0.8"">
+    Enterprise FinOps &amp; Agentic AI Orchestration
+  </text>
+  
+  <line x1=""70"" y1=""{height - 85}"" x2=""300"" y2=""{height - 85}"" stroke=""#FFB81C"" stroke-width=""2"" opacity=""0.6""/>
 </svg>
 ";
     }
