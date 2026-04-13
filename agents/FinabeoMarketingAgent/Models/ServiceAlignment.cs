@@ -44,7 +44,7 @@ public class ServiceRecommendation
     public string WhyFit { get; set; } = string.Empty;
 
     [JsonPropertyName("key_benefits_to_highlight")]
-    public List<string> KeyBenefits { get; set; } = new();
+    public List<string> KeyBenefitsToHighlight { get; set; } = new();
 
     [JsonPropertyName("suggested_angle")]
     public string SuggestedAngle { get; set; } = string.Empty;

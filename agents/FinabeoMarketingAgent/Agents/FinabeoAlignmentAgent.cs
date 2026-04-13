@@ -122,7 +122,7 @@ Which service should we focus on this week?")
 
                     if (serviceJson.TryGetProperty("key_benefits_to_highlight", out var benefitsElement))
                     {
-                        service.KeyBenefits = benefitsElement.EnumerateArray()
+                        service.KeyBenefitsToHighlight = benefitsElement.EnumerateArray()
                             .Select(b => b.GetString() ?? string.Empty)
                             .ToList();
                     }
@@ -171,7 +171,7 @@ Which service should we focus on this week?")
                     TargetMarket = "Financial Services, Telecom, Insurance",
                     AlignmentScore = 0.95,
                     WhyFit = "Directly addresses the 25-40% cloud waste pain point enterprises are facing",
-                    KeyBenefits = new() { "Measurable savings", "Fast ROI", "Governance focus" },
+                    KeyBenefitsToHighlight = new() { "Measurable savings", "Fast ROI", "Governance focus" },
                     SuggestedAngle = "How to eliminate cloud waste without vendor lock-in"
                 },
                 new ServiceRecommendation
@@ -180,7 +180,7 @@ Which service should we focus on this week?")
                     TargetMarket = "Financial Services, Legal, Insurance",
                     AlignmentScore = 0.88,
                     WhyFit = "Addresses the challenge of safe AI adoption in regulated environments",
-                    KeyBenefits = new() { "Human-in-the-loop", "Compliance-ready", "Enterprise governance" },
+                    KeyBenefitsToHighlight = new() { "Human-in-the-loop", "Compliance-ready", "Enterprise governance" },
                     SuggestedAngle = "Microsoft ecosystem proves it can deliver Agentic AI with enterprise governance"
                 }
             }

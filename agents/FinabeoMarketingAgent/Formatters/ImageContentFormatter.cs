@@ -215,7 +215,7 @@ Design requirements:
   <!-- Title -->
   <text x=""60"" y=""150"" font-family=""Montserrat, Arial, sans-serif"" font-size=""48"" font-weight=""bold"" fill=""#FFFFFF"" text-anchor=""start"">
     <tspan x=""60"" dy=""0"">{EscapeXml(titleTruncated.Substring(0, Math.Min(30, titleTruncated.Length)))}</tspan>
-    {(titleTruncated.Length > 30 ? $""<tspan x=\"60\" dy=\"60\">{EscapeXml(titleTruncated.Substring(30))}</tspan>"" : "")}
+    {(titleTruncated.Length > 30 ? $"<tspan x='60' dy='60'>{EscapeXml(titleTruncated.Substring(30))}</tspan>" : "")}
   </text>
 
   <!-- Subtitle -->

@@ -1,8 +1,10 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
-using DocumentFormat.OpenXml.Drawing;
+using A = DocumentFormat.OpenXml.Drawing;
 using FinabeoMarketingAgent.Models;
+using FinabeoMarketingAgent.Workflow;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Xml.Linq;
 
@@ -96,7 +98,7 @@ public class PowerPointContentFormatter
     {
         var slide = new Slide();
 
-        var background = new Background { Fill = new SolidColorFillProperties { SchemeClr = new SchemeColor { Val = ColorSchemeIndexValues.Accent1 } } };
+        var background = new Background(new BackgroundProperties(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Accent1 })));
 
         // Add title shape
         var titleShape = CreateTextShape(
@@ -132,14 +134,14 @@ public class PowerPointContentFormatter
         );
 
         slide.CommonSlideData = new CommonSlideData();
-        slide.CommonSlideData.SpaceTree = new ShapeTree();
-        slide.CommonSlideData.SpaceTree.Append(new NonVisualGroupSpaceProperties());
-        slide.CommonSlideData.SpaceTree.Append(new GroupSpaceProperties());
-        slide.CommonSlideData.SpaceTree.Append(titleShape);
-        slide.CommonSlideData.SpaceTree.Append(subtitleShape);
-        slide.CommonSlideData.SpaceTree.Append(dateShape);
+        slide.CommonSlideData.ShapeTree = new ShapeTree();
+        slide.CommonSlideData.ShapeTree.Append(new NonVisualGroupShapeProperties());
+        slide.CommonSlideData.ShapeTree.Append(new DocumentFormat.OpenXml.Presentation.GroupShapeProperties());
+        slide.CommonSlideData.ShapeTree.Append(titleShape);
+        slide.CommonSlideData.ShapeTree.Append(subtitleShape);
+        slide.CommonSlideData.ShapeTree.Append(dateShape);
 
-        slide.ColorMapOverride = new ColorMapOverride { MasterColorMapping = new MasterColorMapping() };
+//         slide.ColorMapOverride = new ColorMapOverride { MasterColorMapping = new DocumentFormat.OpenXml.Presentation.MasterColorMapping() };
 
         slidePart.Slide = slide;
     }
@@ -160,10 +162,10 @@ public class PowerPointContentFormatter
         );
 
         slide.CommonSlideData = new CommonSlideData();
-        slide.CommonSlideData.SpaceTree = new ShapeTree();
-        slide.CommonSlideData.SpaceTree.Append(new NonVisualGroupSpaceProperties());
-        slide.CommonSlideData.SpaceTree.Append(new GroupSpaceProperties());
-        slide.CommonSlideData.SpaceTree.Append(heading);
+        slide.CommonSlideData.ShapeTree = new ShapeTree();
+        slide.CommonSlideData.ShapeTree.Append(new NonVisualGroupShapeProperties());
+        slide.CommonSlideData.ShapeTree.Append(new DocumentFormat.OpenXml.Presentation.GroupShapeProperties());
+        slide.CommonSlideData.ShapeTree.Append(heading);
 
         var yPosition = 1371600; // Start below heading
 
@@ -185,12 +187,12 @@ public class PowerPointContentFormatter
                     color: "2B2B2B"
                 );
 
-                slide.CommonSlideData.SpaceTree.Append(insightShape);
+                slide.CommonSlideData.ShapeTree.Append(insightShape);
                 yPosition += 1600200;
             }
         }
 
-        slide.ColorMapOverride = new ColorMapOverride { MasterColorMapping = new MasterColorMapping() };
+//         slide.ColorMapOverride = new ColorMapOverride { MasterColorMapping = new DocumentFormat.OpenXml.Presentation.MasterColorMapping() };
         slidePart.Slide = slide;
     }
 
@@ -210,10 +212,10 @@ public class PowerPointContentFormatter
         );
 
         slide.CommonSlideData = new CommonSlideData();
-        slide.CommonSlideData.SpaceTree = new ShapeTree();
-        slide.CommonSlideData.SpaceTree.Append(new NonVisualGroupSpaceProperties());
-        slide.CommonSlideData.SpaceTree.Append(new GroupSpaceProperties());
-        slide.CommonSlideData.SpaceTree.Append(heading);
+        slide.CommonSlideData.ShapeTree = new ShapeTree();
+        slide.CommonSlideData.ShapeTree.Append(new NonVisualGroupShapeProperties());
+        slide.CommonSlideData.ShapeTree.Append(new DocumentFormat.OpenXml.Presentation.GroupShapeProperties());
+        slide.CommonSlideData.ShapeTree.Append(heading);
 
         var yPosition = 1371600;
 
@@ -236,52 +238,52 @@ public class PowerPointContentFormatter
                     color: service.AlignmentScore > 0.9 ? "00B4D8" : "FFB81C"
                 );
 
-                slide.CommonSlideData.SpaceTree.Append(serviceShape);
+                slide.CommonSlideData.ShapeTree.Append(serviceShape);
                 yPosition += 1828800;
             }
         }
 
-        slide.ColorMapOverride = new ColorMapOverride { MasterColorMapping = new MasterColorMapping() };
+        // slide.ColorMapOverride = new ColorMapOverride { MasterColorMapping = new MasterColorMapping() };
         slidePart.Slide = slide;
     }
 
-    private Shape CreateTextShape(long x, long y, long width, long height, string text,
+    private DocumentFormat.OpenXml.Presentation.Shape CreateTextShape(long x, long y, long width, long height, string text,
         int fontSize = 2400, string color = "2B2B2B", bool isBold = false)
     {
-        var shape = new Shape();
+        var shape = new DocumentFormat.OpenXml.Presentation.Shape();
 
         var nvSpPr = new NonVisualShapeProperties();
         var cNvPr = new NonVisualDrawingProperties { Id = 2U, Name = "Text Box" };
         var cNvSpPr = new NonVisualShapeDrawingProperties();
-        var spLocks = new ShapeLocks { NoGrp = true };
+        var spLocks = new A.ShapeLocks { NoGrouping = true };
         cNvSpPr.Append(spLocks);
         nvSpPr.Append(cNvPr);
         nvSpPr.Append(cNvSpPr);
 
         var spPr = new ShapeProperties();
-        var xfrm = new Transform2D();
-        var off = new Offset { X = x, Y = y };
-        var ext = new Extents { Cx = width, Cy = height };
+        var xfrm = new A.Transform2D();
+        var off = new A.Offset { X = x, Y = y };
+        var ext = new A.Extents { Cx = width, Cy = height };
         xfrm.Append(off);
         xfrm.Append(ext);
         spPr.Append(xfrm);
-        spPr.Append(new PresetGeometry { Prst = ShapeTypeValues.Rectangle });
+        spPr.Append(new A.PresetGeometry { Preset = A.ShapeTypeValues.Rectangle });
 
         var txBody = new TextBody();
-        txBody.Append(new BodyProperties { Wrap = TextWrappingValues.Square });
-        txBody.Append(new ListStyle());
+        txBody.Append(new A.BodyProperties { Wrap = A.TextWrappingValues.Square });
+        txBody.Append(new A.ListStyle());
 
         var paragraph = new A.Paragraph();
-        var pPr = new A.ParagraphProperties { Lvl = 0 };
+        var pPr = new A.ParagraphProperties { Level = 0 };
         paragraph.Append(pPr);
 
         var run = new A.Run();
         var rPr = new A.RunProperties { Language = "en-US", FontSize = fontSize };
 
         if (isBold)
-            rPr.Append(new A.Bold());
+            rPr.Bold = true;
 
-        rPr.Append(new A.SolidFill(new SchemeColor { Val = ColorSchemeIndexValues.Accent1 }));
+        rPr.Append(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Accent1 }));
         rPr.Append(new A.LatinFont { Typeface = "Montserrat" });
 
         run.Append(rPr);

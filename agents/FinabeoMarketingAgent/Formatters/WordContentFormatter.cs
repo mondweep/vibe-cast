@@ -2,6 +2,8 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using FinabeoMarketingAgent.Models;
+using FinabeoMarketingAgent.Workflow;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace FinabeoMarketingAgent.Formatters;
