@@ -3,7 +3,7 @@ using Azure.Identity;
 using FinabeoMarketingAgent.Agents;
 using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Workflow;
-using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

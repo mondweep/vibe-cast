@@ -1,4 +1,4 @@
-using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Models;
 using Microsoft.Extensions.Logging;
