@@ -1,0 +1,80 @@
+
+<svg width="1024" height="512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#003366;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00B4D8;stop-opacity:1" />
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="512" fill="url(#bgGradient)"/>
+  <rect width="1024" height="512" fill="url(#grid)"/>
+
+  <!-- Brand bar -->
+  <rect width="1024" height="40" fill="#FFB81C" opacity="0.9"/>
+  <text x="30" y="28" font-family="Montserrat, Arial, sans-serif" font-size="20" font-weight="bold" fill="#003366">
+    FINABEO
+  </text>
+
+  <!-- Content Box -->
+  <rect x="40" y="80" width="944" height="332" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" stroke-width="2" rx="15"/>
+
+  <!-- Title -->
+  <text x="70" y="160" font-family="Montserrat, Arial, sans-serif" font-size="48" font-weight="bold" fill="#FFFFFF">
+    <tspan x="70" dy="0">I said I&apos;d explore Microsoft A</tspan>
+    <tspan x='70' dy='65'>gent Framework th...</tspan>
+  </text>
+
+  <!-- Decorate with 'Data' lines -->
+  <g opacity="0.4">
+    <rect x="70" y="300" width="400" height="8" fill="#FFB81C" rx="4"/>
+    <rect x="70" y="320" width="250" height="8" fill="#00B4D8" rx="4"/>
+    <rect x="70" y="340" width="320" height="8" fill="#FFFFFF" rx="4"/>
+  </g>
+
+  <!-- Aesthetic Shapes -->
+  <circle cx="924" cy="120" r="60" fill="#FFB81C" opacity="0.2"/>
+  <path d="M 874 362 L 974 362 L 924 462 Z" fill="#FFFFFF" opacity="0.1"/>
+  
+  <!-- Content Mockup (Bar Chart) -->
+  <g transform="translate(674, 232)" opacity="0.8">
+    <rect x="0" y="100" width="35" height="80" fill="#FFB81C" rx="4"/>
+    <rect x="50" y="60" width="35" height="120" fill="#00B4D8" rx="4"/>
+    <rect x="100" y="130" width="35" height="50" fill="#FFFFFF" rx="4"/>
+    <rect x="150" y="80" width="35" height="100" fill="#FFB81C" rx="4"/>
+    <rect x="200" y="40" width="35" height="140" fill="#00B4D8" rx="4"/>
+    <line x1="0" y1="185" x2="240" y2="185" stroke="#FFFFFF" stroke-width="3"/>
+  </g>
+
+  <!-- Data Shield (Branded Element) -->
+  <g transform="translate(874, 80)" opacity="0.3">
+    <path d="M 30 0 L 60 20 L 60 70 L 30 90 L 0 70 L 0 20 Z" fill="#FFB81C"/>
+    <path d="M 10 30 L 30 20 L 50 30 L 50 60 L 30 70 L 10 60 Z" fill="#003366"/>
+  </g>
+
+  <!-- Tech Mesh (High-Visibility Connections) -->
+  <g stroke="#00B4D8" stroke-width="3" opacity="0.6">
+    <circle cx="100" cy="412" r="8" fill="#FFB81C"/>
+    <circle cx="200" cy="292" r="8" fill="#FFFFFF"/>
+    <circle cx="300" cy="372" r="8" fill="#00B4D8"/>
+    <line x1="100" y1="412" x2="200" y2="292"/>
+    <line x1="200" y1="292" x2="300" y2="372"/>
+    <line x1="300" y1="372" x2="100" y2="412"/>
+  </g>
+
+  <!-- Digital Horizon -->
+  <rect x="0" y="412" width="1024" height="4" fill="url(#bgGradient)" opacity="0.2"/>
+  <rect x="0" y="432" width="1024" height="3" fill="#FFB81C" opacity="0.5"/>
+  <rect x="100" y="437" width="300" height="1" fill="#00B4D8" opacity="0.4"/>
+
+  <!-- Footer Branding -->
+  <text x="70" y="452" font-family="Open Sans, Arial, sans-serif" font-size="16" font-weight="600" fill="#FFFFFF" opacity="0.8">
+    Enterprise FinOps &amp; Agentic AI Orchestration
+  </text>
+  
+  <line x1="70" y1="427" x2="300" y2="427" stroke="#FFB81C" stroke-width="2" opacity="0.6"/>
+</svg>

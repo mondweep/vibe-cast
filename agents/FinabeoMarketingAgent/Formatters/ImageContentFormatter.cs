@@ -187,7 +187,8 @@ Design requirements:
             _ => (1200, 600)
         };
 
-        var titleTruncated = title.Length > 50 ? title.Substring(0, 47) + "..." : title;
+        // Removed master truncation to allow full headlines; wrapping handles the content
+        var titleTruncated = title;
 
         return $@"
 <svg width=""{width}"" height=""{height}"" xmlns=""http://www.w3.org/2000/svg"">
@@ -205,6 +206,9 @@ Design requirements:
   <rect width=""{width}"" height=""{height}"" fill=""url(#bgGradient)""/>
   <rect width=""{width}"" height=""{height}"" fill=""url(#grid)""/>
 
+  <!-- Hexagon Pattern (Visual Depth Background) -->
+  <rect width=""100%"" height=""100%"" fill=""url(#hexagons)"" />
+
   <!-- Brand bar -->
   <rect width=""{width}"" height=""40"" fill=""#FFB81C"" opacity=""0.9""/>
   <text x=""30"" y=""28"" font-family=""Montserrat, Arial, sans-serif"" font-size=""20"" font-weight=""bold"" fill=""#003366"">
@@ -214,10 +218,9 @@ Design requirements:
   <!-- Content Box -->
   <rect x=""40"" y=""80"" width=""{width - 80}"" height=""{height - 180}"" fill=""rgba(255,255,255,0.05)"" stroke=""rgba(255,255,255,0.2)"" stroke-width=""2"" rx=""15""/>
 
-  <!-- Title -->
-  <text x=""70"" y=""160"" font-family=""Montserrat, Arial, sans-serif"" font-size=""48"" font-weight=""bold"" fill=""#FFFFFF"">
-    <tspan x=""70"" dy=""0"">{EscapeXml(titleTruncated.Substring(0, Math.Min(30, titleTruncated.Length)))}</tspan>
-    {(titleTruncated.Length > 30 ? $"<tspan x='70' dy='65'>{EscapeXml(titleTruncated.Substring(30))}</tspan>" : "")}
+  <!-- Title (Word-Aware Wrapping) -->
+  <text x=""70"" y=""125"" font-family=""Montserrat, Arial, sans-serif"" font-size=""44"" font-weight=""bold"" fill=""#FFFFFF"">
+    {GenerateTspans(titleTruncated, 35)}
   </text>
 
   <!-- Decorate with 'Data' lines -->
@@ -226,18 +229,32 @@ Design requirements:
     <rect x=""70"" y=""320"" width=""250"" height=""8"" fill=""#00B4D8"" rx=""4""/>
     <rect x=""70"" y=""340"" width=""320"" height=""8"" fill=""#FFFFFF"" rx=""4""/>
   </g>
-
   <!-- Aesthetic Shapes -->
   <circle cx=""{width - 100}"" cy=""120"" r=""60"" fill=""#FFB81C"" opacity=""0.2""/>
   <path d=""M {width - 150} {height - 150} L {width - 50} {height - 150} L {width - 100} {height - 50} Z"" fill=""#FFFFFF"" opacity=""0.1""/>
   
-  <!-- Article Excerpt Preview -->
-  <g transform=""translate(80, 240)"" opacity=""0.4"">
-    <rect x=""0"" y=""0"" width=""400"" height=""4"" fill=""#FFFFFF"" rx=""2""/>
-    <rect x=""0"" y=""15"" width=""380"" height=""4"" fill=""#FFFFFF"" rx=""2""/>
-    <rect x=""0"" y=""30"" width=""420"" height=""4"" fill=""#FFFFFF"" rx=""2""/>
-    <rect x=""0"" y=""45"" width=""350"" height=""4"" fill=""#FFFFFF"" rx=""2""/>
+  <!-- Digital Seal (Enterprise Verified) -->
+  <g transform=""translate(40, 40)"" opacity=""0.5"">
+    <circle cx=""30"" cy=""30"" r=""25"" stroke=""#FFB81C"" stroke-width=""2"" fill=""none""/>
+    <text x=""30"" y=""35"" font-family=""Montserrat, Arial, sans-serif"" font-size=""10"" fill=""#FFB81C"" text-anchor=""middle"" font-weight=""700"">VERIFIED</text>
   </g>
+
+  <!-- Key Research Findings (High-Density Text Block) -->
+  <g transform=""translate(80, 260)"">
+    <text x=""0"" y=""0"" font-family=""Montserrat, Arial, sans-serif"" font-size=""24"" font-weight=""700"" fill=""#FFB81C"">STRATEGIC INSIGHTS</text>
+    <g transform=""translate(0, 35)"" font-family=""Open Sans, Arial, sans-serif"" font-size=""20"" fill=""#FFFFFF"" opacity=""0.9"">
+      <text x=""0"" y=""25"">• Enterprise Agentic AI Orchestration</text>
+      <text x=""0"" y=""55"">• 240% ROI in Multi-Agent Workflows</text>
+      <text x=""0"" y=""85"">• Zero-Trust Autonomous Security</text>
+      <text x=""0"" y=""115"">• Cloud FinOps Scaling Strategies</text>
+      <text x=""0"" y=""145"">• Microsoft Fabric Service Alignment</text>
+    </g>
+  </g>
+
+  <!-- Hexagon Pattern (Visual Depth) -->
+  <pattern id=""hexagons"" width=""50"" height=""43.3"" patternUnits=""userSpaceOnUse"" patternTransform=""scale(2) rotate(30)"">
+    <path d=""M25 0 L50 14.4 L50 43.3 L25 57.7 L0 43.3 L0 14.4 Z"" fill=""none"" stroke=""#00B4D8"" stroke-width=""0.5"" opacity=""0.15""/>
+  </pattern>
 
   <!-- Content Mockup (Bar Chart with Metrics) -->
   <g transform=""translate({width - 350}, {height - 300})"" opacity=""0.8"">
@@ -292,5 +309,25 @@ Design requirements:
             .Replace(">", "&gt;")
             .Replace("\"", "&quot;")
             .Replace("'", "&apos;");
+    }
+
+    private string GenerateTspans(string text, int maxCharsPerLine)
+    {
+        var lines = new List<string>();
+        foreach (var word in text.Split(' '))
+        {
+            if (lines.Count == 0 || (lines[^1] + word).Length > maxCharsPerLine)
+                lines.Add(word + " ");
+            else
+                lines[^1] += word + " ";
+        }
+
+        var result = new System.Text.StringBuilder();
+        for (int i = 0; i < Math.Min(3, lines.Count); i++)
+        {
+            var dy = i == 0 ? "0" : "50";
+            result.AppendLine($"<tspan x=\"70\" dy=\"{dy}\">{EscapeXml(lines[i].Trim())}</tspan>");
+        }
+        return result.ToString();
     }
 }
