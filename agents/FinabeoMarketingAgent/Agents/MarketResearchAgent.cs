@@ -120,38 +120,48 @@ Provide insights that would be relevant to financial services, insurance, and te
         return new MarketAnalysis
         {
             Timestamp = DateTime.UtcNow,
-            Summary = "Current market trends show enterprises struggling with cloud cost optimization and AI adoption in regulated environments.",
+            Summary = "The enterprise market is currently defined by a 'efficiency-first' AI strategy. Decision makers in Finance and Telecom are moving past experimental GenAI to focus on Cloud Cost Optimization (FinOps) and governed Agentic AI workflows that prove measurable ROI.",
             Trends = new()
             {
-                "Increased focus on cloud cost optimization",
-                "Growing adoption of AI in regulated industries",
-                "Enterprise digital transformation acceleration",
-                "Security and compliance become critical"
+                "Shift from experimental to production-grade Agentic AI",
+                "Hyper-focus on Cloud Cost Management (FinOps) due to 30% average waste",
+                "Increasing regulatory pressure for AI transparency and human-in-the-loop",
+                "Consolidation of AI platforms within the Microsoft ecosystem",
+                "Rise of specialized multi-agent systems for back-office automation"
             },
             PainPoints = new()
             {
-                "Cloud cost unpredictability and waste",
-                "Difficulty adopting AI due to regulatory concerns",
-                "Complex multi-cloud management",
-                "Data governance and compliance challenges"
+                "Predictable AI costs are difficult to model in pay-as-you-go environments",
+                "Data sovereignty concerns in highly regulated financial sectors",
+                "Skills gap in managing complex multi-agent orchestrations",
+                "Integrating legacy infrastructure with modern Microsoft Agent Framework",
+                "Lack of governance for autonomous AI agents acting on sensitive data"
             },
             MarketInsights = new()
             {
                 new MarketInsight
                 {
-                    Trend = "Cloud Cost Optimization",
-                    PainPoint = "Enterprises waste 25-40% on cloud resources",
+                    Trend = "Cloud Cost Management Acceleration",
+                    PainPoint = "Enterprises are spending 25-40% more than necessary on cloud resources without clear observability.",
                     MarketSegment = "Financial Services, Telecom, Insurance",
                     Relevance = "high",
-                    OpportunityDescription = "Need for FinOps consulting and optimization tools"
+                    OpportunityDescription = "Finabeo's FinOps implementation can reduce waste by 30% in 90 days, funding future AI projects."
                 },
                 new MarketInsight
                 {
-                    Trend = "Agentic AI Adoption",
-                    PainPoint = "Organizations struggle with safe AI deployment in regulated environments",
+                    Trend = "Regulated AI Adoption (Agentic AI)",
+                    PainPoint = "Banks and insurers are hesitant to deploy autonomous agents due to compliance risks.",
                     MarketSegment = "Financial Services, Legal, Insurance",
                     Relevance = "high",
-                    OpportunityDescription = "Demand for human-in-the-loop, governed AI solutions"
+                    OpportunityDescription = "Finabeo's 'Human-in-the-Loop' orchestration ensures every automated decision is audited and approved."
+                },
+                new MarketInsight
+                {
+                    Trend = "Microsoft Ecosystem Synergy",
+                    PainPoint = "Disconnected AI tools create technical debt and security vulnerabilities.",
+                    MarketSegment = "Enterprise IT",
+                    Relevance = "medium",
+                    OpportunityDescription = "Leveraging Azure AI Foundry and Microsoft Agent Framework ensures seamless, secure integration."
                 }
             }
         };

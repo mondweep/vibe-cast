@@ -61,6 +61,7 @@ public class PowerPointContentFormatter
                 var slide1Part = presentationPart.AddNewPart<SlidePart>();
                 var slide2Part = presentationPart.AddNewPart<SlidePart>();
                 var slide3Part = presentationPart.AddNewPart<SlidePart>();
+                var slide4Part = presentationPart.AddNewPart<SlidePart>();
 
                 presentationPart.Presentation.SlideMasterIdList = new SlideMasterIdList(
                     new SlideMasterId { Id = 256U, RelationshipId = presentationPart.CreateRelationshipToPart(slideMasterPart) }
@@ -69,17 +70,21 @@ public class PowerPointContentFormatter
                 presentationPart.Presentation.SlideIdList = new SlideIdList(
                     new SlideId { Id = 256U, RelationshipId = presentationPart.CreateRelationshipToPart(slide1Part) },
                     new SlideId { Id = 257U, RelationshipId = presentationPart.CreateRelationshipToPart(slide2Part) },
-                    new SlideId { Id = 258U, RelationshipId = presentationPart.CreateRelationshipToPart(slide3Part) }
+                    new SlideId { Id = 258U, RelationshipId = presentationPart.CreateRelationshipToPart(slide3Part) },
+                    new SlideId { Id = 259U, RelationshipId = presentationPart.CreateRelationshipToPart(slide4Part) }
                 );
 
                 // Slide 1: Title Slide
-                CreateTitleSlide(slide1Part, "Market Analysis & Finabeo Services", "Enterprise Insights", workflowResult);
+                CreateTitleSlide(slide1Part, "Finabeo: Market-Service Alignment", "Executive Strategy Brief", workflowResult);
 
                 // Slide 2: Market Insights
                 CreateMarketInsightsSlide(slide2Part, workflowResult.MarketAnalysis);
 
                 // Slide 3: Service Alignment
                 CreateServiceAlignmentSlide(slide3Part, workflowResult.ServiceAlignment);
+
+                // Slide 4: Execution Strategy
+                CreateStrategySlide(slide4Part, workflowResult);
 
                 presentationDocument.Save();
                 _logger.LogInformation($"✓ PowerPoint presentation created: {fileName}");
@@ -247,6 +252,43 @@ public class PowerPointContentFormatter
         slidePart.Slide = slide;
     }
 
+    private void CreateStrategySlide(SlidePart slidePart, WorkflowResult result)
+    {
+        var slide = new Slide();
+        var heading = CreateTextShape(
+            x: 457200,
+            y: 274638,
+            width: 8763600,
+            height: 914400,
+            text: "Go-to-Market Strategy",
+            fontSize: 4400,
+            color: "003366",
+            isBold: true
+        );
+
+        slide.CommonSlideData = new CommonSlideData();
+        slide.CommonSlideData.ShapeTree = new ShapeTree();
+        slide.CommonSlideData.ShapeTree.Append(new NonVisualGroupShapeProperties());
+        slide.CommonSlideData.ShapeTree.Append(new DocumentFormat.OpenXml.Presentation.GroupShapeProperties());
+        slide.CommonSlideData.ShapeTree.Append(heading);
+
+        var strategyText = $"Target Market Focus:\n• {result.ServiceAlignment?.RecommendedFocus ?? "Broad enterprise reach"}\n\n" +
+            $"Key Themes:\n• {string.Join("\n• ", result.ServiceAlignment?.ContentThemes?.Take(4) ?? new List<string>())}\n\n" +
+            $"Engagement Rule:\n• Lead with FinOps ROI to fund Agentic AI pilots.";
+
+        var strategyShape = CreateTextShape(
+            x: 457200,
+            y: 1371600,
+            width: 8763600,
+            height: 4000000,
+            text: strategyText,
+            fontSize: 2000
+        );
+
+        slide.CommonSlideData.ShapeTree.Append(strategyShape);
+        slidePart.Slide = slide;
+    }
+
     private DocumentFormat.OpenXml.Presentation.Shape CreateTextShape(long x, long y, long width, long height, string text,
         int fontSize = 2400, string color = "2B2B2B", bool isBold = false)
     {
@@ -273,23 +315,27 @@ public class PowerPointContentFormatter
         txBody.Append(new A.BodyProperties { Wrap = A.TextWrappingValues.Square });
         txBody.Append(new A.ListStyle());
 
-        var paragraph = new A.Paragraph();
-        var pPr = new A.ParagraphProperties { Level = 0 };
-        paragraph.Append(pPr);
+        var lines = text.Split('\n');
+        foreach (var line in lines)
+        {
+            var paragraph = new A.Paragraph();
+            var pPr = new A.ParagraphProperties { Level = 0 };
+            paragraph.Append(pPr);
 
-        var run = new A.Run();
-        var rPr = new A.RunProperties { Language = "en-US", FontSize = fontSize };
+            var run = new A.Run();
+            var rPr = new A.RunProperties { Language = "en-US", FontSize = fontSize };
 
-        if (isBold)
-            rPr.Bold = true;
+            if (isBold)
+                rPr.Bold = true;
 
-        rPr.Append(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Accent1 }));
-        rPr.Append(new A.LatinFont { Typeface = "Montserrat" });
+            rPr.Append(new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Accent1 }));
+            rPr.Append(new A.LatinFont { Typeface = "Montserrat" });
 
-        run.Append(rPr);
-        run.Append(new A.Text { Text = text });
-        paragraph.Append(run);
-        txBody.Append(paragraph);
+            run.Append(rPr);
+            run.Append(new A.Text { Text = line });
+            paragraph.Append(run);
+            txBody.Append(paragraph);
+        }
 
         shape.Append(nvSpPr);
         shape.Append(spPr);
