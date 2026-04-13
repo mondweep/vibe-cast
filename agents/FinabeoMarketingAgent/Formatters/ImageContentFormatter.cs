@@ -187,8 +187,10 @@ Design requirements:
             _ => (1200, 600)
         };
 
-        // Removed master truncation to allow full headlines; wrapping handles the content
-        var titleTruncated = title;
+        // Dynamic font size based on title length
+        var fontSize = title.Length > 80 ? 30 : (title.Length > 50 ? 36 : 44);
+        var maxCharsPerLine = title.Length > 80 ? 45 : (title.Length > 50 ? 40 : 35);
+        var maxLines = imageType == "instagram-image" ? 6 : 4;
 
         return $@"
 <svg width=""{width}"" height=""{height}"" xmlns=""http://www.w3.org/2000/svg"">
@@ -219,8 +221,8 @@ Design requirements:
   <rect x=""40"" y=""80"" width=""{width - 80}"" height=""{height - 180}"" fill=""rgba(255,255,255,0.05)"" stroke=""rgba(255,255,255,0.2)"" stroke-width=""2"" rx=""15""/>
 
   <!-- Title (Word-Aware Wrapping) -->
-  <text x=""70"" y=""125"" font-family=""Montserrat, Arial, sans-serif"" font-size=""44"" font-weight=""bold"" fill=""#FFFFFF"">
-    {GenerateTspans(titleTruncated, 35)}
+  <text x=""70"" y=""125"" font-family=""Montserrat, Arial, sans-serif"" font-size=""{fontSize}"" font-weight=""bold"" fill=""#FFFFFF"">
+    {GenerateTspans(title, maxCharsPerLine, maxLines, fontSize + 6)}
   </text>
 
   <!-- Decorate with 'Data' lines -->
@@ -311,22 +313,29 @@ Design requirements:
             .Replace("'", "&apos;");
     }
 
-    private string GenerateTspans(string text, int maxCharsPerLine)
+    private string GenerateTspans(string text, int maxCharsPerLine, int maxLines, int lineSpacing)
     {
+        var words = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         var lines = new List<string>();
-        foreach (var word in text.Split(' '))
+        var currentLine = new System.Text.StringBuilder();
+
+        foreach (var word in words)
         {
-            if (lines.Count == 0 || (lines[^1] + word).Length > maxCharsPerLine)
-                lines.Add(word + " ");
-            else
-                lines[^1] += word + " ";
+            if (currentLine.Length > 0 && (currentLine.Length + word.Length + 1) > maxCharsPerLine)
+            {
+                lines.Add(currentLine.ToString().Trim());
+                currentLine.Clear();
+            }
+            if (currentLine.Length > 0) currentLine.Append(" ");
+            currentLine.Append(word);
         }
+        if (currentLine.Length > 0) lines.Add(currentLine.ToString().Trim());
 
         var result = new System.Text.StringBuilder();
-        for (int i = 0; i < Math.Min(3, lines.Count); i++)
+        for (int i = 0; i < Math.Min(maxLines, lines.Count); i++)
         {
-            var dy = i == 0 ? "0" : "50";
-            result.AppendLine($"<tspan x=\"70\" dy=\"{dy}\">{EscapeXml(lines[i].Trim())}</tspan>");
+            var dy = i == 0 ? "0" : lineSpacing.ToString();
+            result.AppendLine($"<tspan x=\"70\" dy=\"{dy}\">{EscapeXml(lines[i])}</tspan>");
         }
         return result.ToString();
     }
