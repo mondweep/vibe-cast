@@ -6,27 +6,22 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Agent Framework - Use latest stable -->
-    <PackageReference Include="Microsoft.Agents.AI" Version="*" />
-    <PackageReference Include="Microsoft.Agents.AI.Foundry" Version="*" />
+    <!-- Microsoft Agent Framework - Latest versions -->
+    <PackageReference Include="Microsoft.Agents.AI.Foundry" Version="1.0.0" />
 
-    <!-- Azure & OpenAI - Use latest stable -->
-    <PackageReference Include="Azure.AI.Projects" Version="*" />
-    <PackageReference Include="Azure.AI.OpenAI" Version="*" />
-    <PackageReference Include="Azure.Identity" Version="*" />
+    <!-- Azure Identity for authentication -->
+    <PackageReference Include="Azure.Identity" Version="1.14.0" />
 
     <!-- Microsoft Extensions -->
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="*" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="*" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="*" />
-
-    <!-- Utilities -->
-    <PackageReference Include="System.Net.Http.Json" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
