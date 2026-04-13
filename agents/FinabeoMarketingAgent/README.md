@@ -2,6 +2,53 @@
 
 A multi-agent workflow that generates daily marketing collateral using Microsoft Agent Framework and Azure AI Foundry.
 
+## Progress & Achievements (April 2026)
+
+- [x] **SDK Migration**: Successfully migrated to `Azure.AI.Projects` v2.0.0 (Stable) and `net10.0`.
+- [x] **Authentication**: Implemented `DefaultAzureCredential` for secure, Entra-based access to Azure AI Foundry.
+- [x] **Multi-Agent Orchestration**: Unified three agents under a centralized `MarketingWorkflow`.
+- [x] **Robustness**: Implemented mock fallbacks for all agents to ensure workflow continuity during API outages or permission issues.
+- [x] **Project Hygiene**: Structured repository with `.gitignore` and detailed build fix logging.
+
+## Agentic Architecture
+
+The Finabeo Marketing Agent system uses a sequential multi-agent orchestration pattern coordinated by the `MarketingWorkflow`.
+
+```mermaid
+graph TD
+    User([User Trigger]) --> Workflow[MarketingWorkflow]
+    
+    subgraph Agents
+        Workflow --> Agent1[MarketResearchAgent]
+        Workflow --> Agent2[FinabeoAlignmentAgent]
+        Workflow --> Agent3[ContentGenerationAgent]
+    end
+    
+    subgraph KnowledgeSources
+        Agent1 -.-> LLM_Knowledge((LLM Internal Knowledge))
+        Agent1 -.-> MockFallback((Mock Fallback Data))
+        Agent2 -.-> ServiceConfig[(App Settings: Finabeo Services)]
+    end
+    
+    subgraph Processing
+        Agent1 -->|MarketAnalysis| Agent2
+        Agent2 -->|ServiceAlignment| Agent3
+        Agent1 -->|MarketAnalysis| Agent3
+    end
+    
+    Agent3 --> Output[JSON Output File]
+    Output --> Channels(LinkedIn, Twitter/X, Instagram, Blog)
+```
+
+### Research Process: How it Works
+
+A common question is: *"Where does the research come from?"*
+
+1. **LLM Synthesis**: Currently, the `MarketResearchAgent` performs "synthetic research" by querying **GPT-4o** using a system prompt specialized in FinTech, Cloud, and Enterprise IT trends. It leverages the model's vast pre-training data to identify pain points like "cloud cost unpredictability" or "AI governance."
+2. **Contextual Input**: The input to the research agent is a targeted prompt focusing on regulated industries (Financial Services, Insurance, Telecom).
+3. **Mock Fallbacks**: If the Azure AI Foundry API is unreachable or permissions are missing (e.g., 401 Unauthorized), the agent automatically returns a set of **locally stored mock insights**. This ensures the workflow can still produce a high-quality demonstration output for the subsequent agents.
+4. **Future Extensions**: While the system does not currently use a live Google/Bing search tool, the architecture is designed to support a `SearchMarketTrends` tool to replace LLM synthesis with real-time web scraping.
+
 ## Quick Start
 
 ### Prerequisites
