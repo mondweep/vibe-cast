@@ -5,6 +5,7 @@ using System.ClientModel;
 using FinabeoMarketingAgent.Agents;
 using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Workflow;
+using FinabeoMarketingAgent.Formatters;
 using Microsoft.Agents.AI.Foundry;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
@@ -96,6 +97,80 @@ try
     await File.WriteAllTextAsync(outputPath, jsonContent);
 
     Console.WriteLine($"📁 Output saved to: {outputPath}\n");
+
+    // Generate branded outputs (Word, PowerPoint, Images)
+    Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
+    Console.WriteLine("║           Generating Branded Content Formats              ║");
+    Console.WriteLine("╚════════════════════════════════════════════════════════════╝\n");
+
+    var brandingConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "branding", "finabeo-branding.json");
+    var wordFormatterLogger = serviceProvider.GetRequiredService<ILogger<WordContentFormatter>>();
+    var wordFormatter = new WordContentFormatter(brandingConfigPath, wordFormatterLogger);
+
+    var powerpointFormatterLogger = serviceProvider.GetRequiredService<ILogger<PowerPointContentFormatter>>();
+    var powerpointFormatter = new PowerPointContentFormatter(brandingConfigPath, powerpointFormatterLogger);
+
+    var imageFormatterLogger = serviceProvider.GetRequiredService<ILogger<ImageContentFormatter>>();
+    var imageFormatter = new ImageContentFormatter(foundryConfig.Endpoint, foundryConfig.ApiKey, imageFormatterLogger);
+
+    try
+    {
+        // Generate Word documents
+        Console.WriteLine("\n📄 Generating Word Documents...");
+        var blogDocPath = await wordFormatter.GenerateBlogDocumentAsync(result);
+        Console.WriteLine($"✓ Blog document: {blogDocPath}");
+
+        var marketReportPath = await wordFormatter.GenerateMarketAnalysisReportAsync(result);
+        Console.WriteLine($"✓ Market analysis report: {marketReportPath}");
+
+        // Generate PowerPoint presentation
+        Console.WriteLine("\n🎨 Generating PowerPoint Presentation...");
+        var deckPath = await powerpointFormatter.GenerateMarketAnalysisDeckAsync(result);
+        Console.WriteLine($"✓ Market analysis deck: {deckPath}");
+
+        // Generate social media images
+        Console.WriteLine("\n🖼️  Generating Social Media Images...");
+        if (result.GeneratedContent?.Content?.LinkedIn?.Post != null)
+        {
+            var linkedinImagePath = await imageFormatter.GenerateLinkedInImageAsync(
+                "Microsoft Agent Framework: The CIO's Guide",
+                result.GeneratedContent.Content.LinkedIn.Post);
+            if (linkedinImagePath != null)
+                Console.WriteLine($"✓ LinkedIn image: {linkedinImagePath}");
+        }
+
+        if (result.GeneratedContent?.Content?.Instagram?.Caption != null)
+        {
+            var instagramImagePath = await imageFormatter.GenerateInstagramImageAsync(
+                result.GeneratedContent.Content.Instagram.Caption,
+                result.GeneratedContent.Content.Instagram.Hashtags ?? new List<string>());
+            if (instagramImagePath != null)
+                Console.WriteLine($"✓ Instagram image: {instagramImagePath}");
+        }
+
+        if (result.GeneratedContent?.Content?.Twitter?.Thread.Count > 0)
+        {
+            var twitterCardPath = await imageFormatter.GenerateTwitterCardAsync(
+                result.GeneratedContent.Content.Twitter.Thread.First().Text);
+            if (twitterCardPath != null)
+                Console.WriteLine($"✓ Twitter card: {twitterCardPath}");
+        }
+
+        if (result.GeneratedContent?.Content?.Blog?.Title != null)
+        {
+            var blogImagePath = await imageFormatter.GenerateBlogFeaturedImageAsync(
+                result.GeneratedContent.Content.Blog.Title);
+            if (blogImagePath != null)
+                Console.WriteLine($"✓ Blog featured image: {blogImagePath}");
+        }
+
+        Console.WriteLine("\n✅ Branded content generation complete!");
+    }
+    catch (Exception formatEx)
+    {
+        logger.LogWarning($"⚠ Content formatting warning: {formatEx.Message}");
+        Console.WriteLine($"\n⚠ Some content formats could not be generated: {formatEx.Message}");
+    }
 
     // Display summary
     if (result.GeneratedContent != null)
