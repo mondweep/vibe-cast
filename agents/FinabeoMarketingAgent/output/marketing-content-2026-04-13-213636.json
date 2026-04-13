@@ -1,10 +1,10 @@
 {
   "status": "Completed",
-  "started_at": "2026-04-13T17:03:20.842299Z",
-  "completed_at": "2026-04-13T17:03:24.108982Z",
-  "duration_seconds": 3.266683,
+  "started_at": "2026-04-13T21:36:31.485662Z",
+  "completed_at": "2026-04-13T21:36:36.625761Z",
+  "duration_seconds": 5.140099,
   "market_analysis": {
-    "timestamp": "2026-04-13T17:03:22.585568Z",
+    "timestamp": "2026-04-13T21:36:34.879592Z",
     "market_insights": [
       {
         "trend": "Cloud Cost Management Acceleration",
@@ -45,9 +45,9 @@
     ]
   },
   "service_alignment": {
-    "timestamp": "2026-04-13T17:03:23.411694Z",
+    "timestamp": "2026-04-13T21:36:35.884822Z",
     "market_analysis": {
-      "timestamp": "2026-04-13T17:03:22.585568Z",
+      "timestamp": "2026-04-13T21:36:34.879592Z",
       "market_insights": [
         {
           "trend": "Cloud Cost Management Acceleration",
@@ -126,7 +126,7 @@
     "summary": "Both core Finabeo services directly address the primary pain points of the current market. By leading with measurable ROI from FinOps, we build the trust and budget needed for high-impact Agentic AI transformation."
   },
   "generated_content": {
-    "generated_at": "2026-04-13T17:03:24.106272Z",
+    "generated_at": "2026-04-13T21:36:36.623334Z",
     "content": {
       "linkedin": {
         "post": "I\u0027ve been exploring the Microsoft Agent Framework this week, and I\u0027m impressed.\n\nThe skepticism around Microsoft\u0027s ability to deliver sophisticated Agentic AI with enterprise governance? Unfounded.\n\nHere\u0027s what surprised me:\n\u2713 Speed: Multi-agent workflows in days, not months\n\u2713 Enterprise-ready: Type safety, telemetry, state management built-in\n\u2713 Governance-first: Not an afterthought - fundamental to the architecture\n\u2713 Flexibility: Works with any LLM (OpenAI, Claude, local models)\n\nCIOs concerned about vendor lock-in? The abstraction layers prove Microsoft understands enterprise concerns.\n\nThis isn\u0027t hype. It\u0027s a genuine alternative to the single-vendor approaches others are pushing.\n\nTaking the \u0027bias for action\u0027 approach, I\u0027m sharing my findings and discoveries throughout the week.\n\n#MicrosoftAgent #Agentic #EnterpriseAI #CloudInnovation",

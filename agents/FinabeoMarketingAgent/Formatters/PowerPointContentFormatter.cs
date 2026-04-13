@@ -202,7 +202,7 @@ public class PowerPointContentFormatter
                             new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Text1 }),
                             new A.LatinFont { Typeface = "Montserrat" }
                         ) { Language = "en-US", FontSize = 1800 }
-                    ) { MarginLeft = 342900, Indent = -342900, Alignment = A.TextAlignmentTypeValues.Left }
+                    ) { LeftMargin = 342900, Indent = -342900, Alignment = A.TextAlignmentTypeValues.Left }
                 ),
                 new OtherStyle(
                     new A.Level1ParagraphProperties(
@@ -386,11 +386,11 @@ public class PowerPointContentFormatter
 
             OpenXmlElement paragraphProps = level switch
             {
-                1 => new A.Level1ParagraphProperties(levelProps) { MarginLeft = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
-                2 => new A.Level2ParagraphProperties(levelProps) { MarginLeft = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
-                3 => new A.Level3ParagraphProperties(levelProps) { MarginLeft = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
-                4 => new A.Level4ParagraphProperties(levelProps) { MarginLeft = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
-                _ => new A.Level5ParagraphProperties(levelProps) { MarginLeft = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
+                1 => new A.Level1ParagraphProperties(levelProps) { LeftMargin = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
+                2 => new A.Level2ParagraphProperties(levelProps) { LeftMargin = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
+                3 => new A.Level3ParagraphProperties(levelProps) { LeftMargin = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
+                4 => new A.Level4ParagraphProperties(levelProps) { LeftMargin = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
+                _ => new A.Level5ParagraphProperties(levelProps) { LeftMargin = marginLeft, Alignment = A.TextAlignmentTypeValues.Left, DefaultTabSize = 457200, RightToLeft = false, EastAsianLineBreak = true, LatinLineBreak = false, Height = true },
             };
             defaultTextStyle.Append(paragraphProps);
         }
