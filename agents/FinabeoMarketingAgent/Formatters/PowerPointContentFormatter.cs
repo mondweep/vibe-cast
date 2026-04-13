@@ -45,34 +45,44 @@ public class PowerPointContentFormatter
             using (var presentationDocument = PresentationDocument.Create(fileName, PresentationDocumentType.Presentation))
             {
                 var presentationPart = presentationDocument.AddPresentationPart();
-                presentationPart.Presentation = new Presentation();
+                
+                // 1. Initialize Presentation with Standard Metadata
+                presentationPart.Presentation = new Presentation(
+                    new SlideSize { Cx = 12192000, Cy = 6858000, Type = SlideSizeValues.Screen16x9 },
+                    new NotesSize { Cx = 6858000, Cy = 9144000 },
+                    new SlideMasterIdList(),
+                    new SlideIdList()
+                );
 
-                // 1. Create Slide Master
+                // 2. Create Slide Master
                 var slideMasterPart = presentationPart.AddNewPart<SlideMasterPart>();
                 InitSlideMasterPart(slideMasterPart);
 
-                // 2. Add Theme to Master (Required for validation)
+                // 3. Add Theme to Master
                 var themePart = slideMasterPart.AddNewPart<ThemePart>();
                 themePart.Theme = CreateTheme();
 
-                // 3. Create Slide Layout
+                // 4. Create Slide Layout
                 var slideLayoutPart = slideMasterPart.AddNewPart<SlideLayoutPart>();
                 InitSlideLayoutPart(slideLayoutPart);
 
-                // 4. Link Layout to Master explicitly
+                // 5. Link Layout to Master
                 slideMasterPart.SlideMaster.SlideLayoutIdList!.Append(new SlideLayoutId 
                 { 
                     Id = 2147483649U, 
                     RelationshipId = slideMasterPart.GetIdOfPart(slideLayoutPart) 
                 });
 
-                // 5. Setup Presentation parts
-                presentationPart.Presentation.SlideMasterIdList = new SlideMasterIdList(
+                // 6. Setup Master and Layout connections in Presentation
+                presentationPart.Presentation.SlideMasterIdList!.Append(
                     new SlideMasterId { Id = 2147483648U, RelationshipId = presentationPart.GetIdOfPart(slideMasterPart) }
                 );
-                presentationPart.Presentation.SlideIdList = new SlideIdList();
 
-                // 6. Generate Slides
+                // 7. Add View Properties (Critical for preventing Repair prompt)
+                var viewPropsPart = presentationPart.AddNewPart<ViewPropertiesPart>();
+                viewPropsPart.ViewProperties = new ViewProperties();
+
+                // 8. Generate Slides
                 AddSlide(presentationPart, slideLayoutPart, 256U, (part) => 
                     CreateTitleSlide(part, "Finabeo: Market-Service Alignment", "Executive Strategy Brief", workflowResult));
 
