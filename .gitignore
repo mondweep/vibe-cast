@@ -9,7 +9,12 @@ obj/
 
 # Secrets
 appsettings.local.json
+local.settings.json
 .env
+
+# Azure Functions publish artifacts
+.publish/
+.publish.zip
 
 # OS
 .DS_Store
