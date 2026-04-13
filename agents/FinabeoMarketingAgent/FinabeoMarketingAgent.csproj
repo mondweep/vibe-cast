@@ -9,23 +9,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Agent Framework -->
-    <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-preview.1" />
-    <PackageReference Include="Microsoft.Agents.AI.Foundry" Version="1.0.0-preview.1" />
+    <!-- Agent Framework - Use latest stable -->
+    <PackageReference Include="Microsoft.Agents.AI" Version="*" />
+    <PackageReference Include="Microsoft.Agents.AI.Foundry" Version="*" />
 
-    <!-- Azure & OpenAI -->
-    <PackageReference Include="Azure.AI.Projects" Version="1.0.0-preview.1" />
-    <PackageReference Include="Azure.AI.OpenAI" Version="2.0.0-preview.1" />
+    <!-- Azure & OpenAI - Use latest stable -->
+    <PackageReference Include="Azure.AI.Projects" Version="*" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="*" />
+    <PackageReference Include="Azure.Identity" Version="*" />
 
     <!-- Microsoft Extensions -->
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="*" />
 
     <!-- Utilities -->
-    <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
+    <PackageReference Include="System.Net.Http.Json" Version="*" />
   </ItemGroup>
 
   <ItemGroup>
