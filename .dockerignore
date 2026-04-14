@@ -1,0 +1,14 @@
+**/bin
+**/obj
+**/.vs
+**/.vscode
+**/node_modules
+.git
+.github
+.publish
+.publish.zip
+*.md
+!README.md
+docs/
+pptx_inspect/
+output/

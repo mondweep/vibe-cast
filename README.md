@@ -2,12 +2,15 @@ This branch is dedicated to exploring and learning the **Microsoft Agent Framewo
 
 ---
 
-### 🟢 Current Status: Asset Stabilization Phase Complete
-**As of April 13, 2026**:
+### 🟡 Current Status: Cloud Deployment Pivot (ACI)
+**As of April 14, 2026**:
 - ✅ **MVP Functional**: Research, Alignment, and Content agents are fully operational.
 - ✅ **Stability Hardening**: Resolved persistent "Repair" errors in PowerPoint decks and typography issues in marketing SVGs.
 - ✅ **Ready for Social**: Generation of high-fidelity social cards (LinkedIn, Twitter, Instagram) is verified.
-- 🔄 **Next Steps**: Transitioning to Azure cloud deployment and real-time search integration.
+- 🟡 **Cloud Deployment**: Azure Functions path blocked by subscription-level App Service quota (zero across Consumption, Basic, and Free SKUs) and a `roleAssignments/write` permission gap. **Pivoted to Azure Container Instances** — new minimal ASP.NET API (`agents/FinabeoMarketingAgent.Api`), cloud-side Docker build via `az acr build`, and a separate Bicep template (`infra/aci-setup.bicep`). Timer trigger deferred; `POST /api/generate` works on-demand.
+- 📝 **Friction log written up**: see [Stack Experience Retrospective](docs/stack-experience-retrospective.md) for what the Microsoft stack felt like in practice when we tried to ship. Shareable with stakeholders and audience.
+- 📨 **Tenant admin briefing**: see [Azure Quota Request](docs/azure-quota-request.md) for the exact Azure Support ticket needed to unblock the Functions path.
+- 🔄 **Next Steps**: validate end-to-end generation against deployed ACI; wire real-time search; request App Service quota via Azure Support to enable a future migration back to Functions + Managed Identity.
 
 ---
 
@@ -18,6 +21,8 @@ This branch is dedicated to exploring and learning the **Microsoft Agent Framewo
 | **Architecture & Agents** | Deep dive into the Finabeo Marketing Agent system. | [Agent README](agents/FinabeoMarketingAgent/README.md) |
 | **Technical Debugging** | Resolution of PowerPoint (OXML) and SVG issues. | [Debugging Report](agents/FinabeoMarketingAgent/DEBUGGING_ASSETS.md) |
 | **Deployment Plan** | Infrastructure and cloud integration roadmap. | [Implementation Guide](docs/IMPLEMENTATION-GUIDE.md) |
+| **Stack Experience Retrospective** | Friction log from shipping on the Microsoft stack — five walls deep. | [Retrospective](docs/stack-experience-retrospective.md) |
+| **Azure Quota Request (for admin)** | Ticket template + context for the tenant admin to unblock Functions. | [Quota Request](docs/azure-quota-request.md) |
 | **Latest Stable Output** | View the most recent successful generation. | [Latest Output Folder](agents/FinabeoMarketingAgent/output/) |
 
 ## Overview
@@ -182,12 +187,17 @@ The system proves that Microsoft's ecosystem can deliver Agentic AI without vend
 
 ### **Week 2: Production & Cloud Readiness** 🔄 IN PROGRESS
 
-#### Phase 1: Azure Deployment (Pending)
-- [ ] Create Azure Function Timer Trigger (daily at 8 AM UTC)
-- [ ] Set up Azure Storage for content outputs
-- [ ] Create database schema for content history
-- [ ] Configure Managed Identity authentication
-- [ ] Set up Key Vault for secrets management
+#### Phase 1: Azure Deployment (Pivoted to ACI)
+Subscription hit two blockers — zero App Service compute quota (Y1/B1/F1, every region tested) and a `roleAssignments/write` permission gap on the Contributor role. Pivoted the compute target to Azure Container Instances, which uses general-purpose vCPU quota (confirmed open). Full story in [docs/stack-experience-retrospective.md](docs/stack-experience-retrospective.md); admin ticket context in [docs/azure-quota-request.md](docs/azure-quota-request.md).
+- [x] Built ASP.NET minimal-API wrapper around the workflow (`agents/FinabeoMarketingAgent.Api`)
+- [x] Dockerized via multi-stage build (`agents/FinabeoMarketingAgent.Api/Dockerfile`)
+- [x] Cloud-side build via `az acr build` (no local Docker required)
+- [x] Bicep template for ACR + ACI + Storage + App Insights (`infra/aci-setup.bicep`)
+- [x] Deploy script `infra/deploy-aci-mac.sh`
+- [x] Foundry auth switched to `AzureOpenAIClient` + `AzureKeyCredential` against `gpt-5-mini` deployment
+- [ ] End-to-end validation against deployed ACI (`POST /api/generate`)
+- [ ] Logic App or external cron for daily schedule (deferred — HTTP-only for demo)
+- [ ] **When quota is granted**: migrate back to Functions + Managed Identity + Key Vault (original `infra/foundry-setup.bicep` preserved)
 
 #### Phase 2: Real Integration (Pending)
 - [ ] Integrate real web search (currently using LLM synthesis)
@@ -289,4 +299,4 @@ See [agents/FinabeoMarketingAgent/README.md](agents/FinabeoMarketingAgent/README
 
 ---
 
-**Status**: MVP Complete ✅ | Week 1 Done | Week 2 In Progress | Ready for Friday LinkedIn Article
+**Status**: MVP Complete ✅ | Week 1 Done | Week 2 In Progress (ACI pivot) | See [Stack Retrospective](docs/stack-experience-retrospective.md) for the friction story
