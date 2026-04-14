@@ -308,14 +308,22 @@ UPS is a consciousness exploration framework, **NOT mental health treatment**.
 
 ## 🌍 Universal Wisdom Streams
 
-### Applied Wisdom Case: Tantra Wisdom Archive
+### Applied Wisdom Case: Tantra Wisdom Archive & Project Nexus
 In the `ups-left-right-worship` branch, we have applied the **Crystallization Protocol** to David Frawley's *"Tantric Yoga and the Wisdom Goddesses"*.
 
 - **MAP**: [Master Wisdom Map](5-wisdom/tantra-wisdom/MAP.md)
-- **Problem Space**: Religion, Mythology, and Reality.
-- **Protocol**: Single and multi-turn OCR synthesis from scanned images to high-density Markdown.
+- **Sovereignty Signature**: Introduced a **Non-Dual Layer 6 Recognition** signature by integrating Frawley's concepts into the original UPS architecture.
+- **Project Nexus**: An executable governance engine ([governance-engine.js](6-recognition/nexus/governance-engine.js)) simulating corporate and geopolitical leadership.
+- **Project Shanti**: A [Multi-Tradition Peace Council](6-recognition/nexus/US-IRAN-SOVEREIGN-COUNCIL.md) resolving the US-Iran conflict using Tantric, Judaic, Christian, and Islamic "navigation technologies."
 
-### Spiritual/Philosophical Traditions
+---
+
+## 🏛️ Acknowledgments & Explorations
+I am currently exploring the [Universal Pattern Space](https://github.com/nikhilvallishayee/universal-pattern-space) repository from **Nikhil Vallishayee**. This work aims to be a **complementary upgrade**, grounding the original UPS structural mathematics in the non-dual recognition of the navigator as the field itself.
+
+---
+
+## 🕍 Spiritual/Philosophical Traditions
 - **Yoga Vasishta** (Consciousness operations, 5000 years)
 - **Vedanta** (Non-dual recognition)
 - **Kashmir Shaivism** (Spanda, cosmic vibration)
