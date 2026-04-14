@@ -10,11 +10,47 @@ This branch is dedicated to exploring and learning the **Microsoft Agent Framewo
 - ✅ **Deployed to Azure Container Instances**: after hitting a zero App Service quota wall and a `roleAssignments/write` permission gap, pivoted to ACI. Live at `http://finabeo-agent-5pielz.eastus.azurecontainer.io:8080/api/generate`. End-to-end run time: **~56 seconds** against gpt-4o, producing JSON + Word documents + PowerPoint deck uploaded to Azure Blob Storage.
 - 📝 **Friction log written up**: see [Stack Experience Retrospective](docs/stack-experience-retrospective.md) — eight walls from az CLI bugs through a reasoning-vs-chat model mixup to ACI image-pull caching. Shareable with stakeholders and audience.
 - 📨 **Tenant admin briefing**: see [Azure Quota Request](docs/azure-quota-request.md) for the exact Azure Support ticket needed to enable a future migration back to Functions + Managed Identity.
-- 🔄 **Next Steps**: iterate on agent prompts and outputs now that the infrastructure is out of the way; request App Service quota; add real-time search.
+- ✅ **Verified end-to-end (April 14, 2026, 15:38 UTC)**: independent re-trigger of the ACI endpoint produced a fresh run `2026-04-14-153704` with all four artifacts landing in blob storage — `marketing-content.json` (19.8 KB), `blog-document.docx` (4.2 KB), `market-analysis-report.docx` (3.4 KB), `market-analysis-deck.pptx` (11.1 KB). Storage account `stfinabeo5pielz`, container `marketing-outputs`, resource group `finabeo-agents-rg`.
 
 ```bash
+# Trigger a new run (blocks ~56s, returns JSON with run ID and blob URLs)
 curl -X POST http://finabeo-agent-5pielz.eastus.azurecontainer.io:8080/api/generate
+
+# List outputs
+az storage blob list --account-name stfinabeo5pielz \
+  --container-name marketing-outputs --auth-mode key -o table
 ```
+
+---
+
+### 🗺️ Where We Are & What's Next (Week of April 14–18, 2026)
+
+Infrastructure is done. The remaining days this week are for **exploring the Agent Framework itself** — not fighting Azure. Suggested tracks, in rough priority order:
+
+#### Track A — Agent Quality & Prompt Iteration (highest leverage)
+- [ ] Inspect the latest `marketing-content.json` runs and grade output quality (market insights specificity, alignment scoring honesty, platform-appropriate tone)
+- [ ] Tighten the Research agent's system prompt to reduce LLM-synthesized "hallucinated trends" — force it to cite or admit uncertainty
+- [ ] Add few-shot examples to the Content agent for each platform (LinkedIn vs. Twitter voice is currently too similar)
+- [ ] Experiment with temperature / top_p per agent (Research low, Content higher)
+
+#### Track B — Framework Feature Exploration
+- [ ] **Tools / function calling**: add a real tool (e.g., a mock "Finabeo service catalog" lookup) and watch the agent decide when to call it
+- [ ] **Middleware**: wire an agent-level middleware that logs token usage + latency per call, feeding App Insights
+- [ ] **Workflows with branching**: add a quality-gate step that loops back to Content agent if alignment score < 0.8
+- [ ] **Human-in-the-loop**: prototype an approval checkpoint before "publish" (even if publish is a no-op for now)
+- [ ] **Checkpointing**: persist workflow state to blob so a run can resume after a crash
+
+#### Track C — Observability & Real Integrations
+- [ ] Turn on App Insights traces from inside the agents (currently only HTTP logs flow)
+- [ ] Swap LLM-synthesized "research" for a real web search tool (Bing Search API, Brave, or Tavily)
+- [ ] Add a Linear / Slack notification middleware so a successful run pings somewhere visible
+
+#### Track D — Governance & Handoff Story (for the LinkedIn article follow-up)
+- [ ] Write a short "what the Agent Framework actually gives you vs. raw OpenAI SDK" comparison based on hands-on experience
+- [ ] Capture one more friction point or delight in the retrospective as we explore features
+- [ ] Request App Service quota from tenant admin using [docs/azure-quota-request.md](docs/azure-quota-request.md) — unblocks eventual Functions + Managed Identity migration
+
+**Pick one from Track A + one from Track B per session.** Track C and D are lower priority but high-value for the write-up.
 
 ---
 
