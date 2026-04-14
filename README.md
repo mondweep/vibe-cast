@@ -7,17 +7,17 @@ This branch is dedicated to exploring and learning the **Microsoft Agent Framewo
 - ✅ **MVP Functional**: Research, Alignment, and Content agents are fully operational.
 - ✅ **Stability Hardening**: Resolved persistent "Repair" errors in PowerPoint decks and typography issues in marketing SVGs.
 - ✅ **Ready for Social**: Generation of high-fidelity social cards (LinkedIn, Twitter, Instagram) is verified.
-- ✅ **Deployed to Azure Container Instances**: after hitting a zero App Service quota wall and a `roleAssignments/write` permission gap, pivoted to ACI. Live at `http://finabeo-agent-5pielz.eastus.azurecontainer.io:8080/api/generate`. End-to-end run time: **~56 seconds** against gpt-4o, producing JSON + Word documents + PowerPoint deck uploaded to Azure Blob Storage.
+- ✅ **Deployed to Azure Container Instances**: after hitting a zero App Service quota wall and a `roleAssignments/write` permission gap, pivoted to ACI. End-to-end run time: **~56 seconds** against gpt-4o, producing JSON + Word documents + PowerPoint deck uploaded to Azure Blob Storage. (Endpoint + account names intentionally omitted from this public repo — see local `infra/deploy-aci-mac.sh` output.)
 - 📝 **Friction log written up**: see [Stack Experience Retrospective](docs/stack-experience-retrospective.md) — eight walls from az CLI bugs through a reasoning-vs-chat model mixup to ACI image-pull caching. Shareable with stakeholders and audience.
 - 📨 **Tenant admin briefing**: see [Azure Quota Request](docs/azure-quota-request.md) for the exact Azure Support ticket needed to enable a future migration back to Functions + Managed Identity.
-- ✅ **Verified end-to-end (April 14, 2026, 15:38 UTC)**: independent re-trigger of the ACI endpoint produced a fresh run `2026-04-14-153704` with all four artifacts landing in blob storage — `marketing-content.json` (19.8 KB), `blog-document.docx` (4.2 KB), `market-analysis-report.docx` (3.4 KB), `market-analysis-deck.pptx` (11.1 KB). Storage account `stfinabeo5pielz`, container `marketing-outputs`, resource group `finabeo-agents-rg`.
+- ✅ **Verified end-to-end (April 14, 2026, 15:38 UTC)**: independent re-trigger of the ACI endpoint produced a fresh run `2026-04-14-153704` with all four artifacts landing in blob storage — `marketing-content.json` (19.8 KB), `blog-document.docx` (4.2 KB), `market-analysis-report.docx` (3.4 KB), `market-analysis-deck.pptx` (11.1 KB).
 
 ```bash
 # Trigger a new run (blocks ~56s, returns JSON with run ID and blob URLs)
-curl -X POST http://finabeo-agent-5pielz.eastus.azurecontainer.io:8080/api/generate
+curl -X POST http://<your-aci-fqdn>:8080/api/generate
 
 # List outputs
-az storage blob list --account-name stfinabeo5pielz \
+az storage blob list --account-name <your-storage-account> \
   --container-name marketing-outputs --auth-mode key -o table
 ```
 
