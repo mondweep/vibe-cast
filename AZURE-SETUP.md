@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Azure account with Finabeo subscription access (mondweep@finabeo.com)
+- Azure account with Finabeo subscription access (<your-azure-email>)
 - PowerShell 7+ installed
 - Azure CLI installed (`az --version` to check)
 
@@ -38,7 +38,7 @@ az login --use-device-code
 
 # 1. Go to that URL in your browser
 # 2. Enter the code
-# 3. Sign in with mondweep@finabeo.com
+# 3. Sign in with <your-azure-email>
 # 4. Come back to PowerShell (it will auto-continue)
 ```
 
@@ -49,7 +49,7 @@ az login --use-device-code
 cd path/to/vibe-cast
 
 # Run deployment script
-# Default: eastus region, finabeo-agents-rg resource group
+# Default: eastus region, <resource-group> resource group
 .\infra\deploy-foundry.ps1
 
 # Or customize:
@@ -70,15 +70,15 @@ The script will output something like:
 
 Connection Details:
   Endpoint:           https://ai-foundry-xxxx.services.ai.azure.com/
-  Project Name:       finabeo-marketing-agents
-  Resource Group:     finabeo-agents-rg
+  Project Name:       <foundry-project>
+  Resource Group:     <resource-group>
   Subscription ID:    xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
 ### 5. Generate API Key
 
 In Azure Portal:
-1. Go to your resource group (finabeo-agents-rg)
+1. Go to your resource group (<resource-group>)
 2. Find the AI Hub resource
 3. Go to Settings → API Keys
 4. Copy one of the keys (or create new)
@@ -87,7 +87,7 @@ In Azure Portal:
 
 Send me:
 - ✅ **Endpoint**: https://ai-foundry-xxxx.services.ai.azure.com/
-- ✅ **Project Name**: finabeo-marketing-agents
+- ✅ **Project Name**: <foundry-project>
 - ✅ **API Key**: (paste here)
 
 Keep private:
@@ -102,7 +102,7 @@ Keep private:
 Azure CLI not installed. See "Install Azure CLI" above.
 
 ### "Authentication failed"
-1. Make sure you're using correct account: mondweep@finabeo.com
+1. Make sure you're using correct account: <your-azure-email>
 2. Try: `az logout` then `az login --use-device-code` again
 
 ### "Permission denied"

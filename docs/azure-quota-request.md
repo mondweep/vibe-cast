@@ -4,7 +4,7 @@
 
 We are deploying the Finabeo Marketing Agent (a multi-agent .NET 9 workflow built on Microsoft Agent Framework) into Azure. The target architecture was:
 
-- **Azure AI Foundry** (`finabeo-marketing-agents` in `finabeo-agents-rg`, eastus) — already provisioned ✅
+- **Azure AI Foundry** (`<foundry-account>` in `<resource-group>`, eastus) — already provisioned ✅
 - **Azure Functions** (dotnet-isolated, Linux) — to host the daily timer trigger + HTTP endpoint
 - **Azure Storage** — for marketing content outputs (JSON/DOCX/PPTX)
 - **Application Insights + Log Analytics** — observability
@@ -14,7 +14,7 @@ We are deploying the Finabeo Marketing Agent (a multi-agent .NET 9 workflow buil
 
 ### Blocker 1 — RBAC: `roleAssignments/write` denied
 
-The deploying user (`mondweep@finabeo.com`) holds **Contributor** at subscription scope `159c3046-5c69-4e9a-b290-f7e10c0afb16`. Contributor can create resources but **cannot create role assignments**, which requires `Owner` or `User Access Administrator`.
+The deploying user (`<deploying-user>`) holds **Contributor** at subscription scope `<subscription-id>`. Contributor can create resources but **cannot create role assignments**, which requires `Owner` or `User Access Administrator`.
 
 The original Bicep template provisioned a Function App with a system-assigned Managed Identity and three role assignments:
 - `Storage Blob Data Contributor` on the output storage account
@@ -48,7 +48,7 @@ General VM quota for this subscription is fine (Standard B/D/E families all show
 
 1. Azure Portal → **Help + Support** → **Create a support request**
 2. **Issue type:** Service and subscription limits (quotas)
-3. **Subscription:** `159c3046-5c69-4e9a-b290-f7e10c0afb16`
+3. **Subscription:** `<subscription-id>`
 4. **Quota type:** App Service
 5. **Region:** East US
 6. **Request details:** Raise `Basic VMs` limit from 0 to ≥10 (and optionally `Dynamic VMs` for Consumption-tier Function Apps, which is our preferred hosting model — pay-per-execution, $0 idle cost)
@@ -58,13 +58,13 @@ Quota requests for App Service are typically free and granted within a few hours
 
 **Secondary request (optional, enables production hardening) — grant RBAC admin role:**
 
-Grant `mondweep@finabeo.com` the **User Access Administrator** role, scoped to the resource group `finabeo-agents-rg` (narrower blast radius than subscription-wide). This is required so that future Bicep deploys can create role assignments on the Function App's Managed Identity — enabling us to drop the API-key fallback and use AAD auth end-to-end.
+Grant `<deploying-user>` the **User Access Administrator** role, scoped to the resource group `<resource-group>` (narrower blast radius than subscription-wide). This is required so that future Bicep deploys can create role assignments on the Function App's Managed Identity — enabling us to drop the API-key fallback and use AAD auth end-to-end.
 
 ```bash
 az role assignment create \
-  --assignee mondweep@finabeo.com \
+  --assignee <deploying-user> \
   --role "User Access Administrator" \
-  --scope /subscriptions/159c3046-5c69-4e9a-b290-f7e10c0afb16/resourceGroups/finabeo-agents-rg
+  --scope /subscriptions/<subscription-id>/resourceGroups/<resource-group>
 ```
 
 ## Interim plan (what we're doing now)
@@ -73,7 +73,7 @@ Rather than block on the quota request, we are pivoting to **Azure Container Ins
 
 ## Current Azure spend on this project
 
-- Azure AI Foundry account `finabeo-marketing-agents`: existed before this work; pay-per-token only
+- Azure AI Foundry account `<foundry-account>`: existed before this work; pay-per-token only
 - `gpt-5-mini` model deployment (created during this session): no idle cost, pay-per-token
 - No App Service Plan, Function App, or new storage has been provisioned — **all failed Bicep deploys were rejected at preflight before any resource was created, so there is no billing impact from the failed attempts**
 
