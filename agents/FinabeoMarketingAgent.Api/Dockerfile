@@ -15,6 +15,9 @@ WORKDIR /app
 COPY --from=build /app/publish ./
 COPY branding/ ./branding/
 
+# WordContentFormatter writes temp files to ./output before we upload them to blob.
+RUN mkdir -p /app/output
+
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 

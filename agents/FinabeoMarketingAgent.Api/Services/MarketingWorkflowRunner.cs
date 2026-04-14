@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure;
 using Azure.AI.OpenAI;
+using Azure.Core;
 using FinabeoMarketingAgent.Agents;
 using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Formatters;
@@ -62,13 +63,20 @@ public class MarketingWorkflowRunner
 
     private MarketingWorkflow CreateWorkflow()
     {
-        var endpoint = _configuration["Foundry__Endpoint"]
-            ?? throw new InvalidOperationException("Foundry__Endpoint not configured");
-        var apiKey = _configuration["Foundry__ApiKey"]
-            ?? throw new InvalidOperationException("Foundry__ApiKey not configured");
-        var deploymentName = _configuration["Foundry__DeploymentName"] ?? "gpt-5-mini";
+        var endpoint = _configuration["Foundry:Endpoint"]
+            ?? throw new InvalidOperationException("Foundry:Endpoint not configured");
+        var apiKey = _configuration["Foundry:ApiKey"]
+            ?? throw new InvalidOperationException("Foundry:ApiKey not configured");
+        var deploymentName = _configuration["Foundry:DeploymentName"] ?? "gpt-5-mini";
 
-        var client = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
+        // NetworkTimeout enforces a hard socket-level deadline so a stalled
+        // generation (seen on gpt-5-mini with long structured outputs) surfaces
+        // as a proper exception instead of hanging the HTTP request forever.
+        var options = new AzureOpenAIClientOptions
+        {
+            NetworkTimeout = TimeSpan.FromSeconds(90)
+        };
+        var client = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
         var chatClient = client.GetChatClient(deploymentName).AsIChatClient();
 
         var finabeoServices = _configuration

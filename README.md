@@ -2,15 +2,19 @@ This branch is dedicated to exploring and learning the **Microsoft Agent Framewo
 
 ---
 
-### 🟡 Current Status: Cloud Deployment Pivot (ACI)
+### 🟢 Current Status: Running in Azure on ACI
 **As of April 14, 2026**:
 - ✅ **MVP Functional**: Research, Alignment, and Content agents are fully operational.
 - ✅ **Stability Hardening**: Resolved persistent "Repair" errors in PowerPoint decks and typography issues in marketing SVGs.
 - ✅ **Ready for Social**: Generation of high-fidelity social cards (LinkedIn, Twitter, Instagram) is verified.
-- 🟡 **Cloud Deployment**: Azure Functions path blocked by subscription-level App Service quota (zero across Consumption, Basic, and Free SKUs) and a `roleAssignments/write` permission gap. **Pivoted to Azure Container Instances** — new minimal ASP.NET API (`agents/FinabeoMarketingAgent.Api`), cloud-side Docker build via `az acr build`, and a separate Bicep template (`infra/aci-setup.bicep`). Timer trigger deferred; `POST /api/generate` works on-demand.
-- 📝 **Friction log written up**: see [Stack Experience Retrospective](docs/stack-experience-retrospective.md) for what the Microsoft stack felt like in practice when we tried to ship. Shareable with stakeholders and audience.
-- 📨 **Tenant admin briefing**: see [Azure Quota Request](docs/azure-quota-request.md) for the exact Azure Support ticket needed to unblock the Functions path.
-- 🔄 **Next Steps**: validate end-to-end generation against deployed ACI; wire real-time search; request App Service quota via Azure Support to enable a future migration back to Functions + Managed Identity.
+- ✅ **Deployed to Azure Container Instances**: after hitting a zero App Service quota wall and a `roleAssignments/write` permission gap, pivoted to ACI. Live at `http://finabeo-agent-5pielz.eastus.azurecontainer.io:8080/api/generate`. End-to-end run time: **~56 seconds** against gpt-4o, producing JSON + Word documents + PowerPoint deck uploaded to Azure Blob Storage.
+- 📝 **Friction log written up**: see [Stack Experience Retrospective](docs/stack-experience-retrospective.md) — eight walls from az CLI bugs through a reasoning-vs-chat model mixup to ACI image-pull caching. Shareable with stakeholders and audience.
+- 📨 **Tenant admin briefing**: see [Azure Quota Request](docs/azure-quota-request.md) for the exact Azure Support ticket needed to enable a future migration back to Functions + Managed Identity.
+- 🔄 **Next Steps**: iterate on agent prompts and outputs now that the infrastructure is out of the way; request App Service quota; add real-time search.
+
+```bash
+curl -X POST http://finabeo-agent-5pielz.eastus.azurecontainer.io:8080/api/generate
+```
 
 ---
 
@@ -194,8 +198,8 @@ Subscription hit two blockers — zero App Service compute quota (Y1/B1/F1, ever
 - [x] Cloud-side build via `az acr build` (no local Docker required)
 - [x] Bicep template for ACR + ACI + Storage + App Insights (`infra/aci-setup.bicep`)
 - [x] Deploy script `infra/deploy-aci-mac.sh`
-- [x] Foundry auth switched to `AzureOpenAIClient` + `AzureKeyCredential` against `gpt-5-mini` deployment
-- [ ] End-to-end validation against deployed ACI (`POST /api/generate`)
+- [x] Foundry auth switched to `AzureOpenAIClient` + `AzureKeyCredential` against **gpt-4o** deployment (gpt-5-mini turned out to be a reasoning model — see retrospective Wall 7)
+- [x] End-to-end validation against deployed ACI — ~56s, HTTP 200, all four artifacts (JSON + 2× DOCX + PPTX) in blob storage
 - [ ] Logic App or external cron for daily schedule (deferred — HTTP-only for demo)
 - [ ] **When quota is granted**: migrate back to Functions + Managed Identity + Key Vault (original `infra/foundry-setup.bicep` preserved)
 

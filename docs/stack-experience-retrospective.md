@@ -125,6 +125,59 @@ Fix: drop `--no-restore`. One line. Two minutes after diagnosis. But the diagnos
 
 On the plus side — and this is genuinely positive — `az acr build` worked beautifully once the Dockerfile was right. Cloud-side Docker build, no local Docker Desktop dependency, the error came back in a sensible tarball of logs, and the cached layers made the retry fast (~60s instead of ~5 min). This is the kind of tooling that makes the stack feel first-class when it's aligned with your path.
 
+#### Wall 6 — `IConfiguration` colon vs double-underscore
+
+First curl to `/api/generate` returned `HTTP 500 Content-Length: 0` — an empty body. Container logs revealed `System.InvalidOperationException: Either AzureStorage__ConnectionString or AzureStorage__BlobEndpoint must be configured`. The env vars *were* set on the container — but in .NET `IConfiguration`, environment variables with `__` in the name get automatically rewritten to colon-separated keys (`Foundry__Endpoint` → `Foundry:Endpoint`) when loaded via `AddEnvironmentVariables()`. The `__` form is how you *set* hierarchical config in env vars (shells don't allow `:` in variable names); the `:` form is how you *read* them in code. I'd copied the lookup shape from the Functions project where `__` in the lookup also happened to work due to a quirk of that runtime's config provider. ASP.NET doesn't have that quirk.
+
+Two-character fix across two files. But diagnosing it required: (a) reading a 40-line stack trace inside container logs to find the actual exception message, (b) realizing the env vars were there but not being found, (c) remembering that the two forms aren't interchangeable.
+
+> _Friction: two different Microsoft-first-party runtimes ingest env vars with subtly different semantics, and the one you pick bleeds through into how you have to write your code reads. Copy-paste across them silently breaks and the error surface is "config value missing" with no hint that it's a naming-convention mismatch._
+
+#### Wall 7 — gpt-5-mini is a reasoning model, not a chat model
+
+Two hours deep into what looked like a simple hang. Curl to `/api/generate` would hit step 3 (ContentGenerationAgent) and never return. Every symptom suggested either rate-limiting, a stuck HTTP stream, or a malformed request. I spent significant time on each:
+
+1. **Raised deployment capacity** from 10K TPM to 100K TPM. Didn't help — still hung.
+2. **Added a 90-second `CancellationToken`** to the `IChatClient.GetResponseAsync()` call in `ContentGenerationAgent`. The token didn't fire — the SDK silently doesn't honor cancellation on that path.
+3. **Set `NetworkTimeout = 90s`** on `AzureOpenAIClientOptions`. Also didn't fire — whatever the underlying pipeline is waiting on, it's below the network layer.
+4. **Direct probe of Foundry** with `curl` bypassing our container, using the same key and deployment: sent "Say hello in 5 words." It returned in 13 seconds. `usage.completion_tokens: 209`, of which `completion_tokens_details.reasoning_tokens: 192`. **192 reasoning tokens for a 5-word response.**
+
+That was the moment. **gpt-5-mini is not a chat-model-called-mini. It's a reasoning model in the o1-mini family.** Every request burns hundreds to thousands of reasoning tokens *before* emitting any visible output. For a prompt asking for a 1,500-word structured JSON blob (LinkedIn + Twitter thread + Instagram + blog), the reasoning phase alone could take many minutes with zero observable progress — indistinguishable from a hang, undetectable from the SDK's perspective, unstoppable by any timeout that expects the socket to block.
+
+I picked `gpt-5-mini` earlier in the session purely because `az cognitiveservices account list-models` showed it as "available, modern, not-yet-deprecated." I didn't understand what it actually was. The name "mini" carries a "smaller/faster chat model" connotation borrowed from the gpt-4o-mini era; OpenAI reused it for a reasoning family with completely different performance characteristics and it's not obvious from the SKU name.
+
+**The fix was one parameter change:** `foundryDeploymentName: gpt-5-mini → gpt-4o`. Deploy `gpt-4o` on the Foundry account and point the Bicep app setting at it. Workflow went from hanging indefinitely to completing in 56 seconds.
+
+> _Friction: the model catalog doesn't distinguish chat from reasoning families in the CLI output. The SDKs treat them as interchangeable at the API surface. The only way to discover the difference from inside the stack is to call the model directly and inspect the response envelope for `reasoning_tokens`. This is the single most expensive wall of the session in both wall-clock and cognitive load, and it was caused by model naming, not infrastructure._
+
+#### Wall 8 — ACI image-update semantics don't guarantee a pull
+
+After fixing the model (Wall 7), the workflow finally completed end-to-end — but only the JSON output landed in blob storage. DOCX and PPTX were missing. Container logs showed `DirectoryNotFoundException: Could not find a part of the path '/app/output/finabeo-blog-*.docx'` — `WordContentFormatter` writes temp files to `./output` before upload, and `/app/output` didn't exist in the container.
+
+One-line Dockerfile fix (`RUN mkdir -p /app/output`), rebuild, redeploy. New image tag `20260414145648` was built and pushed to ACR successfully — `az acr build` confirmed it. Bicep redeployed with the new tag. Container group reported it was running the new image. But when I did `az container exec ... ls /app/output`, the directory still didn't exist.
+
+Turned out the Bicep deploy updated the container group's *spec* with the new image tag, but **ACI didn't actually re-pull the image** — the events log showed the last `Pulled` event was from 10+ minutes earlier. The container was running old bits even though the ARM API reported the new tag. Ironically, ACI kept the ARM deployment stuck in `Running` state for ~10 minutes while the container was actually serving fine, because the deployment poller was waiting for a state transition that never happened.
+
+**Fix:** `az container delete` + fresh `deploy-aci-mac.sh` run. A brand-new container group pulls the image cleanly. This works, but it means the update semantics for iterative development on ACI are effectively "nuke and recreate," which is fine for a demo but annoying for a hot-iterate loop.
+
+> _Friction: the control-plane reports success before the data-plane has actually converged, and the data-plane has nondeterministic caching behavior that isn't surfaced in any ARM property. You can't tell from the API whether your latest image is actually running; you have to `exec` into the container and check file timestamps. For a platform whose entire value proposition is "run a container without managing infrastructure," that's a significant gap._
+
+---
+
+## The payoff
+
+Once walls 6, 7, and 8 were all cleared, the workflow ran end-to-end in **56 seconds** against gpt-4o, producing:
+
+- 5 real market insights with pain points and opportunity descriptions
+- 2 Finabeo service recommendations with alignment scoring
+- Real LinkedIn post, 5-tweet Twitter thread, Instagram caption with carousel brief
+- A full 1,500-word blog draft with title, outline, SEO keywords, CTA
+- All wrapped into a 19.5 KB structured JSON
+- Plus a Word blog document, Word market analysis report, and PowerPoint deck
+- All four artifacts uploaded to Azure Blob Storage under a timestamped run ID
+
+This is a real, working multi-agent system, running in Azure, callable from anywhere on the internet, generating high-quality marketing content on gpt-4o in under a minute. It works. It's also the thing I can't show off without also telling the story of everything it took to get here — which is the retrospective you're reading.
+
 ---
 
 ## 4. What this actually cost us
@@ -138,8 +191,11 @@ Wall-clock, rough:
 - **~2 hours** on four failed App Service deploys + quota archaeology (Wall 4)
 - **~2 hours** on the ACI pivot (new project, Dockerfile, new Bicep, new deploy script)
 - **~15 minutes** on the Dockerfile `--no-restore` / transitive-dep fix (Wall 5)
+- **~20 minutes** on the `IConfiguration` colon-vs-underscore key-naming wall (Wall 6)
+- **~2.5 hours** on the gpt-5-mini reasoning-model rabbit hole (Wall 7) — including two unsuccessful timeout fixes before diagnosing the root cause
+- **~45 minutes** on the ACI image-update caching issue (Wall 8) — including several deploys that appeared to succeed but served stale bits
 
-**Call it ~8.5 hours of work that produced zero new learning about what our agents should do.** Every minute went to making the scaffolding match what the subscription would allow.
+**Call it ~12 hours of work to get a 56-second workflow running in Azure**, with maybe 30 minutes of that producing any new understanding of what our agents should actually do. The rest went to making the scaffolding match what the subscription, the SDK, the runtime, the model family, and the container platform would all simultaneously allow. Every minute went to making the scaffolding match what the subscription would allow.
 
 By contrast, the entire agent workflow — three agents, prompt engineering, output assembly, local validation — was roughly the same wall-clock, and *all* of it moved our understanding of the problem forward.
 
@@ -168,6 +224,10 @@ The messy path — API keys in env vars, ACI instead of Functions, HTTP instead 
 
 Fast experimentation and enterprise governance can coexist. They coexist when the stack makes the path from "messy and learning" to "clean and governed" a gradient, not a cliff. Today it's a cliff. We're on the messy side of it, and we're going to stay here until we know what the agents should actually do. Then we'll cross back.
 
+**Update:** the messy side works. As of 14:08 UTC, `POST http://finabeo-agent-5pielz.eastus.azurecontainer.io:8080/api/generate` returns HTTP 200 in 56 seconds with real, high-quality multi-platform marketing content generated by gpt-4o, plus a branded Word document and PowerPoint deck, all uploaded to Azure Blob Storage. The agents run. The framework delivers on the core promise once you've climbed over all the infrastructure walls that were supposed to be the "easy" part.
+
+The next phase is the actual interesting work: using the now-working deploy to iterate on *what the agents should say*, rather than whether they can run. That's the experimentation the original quote was pointing at. Eight walls later, we finally get to start it.
+
 ---
 
-*Logged 2026-04-14. Five walls deep, ACI image building in the cloud, Bicep for the container deploy in flight as of the last keystroke of this document.*
+*Logged 2026-04-14. Eight walls deep, one working deploy. Time to finally do the work this was all supposed to be in service of.*

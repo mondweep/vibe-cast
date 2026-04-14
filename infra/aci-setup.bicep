@@ -8,7 +8,7 @@ param projectName string = 'finabeo-marketing-agents'
 param environment string = 'dev'
 param foundryAccountName string = 'finabeo-marketing-agents'
 param foundryEndpoint string = 'https://finabeo-marketing-agents.openai.azure.com/'
-param foundryDeploymentName string = 'gpt-5-mini'
+param foundryDeploymentName string = 'gpt-4o'
 param containerImageTag string = 'latest'
 
 // Existing ACR — created by the deploy script before this template runs,

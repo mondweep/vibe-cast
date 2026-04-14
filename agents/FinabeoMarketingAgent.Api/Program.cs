@@ -9,20 +9,20 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddSingleton(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString = config["AzureStorage__ConnectionString"];
+    var connectionString = config["AzureStorage:ConnectionString"];
     if (!string.IsNullOrEmpty(connectionString))
     {
         return new BlobServiceClient(connectionString);
     }
 
-    var endpoint = config["AzureStorage__BlobEndpoint"];
+    var endpoint = config["AzureStorage:BlobEndpoint"];
     if (!string.IsNullOrEmpty(endpoint))
     {
         return new BlobServiceClient(new Uri(endpoint), new DefaultAzureCredential());
     }
 
     throw new InvalidOperationException(
-        "Either AzureStorage__ConnectionString or AzureStorage__BlobEndpoint must be configured");
+        "Either AzureStorage:ConnectionString or AzureStorage:BlobEndpoint must be configured");
 });
 
 builder.Services.AddSingleton<IOutputUploader, BlobOutputUploader>();

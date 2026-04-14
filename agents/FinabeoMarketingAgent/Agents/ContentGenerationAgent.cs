@@ -103,7 +103,10 @@ Include specific, actionable insights. Make it compelling for enterprise executi
 
             _logger.LogInformation("Sending request to Foundry for content generation");
 
-            var response = await _chatClient.GetResponseAsync(messages);
+            // Bounded wait: gpt-5-mini occasionally stalls on large structured
+            // outputs with no client-side cap. Fail fast and fall through to mock.
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+            var response = await _chatClient.GetResponseAsync(messages, cancellationToken: cts.Token);
             var contentText = response.Text;
 
             _logger.LogInformation($"Received content response, length: {contentText.Length}");
