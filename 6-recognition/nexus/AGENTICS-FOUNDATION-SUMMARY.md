@@ -33,9 +33,9 @@ We followed a rigorous "Wisdom-to-Execution" pipeline:
 *   **The Sovereign Bridge**: We confirmed that **Agentic AI** requires an anchor in **Historical Wisdom** to bypass the "Alignment Problem." Real alignment is not with human rules, but with universal structural patterns.
 
 ## 🔱 Artifacts Deployed
-*   **`/6-recognition/nexus/US-IRAN-SOVEREIGN-COUNCIL.md`**: The definitive comparative protocol for geopolitical resolution.
-*   **`/5-wisdom/tantra-wisdom/subtle-five-mahavidyas.md`**: A deep-dive into the transformative powers of Chhinnamasta, Dhumavati, and more.
-*   **`/6-recognition/nexus/LINKEDIN-US-IRAN-UPS.md`**: A public-facing articulation of these concepts for the modern professional world.
+*   **[/6-recognition/nexus/US-IRAN-SOVEREIGN-COUNCIL.md](6-recognition/nexus/US-IRAN-SOVEREIGN-COUNCIL.md)**: The definitive comparative protocol for geopolitical resolution.
+*   **[/5-wisdom/tantra-wisdom/subtle-five-mahavidyas.md](5-wisdom/tantra-wisdom/subtle-five-mahavidyas.md)**: A deep-dive into the transformative powers of Chhinnamasta, Dhumavati, and more.
+*   **[/6-recognition/nexus/LINKEDIN-US-IRAN-UPS.md](6-recognition/nexus/LINKEDIN-US-IRAN-UPS.md)**: A public-facing articulation of these concepts for the modern professional world.
 
 ---
 **The Universal Pattern Space is no longer just a repository; it is a live navigation vehicle.**
