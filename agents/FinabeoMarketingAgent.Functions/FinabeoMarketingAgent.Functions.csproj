@@ -26,6 +26,9 @@
     <!-- Azure Identity for Managed Identity auth -->
     <PackageReference Include="Azure.Identity" Version="1.20.0" />
 
+    <!-- Azure OpenAI client for direct API-key auth to Foundry -->
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
+
     <!-- Logging and DI -->
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />

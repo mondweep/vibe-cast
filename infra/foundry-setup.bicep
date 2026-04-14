@@ -6,17 +6,27 @@ param location string = resourceGroup().location
 param projectName string = 'finabeo-marketing-agents'
 param environment string = 'dev'
 
-// Foundry endpoint (set after manual Foundry hub creation)
-param foundryEndpoint string = ''
+// Azure OpenAI endpoint on the existing Foundry/Cognitive Services account
+param foundryEndpoint string = 'https://finabeo-marketing-agents.openai.azure.com/'
+
+// Name of the existing Azure AI Foundry (Cognitive Services) account in this resource group
+param foundryAccountName string = 'finabeo-marketing-agents'
+
+// Model deployment name to use for chat completions
+param foundryDeploymentName string = 'gpt-5-mini'
 
 // Generate unique names to avoid conflicts
 var uniqueSuffix = substring(uniqueString(resourceGroup().id), 0, 6)
 var functionAppName = 'func-${projectName}-${uniqueSuffix}'
 var appServicePlanName = 'asp-${projectName}-${uniqueSuffix}'
-var storageAccountName = 'st${replace(projectName, '-', '')}${uniqueSuffix}'
-var keyVaultName = 'kv-${environment}-${uniqueSuffix}'
+var storageAccountName = 'stfinabeo${uniqueSuffix}'
 var appInsightsName = 'ai-${environment}-${uniqueSuffix}'
 var logAnalyticsName = 'log-${environment}-${uniqueSuffix}'
+
+// Reference the existing Azure AI Foundry (Cognitive Services) account to read its API key at deploy time
+resource foundryAccount 'Microsoft.CognitiveServices/accounts@2024-10-01' existing = {
+  name: foundryAccountName
+}
 
 // ─── Log Analytics Workspace (required by App Insights) ───
 
@@ -75,33 +85,18 @@ resource outputContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
   }
 }
 
-// ─── Key Vault (stores Foundry API key and other secrets) ───
-
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
-  name: keyVaultName
-  location: location
-  properties: {
-    enabledForDeployment: false
-    enabledForTemplateDeployment: true
-    enabledForDiskEncryption: false
-    enableRbacAuthorization: true
-    tenantId: subscription().tenantId
-    sku: {
-      family: 'A'
-      name: 'standard'
-    }
-  }
-}
-
-// ─── App Service Plan (Consumption tier for cost efficiency) ───
+// ─── App Service Plan (F1 Free Linux — sub has no Consumption or Basic quota) ───
+// Note: F1 cannot run Always On, has 60 CPU-min/day cap, and max 1GB RAM.
+// Sufficient for demo; upgrade for production use.
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: appServicePlanName
   location: location
   sku: {
-    name: 'Y1'
-    tier: 'Dynamic'
+    name: 'F1'
+    tier: 'Free'
   }
+  kind: 'linux'
   properties: {
     reserved: true // Linux
   }
@@ -120,7 +115,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
     serverFarmId: appServicePlan.id
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'DOTNET-ISOLATED|10.0'
+      linuxFxVersion: 'DOTNET-ISOLATED|9.0'
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       appSettings: [
@@ -153,49 +148,29 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           value: foundryEndpoint
         }
         {
+          name: 'Foundry__ApiKey'
+          value: foundryAccount.listKeys().key1
+        }
+        {
+          name: 'Foundry__DeploymentName'
+          value: foundryDeploymentName
+        }
+        {
           name: 'Foundry__ProjectName'
           value: projectName
         }
         {
-          name: 'AzureStorage__BlobEndpoint'
-          value: storageAccount.properties.primaryEndpoints.blob
-        }
-        {
           name: 'OutputContainer'
           value: 'marketing-outputs'
-        }
-        {
-          name: 'KeyVaultUri'
-          value: keyVault.properties.vaultUri
         }
       ]
     }
   }
 }
 
-// ─── RBAC Role Assignments for Managed Identity ───
-
-// Storage Blob Data Contributor — allows Function App to read/write marketing outputs
-resource storageBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, functionApp.id, 'StorageBlobDataContributor')
-  scope: storageAccount
-  properties: {
-    principalId: functionApp.identity.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
-  }
-}
-
-// Key Vault Secrets User — allows Function App to read secrets (e.g. Foundry API key)
-resource keyVaultSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(keyVault.id, functionApp.id, 'KeyVaultSecretsUser')
-  scope: keyVault
-  properties: {
-    principalId: functionApp.identity.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
-  }
-}
+// NOTE: RBAC role assignments removed — Contributor-level deploys cannot create them.
+// Auth instead uses: storage connection string (AzureWebJobsStorage) + Foundry API key (app setting).
+// Acceptable for demo; revisit for enterprise hardening.
 
 // ─── Outputs ───
 
@@ -204,7 +179,5 @@ output functionAppUrl string = 'https://${functionApp.properties.defaultHostName
 output functionAppPrincipalId string = functionApp.identity.principalId
 output storageAccountName string = storageAccount.name
 output storageBlobEndpoint string = storageAccount.properties.primaryEndpoints.blob
-output keyVaultName string = keyVault.name
-output keyVaultUri string = keyVault.properties.vaultUri
 output appInsightsName string = appInsights.name
 output appInsightsConnectionString string = appInsights.properties.ConnectionString

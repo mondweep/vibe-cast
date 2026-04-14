@@ -1,5 +1,5 @@
-using Azure.AI.Projects;
-using Azure.Identity;
+using Azure;
+using Azure.AI.OpenAI;
 using FinabeoMarketingAgent.Agents;
 using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Formatters;
@@ -30,13 +30,12 @@ public class WorkflowFactory : IWorkflowFactory
     {
         var endpoint = _configuration["Foundry__Endpoint"]
             ?? throw new InvalidOperationException("Foundry__Endpoint not configured");
+        var apiKey = _configuration["Foundry__ApiKey"]
+            ?? throw new InvalidOperationException("Foundry__ApiKey not configured");
+        var deploymentName = _configuration["Foundry__DeploymentName"] ?? "gpt-5-mini";
 
-        // Use Managed Identity in production, falls back to Azure CLI for local dev
-        var client = new AIProjectClient(
-            new Uri(endpoint),
-            new DefaultAzureCredential());
-
-        var chatClient = client.ProjectOpenAIClient.GetChatClient("gpt-4o").AsIChatClient();
+        var client = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
+        var chatClient = client.GetChatClient(deploymentName).AsIChatClient();
 
         // Load Finabeo service definitions
         var finabeoServices = _configuration
