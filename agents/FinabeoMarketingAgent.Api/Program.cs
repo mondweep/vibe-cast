@@ -27,8 +27,12 @@ builder.Services.AddSingleton(sp =>
 
 builder.Services.AddSingleton<IOutputUploader, BlobOutputUploader>();
 builder.Services.AddSingleton<MarketingWorkflowRunner>();
+builder.Services.AddSingleton<RunListingService>();
 
 var app = builder.Build();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.MapGet("/health", () => Results.Ok(new
 {
@@ -55,6 +59,20 @@ app.MapPost("/api/generate", async (MarketingWorkflowRunner runner, ILogger<Prog
     {
         logger.LogError(ex, "On-demand workflow failed");
         return Results.Problem(detail: ex.Message, statusCode: 500, title: "Workflow failed");
+    }
+});
+
+app.MapGet("/api/runs", async (RunListingService listing, ILogger<Program> logger, CancellationToken ct) =>
+{
+    try
+    {
+        var runs = await listing.ListRunsAsync(ct);
+        return Results.Ok(runs);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Failed to list runs");
+        return Results.Problem(detail: ex.Message, statusCode: 500, title: "Listing failed");
     }
 });
 

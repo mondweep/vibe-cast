@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Finabeo Marketing Agent — Generated Outputs</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #131a33;
+    --panel-2: #1a2244;
+    --text: #e6e9f2;
+    --muted: #8a92ad;
+    --accent: #4f8cff;
+    --accent-2: #6ee7b7;
+    --border: #29335c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    padding: 32px 48px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #151c3a 0%, var(--bg) 100%);
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 600; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+  header .azure-note {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--panel);
+  }
+  header .azure-note::before {
+    content: "";
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 8px var(--accent-2);
+  }
+  main { padding: 24px 48px 64px; max-width: 1100px; }
+  .toolbar {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  button {
+    background: var(--accent); color: white; border: 0;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer;
+    font-size: 14px; font-weight: 500;
+  }
+  button:hover { background: #3d76e0; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status { color: var(--muted); font-size: 13px; }
+  .run {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .run-header {
+    padding: 14px 18px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel-2);
+  }
+  .run-header h2 {
+    margin: 0; font-size: 15px; font-weight: 600;
+  }
+  .run-header .run-id {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    color: var(--muted); font-size: 12px;
+  }
+  ul.files { list-style: none; margin: 0; padding: 0; }
+  ul.files li {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  ul.files li:last-child { border-bottom: 0; }
+  .icon {
+    width: 32px; height: 32px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .icon.json { background: #2d3a5a; color: #9fd6ff; }
+  .icon.docx { background: #1f3a5c; color: #87b8ff; }
+  .icon.pptx { background: #5c2a1f; color: #ff9b85; }
+  .icon.other { background: #3a3a3a; color: #cccccc; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name {
+    font-size: 14px; color: var(--text);
+    text-decoration: none;
+  }
+  .file-name:hover { color: var(--accent); text-decoration: underline; }
+  .file-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .empty, .error {
+    padding: 40px; text-align: center; color: var(--muted);
+    background: var(--panel); border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+  .error { color: #ff8a8a; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Finabeo Marketing Agent — Generated Outputs</h1>
+  <p>Multi-agent marketing content pipeline running on Azure Container Instances</p>
+  <span class="azure-note">Hosted on Azure Blob Storage</span>
+</header>
+<main>
+  <div class="toolbar">
+    <button id="refresh">Refresh</button>
+    <button id="generate">Generate new run</button>
+    <span class="status" id="status">Loading…</span>
+  </div>
+  <div id="runs"></div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const runsEl = $("runs");
+  const statusEl = $("status");
+
+  const fmtBytes = (n) => {
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+    return (n / 1024 / 1024).toFixed(1) + " MB";
+  };
+
+  const fmtWhen = (iso) => {
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleString(undefined, {
+      year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit", timeZoneName: "short"
+    });
+  };
+
+  const iconFor = (name) => {
+    const ext = (name.split(".").pop() || "").toLowerCase();
+    if (ext === "json") return { cls: "json", label: "JSON" };
+    if (ext === "docx") return { cls: "docx", label: "DOCX" };
+    if (ext === "pptx") return { cls: "pptx", label: "PPTX" };
+    return { cls: "other", label: ext.toUpperCase() || "FILE" };
+  };
+
+  async function loadRuns() {
+    statusEl.textContent = "Loading…";
+    runsEl.innerHTML = "";
+    try {
+      const res = await fetch("/api/runs");
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const runs = await res.json();
+      if (!runs.length) {
+        runsEl.innerHTML = '<div class="empty">No runs yet. Click "Generate new run" to create one.</div>';
+        statusEl.textContent = "0 runs";
+        return;
+      }
+      statusEl.textContent = runs.length + " run" + (runs.length > 1 ? "s" : "");
+      runsEl.innerHTML = runs.map(run => {
+        const files = run.files.map(f => {
+          const ic = iconFor(f.name);
+          return `
+            <li>
+              <div class="icon ${ic.cls}">${ic.label}</div>
+              <div class="file-info">
+                <a class="file-name" href="${f.sasUrl}" target="_blank" rel="noopener">${f.name}</a>
+                <div class="file-meta">${fmtBytes(f.sizeBytes)} · ${f.contentType}</div>
+              </div>
+            </li>`;
+        }).join("");
+        return `
+          <div class="run">
+            <div class="run-header">
+              <h2>${fmtWhen(run.timestamp)}</h2>
+              <span class="run-id">${run.runId}</span>
+            </div>
+            <ul class="files">${files}</ul>
+          </div>`;
+      }).join("");
+    } catch (err) {
+      runsEl.innerHTML = `<div class="error">Failed to load runs: ${err.message}</div>`;
+      statusEl.textContent = "error";
+    }
+  }
+
+  async function generateRun() {
+    const btn = $("generate");
+    btn.disabled = true;
+    statusEl.textContent = "Generating new run (this takes ~60 seconds)…";
+    try {
+      const res = await fetch("/api/generate", { method: "POST" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      await res.json();
+      await loadRuns();
+    } catch (err) {
+      statusEl.textContent = "Generation failed: " + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  $("refresh").addEventListener("click", loadRuns);
+  $("generate").addEventListener("click", generateRun);
+  loadRuns();
+</script>
+</body>
+</html>
