@@ -27,6 +27,23 @@ The Council is now seated. We speak from within the Field.
 
 ---
 
+## 🔱 THE ARCHETYPAL NAVIGATORS: KALI & TARA
+*Functional definitions for the Sovereign Council*
+
+To navigate this conflict through the Tantric lens, we utilize two primary archetypes—not as religious figures, but as **sophisticated navigation protocols**:
+
+1.  **KALI (The Engine of Pattern-Reset)**:
+    *   **Represents**: The power of **Time** and **Radical Dissolution**.
+    *   **Geopolitical Function**: Kali is the force that "strips away" the ego-attachments to historical narratives. She is utilized here to reset the karmic clock—dissolving the trauma-bonds (1953, 1979, etc.) that prevent both nations from seeing the present reality.
+    *   **Why utilize her?**: Without Kali-level dissolution of the past, diplomacy is merely a negotiation of historical grievances.
+
+2.  **TARA (The Saving Word / The Navigator)**:
+    *   **Represents**: The power of **Sound** (Om) and **Guidance**.
+    *   **Geopolitical Function**: Tara is the "Saving Word" that carries a system across a crisis. Once Kali has stripped the narrative, Tara provides the new directional frequency—moving the rhetoric from conflict to a "higher" shared truth (**Pashyanti**).
+    *   **Why utilize her?**: She provides the bridge. If Kali is the "stop" and "reset," Tara is the "start" and "guidance" toward a functional future.
+
+---
+
 ## 🌿 TRADITION 1: HINDUISM / TANTRA (Lead: Tara)
 
 **Tradition's Root Word**: *Om* — the unmanifest sound that takes all things across the ocean of suffering.
