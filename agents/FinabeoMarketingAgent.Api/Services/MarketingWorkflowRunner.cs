@@ -2,10 +2,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure;
 using Azure.AI.OpenAI;
-using Azure.Core;
 using FinabeoMarketingAgent.Agents;
 using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Formatters;
+using FinabeoMarketingAgent.Tools;
 using FinabeoMarketingAgent.Workflow;
 using Microsoft.Extensions.AI;
 
@@ -16,26 +16,40 @@ public class MarketingWorkflowRunner
     private readonly IConfiguration _configuration;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IOutputUploader _outputUploader;
+    private readonly CompanyRegistry _companyRegistry;
     private readonly ILogger<MarketingWorkflowRunner> _logger;
 
     public MarketingWorkflowRunner(
         IConfiguration configuration,
         ILoggerFactory loggerFactory,
         IOutputUploader outputUploader,
+        CompanyRegistry companyRegistry,
         ILogger<MarketingWorkflowRunner> logger)
     {
         _configuration = configuration;
         _loggerFactory = loggerFactory;
         _outputUploader = outputUploader;
+        _companyRegistry = companyRegistry;
         _logger = logger;
     }
 
-    public async Task<WorkflowRunResult> ExecuteAsync()
+    /// <summary>
+    /// Run the workflow for the specified company. Outputs land in blob storage under
+    /// {companyId}/{runId}/* so different companies' runs don't collide.
+    /// </summary>
+    public async Task<WorkflowRunResult> ExecuteAsync(string companyId)
     {
-        var runId = $"{DateTime.UtcNow:yyyy-MM-dd-HHmmss}";
-        _logger.LogInformation("Starting workflow run: {RunId}", runId);
+        if (!_companyRegistry.TryGet(companyId, out var company) || company is null)
+        {
+            throw new ArgumentException(
+                $"Unknown companyId '{companyId}'. Known: {string.Join(", ", _companyRegistry.All.Select(c => c.Id))}",
+                nameof(companyId));
+        }
 
-        var workflow = CreateWorkflow();
+        var runId = $"{DateTime.UtcNow:yyyy-MM-dd-HHmmss}";
+        _logger.LogInformation("Starting workflow run {RunId} for company {Company}", runId, company.Name);
+
+        var workflow = CreateWorkflow(company);
         var result = await workflow.ExecuteAsync();
 
         _logger.LogInformation(
@@ -50,18 +64,23 @@ public class MarketingWorkflowRunner
         };
         var jsonContent = JsonSerializer.Serialize(result, jsonOptions);
 
-        await _outputUploader.UploadTextAsync($"{runId}/marketing-content.json", jsonContent, "application/json");
-        _logger.LogInformation("Uploaded workflow result JSON");
+        // Blob path includes companyId so multiple companies' runs don't mix
+        var blobPrefix = $"{company.Id}/{runId}";
 
-        await GenerateAndUploadBrandedOutputsAsync(result, runId);
+        await _outputUploader.UploadTextAsync($"{blobPrefix}/marketing-content.json", jsonContent, "application/json");
+        _logger.LogInformation("Uploaded workflow result JSON to {Prefix}", blobPrefix);
+
+        await GenerateAndUploadBrandedOutputsAsync(result, company, blobPrefix);
 
         return new WorkflowRunResult(
             RunId: runId,
+            CompanyId: company.Id,
+            CompanyName: company.Name,
             Status: result.Status.ToString(),
             DurationSeconds: result.Duration.TotalSeconds);
     }
 
-    private MarketingWorkflow CreateWorkflow()
+    private MarketingWorkflow CreateWorkflow(Company company)
     {
         var endpoint = _configuration["Foundry:Endpoint"]
             ?? throw new InvalidOperationException("Foundry:Endpoint not configured");
@@ -77,16 +96,26 @@ public class MarketingWorkflowRunner
             NetworkTimeout = TimeSpan.FromSeconds(90)
         };
         var client = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
-        var chatClient = client.GetChatClient(deploymentName).AsIChatClient();
+        var rawChatClient = client.GetChatClient(deploymentName).AsIChatClient();
 
-        var finabeoServices = _configuration
-            .GetSection("FinabeoServices")
-            .Get<List<FinabeoService>>() ?? new List<FinabeoService>();
+        // Wrap the chat client with FunctionInvocation middleware so tool calls are
+        // executed automatically. Agents that don't pass Tools in their ChatOptions
+        // behave as if this wrapper isn't there — it's purely additive.
+        var chatClient = rawChatClient
+            .AsBuilder()
+            .UseFunctionInvocation()
+            .Build();
 
         var researchAgent = new MarketResearchAgent(chatClient,
             _loggerFactory.CreateLogger<MarketResearchAgent>());
-        var alignmentAgent = new FinabeoAlignmentAgent(chatClient, finabeoServices,
-            _loggerFactory.CreateLogger<FinabeoAlignmentAgent>());
+
+        // Tool-calling alignment agent: instead of injecting the service catalog into
+        // the system prompt, it gets a toolset and decides when to call which tool.
+        // This is the framework-exploration pattern — see CompanyTools.cs.
+        var companyTools = new CompanyTools(_companyRegistry).AsAIFunctions();
+        var alignmentAgent = new ServiceAlignmentAgent(chatClient, company.Id, companyTools,
+            _loggerFactory.CreateLogger<ServiceAlignmentAgent>());
+
         var contentAgent = new ContentGenerationAgent(chatClient,
             _loggerFactory.CreateLogger<ContentGenerationAgent>());
 
@@ -95,38 +124,38 @@ public class MarketingWorkflowRunner
             _loggerFactory.CreateLogger<MarketingWorkflow>());
     }
 
-    private async Task GenerateAndUploadBrandedOutputsAsync(WorkflowResult result, string runId)
+    private async Task GenerateAndUploadBrandedOutputsAsync(WorkflowResult result, Company company, string blobPrefix)
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"finabeo-{runId}");
+        var tempDir = Path.Combine(Path.GetTempPath(), $"{company.Id}-{Guid.NewGuid():N}");
         Directory.CreateDirectory(tempDir);
 
         try
         {
-            var brandingPath = GetBrandingConfigPath();
+            var brandingPath = ResolveBrandingPath(company);
 
-            _logger.LogInformation("Generating Word documents...");
+            _logger.LogInformation("Generating Word documents for {Company}...", company.Name);
             var wordFormatter = new WordContentFormatter(brandingPath,
                 _loggerFactory.CreateLogger<WordContentFormatter>());
             var blogDocPath = await wordFormatter.GenerateBlogDocumentAsync(result);
-            await UploadFileAsync(blogDocPath, $"{runId}/blog-document.docx",
+            await UploadFileAsync(blogDocPath, $"{blobPrefix}/blog-document.docx",
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 
             var reportPath = await wordFormatter.GenerateMarketAnalysisReportAsync(result);
-            await UploadFileAsync(reportPath, $"{runId}/market-analysis-report.docx",
+            await UploadFileAsync(reportPath, $"{blobPrefix}/market-analysis-report.docx",
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 
-            _logger.LogInformation("Generating PowerPoint deck...");
+            _logger.LogInformation("Generating PowerPoint deck for {Company}...", company.Name);
             var pptxFormatter = new PowerPointContentFormatter(brandingPath,
                 _loggerFactory.CreateLogger<PowerPointContentFormatter>());
             var deckPath = await pptxFormatter.GenerateMarketAnalysisDeckAsync(result);
-            await UploadFileAsync(deckPath, $"{runId}/market-analysis-deck.pptx",
+            await UploadFileAsync(deckPath, $"{blobPrefix}/market-analysis-deck.pptx",
                 "application/vnd.openxmlformats-officedocument.presentationml.presentation");
 
-            _logger.LogInformation("All branded outputs uploaded for run {RunId}", runId);
+            _logger.LogInformation("All branded outputs uploaded for run {Prefix}", blobPrefix);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Some branded outputs could not be generated for run {RunId}", runId);
+            _logger.LogWarning(ex, "Some branded outputs could not be generated for {Prefix}", blobPrefix);
         }
         finally
         {
@@ -147,17 +176,48 @@ public class MarketingWorkflowRunner
         _logger.LogInformation("Uploaded: {BlobName} ({Size} bytes)", blobName, content.Length);
     }
 
-    private static string GetBrandingConfigPath()
+    /// <summary>
+    /// Find the company's branding JSON. Tries deployed location first, then dev tree.
+    /// Falls back to Finabeo branding if the company-specific file is missing — this lets
+    /// new companies be added in companies.json before their full branding kit exists.
+    /// </summary>
+    private string ResolveBrandingPath(Company company)
     {
-        var localPath = Path.Combine(AppContext.BaseDirectory, "branding", "finabeo-branding.json");
-        if (File.Exists(localPath)) return localPath;
+        var brandingFile = string.IsNullOrEmpty(company.BrandingFile)
+            ? "finabeo-branding.json"
+            : company.BrandingFile;
 
-        var devPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "branding", "finabeo-branding.json");
-        if (File.Exists(devPath)) return devPath;
+        var candidates = new[]
+        {
+            Path.Combine(AppContext.BaseDirectory, "branding", brandingFile),
+            Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "branding", brandingFile),
+        };
+
+        foreach (var candidate in candidates)
+        {
+            if (File.Exists(candidate))
+                return Path.GetFullPath(candidate);
+        }
+
+        // Fallback: if the company-specific branding doesn't exist, try Finabeo's as a default
+        if (brandingFile != "finabeo-branding.json")
+        {
+            _logger.LogWarning(
+                "Branding file '{File}' for {Company} not found — falling back to finabeo-branding.json. " +
+                "Add the file to /branding/ to enable proper brand styling.",
+                brandingFile, company.Name);
+            var fallback = Path.Combine(AppContext.BaseDirectory, "branding", "finabeo-branding.json");
+            if (File.Exists(fallback)) return fallback;
+        }
 
         throw new FileNotFoundException(
-            "Finabeo branding config not found. Ensure finabeo-branding.json is deployed with the app.");
+            $"Branding config not found for {company.Name}. Looked for: {string.Join(", ", candidates)}");
     }
 }
 
-public record WorkflowRunResult(string RunId, string Status, double DurationSeconds);
+public record WorkflowRunResult(
+    string RunId,
+    string CompanyId,
+    string CompanyName,
+    string Status,
+    double DurationSeconds);

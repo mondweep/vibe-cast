@@ -2,55 +2,58 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
 using A = DocumentFormat.OpenXml.Drawing;
+using FinabeoMarketingAgent.Branding;
 using FinabeoMarketingAgent.Models;
 using FinabeoMarketingAgent.Workflow;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace FinabeoMarketingAgent.Formatters;
 
 /// <summary>
 /// Generates branded PowerPoint presentations with robust structure to avoid repair errors.
 ///
-/// Key structural requirements for valid PPTX (learned from comparing against python-pptx reference):
-/// 1. Theme must be linked from BOTH the presentation level AND slide master
-/// 2. TableStylesPart is required even if empty
-/// 3. Presentation must include defaultTextStyle
-/// 4. Text boxes must use cNvSpPr txBox="1", NOT spLocks/noGrp (that's for placeholders)
-/// 5. All slides must include ColorMapOverride
-/// 6. PresetGeometry must contain AdjustValueList child
-/// 7. BackgroundProperties must contain EffectList after fill
-/// 8. GroupShapeProperties can use empty grpSpPr (no TransformGroup needed)
-/// 9. Theme objectDefaults and extraClrSchemeLst should be present
-/// 10. NormalViewProperties needs RestoredLeft and RestoredTop
+/// Branding is supplied via <see cref="BrandingTheme"/> loaded from the company's branding JSON
+/// (e.g. finabeo-branding.json, brigade-electronics-branding.json). All colours, fonts, and
+/// text strings come from the theme — nothing Finabeo-specific is hardcoded.
+///
+/// Structural requirements for valid PPTX (see openxml-pptx-csharp skill / structural-checklist.md):
+/// 1. Theme linked from BOTH the presentation level AND slide master
+/// 2. TableStylesPart present even if empty
+/// 3. Presentation includes defaultTextStyle with 5 paragraph levels
+/// 4. Text boxes use cNvSpPr txBox="1", NOT spLocks/noGrp
+/// 5. All slides include ColorMapOverride
+/// 6. PresetGeometry contains AdjustValueList
+/// 7. BackgroundProperties contains EffectList
+/// 8. Slide master uses BackgroundStyleReference (not BackgroundProperties)
+/// 9. Theme includes ObjectDefaults + ExtraColorSchemeList + full format scheme with gradients
+/// 10. NormalViewProperties has RestoredLeft and RestoredTop
 /// </summary>
 public class PowerPointContentFormatter
 {
-    private readonly string _brandingConfigPath;
+    private readonly BrandingTheme _theme;
     private readonly ILogger<PowerPointContentFormatter> _logger;
-    private Dictionary<string, object>? _brandingConfig;
 
     public PowerPointContentFormatter(string brandingConfigPath, ILogger<PowerPointContentFormatter> logger)
     {
-        _brandingConfigPath = brandingConfigPath;
         _logger = logger;
-        LoadBrandingConfig();
-    }
-
-    private void LoadBrandingConfig()
-    {
         try
         {
-            var json = File.ReadAllText(_brandingConfigPath);
-            _brandingConfig = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+            _theme = BrandingTheme.LoadFromFile(brandingConfigPath);
+            _logger.LogInformation("✓ PowerPoint branding loaded for {Company}", _theme.CompanyName);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "⚠ Could not load branding from {Path}; using defaults", brandingConfigPath);
+            _theme = new BrandingTheme();
+        }
     }
 
     public async Task<string> GenerateMarketAnalysisDeckAsync(WorkflowResult workflowResult)
     {
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd-HHmmss");
-        var fileName = $"output/finabeo-market-deck-{timestamp}.pptx";
+        var fileName = $"output/{_theme.FilenameSlug}-market-deck-{timestamp}.pptx";
+
+        Directory.CreateDirectory(Path.GetDirectoryName(fileName) ?? "output");
 
         try
         {
@@ -58,32 +61,30 @@ public class PowerPointContentFormatter
             {
                 var presentationPart = presentationDocument.AddPresentationPart();
 
-                // 1. Create Theme FIRST at presentation level (PowerPoint requires this)
+                // [Skill rule 1] Theme created on PresentationPart FIRST, then shared with slide master
                 var themePart = presentationPart.AddNewPart<ThemePart>();
                 themePart.Theme = CreateTheme();
 
-                // 2. Create TableStyles part (PowerPoint expects this even if empty)
+                // [Skill rule 2] TableStylesPart required even with no tables
                 var tableStylesPart = presentationPart.AddNewPart<TableStylesPart>();
-                tableStylesPart.TableStyleList = new A.TableStyleList() { Default = "{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}" };
+                tableStylesPart.TableStyleList = new A.TableStyleList { Default = "{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}" };
 
-                // 3. Create Slide Master (also references the same theme)
+                // Slide master shares the SAME theme part (don't create a second one)
                 var slideMasterPart = presentationPart.AddNewPart<SlideMasterPart>();
                 slideMasterPart.AddPart(themePart);
                 InitSlideMasterPart(slideMasterPart);
 
-                // 4. Create Slide Layout linked to master
                 var slideLayoutPart = slideMasterPart.AddNewPart<SlideLayoutPart>();
                 InitSlideLayoutPart(slideLayoutPart);
                 slideLayoutPart.AddPart(slideMasterPart);
 
-                // 5. Register layout in master's layout list
                 slideMasterPart.SlideMaster.SlideLayoutIdList!.Append(new SlideLayoutId
                 {
                     Id = 2147483649U,
                     RelationshipId = slideMasterPart.GetIdOfPart(slideLayoutPart)
                 });
 
-                // 6. Initialize Presentation with STRICT schema order including defaultTextStyle
+                // [Skill rule 3] DefaultTextStyle in <p:presentation>, schema order matters
                 var presentation = new Presentation();
                 presentation.Append(new SlideMasterIdList(
                     new SlideMasterId { Id = 2147483648U, RelationshipId = presentationPart.GetIdOfPart(slideMasterPart) }
@@ -94,7 +95,7 @@ public class PowerPointContentFormatter
                 presentation.Append(CreateDefaultTextStyle());
                 presentationPart.Presentation = presentation;
 
-                // 7. View and Presentation Properties
+                // [Skill rule 10] ViewProperties needs NormalViewProperties with RestoredLeft/Top
                 var viewPropsPart = presentationPart.AddNewPart<ViewPropertiesPart>();
                 viewPropsPart.ViewProperties = new ViewProperties(
                     new NormalViewProperties(
@@ -106,9 +107,9 @@ public class PowerPointContentFormatter
                 var presPropsPart = presentationPart.AddNewPart<PresentationPropertiesPart>();
                 presPropsPart.PresentationProperties = new PresentationProperties();
 
-                // 8. Generate Slides (Standard 256-start sequence)
+                // ─── Slides (each routed through CreateSlideBase which adds ColorMapOverride) ───
                 AddSlide(presentationPart, slideLayoutPart, 0, (part) =>
-                    CreateTitleSlide(part, "Finabeo: Market-Service Alignment", "Executive Strategy Brief", workflowResult));
+                    CreateTitleSlide(part, $"{_theme.CompanyName}: Market-Service Alignment", "Executive Strategy Brief"));
 
                 AddSlide(presentationPart, slideLayoutPart, 1, (part) =>
                     CreateMarketInsightsSlide(part, workflowResult.MarketAnalysis));
@@ -119,12 +120,11 @@ public class PowerPointContentFormatter
                 AddSlide(presentationPart, slideLayoutPart, 3, (part) =>
                     CreateStrategySlide(part, workflowResult));
 
-                // 9. Save all parts
                 presentationPart.Presentation.Save();
                 slideMasterPart.SlideMaster.Save();
                 slideLayoutPart.SlideLayout.Save();
                 presentationDocument.Save();
-                _logger.LogInformation($"✓ PowerPoint presentation created: {fileName}");
+                _logger.LogInformation("✓ PowerPoint presentation created: {File}", fileName);
             }
             return fileName;
         }
@@ -156,6 +156,7 @@ public class PowerPointContentFormatter
 
     private void InitSlideMasterPart(SlideMasterPart slideMasterPart)
     {
+        // [Skill rule 8] Slide master uses BackgroundStyleReference (NOT BackgroundProperties)
         var slideMaster = new SlideMaster(
             new CommonSlideData(
                 new Background(
@@ -192,7 +193,7 @@ public class PowerPointContentFormatter
                     new A.Level1ParagraphProperties(
                         new A.DefaultRunProperties(
                             new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Text1 }),
-                            new A.LatinFont { Typeface = "Montserrat" }
+                            new A.LatinFont { Typeface = _theme.HeadingFont }
                         ) { Language = "en-US", FontSize = 4400 }
                     ) { Alignment = A.TextAlignmentTypeValues.Left }
                 ),
@@ -200,7 +201,7 @@ public class PowerPointContentFormatter
                     new A.Level1ParagraphProperties(
                         new A.DefaultRunProperties(
                             new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Text1 }),
-                            new A.LatinFont { Typeface = "Montserrat" }
+                            new A.LatinFont { Typeface = _theme.BodyFont }
                         ) { Language = "en-US", FontSize = 1800 }
                     ) { LeftMargin = 342900, Indent = -342900, Alignment = A.TextAlignmentTypeValues.Left }
                 ),
@@ -208,7 +209,7 @@ public class PowerPointContentFormatter
                     new A.Level1ParagraphProperties(
                         new A.DefaultRunProperties(
                             new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.Text1 }),
-                            new A.LatinFont { Typeface = "Montserrat" }
+                            new A.LatinFont { Typeface = _theme.BodyFont }
                         ) { Language = "en-US", FontSize = 1200 }
                     )
                 )
@@ -219,6 +220,7 @@ public class PowerPointContentFormatter
 
     private void InitSlideLayoutPart(SlideLayoutPart layoutPart)
     {
+        // [Skill rule 5] ColorMapOverride on the layout too
         layoutPart.SlideLayout = new SlideLayout(
             new CommonSlideData(new ShapeTree(
                 new NonVisualGroupShapeProperties(
@@ -233,14 +235,22 @@ public class PowerPointContentFormatter
 
     /// <summary>
     /// Creates a slide with proper background, shape tree, and ColorMapOverride.
+    /// Background can be either a scheme color (e.g. Light1 for white content slides)
+    /// or a literal RGB hex (used for the title slide where the brand background is needed).
     /// </summary>
-    private Slide CreateSlideBase(A.SchemeColorValues bgColor, string groupName, bool showMasterShapes = true)
+    private Slide CreateSlideBase(string? backgroundHex, A.SchemeColorValues? backgroundScheme, bool showMasterShapes = true)
     {
+        // Build the background fill — prefer literal RGB if provided, else fall back to scheme color.
+        // Both paths must be followed by EffectList per [Skill rule 7].
+        A.SolidFill bgFill = backgroundHex is not null
+            ? new A.SolidFill(new A.RgbColorModelHex { Val = backgroundHex })
+            : new A.SolidFill(new A.SchemeColor { Val = backgroundScheme ?? A.SchemeColorValues.Light1 });
+
         var slide = new Slide(
             new CommonSlideData(
                 new Background(new BackgroundProperties(
-                    new A.SolidFill(new A.SchemeColor { Val = bgColor }),
-                    new A.EffectList()
+                    bgFill,
+                    new A.EffectList()  // [Skill rule 7]
                 )),
                 new ShapeTree(
                     new NonVisualGroupShapeProperties(
@@ -250,32 +260,40 @@ public class PowerPointContentFormatter
                     new GroupShapeProperties()
                 )
             ),
-            new ColorMapOverride(new A.MasterColorMapping())
+            new ColorMapOverride(new A.MasterColorMapping())  // [Skill rule 5] required on every slide
         );
         if (!showMasterShapes) slide.ShowMasterShapes = false;
         return slide;
     }
 
-    private void CreateTitleSlide(SlidePart slidePart, string title, string subtitle, WorkflowResult result)
+    private void CreateTitleSlide(SlidePart slidePart, string title, string subtitle)
     {
-        var slide = CreateSlideBase(A.SchemeColorValues.Accent1, "TitleGroup");
+        // Title slide uses the brand-specified background colour from the JSON
+        // (Finabeo: navy; Brigade: industrial black) so light text always has good contrast.
+        var slide = CreateSlideBase(_theme.PptTitleSlideBackgroundHex, backgroundScheme: null);
 
         slide.CommonSlideData!.ShapeTree!.Append(
-            CreateTextShape(2, 914400, 1828800, 8229600, 1200000, "FINABEO", 6000, A.SchemeColorValues.Light1, true));
+            CreateTextShape(2, 914400, 1828800, 8229600, 1200000,
+                _theme.BrandUppercase, 6000, _theme.PptTitleSlideTextHex, isBold: true, fontFamily: _theme.HeadingFont));
+
         slide.CommonSlideData!.ShapeTree!.Append(
-            CreateTextShape(3, 914400, 3200000, 8229600, 2000000, title, 4400, A.SchemeColorValues.Light1, false));
+            CreateTextShape(3, 914400, 3200000, 8229600, 2000000,
+                title, 4400, _theme.PptTitleSlideTextHex, isBold: false, fontFamily: _theme.HeadingFont));
+
         slide.CommonSlideData!.ShapeTree!.Append(
-            CreateTextShape(4, 914400, 5943600, 8229600, 685800, DateTime.UtcNow.ToString("MMMM dd, yyyy"), 2400, A.SchemeColorValues.Accent4, false));
+            CreateTextShape(4, 914400, 5943600, 8229600, 685800,
+                $"{subtitle} · {DateTime.UtcNow:MMMM dd, yyyy}", 2400, _theme.AccentHex, isBold: false, fontFamily: _theme.BodyFont));
 
         slidePart.Slide = slide;
     }
 
     private void CreateMarketInsightsSlide(SlidePart slidePart, MarketAnalysis? analysis)
     {
-        var slide = CreateSlideBase(A.SchemeColorValues.Light1, "InsightsGroup", showMasterShapes: false);
+        var slide = CreateSlideBase(backgroundHex: null, backgroundScheme: A.SchemeColorValues.Light1, showMasterShapes: false);
 
         slide.CommonSlideData!.ShapeTree!.Append(
-            CreateTextShape(2, 457200, 274638, 8763600, 914400, "Market Insights & Trends", 4400, A.SchemeColorValues.Accent1, true));
+            CreateTextShape(2, 457200, 274638, 8763600, 914400,
+                "Market Insights & Trends", 4400, _theme.PptHeadingColorHex, isBold: true, fontFamily: _theme.HeadingFont));
 
         var yPosition = 1300000;
         uint shapeId = 3;
@@ -284,7 +302,9 @@ public class PowerPointContentFormatter
             foreach (var insight in analysis.MarketInsights.Take(2))
             {
                 var text = $"Trend: {insight.Trend}\n\nPain: {insight.PainPoint}\n\nOpportunity: {insight.OpportunityDescription}";
-                slide.CommonSlideData!.ShapeTree!.Append(CreateTextShape(shapeId++, 457200, yPosition, 8763600, 2400000, text, 1600, A.SchemeColorValues.Dark1, false));
+                slide.CommonSlideData!.ShapeTree!.Append(
+                    CreateTextShape(shapeId++, 457200, yPosition, 8763600, 2400000,
+                        text, 1600, _theme.PptBodyColorHex, isBold: false, fontFamily: _theme.BodyFont));
                 yPosition += 2600000;
             }
         }
@@ -293,10 +313,11 @@ public class PowerPointContentFormatter
 
     private void CreateServiceAlignmentSlide(SlidePart slidePart, ServiceAlignment? alignment)
     {
-        var slide = CreateSlideBase(A.SchemeColorValues.Light1, "AlignmentGroup", showMasterShapes: false);
+        var slide = CreateSlideBase(backgroundHex: null, backgroundScheme: A.SchemeColorValues.Light1, showMasterShapes: false);
 
         slide.CommonSlideData!.ShapeTree!.Append(
-            CreateTextShape(2, 457200, 274638, 8763600, 914400, "Finabeo Service Alignment", 4400, A.SchemeColorValues.Accent1, true));
+            CreateTextShape(2, 457200, 274638, 8763600, 914400,
+                $"{_theme.CompanyName} Service Alignment", 4400, _theme.PptHeadingColorHex, isBold: true, fontFamily: _theme.HeadingFont));
 
         var yPosition = 1300000;
         uint shapeId = 3;
@@ -305,7 +326,9 @@ public class PowerPointContentFormatter
             foreach (var service in alignment.FinabeoServices)
             {
                 var text = $"Item: {service.ServiceName} ({service.AlignmentScore * 100:F0}% Fit)\n\n{service.WhyFit}\n\nKey Benefits:\n• {string.Join("\n• ", service.KeyBenefitsToHighlight ?? new List<string>())}";
-                slide.CommonSlideData!.ShapeTree!.Append(CreateTextShape(shapeId++, 457200, yPosition, 8763600, 2600000, text, 1500, A.SchemeColorValues.Dark1, false));
+                slide.CommonSlideData!.ShapeTree!.Append(
+                    CreateTextShape(shapeId++, 457200, yPosition, 8763600, 2600000,
+                        text, 1500, _theme.PptBodyColorHex, isBold: false, fontFamily: _theme.BodyFont));
                 yPosition += 2800000;
             }
         }
@@ -314,23 +337,34 @@ public class PowerPointContentFormatter
 
     private void CreateStrategySlide(SlidePart slidePart, WorkflowResult result)
     {
-        var slide = CreateSlideBase(A.SchemeColorValues.Light1, "StrategyGroup", showMasterShapes: false);
+        var slide = CreateSlideBase(backgroundHex: null, backgroundScheme: A.SchemeColorValues.Light1, showMasterShapes: false);
 
         slide.CommonSlideData!.ShapeTree!.Append(
-            CreateTextShape(2, 457200, 274638, 8763600, 914400, "Go-to-Market Strategy", 4400, A.SchemeColorValues.Accent1, true));
+            CreateTextShape(2, 457200, 274638, 8763600, 914400,
+                "Go-to-Market Strategy", 4400, _theme.PptHeadingColorHex, isBold: true, fontFamily: _theme.HeadingFont));
 
-        var strategyText = $"Target Focus:\n• {result.ServiceAlignment?.RecommendedFocus ?? "Enterprise reach"}\n\nKey Themes:\n• {string.Join("\n• ", result.ServiceAlignment?.ContentThemes?.Take(4) ?? new List<string>())}\n\nEngagement Rule:\n• Lead with FinOps ROI to fund Agentic AI pilots.";
-        slide.CommonSlideData!.ShapeTree!.Append(CreateTextShape(3, 457200, 1371600, 8763600, 4500000, strategyText, 1800, A.SchemeColorValues.Dark1, false));
+        var strategyText = $"Recommended Focus:\n• {result.ServiceAlignment?.RecommendedFocus ?? "Lead with the highest-fit service this week"}\n\n" +
+                           $"Key Themes:\n• {string.Join("\n• ", result.ServiceAlignment?.ContentThemes?.Take(4) ?? new List<string>())}";
+
+        slide.CommonSlideData!.ShapeTree!.Append(
+            CreateTextShape(3, 457200, 1371600, 8763600, 4500000,
+                strategyText, 1800, _theme.PptBodyColorHex, isBold: false, fontFamily: _theme.BodyFont));
 
         slidePart.Slide = slide;
     }
 
-    private DocumentFormat.OpenXml.Presentation.Shape CreateTextShape(uint id, long x, long y, long width, long height, string text, int fontSize, A.SchemeColorValues color, bool isBold = false)
+    /// <summary>
+    /// Create a text box shape using literal RGB color (not scheme color).
+    /// [Skill rule 4] uses TextBox=true (NOT spLocks/noGrp).
+    /// [Skill rule 6] PresetGeometry includes AdjustValueList.
+    /// </summary>
+    private DocumentFormat.OpenXml.Presentation.Shape CreateTextShape(
+        uint id, long x, long y, long width, long height,
+        string text, int fontSize, string colorHex, bool isBold = false, string? fontFamily = null)
     {
-        // Use txBox="1" for text boxes (NOT spLocks/noGrp which is for placeholders)
         var nvSpPr = new NonVisualShapeProperties(
             new NonVisualDrawingProperties { Id = id, Name = "TextBox " + id },
-            new NonVisualShapeDrawingProperties { TextBox = true },
+            new NonVisualShapeDrawingProperties { TextBox = true },  // [Skill rule 4]
             new ApplicationNonVisualDrawingProperties()
         );
 
@@ -338,7 +372,7 @@ public class PowerPointContentFormatter
             nvSpPr,
             new ShapeProperties(
                 new A.Transform2D(new A.Offset { X = x, Y = y }, new A.Extents { Cx = width, Cy = height }),
-                new A.PresetGeometry(new A.AdjustValueList()) { Preset = A.ShapeTypeValues.Rectangle },
+                new A.PresetGeometry(new A.AdjustValueList()) { Preset = A.ShapeTypeValues.Rectangle },  // [Skill rule 6]
                 new A.NoFill()
             ),
             new TextBody(
@@ -347,13 +381,14 @@ public class PowerPointContentFormatter
             )
         );
 
+        var resolvedFont = fontFamily ?? _theme.BodyFont;
         foreach (var originalLine in text.Split('\n'))
         {
             var line = string.IsNullOrWhiteSpace(originalLine) ? " " : originalLine;
             var rPr = new A.RunProperties { Language = "en-US", FontSize = fontSize };
             if (isBold) rPr.Bold = true;
-            rPr.Append(new A.SolidFill(new A.SchemeColor { Val = color }));
-            rPr.Append(new A.LatinFont { Typeface = "Montserrat" });
+            rPr.Append(new A.SolidFill(new A.RgbColorModelHex { Val = colorHex }));
+            rPr.Append(new A.LatinFont { Typeface = resolvedFont });
 
             var paragraph = new A.Paragraph(
                 new A.ParagraphProperties(
@@ -367,6 +402,7 @@ public class PowerPointContentFormatter
         return shape;
     }
 
+    /// <summary>[Skill rule 3] DefaultTextStyle with 5 paragraph levels in correct order</summary>
     private DefaultTextStyle CreateDefaultTextStyle()
     {
         var defaultTextStyle = new DefaultTextStyle();
@@ -397,6 +433,11 @@ public class PowerPointContentFormatter
         return defaultTextStyle;
     }
 
+    /// <summary>
+    /// Build the theme using the company's brand colours as Accent1/Accent2/Accent3.
+    /// [Skill rule 9] includes ObjectDefaults, ExtraColorSchemeList, and the full Office-standard
+    /// format scheme (gradient fills with tint/shade/satMod transforms — bare phClr would trigger Repair).
+    /// </summary>
     private A.Theme CreateTheme()
     {
         var themeElements = new A.ThemeElements(
@@ -405,19 +446,19 @@ public class PowerPointContentFormatter
                 new A.Light1Color(new A.SystemColor { Val = A.SystemColorValues.Window, LastColor = "FFFFFF" }),
                 new A.Dark2Color(new A.RgbColorModelHex { Val = "1F4E78" }),
                 new A.Light2Color(new A.RgbColorModelHex { Val = "E7E6E6" }),
-                new A.Accent1Color(new A.RgbColorModelHex { Val = "003366" }),
-                new A.Accent2Color(new A.RgbColorModelHex { Val = "00B4D8" }),
-                new A.Accent3Color(new A.RgbColorModelHex { Val = "FFB81C" }),
+                new A.Accent1Color(new A.RgbColorModelHex { Val = _theme.PrimaryHex }),
+                new A.Accent2Color(new A.RgbColorModelHex { Val = _theme.SecondaryHex }),
+                new A.Accent3Color(new A.RgbColorModelHex { Val = _theme.AccentHex }),
                 new A.Accent4Color(new A.RgbColorModelHex { Val = "A5A5A5" }),
                 new A.Accent5Color(new A.RgbColorModelHex { Val = "264478" }),
                 new A.Accent6Color(new A.RgbColorModelHex { Val = "7E9CC5" }),
                 new A.Hyperlink(new A.RgbColorModelHex { Val = "0563C1" }),
                 new A.FollowedHyperlinkColor(new A.RgbColorModelHex { Val = "954F72" })
-            ) { Name = "Finabeo Office" },
+            ) { Name = $"{_theme.CompanyName} Office" },
             new A.FontScheme(
-                new A.MajorFont(new A.LatinFont { Typeface = "Montserrat" }, new A.EastAsianFont { Typeface = "" }, new A.ComplexScriptFont { Typeface = "" }),
-                new A.MinorFont(new A.LatinFont { Typeface = "Open Sans" }, new A.EastAsianFont { Typeface = "" }, new A.ComplexScriptFont { Typeface = "" })
-            ) { Name = "Finabeo Fonts" },
+                new A.MajorFont(new A.LatinFont { Typeface = _theme.HeadingFont }, new A.EastAsianFont { Typeface = "" }, new A.ComplexScriptFont { Typeface = "" }),
+                new A.MinorFont(new A.LatinFont { Typeface = _theme.BodyFont }, new A.EastAsianFont { Typeface = "" }, new A.ComplexScriptFont { Typeface = "" })
+            ) { Name = $"{_theme.CompanyName} Fonts" },
             new A.FormatScheme(
                 new A.FillStyleList(
                     new A.SolidFill(new A.SchemeColor { Val = A.SchemeColorValues.PhColor }),
@@ -483,13 +524,14 @@ public class PowerPointContentFormatter
                         ) { Path = A.PathShadeValues.Circle }
                     ) { RotateWithShape = true }
                 )
-            ) { Name = "Finabeo Format" }
+            ) { Name = $"{_theme.CompanyName} Format" }
         );
 
+        // [Skill rule 9] ObjectDefaults + ExtraColorSchemeList both required
         return new A.Theme(
             themeElements,
             new A.ObjectDefaults(),
             new A.ExtraColorSchemeList()
-        ) { Name = "Finabeo Standard" };
+        ) { Name = $"{_theme.CompanyName} Standard" };
     }
 }

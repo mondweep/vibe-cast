@@ -1,0 +1,222 @@
+{
+  "company": {
+    "name": "Brigade Electronics",
+    "tagline": "The Vehicle Safety Specialists",
+    "website": "https://brigade-electronics.com",
+    "description": "Global manufacturer of vehicle safety systems for commercial vehicles and machinery — cameras, sensors, radar, AI vision, and white-sound reversing alarms"
+  },
+  "colors": {
+    "primary": {
+      "name": "Safety Yellow",
+      "hex": "#FFD200",
+      "rgb": "rgb(255, 210, 0)",
+      "usage": "Primary brand colour, CTAs, safety highlights, hazard markers"
+    },
+    "secondary": {
+      "name": "Industrial Black",
+      "hex": "#1A1A1A",
+      "rgb": "rgb(26, 26, 26)",
+      "usage": "Headers, body text, document backgrounds, contrast against yellow"
+    },
+    "accent": {
+      "name": "Hi-Vis Red",
+      "hex": "#D7263D",
+      "rgb": "rgb(215, 38, 61)",
+      "usage": "Critical alerts, danger indicators, important statistics"
+    },
+    "neutral": {
+      "dark": {
+        "name": "Charcoal",
+        "hex": "#333333",
+        "rgb": "rgb(51, 51, 51)",
+        "usage": "Body text, secondary headings"
+      },
+      "light": {
+        "name": "Light Grey",
+        "hex": "#F2F2F2",
+        "rgb": "rgb(242, 242, 242)",
+        "usage": "Backgrounds, section dividers"
+      },
+      "white": {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "rgb": "rgb(255, 255, 255)",
+        "usage": "Primary background, contrast against black/yellow"
+      }
+    }
+  },
+  "typography": {
+    "heading": {
+      "family": "Roboto Condensed",
+      "fallback": "Arial Black, sans-serif",
+      "weight": "700",
+      "variants": ["Bold", "Black"],
+      "usage": "H1, H2, H3 headlines — strong industrial feel"
+    },
+    "body": {
+      "family": "Roboto",
+      "fallback": "Segoe UI, sans-serif",
+      "weight": "400",
+      "variants": ["Regular", "Medium"],
+      "usage": "Body text, paragraphs, descriptions"
+    },
+    "mono": {
+      "family": "Roboto Mono",
+      "fallback": "Consolas, monospace",
+      "weight": "400",
+      "usage": "Product codes, model numbers, technical specifications"
+    },
+    "sizes": {
+      "h1": "36-48px",
+      "h2": "24-32px",
+      "h3": "18-24px",
+      "body": "14-16px",
+      "small": "12px",
+      "caption": "11px"
+    }
+  },
+  "messaging": {
+    "brand_voice": {
+      "personality": ["Practical", "Authoritative", "Safety-First", "Evidence-Led", "Direct"],
+      "tone": "Plain-spoken expert — talks to operators, not boardrooms",
+      "style": "Outcome-focused: lives saved, accidents prevented, compliance achieved"
+    },
+    "key_messages": [
+      "Eliminate vehicle blind spots and prevent collisions",
+      "Patented bbs-tek white-sound — locatable, less noise pollution",
+      "AI vision detection that distinguishes humans from objects",
+      "Compliant with FORS, CLOCS, DVS Progressive Safe System",
+      "Trusted globally by transport, construction, and emergency services"
+    ],
+    "value_propositions": [
+      "Reduce reversing and side-swipe collisions",
+      "Provide indisputable video evidence for incidents",
+      "Meet stringent vehicle safety regulations",
+      "Protect vulnerable road users (cyclists, pedestrians)",
+      "Engineered for harsh environments — built to last"
+    ],
+    "target_markets": [
+      "Transport & Logistics",
+      "Construction",
+      "Mining & Quarrying",
+      "Waste Management",
+      "Public Sector & Emergency Services",
+      "Agriculture"
+    ]
+  },
+  "assets": {
+    "logo": {
+      "full": {
+        "path": "/branding/assets/brigade-logo-full.svg",
+        "usage": "Primary logo for documents, websites, vehicle decals",
+        "variants": ["color", "white-on-black", "black-on-yellow"]
+      },
+      "mark": {
+        "path": "/branding/assets/brigade-logo-mark.svg",
+        "usage": "Icon/mark only for product labels, social media, favicons",
+        "min_width": "48px"
+      },
+      "favicon": {
+        "path": "/branding/assets/brigade-favicon.ico",
+        "usage": "Browser tab, bookmarks"
+      }
+    },
+    "imagery": {
+      "style": "Real working environments — HGVs, plant, refuse trucks, depots",
+      "photography": "Drivers and operators in-situ, equipment installed on real vehicles, on-the-job action shots",
+      "illustrations": "Technical diagrams of camera angles, blind-spot zones, sound directionality"
+    }
+  },
+  "templates": {
+    "social_media": {
+      "linkedin": {
+        "dimensions": "1200x627px",
+        "safe_area": "1000x500px",
+        "background": "solid #1A1A1A with #FFD200 accent stripe",
+        "text_color": "#FFFFFF",
+        "heading_font": "Roboto Condensed Bold 32-48px",
+        "body_font": "Roboto 16-18px"
+      },
+      "twitter": {
+        "dimensions": "1024x512px",
+        "background": "solid #1A1A1A or yellow/black split",
+        "text_color": "#FFFFFF",
+        "heading_font": "Roboto Condensed Bold 28-36px"
+      },
+      "instagram": {
+        "dimensions": "1080x1350px (portrait) or 1080x1080px (square)",
+        "background": "high-contrast yellow/black with safety-stripe accents",
+        "text_color": "#1A1A1A on yellow, #FFFFFF on black",
+        "heading_font": "Roboto Condensed Black 36-48px",
+        "style": "Bold, attention-grabbing, safety-poster aesthetic"
+      }
+    },
+    "document": {
+      "word": {
+        "page_size": "A4",
+        "margins": "1 inch all sides",
+        "header_height": "1 inch",
+        "header_background": "#1A1A1A",
+        "header_text_color": "#FFD200",
+        "body_font": "Roboto 11pt",
+        "heading1_font": "Roboto Condensed Bold 18pt",
+        "heading1_color": "#1A1A1A",
+        "heading2_color": "#D7263D",
+        "line_spacing": "1.5"
+      },
+      "powerpoint": {
+        "aspect_ratio": "16:9",
+        "slide_background": "#FFFFFF",
+        "accent_bar": "#FFD200 (left edge, full height)",
+        "title_slide_background": "#1A1A1A",
+        "title_color": "#FFD200",
+        "heading_color": "#1A1A1A",
+        "body_color": "#333333"
+      }
+    },
+    "email": {
+      "max_width": "600px",
+      "header_background": "#1A1A1A",
+      "hero_background": "#FFFFFF",
+      "section_background": "#F2F2F2",
+      "body_font": "Roboto 14px",
+      "body_color": "#1A1A1A",
+      "footer_background": "#1A1A1A",
+      "footer_text_color": "#FFD200",
+      "cta_background": "#FFD200",
+      "cta_text_color": "#1A1A1A"
+    }
+  },
+  "guidelines": {
+    "do": [
+      "Use safety yellow (#FFD200) and industrial black (#1A1A1A) as primary pairing",
+      "Lead with concrete safety outcomes (lives saved, accidents prevented)",
+      "Cite compliance standards by name (FORS, CLOCS, DVS, BS EN 7010)",
+      "Show real vehicles and operators, not stock office photography",
+      "Use plain, direct language — no jargon, no marketing fluff",
+      "Reference actual product codes (Backeye 360, bbs-tek, Backsense) where appropriate",
+      "Highlight third-party endorsements (emergency services, military)"
+    ],
+    "dont": [
+      "Don't use pastel or muted colour palettes — high contrast is the brand",
+      "Don't use boardroom/financial imagery — Brigade speaks to operations",
+      "Don't make claims without evidence — link to test data or case studies",
+      "Don't undersell the safety stakes — this product prevents fatalities",
+      "Don't use Finabeo-style governance/transformation language — it's not the audience",
+      "Don't substitute fonts other than Roboto / Roboto Condensed without approval"
+    ]
+  },
+  "metadata": {
+    "created": "2026-04-15",
+    "version": "0.1",
+    "status": "preliminary",
+    "notes": "Based on public brigade-electronics.com observation. Awaiting confirmation of actual brand assets (exact Pantone, logo SVGs, font licensing). Colour palette inferred from the safety-yellow/black industrial aesthetic visible on the website and product photography.",
+    "last_updated": "2026-04-15",
+    "next_steps": [
+      "Confirm exact yellow Pantone with Brigade brand team",
+      "Provide official logo SVGs in multiple variants",
+      "Confirm font licensing for Roboto Condensed in commercial materials",
+      "Validate compliance terminology and product names with product team"
+    ]
+  }
+}

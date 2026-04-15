@@ -20,12 +20,22 @@ var config = new ConfigurationBuilder()
     .Build();
 
 var foundryConfig = config.GetSection("Foundry").Get<FoundryConfig>();
-var finabeoServices = config.GetSection("FinabeoServices").Get<List<FinabeoService>>() ?? new();
 
 if (foundryConfig == null || !foundryConfig.IsValid)
 {
     Console.Error.WriteLine("ERROR: Invalid Foundry configuration. Check appsettings.json");
     Environment.Exit(1);
+}
+
+// Console host runs Finabeo by default; pass a different companyId via CLI arg (e.g. `dotnet run -- brigade-electronics`)
+var companyId = args.Length > 0 ? args[0] : "finabeo";
+
+var companyRegistry = CompanyRegistry.LoadFromFile(CompanyRegistry.ResolveDefaultConfigPath());
+if (!companyRegistry.TryGet(companyId, out var company) || company is null)
+{
+    Console.Error.WriteLine($"ERROR: Unknown companyId '{companyId}'. Known: {string.Join(", ", companyRegistry.All.Select(c => c.Id))}");
+    Environment.Exit(1);
+    return;
 }
 
 Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
@@ -56,14 +66,15 @@ try
     var chatClient = client.ProjectOpenAIClient.GetChatClient("gpt-4o").AsIChatClient();
 
     logger.LogInformation("✓ Connected to Foundry");
-    logger.LogInformation($"✓ Loaded {finabeoServices.Count} Finabeo services\n");
+    logger.LogInformation("✓ Running for {Company} ({ServiceCount} services in catalogue)\n",
+        company.Name, company.Services.Count);
 
     // Create agents
     var agentLogger = serviceProvider.GetRequiredService<ILogger<MarketResearchAgent>>();
     var researchAgent = new MarketResearchAgent(chatClient, agentLogger);
 
-    var alignmentLogger = serviceProvider.GetRequiredService<ILogger<FinabeoAlignmentAgent>>();
-    var alignmentAgent = new FinabeoAlignmentAgent(chatClient, finabeoServices, alignmentLogger);
+    var alignmentLogger = serviceProvider.GetRequiredService<ILogger<ServiceAlignmentAgent>>();
+    var alignmentAgent = new ServiceAlignmentAgent(chatClient, company, alignmentLogger);
 
     var contentLogger = serviceProvider.GetRequiredService<ILogger<ContentGenerationAgent>>();
     var contentAgent = new ContentGenerationAgent(chatClient, contentLogger);
@@ -103,7 +114,15 @@ try
     Console.WriteLine("║           Generating Branded Content Formats              ║");
     Console.WriteLine("╚════════════════════════════════════════════════════════════╝\n");
 
-    var brandingConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "branding", "finabeo-branding.json");
+    var brandingFile = string.IsNullOrEmpty(company.BrandingFile) ? "finabeo-branding.json" : company.BrandingFile;
+    var brandingConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "branding", brandingFile);
+    if (!File.Exists(brandingConfigPath))
+    {
+        // Fall back to Finabeo branding if the company-specific file is missing
+        brandingConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "branding", "finabeo-branding.json");
+        logger.LogWarning("Branding file '{File}' not found for {Company}; falling back to Finabeo branding",
+            brandingFile, company.Name);
+    }
     var wordFormatterLogger = serviceProvider.GetRequiredService<ILogger<WordContentFormatter>>();
     var wordFormatter = new WordContentFormatter(brandingConfigPath, wordFormatterLogger);
 

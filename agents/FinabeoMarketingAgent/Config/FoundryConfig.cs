@@ -13,24 +13,11 @@ public class FoundryConfig
 }
 
 /// <summary>
-/// Finabeo service definition
-/// </summary>
-public class FinabeoService
-{
-    public string Id { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public List<string> Benefits { get; set; } = new();
-    public List<string> TargetIndustries { get; set; } = new();
-    public string TargetCustomerSize { get; set; } = string.Empty;
-    public string KeyDifferentiator { get; set; } = string.Empty;
-}
-
-/// <summary>
-/// Application configuration root
+/// Application configuration root.
+/// Note: per-company service catalogs now live in branding/companies.json and are loaded
+/// via <see cref="CompanyRegistry"/>. This class only holds Foundry connection config.
 /// </summary>
 public class AppConfig
 {
     public FoundryConfig Foundry { get; set; } = new();
-    public List<FinabeoService> FinabeoServices { get; set; } = new();
 }

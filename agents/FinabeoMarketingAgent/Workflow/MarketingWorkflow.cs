@@ -12,13 +12,13 @@ namespace FinabeoMarketingAgent.Workflow;
 public class MarketingWorkflow
 {
     private readonly MarketResearchAgent _researchAgent;
-    private readonly FinabeoAlignmentAgent _alignmentAgent;
+    private readonly ServiceAlignmentAgent _alignmentAgent;
     private readonly ContentGenerationAgent _contentAgent;
     private readonly ILogger<MarketingWorkflow> _logger;
 
     public MarketingWorkflow(
         MarketResearchAgent researchAgent,
-        FinabeoAlignmentAgent alignmentAgent,
+        ServiceAlignmentAgent alignmentAgent,
         ContentGenerationAgent contentAgent,
         ILogger<MarketingWorkflow> logger)
     {

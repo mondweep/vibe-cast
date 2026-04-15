@@ -1,0 +1,135 @@
+{
+  "companies": [
+    {
+      "id": "finabeo",
+      "name": "Finabeo",
+      "description": "Enterprise consulting firm specialising in cloud cost management (FinOps) and safe agentic AI transformation, with a human-led, governance-first approach for regulated industries.",
+      "targetIndustries": [
+        "Financial Services",
+        "Insurance",
+        "Telecom",
+        "Energy/Utilities",
+        "Legal/Professional Services"
+      ],
+      "voice": "professional, authoritative, governance-aware — speaks to CIOs and enterprise IT decision makers",
+      "brandingFile": "finabeo-branding.json",
+      "services": [
+        {
+          "id": "cloud-cost-management",
+          "name": "Cloud Cost Management",
+          "description": "Enterprise FinOps consulting with custom tools to identify waste and optimize cloud spending",
+          "benefits": [
+            "25-40% cloud cost savings in first year",
+            "ROI within 3-6 months",
+            "Tailored recommendations addressing business strategy",
+            "Read-only cloud access without PII exposure"
+          ],
+          "targetIndustries": [
+            "Financial Services",
+            "Legal/Professional Services",
+            "Energy/Utilities",
+            "Insurance",
+            "Telecom"
+          ],
+          "targetCustomerSize": "Enterprises with $50k+ annual cloud spend",
+          "keyDifferentiator": "Human-led, Tech-driven approach with governance focus"
+        },
+        {
+          "id": "agentic-ai-transformation",
+          "name": "Agentic AI Transformation",
+          "description": "Safe, human-in-the-loop workflow automation for enterprise process transformation",
+          "benefits": [
+            "Seamless technology integration",
+            "Enterprise process transformation",
+            "Real-time data integration",
+            "Multi-agent orchestration with human oversight"
+          ],
+          "targetIndustries": [
+            "Financial Services",
+            "Legal/Professional Services",
+            "Energy/Utilities",
+            "Insurance",
+            "Telecom"
+          ],
+          "targetCustomerSize": "Digital transformation-ready enterprises",
+          "keyDifferentiator": "Human-in-the-loop governance and accountability"
+        }
+      ]
+    },
+    {
+      "id": "brigade-electronics",
+      "name": "Brigade Electronics",
+      "description": "Global manufacturer of vehicle safety systems for commercial vehicles, fleets, and off-highway machinery — including camera monitor systems, AI vision detection, ultrasonic sensors, and white-sound reversing alarms used by transport, construction, mining, and emergency services.",
+      "targetIndustries": [
+        "Transport & Logistics",
+        "Construction",
+        "Mining & Quarrying",
+        "Waste Management",
+        "Public Sector & Emergency Services",
+        "Agriculture"
+      ],
+      "voice": "practical, safety-first, evidence-led — speaks to fleet managers, safety officers, and transport operations leaders",
+      "brandingFile": "brigade-electronics-branding.json",
+      "services": [
+        {
+          "id": "camera-monitor-systems",
+          "name": "Camera Monitor Systems (Backeye, Sidescan View)",
+          "description": "360° camera monitoring solutions giving drivers live video of every blind spot — including the Backeye 360, side cameras, and HD digital recording for incident review.",
+          "benefits": [
+            "Eliminate blind spots around large vehicles and machinery",
+            "Reduce reversing and side-swipe collisions",
+            "Provide indisputable video evidence for insurance claims",
+            "Compliant with FORS, CLOCS, and DVS Progressive Safe System standards"
+          ],
+          "targetIndustries": [
+            "Transport & Logistics",
+            "Construction",
+            "Waste Management",
+            "Public Sector & Emergency Services"
+          ],
+          "targetCustomerSize": "Fleet operators with 10+ commercial vehicles, construction firms with HGV/plant fleets",
+          "keyDifferentiator": "Purpose-built for commercial vehicles, ruggedised for harsh environments, integrates with telematics"
+        },
+        {
+          "id": "ai-vision-detection",
+          "name": "AI Vision Detection (Backsense Radar & Predictive AI)",
+          "description": "Predictive AI vision and radar-based obstacle detection that identifies vulnerable road users (cyclists, pedestrians) in real time and alerts the driver before collisions occur.",
+          "benefits": [
+            "Active warnings, not just passive video — driver gets alerted",
+            "Distinguishes humans from static objects to reduce false alarms",
+            "Works in all weather and lighting conditions",
+            "Helps meet TfL Direct Vision Standard and Vision Zero targets"
+          ],
+          "targetIndustries": [
+            "Transport & Logistics",
+            "Construction",
+            "Public Sector & Emergency Services",
+            "Mining & Quarrying"
+          ],
+          "targetCustomerSize": "Operators of HGVs, refuse trucks, construction plant, and forklifts",
+          "keyDifferentiator": "Combines radar + AI vision for the most accurate vulnerable road user detection on the market"
+        },
+        {
+          "id": "reversing-alarms-sensors",
+          "name": "Reversing Alarms & Ultrasonic Sensors (bbs-tek White Sound)",
+          "description": "Industry-leading bbs-tek white sound reversing alarms (locatable, multi-frequency, instantly directional) and ultrasonic obstacle detection for low-speed manoeuvring.",
+          "benefits": [
+            "Locatable sound — pedestrians know exactly where the danger is",
+            "Reduces noise complaints vs. traditional tonal alarms (BS EN 7010 compliant)",
+            "Self-adjusting volume responds to ambient noise",
+            "Ultrasonic sensors detect obstacles within 3m and warn driver"
+          ],
+          "targetIndustries": [
+            "Transport & Logistics",
+            "Construction",
+            "Waste Management",
+            "Mining & Quarrying",
+            "Agriculture"
+          ],
+          "targetCustomerSize": "Any operator of commercial vehicles or off-highway machinery — single vehicle to large fleet",
+          "keyDifferentiator": "Patented white sound technology, 3-year warranty, used by emergency services and military worldwide"
+        }
+      ]
+    }
+  ]
+}

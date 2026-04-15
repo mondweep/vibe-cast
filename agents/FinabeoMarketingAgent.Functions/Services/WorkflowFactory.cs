@@ -11,23 +11,33 @@ using Microsoft.Extensions.Logging;
 namespace FinabeoMarketingAgent.Functions.Services;
 
 /// <summary>
-/// Creates MarketingWorkflow instances using Azure AI Foundry via Managed Identity.
-/// In production, no API keys are needed — DefaultAzureCredential handles auth
-/// through the Function App's system-assigned managed identity.
+/// Creates MarketingWorkflow instances for a specified company using Azure AI Foundry.
+/// In production this uses the Foundry API key from app settings; the original Managed Identity
+/// path was reverted because Contributor-level deploys can't create roleAssignments
+/// (see infra/foundry-setup.bicep note).
 /// </summary>
 public class WorkflowFactory : IWorkflowFactory
 {
     private readonly IConfiguration _configuration;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly CompanyRegistry _companyRegistry;
 
-    public WorkflowFactory(IConfiguration configuration, ILoggerFactory loggerFactory)
+    public WorkflowFactory(
+        IConfiguration configuration,
+        ILoggerFactory loggerFactory,
+        CompanyRegistry companyRegistry)
     {
         _configuration = configuration;
         _loggerFactory = loggerFactory;
+        _companyRegistry = companyRegistry;
     }
 
-    public MarketingWorkflow Create()
+    public MarketingWorkflow Create() => Create("finabeo");
+
+    public MarketingWorkflow Create(string companyId)
     {
+        var company = _companyRegistry.Get(companyId);
+
         var endpoint = _configuration["Foundry__Endpoint"]
             ?? throw new InvalidOperationException("Foundry__Endpoint not configured");
         var apiKey = _configuration["Foundry__ApiKey"]
@@ -37,17 +47,11 @@ public class WorkflowFactory : IWorkflowFactory
         var client = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
         var chatClient = client.GetChatClient(deploymentName).AsIChatClient();
 
-        // Load Finabeo service definitions
-        var finabeoServices = _configuration
-            .GetSection("FinabeoServices")
-            .Get<List<FinabeoService>>() ?? new List<FinabeoService>();
-
-        // Create agents
         var researchAgent = new MarketResearchAgent(chatClient,
             _loggerFactory.CreateLogger<MarketResearchAgent>());
 
-        var alignmentAgent = new FinabeoAlignmentAgent(chatClient, finabeoServices,
-            _loggerFactory.CreateLogger<FinabeoAlignmentAgent>());
+        var alignmentAgent = new ServiceAlignmentAgent(chatClient, company,
+            _loggerFactory.CreateLogger<ServiceAlignmentAgent>());
 
         var contentAgent = new ContentGenerationAgent(chatClient,
             _loggerFactory.CreateLogger<ContentGenerationAgent>());
@@ -59,34 +63,47 @@ public class WorkflowFactory : IWorkflowFactory
             _loggerFactory.CreateLogger<MarketingWorkflow>());
     }
 
-    public WordContentFormatter CreateWordFormatter()
+    public WordContentFormatter CreateWordFormatter() => CreateWordFormatter("finabeo");
+
+    public WordContentFormatter CreateWordFormatter(string companyId)
     {
-        var brandingPath = GetBrandingConfigPath();
+        var brandingPath = GetBrandingConfigPath(companyId);
         return new WordContentFormatter(brandingPath,
             _loggerFactory.CreateLogger<WordContentFormatter>());
     }
 
-    public PowerPointContentFormatter CreatePowerPointFormatter()
+    public PowerPointContentFormatter CreatePowerPointFormatter() => CreatePowerPointFormatter("finabeo");
+
+    public PowerPointContentFormatter CreatePowerPointFormatter(string companyId)
     {
-        var brandingPath = GetBrandingConfigPath();
+        var brandingPath = GetBrandingConfigPath(companyId);
         return new PowerPointContentFormatter(brandingPath,
             _loggerFactory.CreateLogger<PowerPointContentFormatter>());
     }
 
-    private string GetBrandingConfigPath()
+    private string GetBrandingConfigPath(string companyId)
     {
-        // In Azure Functions, the branding config is deployed alongside the function
-        var localPath = Path.Combine(AppContext.BaseDirectory, "branding", "finabeo-branding.json");
-        if (File.Exists(localPath))
-            return localPath;
+        var brandingFile = "finabeo-branding.json";
+        if (_companyRegistry.TryGet(companyId, out var company) && company is not null && !string.IsNullOrEmpty(company.BrandingFile))
+        {
+            brandingFile = company.BrandingFile;
+        }
 
-        // Fallback: relative path for development
-        var devPath = Path.Combine(Directory.GetCurrentDirectory(),
-            "..", "..", "..", "..", "branding", "finabeo-branding.json");
-        if (File.Exists(devPath))
-            return devPath;
+        var candidates = new[]
+        {
+            Path.Combine(AppContext.BaseDirectory, "branding", brandingFile),
+            Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "branding", brandingFile),
+            // Fallback to Finabeo branding if company-specific file isn't deployed
+            Path.Combine(AppContext.BaseDirectory, "branding", "finabeo-branding.json"),
+        };
+
+        foreach (var candidate in candidates)
+        {
+            if (File.Exists(candidate))
+                return Path.GetFullPath(candidate);
+        }
 
         throw new FileNotFoundException(
-            "Finabeo branding config not found. Ensure finabeo-branding.json is deployed with the function.");
+            $"Branding config not found for company '{companyId}'. Looked for: {string.Join(", ", candidates)}");
     }
 }

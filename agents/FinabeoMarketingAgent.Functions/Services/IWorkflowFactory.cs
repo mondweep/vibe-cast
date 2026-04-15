@@ -4,17 +4,21 @@ using FinabeoMarketingAgent.Workflow;
 namespace FinabeoMarketingAgent.Functions.Services;
 
 /// <summary>
-/// Factory for creating workflow instances and branded content formatters.
-/// Uses Managed Identity (DefaultAzureCredential) to connect to Azure AI Foundry.
+/// Factory for creating workflow instances and branded content formatters,
+/// scoped to a specific company from the CompanyRegistry. The parameterless
+/// overloads default to "finabeo" for backwards compatibility with existing callers.
 /// </summary>
 public interface IWorkflowFactory
 {
-    /// <summary>Create a new MarketingWorkflow instance connected to Foundry</summary>
+    /// <summary>Create a workflow for the default company (Finabeo).</summary>
     MarketingWorkflow Create();
 
-    /// <summary>Create a Word document formatter with Finabeo branding</summary>
-    WordContentFormatter CreateWordFormatter();
+    /// <summary>Create a workflow for the specified company id (e.g. "finabeo", "brigade-electronics").</summary>
+    MarketingWorkflow Create(string companyId);
 
-    /// <summary>Create a PowerPoint formatter with Finabeo branding</summary>
+    WordContentFormatter CreateWordFormatter();
+    WordContentFormatter CreateWordFormatter(string companyId);
+
     PowerPointContentFormatter CreatePowerPointFormatter();
+    PowerPointContentFormatter CreatePowerPointFormatter(string companyId);
 }

@@ -1,5 +1,6 @@
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Functions;
 using FinabeoMarketingAgent.Functions.Services;
 using Microsoft.Azure.Functions.Worker;
@@ -34,6 +35,13 @@ var host = new HostBuilder()
 
         // Register output uploader service
         services.AddSingleton<IOutputUploader, BlobOutputUploader>();
+
+        // Register company registry (loads Finabeo, Brigade Electronics, etc. from companies.json)
+        services.AddSingleton(sp =>
+        {
+            var configPath = CompanyRegistry.ResolveDefaultConfigPath();
+            return CompanyRegistry.LoadFromFile(configPath);
+        });
 
         // Register workflow factory (creates workflow instances with Foundry client)
         services.AddSingleton<IWorkflowFactory, WorkflowFactory>();

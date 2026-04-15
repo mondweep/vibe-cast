@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Finabeo Marketing Agent — Generated Outputs</title>
+<title>Marketing Agent — Generated Outputs</title>
 <style>
   :root {
     --bg: #0b1020;
@@ -60,6 +60,34 @@
   }
   button:hover { background: #3d76e0; }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
+  select {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 200px;
+  }
+  select:hover { border-color: var(--accent); }
+  select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .company-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: white;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+  .company-tag.brigade { background: #FFD200; color: #1A1A1A; }
+  .company-tag.finabeo { background: #003366; color: white; }
   .status { color: var(--muted); font-size: 13px; }
   .run {
     background: var(--panel);
@@ -115,12 +143,16 @@
 </head>
 <body>
 <header>
-  <h1>Finabeo Marketing Agent — Generated Outputs</h1>
+  <h1>Marketing Agent — Generated Outputs</h1>
   <p>Multi-agent marketing content pipeline running on Azure Container Instances</p>
   <span class="azure-note">Hosted on Azure Blob Storage</span>
 </header>
 <main>
   <div class="toolbar">
+    <label for="company-select" class="status">Company:</label>
+    <select id="company-select" disabled>
+      <option value="">Loading…</option>
+    </select>
     <button id="refresh">Refresh</button>
     <button id="generate">Generate new run</button>
     <span class="status" id="status">Loading…</span>
@@ -131,6 +163,12 @@
   const $ = (id) => document.getElementById(id);
   const runsEl = $("runs");
   const statusEl = $("status");
+  const companySelect = $("company-select");
+
+  // Loaded once at startup from /api/companies — used to render dropdown
+  // and to label run cards with the company name.
+  let companies = [];
+  const companyById = (id) => companies.find(c => c.id === id);
 
   const fmtBytes = (n) => {
     if (n < 1024) return n + " B";
@@ -155,6 +193,28 @@
     return { cls: "other", label: ext.toUpperCase() || "FILE" };
   };
 
+  // Escape HTML-unsafe chars in user/company-supplied strings before injecting into the DOM.
+  const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  async function loadCompanies() {
+    try {
+      const res = await fetch("/api/companies");
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      companies = await res.json();
+      if (!companies.length) {
+        companySelect.innerHTML = '<option value="">No companies configured</option>';
+        return;
+      }
+      companySelect.innerHTML = companies.map(c =>
+        `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");
+      companySelect.disabled = false;
+    } catch (err) {
+      companySelect.innerHTML = `<option value="finabeo">Finabeo (failed to load list)</option>`;
+      console.error("Failed to load companies:", err);
+    }
+  }
+
   async function loadRuns() {
     statusEl.textContent = "Loading…";
     runsEl.innerHTML = "";
@@ -163,7 +223,7 @@
       if (!res.ok) throw new Error("HTTP " + res.status);
       const runs = await res.json();
       if (!runs.length) {
-        runsEl.innerHTML = '<div class="empty">No runs yet. Click "Generate new run" to create one.</div>';
+        runsEl.innerHTML = '<div class="empty">No runs yet. Pick a company and click "Generate new run" to create one.</div>';
         statusEl.textContent = "0 runs";
         return;
       }
@@ -175,44 +235,68 @@
             <li>
               <div class="icon ${ic.cls}">${ic.label}</div>
               <div class="file-info">
-                <a class="file-name" href="${f.sasUrl}" target="_blank" rel="noopener">${f.name}</a>
-                <div class="file-meta">${fmtBytes(f.sizeBytes)} · ${f.contentType}</div>
+                <a class="file-name" href="${escapeHtml(f.sasUrl)}" target="_blank" rel="noopener">${escapeHtml(f.name)}</a>
+                <div class="file-meta">${fmtBytes(f.sizeBytes)} · ${escapeHtml(f.contentType)}</div>
               </div>
             </li>`;
         }).join("");
+
+        // Map common companyIds to a colour-coded brand chip (gracefully degrades for unknown ids)
+        const tagClass = run.companyId === "finabeo" ? "finabeo"
+                       : run.companyId === "brigade-electronics" ? "brigade"
+                       : "";
+        const companyTag = run.companyName
+          ? `<span class="company-tag ${tagClass}">${escapeHtml(run.companyName)}</span>`
+          : "";
+
         return `
           <div class="run">
             <div class="run-header">
-              <h2>${fmtWhen(run.timestamp)}</h2>
-              <span class="run-id">${run.runId}</span>
+              <h2>${fmtWhen(run.timestamp)}${companyTag}</h2>
+              <span class="run-id">${escapeHtml(run.runId)}</span>
             </div>
             <ul class="files">${files}</ul>
           </div>`;
       }).join("");
     } catch (err) {
-      runsEl.innerHTML = `<div class="error">Failed to load runs: ${err.message}</div>`;
+      runsEl.innerHTML = `<div class="error">Failed to load runs: ${escapeHtml(err.message)}</div>`;
       statusEl.textContent = "error";
     }
   }
 
   async function generateRun() {
     const btn = $("generate");
+    const companyId = companySelect.value || "finabeo";
+    const companyName = companyById(companyId)?.name || companyId;
+
     btn.disabled = true;
-    statusEl.textContent = "Generating new run (this takes ~60 seconds)…";
+    companySelect.disabled = true;
+    statusEl.textContent = `Generating new run for ${companyName} (this takes ~60 seconds)…`;
     try {
-      const res = await fetch("/api/generate", { method: "POST" });
-      if (!res.ok) throw new Error("HTTP " + res.status);
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId })
+      });
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`HTTP ${res.status}: ${errBody}`);
+      }
       await res.json();
       await loadRuns();
     } catch (err) {
       statusEl.textContent = "Generation failed: " + err.message;
     } finally {
       btn.disabled = false;
+      companySelect.disabled = false;
     }
   }
 
   $("refresh").addEventListener("click", loadRuns);
   $("generate").addEventListener("click", generateRun);
+
+  // Bootstrap: load companies first (populates dropdown), then load runs in parallel
+  loadCompanies();
   loadRuns();
 </script>
 </body>
