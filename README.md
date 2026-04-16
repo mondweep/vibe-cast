@@ -68,13 +68,13 @@ graph TB
     class RES,ALN,CON,API,JSON,DOCX1,DOCX2,PPTX,BLOB,UI,REG,BF,RAW,TEL,FI,TOOLS,SEARCH validated
 ```
 
-**Legend**: 🟢 Green = validated end-to-end | 🔵 Blue = framework feature explored | ⬜ Grey = pending
+**Legend**: 🟢 Green = validated end-to-end | 🟣 Purple = investigated (spike findings documented) | ⬜ Grey = pending
 
 #### Framework Features Explored vs. Remaining
 
 ```mermaid
 graph LR
-    subgraph "Validated"
+    subgraph "Validated end-to-end"
         A1["IChatClient abstraction"]
         A2["Multi-agent sequential workflow"]
         A3["Tools / function calling<br/><i>UseFunctionInvocation + AIFunction</i>"]
@@ -83,20 +83,20 @@ graph LR
         A6["Branded output formatters"]
         A7["Real web search tool<br/><i>Brave Search via AIFunction</i>"]
         A8["Graceful degradation<br/><i>fallback when tools unavailable</i>"]
+        A9["Quality gate / branching<br/><i>retry loop with score threshold</i>"]
     end
 
-    subgraph "Remaining to Explore"
-        B1["Quality gate / branching workflow"]
-        B2["Checkpointing / state persistence"]
-        B3["Human-in-the-loop approvals"]
-        B4["OpenTelemetry / App Insights tracing"]
+    subgraph "Investigated (spike findings)"
+        C1["Checkpointing<br/><i>session-scoped only, no workflow state</i>"]
+        C2["OpenTelemetry<br/><i>native .UseOpenTelemetry() exists</i>"]
+        C3["Human-in-the-loop<br/><i>no native pause/resume — DIY with blob state</i>"]
     end
 
     classDef done fill:#16a34a,stroke:#166534,color:#fff
-    classDef todo fill:#f59e0b,stroke:#d97706,color:#000
+    classDef spiked fill:#7c3aed,stroke:#5b21b6,color:#fff
 
-    class A1,A2,A3,A4,A5,A6,A7,A8 done
-    class B1,B2,B3,B4 todo
+    class A1,A2,A3,A4,A5,A6,A7,A8,A9 done
+    class C1,C2,C3 spiked
 ```
 
 ---
@@ -145,40 +145,55 @@ az storage blob list --account-name <your-storage-account> \
 | Classic (training data) | 5 | 8,038 | 63s | Plausible but generic |
 | Web search (Brave) | 6 | 10,347 | 83s | Grounded, citable, specific |
 
-### 🔭 What Remains: Exploring the Edges of the Framework
+### 🔭 Exploration Complete: What the Edges Revealed
 
-We've now validated the core of `Microsoft.Extensions.AI` and the Agent Framework. What's left tests the **boundaries** — where the framework either shines or reveals its limits:
+All 12 target framework features have been explored — 9 validated end-to-end, 3 investigated via spike. Here's the honest scorecard:
 
-#### 1. Quality Gate / Branching Workflow (highest remaining value)
-**What it tests**: Can the workflow graph do more than linear chains? Can you loop, branch, or conditionally re-run an agent?
-**The experiment**: After the Alignment Agent scores each service, check if the top score is < 0.8. If so, loop back and ask the Research Agent to search again with a tighter query. This is the pattern every production agent system needs (retry with feedback), and it will tell you whether `MarketingWorkflow` is genuinely a graph or just a sequential `Step1 → Step2 → Step3` wrapper.
-**Expected friction**: The current `MarketingWorkflow.ExecuteAsync()` is linear. The framework may not have native graph primitives — if so, you build the loop yourself, which is itself a finding ("the framework gives you agents and middleware, but workflow orchestration is bring-your-own").
+#### What the framework does well
+| Feature | Verdict |
+|---------|---------|
+| **IChatClient abstraction** | Excellent. Provider-agnostic, composable, familiar to .NET developers. |
+| **Tools / function calling** | The standout feature. `AIFunctionFactory.Create()` + `UseFunctionInvocation()` — same pattern scales from company catalog lookups to live web search. |
+| **Middleware pipeline** | Genuinely ergonomic. `DelegatingChatClient` composes like ASP.NET Core HTTP middleware. Adding telemetry, OTel, or function invocation is a one-liner `.Use()` call. |
+| **OpenTelemetry** | Native `.UseOpenTelemetry()` following GenAI Semantic Conventions v1.40. First-class, not bolted on. |
+| **Multi-model support** | `IChatClient` interface works identically whether backed by Azure OpenAI, OpenAI, Anthropic, or Ollama. |
 
-#### 2. Checkpointing / State Persistence
-**What it tests**: Does the framework have native primitives for saving and resuming workflow state? Or is it purely in-memory?
-**The experiment**: A 30-60 minute investigation spike. Search the `Microsoft.Agents.AI.Foundry` and `Microsoft.Extensions.AI` APIs for anything related to state, sessions, or persistence. If nothing exists, prototype a blob-based checkpoint after each agent step. Either answer is publishable.
-**Why it matters**: Any production agent system that runs 60-90 second workflows needs crash recovery. If the framework doesn't support it, that's a significant gap vs. alternatives like LangGraph or Temporal.
+#### Where the framework is deliberately minimal (bring-your-own)
+| Feature | Finding |
+|---------|---------|
+| **Workflow orchestration** | No native graph, no DAG primitives, no branching/looping constructs. You write plain C# control flow. This is pragmatic — the framework gives you agents and stays out of the orchestration layer. |
+| **Quality gates** | Work via plain `while` loops. Retries don't improve scores without explicit feedback — the framework doesn't help you build "intelligent retry". |
+| **Multi-tenant enforcement** | Company profiles thread through agents manually. Nothing prevents you from wiring a registry through only half your agents (we hit this bug). A framework with tenant-aware primitives would catch it at compile time. |
 
-#### 3. Human-in-the-Loop Approvals
-**What it tests**: Does the framework support pause/resume with external approval? Or is every workflow fire-and-forget?
-**The experiment**: After the Content Agent generates, pause the workflow and wait for an HTTP callback (`POST /api/runs/{runId}/approve`). If approved, proceed to upload. If rejected, loop back.
-**Expected friction**: This likely requires the checkpointing capability from #2. If checkpointing doesn't exist, human-in-the-loop becomes a much harder problem (you'd need to serialise the entire workflow state yourself).
+#### What the framework lacks (gaps vs. alternatives)
+| Feature | Finding | Impact |
+|---------|---------|--------|
+| **Workflow checkpointing** | Session-scoped state only (`AgentSession.StateBag`). No workflow-step persistence. | Production crash recovery requires custom blob-based checkpointing. |
+| **Human-in-the-loop** | No pause/resume primitives. Every workflow is fire-and-forget. | Approval workflows need custom serialisation + callback endpoints. |
+| **Feedback loops** | No mechanism for feeding a gate result back into the next agent invocation. | Intelligent retry (e.g., "score was 0.85, try harder on service X") is entirely DIY. |
 
-#### 4. OpenTelemetry / App Insights Integration
-**What it tests**: Does `Microsoft.Extensions.AI` emit proper OpenTelemetry spans, or is our custom `TelemetryChatClient` the only way to get observability?
-**The experiment**: Wire up the OpenTelemetry SDK, enable the `Microsoft.Extensions.AI` activity source, and see what traces appear in App Insights. If the framework emits proper spans per LLM call with token counts, our custom middleware becomes redundant (which is a good sign — it means the framework handles observability natively).
+#### Quality gate stress test (verified)
 
-**Recommended priority**: #1 (branching) then #4 (OpenTelemetry) — these are the two features that most differentiate "real framework" from "thin wrapper over IChatClient". #2 and #3 are closely coupled and could be a single Friday session.
+| | Normal (0.80 threshold) | Stress test (0.99 threshold) |
+|---|---|---|
+| Gate attempts | 1 (passed) | 3 (2 fails + 1 accepted at cap) |
+| LLM calls | 6 | 12 |
+| Tokens | 10,043 | 18,049 (+80%) |
+| Duration | 58s | 152s (+162%) |
+| Top score | 0.95 | 0.95 (unchanged after retries) |
+
+**Key insight**: Retries without feedback are expensive and ineffective. The LLM produced scores of 0.95 → 0.90 → 0.95 across three attempts — no improvement, just token burn. Production systems need feedback-aware retry, which the framework doesn't provide.
 
 **Recent verified runs:**
 
 | Run ID | Company | Duration | Tokens | LLM Calls | Notes |
 |--------|---------|----------|--------|-----------|-------|
+| `2026-04-16-222613` | Brigade Electronics | 152s | 18,049 | 12 | Quality gate stress test (0.99 threshold, 3 attempts) |
+| `2026-04-16-215846` | Brigade Electronics | 58s | 10,043 | 6 | Quality gate passed on 1st attempt (0.95 >= 0.80) |
 | `2026-04-16-185045` | Brigade Electronics | 83s | 10,347 | 6 | Web search grounded (Brave API) |
 | `2026-04-16-121332` | Finabeo | 82s | 6,783 | 5 | Classic mode (no search key) |
 | `2026-04-16-072614` | Brigade Electronics | 63s | 8,038 | 5 | First telemetry-instrumented run |
 | `2026-04-16-072510` | Finabeo | 55s | 6,795 | 5 | First telemetry-instrumented run |
-| `2026-04-16-064557` | Brigade Electronics | 74s | — | — | Navy/teal branding verified |
 | `2026-04-14-153704` | Finabeo | 56s | — | — | Original baseline |
 
 ```bash
@@ -212,12 +227,12 @@ Infrastructure is done. The remaining days this week are for **exploring the Age
 #### Track B — Framework Feature Exploration
 - [x] ~~**Tools / function calling**~~: `ServiceAlignmentAgent` has tool-calling mode via `UseFunctionInvocation()` + `CompanyTools.AsAIFunctions()`. `MarketResearchAgent` now also has tool-calling mode with `WebSearchTools` (SearchWeb, SearchNews via Brave Search API). Both agents gracefully fall back to classic mode when tools/keys are unavailable.
 - [x] ~~**Middleware**~~: `TelemetryChatClient` — a `DelegatingChatClient` that wraps the `IChatClient` pipeline to capture per-call latency, token counts (input/output/total), and cumulative session metrics. Telemetry is surfaced in the `/api/generate` HTTP response. Confirmed the middleware composition model (pipeline stacking) works cleanly with `UseFunctionInvocation()`.
-- [ ] **Workflows with branching**: add a quality-gate step that loops back to Content agent if alignment score < 0.8
-- [ ] **Human-in-the-loop**: prototype an approval checkpoint before "publish" (even if publish is a no-op for now)
-- [ ] **Checkpointing**: persist workflow state to blob so a run can resume after a crash
+- [x] ~~**Workflows with branching**~~: Quality gate after Alignment Agent checks top alignment score against 0.8 threshold. If below, re-runs alignment (max 2 retries). Stress-tested with 0.99 threshold: 3 attempts, 12 LLM calls, 18K tokens, 152s. Retries don't improve scores without feedback — the framework gives you composable blocks but intelligent retry (with feedback to the LLM about *why* it failed) is DIY.
+- [x] ~~**Human-in-the-loop**~~ (spike): No native pause/resume primitives for workflows. `AgentSession.StateBag` is conversation-scoped. You'd need to serialise `WorkflowResult` to blob after each step and build a callback endpoint (`POST /api/runs/{id}/approve`). Achievable but entirely custom.
+- [x] ~~**Checkpointing**~~ (spike): `FoundryMemoryProvider` provides server-side memory persistence but is conversation-scoped, not workflow-step-scoped. No `SaveWorkflowState()` or resume-from-step API. For production crash recovery, implement write-after-each-step to blob storage yourself.
 
 #### Track C — Observability & Real Integrations
-- [ ] Turn on App Insights traces from inside the agents (currently only HTTP logs flow)
+- [x] ~~Turn on App Insights traces~~ (spike): `Microsoft.Extensions.AI` ships a native `OpenTelemetryChatClient` with a `.UseOpenTelemetry()` extension on `ChatClientBuilder`. Follows OpenTelemetry Semantic Conventions for Generative AI v1.40. One-line addition to the pipeline — would emit proper spans to App Insights with token counts, latency, and model metadata. `FunctionInvokingChatClient` also has its own `ActivitySource`. Our custom `TelemetryChatClient` is complementary (session-level aggregation) but per-call traces come free.
 - [x] ~~Swap LLM-synthesised "research" for a real web search tool~~ — `WebSearchTools` using Brave Search API (free tier). Research Agent makes 2-3 targeted searches, gets real results, synthesises grounded insights. Verified: Brigade run with web search produced insights referencing IoT fleet monitoring, heavy-duty vehicle regulations, and autonomous agricultural safety — specific enough to cite. Telemetry shows +1 LLM call and +29% tokens vs. training-data-only runs.
 - [ ] Add a Linear / Slack notification middleware so a successful run pings somewhere visible
 
@@ -525,4 +540,4 @@ See [agents/FinabeoMarketingAgent/README.md](agents/FinabeoMarketingAgent/README
 
 ---
 
-**Status**: MVP Complete ✅ | Week 1 Done | Week 2 Day 3 — 8/12 framework features validated (tools, middleware, web search, telemetry, multi-tenant, branded formatters) | Remaining edges: branching workflows, checkpointing, human-in-the-loop, OpenTelemetry | See [Stack Retrospective](docs/stack-experience-retrospective.md) for the friction story
+**Status**: MVP Complete ✅ | Week 1 Done | Week 2 Day 3 — **12/12 framework features explored** (9 validated end-to-end, 3 spike findings) | Quality gate stress-tested with retry loop | See [Stack Retrospective](docs/stack-experience-retrospective.md) for the friction story
