@@ -2,6 +2,103 @@ This branch is dedicated to exploring and learning the **Microsoft Agent Framewo
 
 ---
 
+### Architecture: What We've Built & Validated
+
+```mermaid
+graph TB
+    subgraph "Azure Container Instances"
+        API["ASP.NET Minimal API<br/><i>Program.cs · port 8080</i>"]
+
+        subgraph "IChatClient Pipeline"
+            direction LR
+            RAW["AzureOpenAIClient<br/><i>gpt-4o-mini</i>"]
+            TEL["TelemetryChatClient<br/><i>latency · tokens · call count</i>"]
+            FI["UseFunctionInvocation()<br/><i>auto tool execution</i>"]
+            RAW --> TEL --> FI
+        end
+
+        subgraph "Multi-Agent Workflow"
+            direction TB
+            RES["Research Agent<br/><i>Company-parameterised prompts</i>"]
+            ALN["Alignment Agent<br/><i>Tool-calling OR prompt injection</i>"]
+            CON["Content Agent<br/><i>Feeds from upstream context</i>"]
+            RES -->|"MarketAnalysis"| ALN
+            ALN -->|"ServiceAlignment"| CON
+        end
+
+        subgraph "Output Formatters"
+            direction LR
+            JSON["marketing-content.json"]
+            DOCX1["blog-document.docx"]
+            DOCX2["market-analysis-report.docx"]
+            PPTX["market-analysis-deck.pptx"]
+        end
+
+        TOOLS["CompanyTools<br/><i>GetCompanyServices · GetCompanyVoice<br/>GetCompanyTargetIndustries</i>"]
+    end
+
+    subgraph "Configuration"
+        REG["CompanyRegistry<br/><i>companies.json</i>"]
+        BF["Branding JSONs<br/><i>finabeo · brigade-electronics</i>"]
+    end
+
+    subgraph "Azure Blob Storage"
+        BLOB["marketing-outputs container<br/><i>{companyId}/{runId}/*</i>"]
+    end
+
+    subgraph "Demo Frontend"
+        UI["index.html<br/><i>SAS URL download links</i>"]
+    end
+
+    API --> RES
+    FI -.->|"tool calls"| TOOLS
+    TOOLS -.-> REG
+    CON --> JSON & DOCX1 & DOCX2 & PPTX
+    JSON & DOCX1 & DOCX2 & PPTX --> BLOB
+    BF --> DOCX1 & DOCX2 & PPTX
+    UI -->|"/api/runs"| API
+    UI -->|"SAS URLs"| BLOB
+
+    classDef validated fill:#16a34a,stroke:#166534,color:#fff
+    classDef explored fill:#2563eb,stroke:#1e40af,color:#fff
+    classDef pending fill:#6b7280,stroke:#4b5563,color:#fff
+
+    class RES,ALN,CON,API,JSON,DOCX1,DOCX2,PPTX,BLOB,UI,REG,BF validated
+    class TEL,FI,TOOLS explored
+```
+
+**Legend**: 🟢 Green = validated end-to-end | 🔵 Blue = framework feature explored | ⬜ Grey = pending
+
+#### Framework Features Explored vs. Remaining
+
+```mermaid
+graph LR
+    subgraph "Validated"
+        A1["IChatClient abstraction"]
+        A2["Multi-agent sequential workflow"]
+        A3["Tools / function calling<br/><i>UseFunctionInvocation + AIFunction</i>"]
+        A4["Middleware pipeline<br/><i>TelemetryChatClient</i>"]
+        A5["Multi-tenant parameterisation"]
+        A6["Branded output formatters"]
+    end
+
+    subgraph "Remaining to Explore"
+        B1["Quality gate / branching workflow"]
+        B2["Checkpointing / state persistence"]
+        B3["Human-in-the-loop approvals"]
+        B4["App Insights tracing"]
+        B5["Real web search tool"]
+    end
+
+    classDef done fill:#16a34a,stroke:#166534,color:#fff
+    classDef todo fill:#f59e0b,stroke:#d97706,color:#000
+
+    class A1,A2,A3,A4,A5,A6 done
+    class B1,B2,B3,B4,B5 todo
+```
+
+---
+
 ### 🟢 Current Status: Running in Azure on ACI
 **As of April 14, 2026**:
 - ✅ **MVP Functional**: Research, Alignment, and Content agents are fully operational.

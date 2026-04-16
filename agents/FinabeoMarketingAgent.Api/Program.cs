@@ -102,6 +102,14 @@ app.MapPost("/api/generate", async (
             companyName = result.CompanyName,
             status = result.Status,
             durationSeconds = result.DurationSeconds,
+            telemetry = result.Telemetry is { } t ? new
+            {
+                llmCalls = t.LlmCalls,
+                inputTokens = t.InputTokens,
+                outputTokens = t.OutputTokens,
+                totalTokens = t.TotalTokens,
+                totalLlmLatencyMs = t.TotalLlmLatencyMs
+            } : null,
             message = $"Workflow completed for {result.CompanyName}. Outputs uploaded to blob storage."
         });
     }

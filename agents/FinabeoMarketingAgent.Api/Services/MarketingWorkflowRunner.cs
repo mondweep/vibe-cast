@@ -5,6 +5,7 @@ using Azure.AI.OpenAI;
 using FinabeoMarketingAgent.Agents;
 using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Formatters;
+using FinabeoMarketingAgent.Middleware;
 using FinabeoMarketingAgent.Tools;
 using FinabeoMarketingAgent.Workflow;
 using Microsoft.Extensions.AI;
@@ -49,12 +50,16 @@ public class MarketingWorkflowRunner
         var runId = $"{DateTime.UtcNow:yyyy-MM-dd-HHmmss}";
         _logger.LogInformation("Starting workflow run {RunId} for company {Company}", runId, company.Name);
 
-        var workflow = CreateWorkflow(company);
+        var (workflow, telemetry) = CreateWorkflow(company);
         var result = await workflow.ExecuteAsync();
 
+        // Log per-call and cumulative telemetry
+        telemetry.LogSummary();
+        var summary = telemetry.GetSummary();
+
         _logger.LogInformation(
-            "Workflow completed with status {Status} in {Duration:F2}s",
-            result.Status, result.Duration.TotalSeconds);
+            "Workflow completed with status {Status} in {Duration:F2}s — {TotalTokens} tokens across {Calls} LLM calls",
+            result.Status, result.Duration.TotalSeconds, summary.TotalTokens, summary.TotalCalls);
 
         var jsonOptions = new JsonSerializerOptions
         {
@@ -77,10 +82,16 @@ public class MarketingWorkflowRunner
             CompanyId: company.Id,
             CompanyName: company.Name,
             Status: result.Status.ToString(),
-            DurationSeconds: result.Duration.TotalSeconds);
+            DurationSeconds: result.Duration.TotalSeconds,
+            Telemetry: new TelemetryResult(
+                LlmCalls: summary.TotalCalls,
+                InputTokens: summary.TotalInputTokens,
+                OutputTokens: summary.TotalOutputTokens,
+                TotalTokens: summary.TotalTokens,
+                TotalLlmLatencyMs: Math.Round(summary.TotalLatencyMs, 0)));
     }
 
-    private MarketingWorkflow CreateWorkflow(Company company)
+    private (MarketingWorkflow Workflow, TelemetryChatClient Telemetry) CreateWorkflow(Company company)
     {
         var endpoint = _configuration["Foundry:Endpoint"]
             ?? throw new InvalidOperationException("Foundry:Endpoint not configured");
@@ -98,10 +109,13 @@ public class MarketingWorkflowRunner
         var client = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
         var rawChatClient = client.GetChatClient(deploymentName).AsIChatClient();
 
-        // Wrap the chat client with FunctionInvocation middleware so tool calls are
-        // executed automatically. Agents that don't pass Tools in their ChatOptions
-        // behave as if this wrapper isn't there — it's purely additive.
-        var chatClient = rawChatClient
+        // Build the IChatClient pipeline:
+        //   raw → TelemetryChatClient (logging/metrics) → FunctionInvocation (tool calls)
+        //
+        // The telemetry layer sits closest to the wire so it captures the real
+        // latency and token counts before any tool-call retries inflate the numbers.
+        var telemetryClient = new TelemetryChatClient(rawChatClient, _loggerFactory);
+        var chatClient = telemetryClient
             .AsBuilder()
             .UseFunctionInvocation()
             .Build();
@@ -119,9 +133,9 @@ public class MarketingWorkflowRunner
         var contentAgent = new ContentGenerationAgent(chatClient, company,
             _loggerFactory.CreateLogger<ContentGenerationAgent>());
 
-        return new MarketingWorkflow(
+        return (new MarketingWorkflow(
             researchAgent, alignmentAgent, contentAgent,
-            _loggerFactory.CreateLogger<MarketingWorkflow>());
+            _loggerFactory.CreateLogger<MarketingWorkflow>()), telemetryClient);
     }
 
     private async Task GenerateAndUploadBrandedOutputsAsync(WorkflowResult result, Company company, string blobPrefix)
@@ -220,4 +234,12 @@ public record WorkflowRunResult(
     string CompanyId,
     string CompanyName,
     string Status,
-    double DurationSeconds);
+    double DurationSeconds,
+    TelemetryResult? Telemetry = null);
+
+public record TelemetryResult(
+    int LlmCalls,
+    long InputTokens,
+    long OutputTokens,
+    long TotalTokens,
+    double TotalLlmLatencyMs);
