@@ -10,6 +10,7 @@ param foundryAccountName string = 'finabeo-marketing-agents'
 param foundryEndpoint string = 'https://finabeo-marketing-agents.openai.azure.com/'
 param foundryDeploymentName string = 'gpt-4o'
 param containerImageTag string = 'latest'
+param braveSearchApiKey string = ''
 
 // Existing ACR — created by the deploy script before this template runs,
 // because we need to push the image before ACI can pull it on first boot.
@@ -148,6 +149,10 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2023-05-01'
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               value: appInsights.properties.ConnectionString
+            }
+            {
+              name: 'BraveSearch__ApiKey'
+              secureValue: braveSearchApiKey
             }
           ]
         }

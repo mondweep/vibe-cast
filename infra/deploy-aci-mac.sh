@@ -88,6 +88,9 @@ echo -e "${GREEN}✓ Image built and pushed: finabeo-marketing-api:$IMAGE_TAG${N
 # ─── Deploy Bicep (creates ACI + storage + insights) ───
 
 echo -e "${BLUE}Deploying Bicep template...${NC}"
+# Optional: Brave Search API key for grounded research (web search tool)
+BRAVE_KEY="${BRAVE_SEARCH_API_KEY:-}"
+
 DEPLOY_OUTPUT=$(az deployment group create \
   --resource-group "$RESOURCE_GROUP" \
   --template-file "$SCRIPT_DIR/aci-setup.bicep" \
@@ -96,6 +99,7 @@ DEPLOY_OUTPUT=$(az deployment group create \
     environment="dev" \
     registryName="$REGISTRY_NAME" \
     containerImageTag="$IMAGE_TAG" \
+    braveSearchApiKey="$BRAVE_KEY" \
   --query "properties.outputs" \
   -o json)
 
