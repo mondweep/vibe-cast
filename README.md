@@ -21,6 +21,40 @@ az storage blob list --account-name <your-storage-account> \
   --container-name marketing-outputs --auth-mode key -o table
 ```
 
+### 🟢 Update: Multi-Company Pipeline & Framework Exploration (April 16, 2026)
+
+**Multi-tenant pipeline now operational** — the same workflow generates correctly-scoped content for multiple companies without cross-contamination:
+
+- ✅ **Multi-company support**: `MarketResearchAgent`, `ServiceAlignmentAgent`, and `ContentGenerationAgent` are all parameterised by `Company` profile. A `CompanyRegistry` loaded from `branding/companies.json` drives prompts, service catalogs, and branding. Adding a new company is config-only — no code changes required.
+- ✅ **Tools / function calling (Track B)**: The Alignment agent supports two modes — classic prompt injection and a tool-calling path using `Microsoft.Extensions.AI`'s `UseFunctionInvocation()` + `CompanyTools.AsAIFunctions()`. The API host uses tool-calling mode; the console host uses classic mode. This is the single most important framework capability explored so far.
+- ✅ **Demo frontend**: A vanilla-JS static page served from ASP.NET lists runs chronologically and hands out time-limited SAS URLs so non-technical stakeholders can click and download outputs without Azure tenant authentication.
+- ✅ **Company-specific branding**: Brigade Electronics renders in deep navy (#0A1E3D) / electric teal (#00C9DB) — their technology-first 2026 palette. Finabeo renders in navy/gold. Branding JSON drives Word and PowerPoint formatters directly.
+- ✅ **Cross-contamination bug found and fixed**: The CoWork-generated multi-company commit shipped company-aware branding but left `MarketResearchAgent` and `ContentGenerationAgent` with hardcoded Finabeo/fintech prompts. Brigade reports contained Finabeo content. **Framework insight**: prompt parameterisation is a cross-cutting concern the framework does not enforce — nothing in `Microsoft.Extensions.AI` prevents you from wiring a company registry through only half your agents. A framework with stronger tenant primitives might catch this at compile time.
+
+**Recent verified runs:**
+
+| Run ID | Company | Duration | Artifacts |
+|--------|---------|----------|-----------|
+| `2026-04-16-064557` | Brigade Electronics | 74s | JSON + 2× DOCX + PPTX (navy/teal palette) |
+| `2026-04-16-001148` | Finabeo | 50s | JSON + 2× DOCX + PPTX (navy/gold palette) |
+| `2026-04-14-153704` | Finabeo | 56s | JSON + 2× DOCX + PPTX (original baseline) |
+
+```bash
+# Trigger a company-specific run (blocks ~50-75s)
+curl -X POST http://<your-aci-fqdn>:8080/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"companyId":"brigade-electronics"}'
+
+# Or default to Finabeo
+curl -X POST http://<your-aci-fqdn>:8080/api/generate
+
+# List available companies
+curl http://<your-aci-fqdn>:8080/api/companies
+
+# List all runs with SAS download URLs
+curl http://<your-aci-fqdn>:8080/api/runs
+```
+
 ---
 
 ### 🗺️ Where We Are & What's Next (Week of April 14–18, 2026)
@@ -28,13 +62,13 @@ az storage blob list --account-name <your-storage-account> \
 Infrastructure is done. The remaining days this week are for **exploring the Agent Framework itself** — not fighting Azure. Suggested tracks, in rough priority order:
 
 #### Track A — Agent Quality & Prompt Iteration (highest leverage)
-- [ ] Inspect the latest `marketing-content.json` runs and grade output quality (market insights specificity, alignment scoring honesty, platform-appropriate tone)
-- [ ] Tighten the Research agent's system prompt to reduce LLM-synthesized "hallucinated trends" — force it to cite or admit uncertainty
+- [x] ~~Inspect the latest `marketing-content.json` runs and grade output quality~~ — completed during multi-company bug fix; Brigade runs verified clean (53× "safety", 44× "fleet", 0× fintech)
+- [x] ~~Tighten the Research agent's system prompt~~ — refactored to company-parameterised prompts with explicit anti-drift instruction ("do NOT drift into unrelated sectors")
 - [ ] Add few-shot examples to the Content agent for each platform (LinkedIn vs. Twitter voice is currently too similar)
 - [ ] Experiment with temperature / top_p per agent (Research low, Content higher)
 
 #### Track B — Framework Feature Exploration
-- [ ] **Tools / function calling**: add a real tool (e.g., a mock "Finabeo service catalog" lookup) and watch the agent decide when to call it
+- [x] ~~**Tools / function calling**~~: `ServiceAlignmentAgent` now has a tool-calling mode using `UseFunctionInvocation()` + `CompanyTools.AsAIFunctions()`. Agent decides when to call `GetCompanyServices`, `GetCompanyTargetIndustries`, `GetCompanyVoice`. API host uses this path.
 - [ ] **Middleware**: wire an agent-level middleware that logs token usage + latency per call, feeding App Insights
 - [ ] **Workflows with branching**: add a quality-gate step that loops back to Content agent if alignment score < 0.8
 - [ ] **Human-in-the-loop**: prototype an approval checkpoint before "publish" (even if publish is a no-op for now)
@@ -47,7 +81,7 @@ Infrastructure is done. The remaining days this week are for **exploring the Age
 
 #### Track D — Governance & Handoff Story (for the LinkedIn article follow-up)
 - [ ] Write a short "what the Agent Framework actually gives you vs. raw OpenAI SDK" comparison based on hands-on experience
-- [ ] Capture one more friction point or delight in the retrospective as we explore features
+- [x] ~~Capture one more friction point or delight in the retrospective~~ — multi-tenant bug: CoWork shipped tool-calling + branding but left research/content prompts hardcoded to Finabeo. Framework insight: prompt parameterisation is a cross-cutting concern the framework doesn't enforce at compile time.
 - [ ] Request App Service quota from tenant admin using [docs/azure-quota-request.md](docs/azure-quota-request.md) — unblocks eventual Functions + Managed Identity migration
 
 **Pick one from Track A + one from Track B per session.** Track C and D are lower priority but high-value for the write-up.
@@ -63,6 +97,10 @@ Infrastructure is done. The remaining days this week are for **exploring the Age
 | **Deployment Plan** | Infrastructure and cloud integration roadmap. | [Implementation Guide](docs/IMPLEMENTATION-GUIDE.md) |
 | **Stack Experience Retrospective** | Friction log from shipping on the Microsoft stack — five walls deep. | [Retrospective](docs/stack-experience-retrospective.md) |
 | **Azure Quota Request (for admin)** | Ticket template + context for the tenant admin to unblock Functions. | [Quota Request](docs/azure-quota-request.md) |
+| **Company Registry** | Multi-company config: Finabeo + Brigade Electronics services, industries, branding files. | [companies.json](branding/companies.json) |
+| **Brigade Branding** | Deep navy / electric teal palette, AI Detection Frame motif, Montserrat typography. | [brigade-electronics-branding.json](branding/brigade-electronics-branding.json) |
+| **Finabeo Branding** | Navy / gold palette, governance-focused visual identity. | [finabeo-branding.json](branding/finabeo-branding.json) |
+| **Demo Frontend** | Static page listing runs with SAS download links — no Azure login needed. | [index.html](agents/FinabeoMarketingAgent.Api/wwwroot/index.html) |
 | **Latest Stable Output** | View the most recent successful generation. | [Latest Output Folder](agents/FinabeoMarketingAgent/output/) |
 
 ## Overview
@@ -234,8 +272,12 @@ Subscription hit two blockers — zero App Service compute quota (Y1/B1/F1, ever
 - [x] Cloud-side build via `az acr build` (no local Docker required)
 - [x] Bicep template for ACR + ACI + Storage + App Insights (`infra/aci-setup.bicep`)
 - [x] Deploy script `infra/deploy-aci-mac.sh`
-- [x] Foundry auth switched to `AzureOpenAIClient` + `AzureKeyCredential` against **gpt-4o** deployment (gpt-5-mini turned out to be a reasoning model — see retrospective Wall 7)
-- [x] End-to-end validation against deployed ACI — ~56s, HTTP 200, all four artifacts (JSON + 2× DOCX + PPTX) in blob storage
+- [x] Foundry auth switched to `AzureOpenAIClient` + `AzureKeyCredential` against **gpt-4o-mini** deployment (gpt-5-mini turned out to be a reasoning model — see retrospective Wall 7)
+- [x] End-to-end validation against deployed ACI — ~50-75s, HTTP 200, all four artifacts (JSON + 2× DOCX + PPTX) in blob storage
+- [x] Multi-company support: `CompanyRegistry` + per-company parameterised agents + `branding/companies.json`
+- [x] Demo frontend with SAS URL download links
+- [x] Tool-calling mode for `ServiceAlignmentAgent` via `UseFunctionInvocation()` + `CompanyTools`
+- [x] Brigade Electronics branding: deep navy/teal technology-first palette (v0.3)
 - [ ] Logic App or external cron for daily schedule (deferred — HTTP-only for demo)
 - [ ] **When quota is granted**: migrate back to Functions + Managed Identity + Key Vault (original `infra/foundry-setup.bicep` preserved)
 
@@ -339,4 +381,4 @@ See [agents/FinabeoMarketingAgent/README.md](agents/FinabeoMarketingAgent/README
 
 ---
 
-**Status**: MVP Complete ✅ | Week 1 Done | Week 2 In Progress (ACI pivot) | See [Stack Retrospective](docs/stack-experience-retrospective.md) for the friction story
+**Status**: MVP Complete ✅ | Week 1 Done | Week 2 In Progress — multi-company pipeline live, tools/function calling explored, middleware + branching next | See [Stack Retrospective](docs/stack-experience-retrospective.md) for the friction story
