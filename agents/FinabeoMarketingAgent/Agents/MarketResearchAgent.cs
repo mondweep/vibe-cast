@@ -16,15 +16,30 @@ public class MarketResearchAgent : IMarketingAgent<MarketAnalysis>
 {
     private readonly IChatClient _chatClient;
     private readonly Company _company;
+    private readonly IList<AITool>? _tools;
     private readonly ILogger<MarketResearchAgent> _logger;
 
     public string Name => $"{_company.Name} Market Research Agent";
     public string Description => $"Researches market trends and pain points relevant to {_company.Name}'s target industries";
 
+    /// <summary>Classic mode: no tools, LLM synthesises from training data.</summary>
     public MarketResearchAgent(IChatClient chatClient, Company company, ILogger<MarketResearchAgent> logger)
     {
         _chatClient = chatClient;
         _company = company;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Tool-calling mode: agent gets web search tools and can ground its research
+    /// in real, current data. The chatClient MUST already be wrapped with
+    /// <c>UseFunctionInvocation()</c>.
+    /// </summary>
+    public MarketResearchAgent(IChatClient chatClient, Company company, IList<AITool> tools, ILogger<MarketResearchAgent> logger)
+    {
+        _chatClient = chatClient;
+        _company = company;
+        _tools = tools;
         _logger = logger;
     }
 
@@ -38,6 +53,26 @@ public class MarketResearchAgent : IMarketingAgent<MarketAnalysis>
             ? string.Join(", ", _company.TargetIndustries)
             : "the company's target market";
 
+        var hasTools = _tools is { Count: > 0 };
+        var toolInstructions = hasTools
+            ? $@"
+
+You have web search tools available:
+- SearchWeb(query): Search the web for current information. Use targeted queries.
+- SearchNews(query): Search recent news (past month) for breaking developments.
+
+IMPORTANT WORKFLOW when tools are available:
+1. First, call SearchWeb and/or SearchNews 2-3 times with targeted queries about trends in {industries}
+2. Study the search results carefully
+3. Then synthesise your market analysis from the REAL search data
+4. Cite or reference specific findings from search results where possible
+5. After your research is complete, return your final analysis as valid JSON
+
+Do NOT skip the search step — your value is in grounding insights in real data."
+            : @"
+
+Note: No web search tools are available for this run. Synthesise insights from your training knowledge and clearly note that results are based on general industry knowledge, not live data.";
+
         var systemPrompt = $@"You are a market research expert analysing current trends and pain points in the industries that {_company.Name} serves.
 
 Company context:
@@ -49,9 +84,10 @@ Your task is to:
 1. Identify current market trends affecting enterprises in the target industries above
 2. Highlight concrete pain points those enterprises are facing right now
 3. Identify specific market segments and opportunities {_company.Name} could address
-4. Stay anchored in {_company.Name}'s actual target industries — do NOT drift into unrelated sectors. For example, if the company sells vehicle safety systems, do not generate fintech or cloud-cost insights.
+4. Stay anchored in {_company.Name}'s actual target industries — do NOT drift into unrelated sectors
+{toolInstructions}
 
-Return ONLY valid JSON in this exact shape:
+Return your FINAL answer as ONLY valid JSON in this exact shape:
 {{
   ""market_insights"": [
     {{
@@ -81,11 +117,17 @@ Return at least 3 insights, each tied to a specific segment within {industries}.
 
         try
         {
-            var response = await _chatClient.GetResponseAsync(new List<ChatMessage>
-            {
-                new ChatMessage(ChatRole.System, systemPrompt),
-                new ChatMessage(ChatRole.User, userPrompt)
-            });
+            var options = hasTools ? new ChatOptions { Tools = _tools } : null;
+            _logger.LogInformation("Research agent mode: {Mode} for {Company}",
+                hasTools ? "tool-calling (web search)" : "classic (training data)", _company.Name);
+
+            var response = await _chatClient.GetResponseAsync(
+                new List<ChatMessage>
+                {
+                    new ChatMessage(ChatRole.System, systemPrompt),
+                    new ChatMessage(ChatRole.User, userPrompt)
+                },
+                options);
 
             var text = response.Text;
             _logger.LogInformation("Received research response ({Length} chars)", text.Length);

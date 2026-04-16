@@ -63,8 +63,7 @@ graph TB
     classDef explored fill:#2563eb,stroke:#1e40af,color:#fff
     classDef pending fill:#6b7280,stroke:#4b5563,color:#fff
 
-    class RES,ALN,CON,API,JSON,DOCX1,DOCX2,PPTX,BLOB,UI,REG,BF validated
-    class TEL,FI,TOOLS explored
+    class RES,ALN,CON,API,JSON,DOCX1,DOCX2,PPTX,BLOB,UI,REG,BF,RAW,TEL,FI,TOOLS validated
 ```
 
 **Legend**: 🟢 Green = validated end-to-end | 🔵 Blue = framework feature explored | ⬜ Grey = pending

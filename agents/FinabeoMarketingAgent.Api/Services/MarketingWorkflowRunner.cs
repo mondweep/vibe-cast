@@ -120,8 +120,16 @@ public class MarketingWorkflowRunner
             .UseFunctionInvocation()
             .Build();
 
-        var researchAgent = new MarketResearchAgent(chatClient, company,
-            _loggerFactory.CreateLogger<MarketResearchAgent>());
+        // Web search tools for the Research Agent — grounded research when a key is configured
+        var braveApiKey = _configuration["BraveSearch:ApiKey"];
+        var searchTools = new WebSearchTools(braveApiKey, _loggerFactory);
+        var searchFunctions = searchTools.AsAIFunctions();
+
+        var researchAgent = !string.IsNullOrWhiteSpace(braveApiKey)
+            ? new MarketResearchAgent(chatClient, company, searchFunctions,
+                _loggerFactory.CreateLogger<MarketResearchAgent>())
+            : new MarketResearchAgent(chatClient, company,
+                _loggerFactory.CreateLogger<MarketResearchAgent>());
 
         // Tool-calling alignment agent: instead of injecting the service catalog into
         // the system prompt, it gets a toolset and decides when to call which tool.
