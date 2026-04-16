@@ -35,6 +35,7 @@ graph TB
         end
 
         TOOLS["CompanyTools<br/><i>GetCompanyServices · GetCompanyVoice<br/>GetCompanyTargetIndustries</i>"]
+        SEARCH["WebSearchTools<br/><i>SearchWeb · SearchNews<br/>Brave Search API</i>"]
     end
 
     subgraph "Configuration"
@@ -52,6 +53,7 @@ graph TB
 
     API --> RES
     FI -.->|"tool calls"| TOOLS
+    FI -.->|"web search"| SEARCH
     TOOLS -.-> REG
     CON --> JSON & DOCX1 & DOCX2 & PPTX
     JSON & DOCX1 & DOCX2 & PPTX --> BLOB
@@ -63,7 +65,7 @@ graph TB
     classDef explored fill:#2563eb,stroke:#1e40af,color:#fff
     classDef pending fill:#6b7280,stroke:#4b5563,color:#fff
 
-    class RES,ALN,CON,API,JSON,DOCX1,DOCX2,PPTX,BLOB,UI,REG,BF,RAW,TEL,FI,TOOLS validated
+    class RES,ALN,CON,API,JSON,DOCX1,DOCX2,PPTX,BLOB,UI,REG,BF,RAW,TEL,FI,TOOLS,SEARCH validated
 ```
 
 **Legend**: 🟢 Green = validated end-to-end | 🔵 Blue = framework feature explored | ⬜ Grey = pending
@@ -76,24 +78,25 @@ graph LR
         A1["IChatClient abstraction"]
         A2["Multi-agent sequential workflow"]
         A3["Tools / function calling<br/><i>UseFunctionInvocation + AIFunction</i>"]
-        A4["Middleware pipeline<br/><i>TelemetryChatClient</i>"]
+        A4["Middleware pipeline<br/><i>DelegatingChatClient · TelemetryChatClient</i>"]
         A5["Multi-tenant parameterisation"]
         A6["Branded output formatters"]
+        A7["Real web search tool<br/><i>Brave Search via AIFunction</i>"]
+        A8["Graceful degradation<br/><i>fallback when tools unavailable</i>"]
     end
 
     subgraph "Remaining to Explore"
         B1["Quality gate / branching workflow"]
         B2["Checkpointing / state persistence"]
         B3["Human-in-the-loop approvals"]
-        B4["App Insights tracing"]
-        B5["Real web search tool"]
+        B4["OpenTelemetry / App Insights tracing"]
     end
 
     classDef done fill:#16a34a,stroke:#166534,color:#fff
     classDef todo fill:#f59e0b,stroke:#d97706,color:#000
 
-    class A1,A2,A3,A4,A5,A6 done
-    class B1,B2,B3,B4,B5 todo
+    class A1,A2,A3,A4,A5,A6,A7,A8 done
+    class B1,B2,B3,B4 todo
 ```
 
 ---
@@ -127,13 +130,56 @@ az storage blob list --account-name <your-storage-account> \
 - ✅ **Company-specific branding**: Brigade Electronics renders in deep navy (#0A1E3D) / electric teal (#00C9DB) — their technology-first 2026 palette. Finabeo renders in navy/gold. Branding JSON drives Word and PowerPoint formatters directly.
 - ✅ **Cross-contamination bug found and fixed**: The CoWork-generated multi-company commit shipped company-aware branding but left `MarketResearchAgent` and `ContentGenerationAgent` with hardcoded Finabeo/fintech prompts. Brigade reports contained Finabeo content. **Framework insight**: prompt parameterisation is a cross-cutting concern the framework does not enforce — nothing in `Microsoft.Extensions.AI` prevents you from wiring a company registry through only half your agents. A framework with stronger tenant primitives might catch this at compile time.
 
+### 🟢 Update: Middleware, Web Search & Telemetry (April 16, 2026 — evening)
+
+**Three major framework features explored and validated in a single session:**
+
+- ✅ **Middleware pipeline (`DelegatingChatClient`)**: Built `TelemetryChatClient` — intercepts every `IChatClient` call and captures per-call latency, token counts (input/output/total), and cumulative session metrics. The pipeline is now `AzureOpenAI → TelemetryChatClient → UseFunctionInvocation → Agents`. The middleware pattern is genuinely ergonomic — adding a cross-cutting concern was a single `.Use()` call in the builder chain. Composes cleanly with function invocation. **Framework verdict: this is the same chain-of-responsibility model as ASP.NET Core HTTP middleware, and it works just as well.**
+- ✅ **Real web search (Brave Search API)**: `WebSearchTools` exposes `SearchWeb` and `SearchNews` as `AIFunction` instances. The Research Agent now has two modes — classic (training data synthesis) and tool-calling (live web search). When the Brave API key is configured, the agent makes 2-3 targeted searches, gets real results, and synthesises grounded insights. When no key is present, it falls back gracefully to classic mode with an honest log message. **Framework verdict: adding tools to a second agent was trivial — same `AIFunctionFactory.Create()` pattern, same `UseFunctionInvocation()` middleware. The framework's tool abstraction genuinely scales.**
+- ✅ **Telemetry in API response**: `POST /api/generate` now returns `{ telemetry: { llmCalls, inputTokens, outputTokens, totalTokens, totalLlmLatencyMs } }` so callers can see exactly what happened inside the workflow.
+
+**Key telemetry comparison (Brigade Electronics):**
+
+| Mode | LLM Calls | Tokens | Duration | Insight quality |
+|------|-----------|--------|----------|-----------------|
+| Classic (training data) | 5 | 8,038 | 63s | Plausible but generic |
+| Web search (Brave) | 6 | 10,347 | 83s | Grounded, citable, specific |
+
+### 🔭 What Remains: Exploring the Edges of the Framework
+
+We've now validated the core of `Microsoft.Extensions.AI` and the Agent Framework. What's left tests the **boundaries** — where the framework either shines or reveals its limits:
+
+#### 1. Quality Gate / Branching Workflow (highest remaining value)
+**What it tests**: Can the workflow graph do more than linear chains? Can you loop, branch, or conditionally re-run an agent?
+**The experiment**: After the Alignment Agent scores each service, check if the top score is < 0.8. If so, loop back and ask the Research Agent to search again with a tighter query. This is the pattern every production agent system needs (retry with feedback), and it will tell you whether `MarketingWorkflow` is genuinely a graph or just a sequential `Step1 → Step2 → Step3` wrapper.
+**Expected friction**: The current `MarketingWorkflow.ExecuteAsync()` is linear. The framework may not have native graph primitives — if so, you build the loop yourself, which is itself a finding ("the framework gives you agents and middleware, but workflow orchestration is bring-your-own").
+
+#### 2. Checkpointing / State Persistence
+**What it tests**: Does the framework have native primitives for saving and resuming workflow state? Or is it purely in-memory?
+**The experiment**: A 30-60 minute investigation spike. Search the `Microsoft.Agents.AI.Foundry` and `Microsoft.Extensions.AI` APIs for anything related to state, sessions, or persistence. If nothing exists, prototype a blob-based checkpoint after each agent step. Either answer is publishable.
+**Why it matters**: Any production agent system that runs 60-90 second workflows needs crash recovery. If the framework doesn't support it, that's a significant gap vs. alternatives like LangGraph or Temporal.
+
+#### 3. Human-in-the-Loop Approvals
+**What it tests**: Does the framework support pause/resume with external approval? Or is every workflow fire-and-forget?
+**The experiment**: After the Content Agent generates, pause the workflow and wait for an HTTP callback (`POST /api/runs/{runId}/approve`). If approved, proceed to upload. If rejected, loop back.
+**Expected friction**: This likely requires the checkpointing capability from #2. If checkpointing doesn't exist, human-in-the-loop becomes a much harder problem (you'd need to serialise the entire workflow state yourself).
+
+#### 4. OpenTelemetry / App Insights Integration
+**What it tests**: Does `Microsoft.Extensions.AI` emit proper OpenTelemetry spans, or is our custom `TelemetryChatClient` the only way to get observability?
+**The experiment**: Wire up the OpenTelemetry SDK, enable the `Microsoft.Extensions.AI` activity source, and see what traces appear in App Insights. If the framework emits proper spans per LLM call with token counts, our custom middleware becomes redundant (which is a good sign — it means the framework handles observability natively).
+
+**Recommended priority**: #1 (branching) then #4 (OpenTelemetry) — these are the two features that most differentiate "real framework" from "thin wrapper over IChatClient". #2 and #3 are closely coupled and could be a single Friday session.
+
 **Recent verified runs:**
 
-| Run ID | Company | Duration | Artifacts |
-|--------|---------|----------|-----------|
-| `2026-04-16-064557` | Brigade Electronics | 74s | JSON + 2× DOCX + PPTX (navy/teal palette) |
-| `2026-04-16-001148` | Finabeo | 50s | JSON + 2× DOCX + PPTX (navy/gold palette) |
-| `2026-04-14-153704` | Finabeo | 56s | JSON + 2× DOCX + PPTX (original baseline) |
+| Run ID | Company | Duration | Tokens | LLM Calls | Notes |
+|--------|---------|----------|--------|-----------|-------|
+| `2026-04-16-185045` | Brigade Electronics | 83s | 10,347 | 6 | Web search grounded (Brave API) |
+| `2026-04-16-121332` | Finabeo | 82s | 6,783 | 5 | Classic mode (no search key) |
+| `2026-04-16-072614` | Brigade Electronics | 63s | 8,038 | 5 | First telemetry-instrumented run |
+| `2026-04-16-072510` | Finabeo | 55s | 6,795 | 5 | First telemetry-instrumented run |
+| `2026-04-16-064557` | Brigade Electronics | 74s | — | — | Navy/teal branding verified |
+| `2026-04-14-153704` | Finabeo | 56s | — | — | Original baseline |
 
 ```bash
 # Trigger a company-specific run (blocks ~50-75s)
@@ -164,15 +210,15 @@ Infrastructure is done. The remaining days this week are for **exploring the Age
 - [ ] Experiment with temperature / top_p per agent (Research low, Content higher)
 
 #### Track B — Framework Feature Exploration
-- [x] ~~**Tools / function calling**~~: `ServiceAlignmentAgent` now has a tool-calling mode using `UseFunctionInvocation()` + `CompanyTools.AsAIFunctions()`. Agent decides when to call `GetCompanyServices`, `GetCompanyTargetIndustries`, `GetCompanyVoice`. API host uses this path.
-- [ ] **Middleware**: wire an agent-level middleware that logs token usage + latency per call, feeding App Insights
+- [x] ~~**Tools / function calling**~~: `ServiceAlignmentAgent` has tool-calling mode via `UseFunctionInvocation()` + `CompanyTools.AsAIFunctions()`. `MarketResearchAgent` now also has tool-calling mode with `WebSearchTools` (SearchWeb, SearchNews via Brave Search API). Both agents gracefully fall back to classic mode when tools/keys are unavailable.
+- [x] ~~**Middleware**~~: `TelemetryChatClient` — a `DelegatingChatClient` that wraps the `IChatClient` pipeline to capture per-call latency, token counts (input/output/total), and cumulative session metrics. Telemetry is surfaced in the `/api/generate` HTTP response. Confirmed the middleware composition model (pipeline stacking) works cleanly with `UseFunctionInvocation()`.
 - [ ] **Workflows with branching**: add a quality-gate step that loops back to Content agent if alignment score < 0.8
 - [ ] **Human-in-the-loop**: prototype an approval checkpoint before "publish" (even if publish is a no-op for now)
 - [ ] **Checkpointing**: persist workflow state to blob so a run can resume after a crash
 
 #### Track C — Observability & Real Integrations
 - [ ] Turn on App Insights traces from inside the agents (currently only HTTP logs flow)
-- [ ] Swap LLM-synthesized "research" for a real web search tool (Bing Search API, Brave, or Tavily)
+- [x] ~~Swap LLM-synthesised "research" for a real web search tool~~ — `WebSearchTools` using Brave Search API (free tier). Research Agent makes 2-3 targeted searches, gets real results, synthesises grounded insights. Verified: Brigade run with web search produced insights referencing IoT fleet monitoring, heavy-duty vehicle regulations, and autonomous agricultural safety — specific enough to cite. Telemetry shows +1 LLM call and +29% tokens vs. training-data-only runs.
 - [ ] Add a Linear / Slack notification middleware so a successful run pings somewhere visible
 
 #### Track D — Governance & Handoff Story (for the LinkedIn article follow-up)
@@ -197,6 +243,8 @@ Infrastructure is done. The remaining days this week are for **exploring the Age
 | **Brigade Branding** | Deep navy / electric teal palette, AI Detection Frame motif, Montserrat typography. | [brigade-electronics-branding.json](branding/brigade-electronics-branding.json) |
 | **Finabeo Branding** | Navy / gold palette, governance-focused visual identity. | [finabeo-branding.json](branding/finabeo-branding.json) |
 | **Demo Frontend** | Static page listing runs with SAS download links — no Azure login needed. | [index.html](agents/FinabeoMarketingAgent.Api/wwwroot/index.html) |
+| **Telemetry Middleware** | `DelegatingChatClient` capturing per-call latency and token counts. | [TelemetryChatClient.cs](agents/FinabeoMarketingAgent/Middleware/TelemetryChatClient.cs) |
+| **Web Search Tools** | Brave Search API tools (`SearchWeb`, `SearchNews`) for grounded research. | [WebSearchTools.cs](agents/FinabeoMarketingAgent/Tools/WebSearchTools.cs) |
 | **Latest Stable Output** | View the most recent successful generation. | [Latest Output Folder](agents/FinabeoMarketingAgent/output/) |
 
 ## Overview
@@ -477,4 +525,4 @@ See [agents/FinabeoMarketingAgent/README.md](agents/FinabeoMarketingAgent/README
 
 ---
 
-**Status**: MVP Complete ✅ | Week 1 Done | Week 2 In Progress — multi-company pipeline live, tools/function calling explored, middleware + branching next | See [Stack Retrospective](docs/stack-experience-retrospective.md) for the friction story
+**Status**: MVP Complete ✅ | Week 1 Done | Week 2 Day 3 — 8/12 framework features validated (tools, middleware, web search, telemetry, multi-tenant, branded formatters) | Remaining edges: branching workflows, checkpointing, human-in-the-loop, OpenTelemetry | See [Stack Retrospective](docs/stack-experience-retrospective.md) for the friction story
