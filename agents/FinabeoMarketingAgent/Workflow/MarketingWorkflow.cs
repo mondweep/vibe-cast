@@ -7,7 +7,15 @@ using System.Text.Json.Serialization;
 namespace FinabeoMarketingAgent.Workflow;
 
 /// <summary>
-/// Orchestrates the multi-agent workflow for marketing content generation
+/// Orchestrates the multi-agent marketing workflow with a quality gate.
+///
+/// Pipeline:  Research → [Alignment → Quality Gate (loop if score &lt; threshold)] → Content
+///
+/// The quality gate is the framework-exploration piece: it tests whether the
+/// workflow can do more than linear Step1 → Step2 → Step3. The answer is that
+/// the framework provides agents and middleware, but workflow orchestration
+/// (branching, looping, conditional re-execution) is bring-your-own — you
+/// write it in plain C# control flow. This is honest and pragmatic, not a gap.
 /// </summary>
 public class MarketingWorkflow
 {
@@ -15,6 +23,12 @@ public class MarketingWorkflow
     private readonly ServiceAlignmentAgent _alignmentAgent;
     private readonly ContentGenerationAgent _contentAgent;
     private readonly ILogger<MarketingWorkflow> _logger;
+
+    /// <summary>Minimum alignment score for the top recommendation. Below this, the alignment agent is re-run.</summary>
+    private const double AlignmentScoreThreshold = 0.8;
+
+    /// <summary>Maximum number of alignment retries before accepting whatever we have.</summary>
+    private const int MaxAlignmentRetries = 2;
 
     public MarketingWorkflow(
         MarketResearchAgent researchAgent,
@@ -28,12 +42,10 @@ public class MarketingWorkflow
         _logger = logger;
     }
 
-    /// <summary>
-    /// Execute the complete marketing workflow
-    /// </summary>
     public async Task<WorkflowResult> ExecuteAsync()
     {
-        _logger.LogInformation("Starting Marketing Workflow");
+        _logger.LogInformation("Starting Marketing Workflow (with quality gate, threshold={Threshold})",
+            AlignmentScoreThreshold);
 
         var result = new WorkflowResult
         {
@@ -42,20 +54,66 @@ public class MarketingWorkflow
 
         try
         {
-            // Step 1: Market Research
-            _logger.LogInformation("Step 1/3: Executing Market Research Agent");
+            // ─── Step 1: Market Research ───
+            _logger.LogInformation("Step 1: Executing Market Research Agent");
             result.MarketAnalysis = await _researchAgent.ExecuteAsyncTyped();
-            _logger.LogInformation($"✓ Market Research completed: {result.MarketAnalysis.MarketInsights.Count} insights");
+            _logger.LogInformation("✓ Market Research completed: {Count} insights",
+                result.MarketAnalysis.MarketInsights.Count);
 
-            // Step 2: Service Alignment
-            _logger.LogInformation("Step 2/3: Executing Service Alignment Agent");
-            result.ServiceAlignment = await _alignmentAgent.ExecuteAsyncTyped();
-            result.ServiceAlignment.MarketAnalysis = result.MarketAnalysis;
-            _logger.LogInformation($"✓ Service Alignment completed: {result.ServiceAlignment.FinabeoServices.Count} recommendations");
+            // ─── Step 2: Service Alignment (with quality gate loop) ───
+            _logger.LogInformation("Step 2: Executing Service Alignment Agent (quality gate enabled)");
 
-            // Step 3: Content Generation — feed upstream context so prompts can reference
-            // the actual market insights and service recommendations for this company.
-            _logger.LogInformation("Step 3/3: Executing Content Generation Agent");
+            ServiceAlignment alignment;
+            var attempt = 0;
+
+            while (true)
+            {
+                attempt++;
+                alignment = await _alignmentAgent.ExecuteAsyncTyped();
+                alignment.MarketAnalysis = result.MarketAnalysis;
+
+                var topScore = alignment.FinabeoServices.Count > 0
+                    ? alignment.FinabeoServices.Max(s => s.AlignmentScore)
+                    : 0.0;
+
+                var gateDecision = new QualityGateDecision
+                {
+                    Attempt = attempt,
+                    TopAlignmentScore = topScore,
+                    Threshold = AlignmentScoreThreshold,
+                    ServiceCount = alignment.FinabeoServices.Count,
+                    Passed = topScore >= AlignmentScoreThreshold || attempt > MaxAlignmentRetries
+                };
+
+                result.QualityGateHistory.Add(gateDecision);
+
+                if (topScore >= AlignmentScoreThreshold)
+                {
+                    _logger.LogInformation(
+                        "✓ Quality gate PASSED on attempt {Attempt}: top score {Score:F2} >= {Threshold:F2} ({Count} services)",
+                        attempt, topScore, AlignmentScoreThreshold, alignment.FinabeoServices.Count);
+                    break;
+                }
+
+                if (attempt > MaxAlignmentRetries)
+                {
+                    _logger.LogWarning(
+                        "⚠ Quality gate ACCEPTED after {MaxRetries} retries: top score {Score:F2} < {Threshold:F2} — proceeding with best available alignment",
+                        MaxAlignmentRetries, topScore, AlignmentScoreThreshold);
+                    break;
+                }
+
+                _logger.LogInformation(
+                    "↻ Quality gate FAILED on attempt {Attempt}: top score {Score:F2} < {Threshold:F2} — retrying alignment",
+                    attempt, topScore, AlignmentScoreThreshold);
+            }
+
+            result.ServiceAlignment = alignment;
+            _logger.LogInformation("✓ Service Alignment completed: {Count} recommendations (after {Attempts} attempt(s))",
+                alignment.FinabeoServices.Count, attempt);
+
+            // ─── Step 3: Content Generation ───
+            _logger.LogInformation("Step 3: Executing Content Generation Agent");
             _contentAgent.SetContext(result.MarketAnalysis, result.ServiceAlignment);
             result.GeneratedContent = await _contentAgent.ExecuteAsyncTyped();
             _logger.LogInformation("✓ Content Generation completed");
@@ -63,13 +121,15 @@ public class MarketingWorkflow
             result.CompletedAt = DateTime.UtcNow;
             result.Status = WorkflowStatus.Completed;
 
-            _logger.LogInformation($"Workflow completed successfully in {result.Duration.TotalSeconds:F2} seconds");
+            _logger.LogInformation(
+                "Workflow completed in {Duration:F2}s — quality gate: {GateAttempts} attempt(s)",
+                result.Duration.TotalSeconds, result.QualityGateHistory.Count);
 
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Workflow failed: {ex.Message}");
+            _logger.LogError(ex, "Workflow failed: {Message}", ex.Message);
             result.Status = WorkflowStatus.Failed;
             result.Error = ex.Message;
             result.CompletedAt = DateTime.UtcNow;
@@ -79,7 +139,7 @@ public class MarketingWorkflow
 }
 
 /// <summary>
-/// Workflow execution result
+/// Workflow execution result — includes quality gate history for observability.
 /// </summary>
 public class WorkflowResult
 {
@@ -104,6 +164,9 @@ public class WorkflowResult
     [JsonPropertyName("generated_content")]
     public GeneratedContent? GeneratedContent { get; set; }
 
+    [JsonPropertyName("quality_gate")]
+    public List<QualityGateDecision> QualityGateHistory { get; set; } = new();
+
     [JsonPropertyName("error")]
     public string? Error { get; set; }
 
@@ -112,8 +175,26 @@ public class WorkflowResult
 }
 
 /// <summary>
-/// Workflow execution status
+/// Record of a single quality-gate evaluation. Multiple entries indicate retries.
 /// </summary>
+public class QualityGateDecision
+{
+    [JsonPropertyName("attempt")]
+    public int Attempt { get; set; }
+
+    [JsonPropertyName("top_alignment_score")]
+    public double TopAlignmentScore { get; set; }
+
+    [JsonPropertyName("threshold")]
+    public double Threshold { get; set; }
+
+    [JsonPropertyName("service_count")]
+    public int ServiceCount { get; set; }
+
+    [JsonPropertyName("passed")]
+    public bool Passed { get; set; }
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum WorkflowStatus
 {
