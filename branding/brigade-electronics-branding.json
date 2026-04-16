@@ -7,41 +7,41 @@
   },
   "colors": {
     "primary": {
-      "name": "Brigade Red",
-      "hex": "#ED1C24",
-      "rgb": "rgb(237, 28, 36)",
-      "usage": "Signature wordmark colour, headers, CTAs, safety accents, call-to-action highlights"
+      "name": "Deep Navy",
+      "hex": "#0A1E3D",
+      "rgb": "rgb(10, 30, 61)",
+      "usage": "Primary brand colour — headers, navigation, document title bars, hero backgrounds. Conveys precision and technology-first positioning."
     },
     "secondary": {
-      "name": "Charcoal",
-      "hex": "#2B2B2B",
-      "rgb": "rgb(43, 43, 43)",
-      "usage": "Secondary text, UI elements, backgrounds — provides the professional, grounded feel"
+      "name": "Electric Teal",
+      "hex": "#00C9DB",
+      "rgb": "rgb(0, 201, 219)",
+      "usage": "Accent highlights, AI detection frames, active-status indicators, CTAs, data visualisation accents"
     },
     "accent": {
-      "name": "Brigade Red (deep)",
-      "hex": "#D2232A",
-      "rgb": "rgb(210, 35, 42)",
-      "usage": "Safety-stripe dividers, angled red accents, danger indicators, important statistics"
+      "name": "Bright Cyan",
+      "hex": "#00E5FF",
+      "rgb": "rgb(0, 229, 255)",
+      "usage": "UI glow effects, AI vision overlays, hover states, secondary highlights"
     },
     "neutral": {
       "dark": {
-        "name": "Charcoal",
-        "hex": "#2B2B2B",
-        "rgb": "rgb(43, 43, 43)",
-        "usage": "Body text, secondary headings, dark backgrounds"
+        "name": "Cool Dark Grey",
+        "hex": "#2C3E50",
+        "rgb": "rgb(44, 62, 80)",
+        "usage": "Body text, secondary headings, dark-mode backgrounds"
       },
       "light": {
-        "name": "Light Grey",
-        "hex": "#F2F2F2",
-        "rgb": "rgb(242, 242, 242)",
-        "usage": "Section dividers, subtle backgrounds"
+        "name": "Cool Light Grey",
+        "hex": "#ECF0F1",
+        "rgb": "rgb(236, 240, 241)",
+        "usage": "Section backgrounds, card surfaces — clean clinical backdrop"
       },
       "white": {
         "name": "White",
         "hex": "#FFFFFF",
         "rgb": "rgb(255, 255, 255)",
-        "usage": "Primary background and negative space — ensures the red accents and technical imagery stand out"
+        "usage": "Primary background — emphasises precision of sensing technology"
       }
     }
   },
@@ -109,7 +109,7 @@
       "full": {
         "path": "/branding/assets/brigade-logo-full.svg",
         "usage": "Primary logo for documents, websites, vehicle decals",
-        "variants": ["color", "white-on-black", "black-on-yellow"]
+        "variants": ["color", "white-on-navy", "teal-on-white"]
       },
       "mark": {
         "path": "/branding/assets/brigade-logo-mark.svg",
@@ -127,11 +127,11 @@
       "illustrations": "Technical diagrams of camera angles, blind-spot zones, sound directionality"
     },
     "visual_motif": {
-      "name": "Safety Stripe",
-      "description": "Diagonal red accents and angled red bars used as graphical dividers and call-to-action highlights, subtly referencing the hazard markings found on commercial vehicles and construction sites",
-      "usage": "Page headers, section breaks, CTA buttons, slide accents",
-      "angle": "30-45 degrees from horizontal",
-      "colors": ["#ED1C24", "#D2232A"]
+      "name": "AI Detection Frame",
+      "description": "Teal-accented bounding boxes and scan-line overlays referencing Brigade's AI vision detection UI — used as graphical dividers, callout frames, and status indicators throughout marketing materials",
+      "usage": "Page headers, section breaks, CTA buttons, slide accents, data callout frames",
+      "style": "Thin teal borders with subtle glow or gradient from Electric Teal to Bright Cyan",
+      "colors": ["#00C9DB", "#00E5FF"]
     }
   },
   "templates": {
@@ -139,23 +139,23 @@
       "linkedin": {
         "dimensions": "1200x627px",
         "safe_area": "1000x500px",
-        "background": "solid #FFFFFF with a diagonal #ED1C24 safety-stripe accent",
-        "text_color": "#2B2B2B",
+        "background": "solid #0A1E3D (deep navy) with #00C9DB teal accent bar or AI Detection Frame overlay",
+        "text_color": "#FFFFFF",
         "heading_font": "Montserrat Bold 32-48px",
         "body_font": "Open Sans 16-18px"
       },
       "twitter": {
         "dimensions": "1024x512px",
-        "background": "#FFFFFF with #ED1C24 wordmark and charcoal body copy",
-        "text_color": "#2B2B2B",
+        "background": "#0A1E3D with #00C9DB teal highlights",
+        "text_color": "#FFFFFF",
         "heading_font": "Montserrat Bold 28-36px"
       },
       "instagram": {
         "dimensions": "1080x1350px (portrait) or 1080x1080px (square)",
-        "background": "high-contrast white/charcoal with red Safety Stripe diagonals",
-        "text_color": "#2B2B2B on white, #FFFFFF on charcoal",
+        "background": "deep navy with teal AI Detection Frame accents and white text",
+        "text_color": "#FFFFFF on navy, #2C3E50 on white",
         "heading_font": "Montserrat Bold 36-48px",
-        "style": "Clean, geometric, safety-focused — red accents over white negative space"
+        "style": "Modern, technology-first — teal glow accents over deep navy, clean clinical feel"
       }
     },
     "document": {
@@ -163,55 +163,56 @@
         "page_size": "A4",
         "margins": "1 inch all sides",
         "header_height": "1 inch",
-        "header_background": "#FFFFFF",
-        "header_accent_bar": "#ED1C24 (diagonal safety stripe)",
-        "header_text_color": "#2B2B2B",
+        "header_background": "#0A1E3D",
+        "header_accent_bar": "#00C9DB (teal accent line)",
+        "header_text_color": "#FFFFFF",
         "body_font": "Open Sans 11pt",
         "heading1_font": "Montserrat Bold 18pt",
-        "heading1_color": "#ED1C24",
-        "heading2_color": "#2B2B2B",
+        "heading1_color": "#0A1E3D",
+        "heading2_color": "#00C9DB",
         "line_spacing": "1.5"
       },
       "powerpoint": {
         "aspect_ratio": "16:9",
         "slide_background": "#FFFFFF",
-        "accent_bar": "#ED1C24 (left edge, full height — Safety Stripe motif)",
-        "title_slide_background": "#2B2B2B",
-        "title_color": "#ED1C24",
-        "heading_color": "#ED1C24",
-        "body_color": "#2B2B2B"
+        "accent_bar": "#00C9DB (left edge, full height — AI Detection Frame motif)",
+        "title_slide_background": "#0A1E3D",
+        "title_color": "#00C9DB",
+        "heading_color": "#0A1E3D",
+        "body_color": "#2C3E50"
       }
     },
     "email": {
       "max_width": "600px",
-      "header_background": "#FFFFFF",
-      "header_accent": "#ED1C24",
+      "header_background": "#0A1E3D",
+      "header_accent": "#00C9DB",
       "hero_background": "#FFFFFF",
-      "section_background": "#F2F2F2",
+      "section_background": "#ECF0F1",
       "body_font": "Open Sans 14px",
-      "body_color": "#2B2B2B",
-      "footer_background": "#2B2B2B",
+      "body_color": "#2C3E50",
+      "footer_background": "#0A1E3D",
       "footer_text_color": "#FFFFFF",
-      "cta_background": "#ED1C24",
-      "cta_text_color": "#FFFFFF"
+      "cta_background": "#00C9DB",
+      "cta_text_color": "#0A1E3D"
     }
   },
   "guidelines": {
     "do": [
-      "Use Brigade Red (#ED1C24) as the signature colour, paired with Charcoal (#2B2B2B) and White",
-      "Apply the Safety Stripe motif — diagonal red accents as graphical dividers or CTA highlights, echoing hazard markings on commercial vehicles",
+      "Use Deep Navy (#0A1E3D) as the primary brand colour, accented with Electric Teal (#00C9DB) and Bright Cyan (#00E5FF)",
+      "Apply the AI Detection Frame motif — teal-bordered callout frames and scan-line overlays referencing Brigade's AI vision UI",
       "Use Montserrat Bold for headlines and the wordmark; Open Sans or Inter for body copy",
       "Lead with concrete safety outcomes (lives saved, accidents prevented)",
+      "Emphasise the technology-first / AI positioning alongside safety heritage",
       "Cite compliance standards by name (FORS, CLOCS, DVS, BS EN 7010)",
       "Show real vehicles and operators, not stock office photography",
       "Use plain, direct language — no jargon, no marketing fluff",
-      "Reference actual product codes (Backeye 360, bbs-tek, Backsense) where appropriate",
+      "Reference actual product codes (Backeye 360, bbs-tek, Backsense, AI HFR Box) where appropriate",
       "Highlight third-party endorsements (emergency services, military)"
     ],
     "dont": [
-      "Don't reintroduce safety yellow — the 2024 rebrand moved to red/charcoal/white",
-      "Don't use pastel or muted colour palettes — high contrast is the brand",
-      "Don't use boardroom/financial imagery — Brigade speaks to operations",
+      "Don't reintroduce safety red or safety yellow — the current brand is deep navy/teal/cyan",
+      "Don't use warm colour palettes — the brand is cool, clinical, and tech-forward",
+      "Don't use boardroom/financial imagery — Brigade speaks to operations and technology",
       "Don't make claims without evidence — link to test data or case studies",
       "Don't undersell the safety stakes — this product prevents fatalities",
       "Don't use Finabeo-style governance/transformation language — it's not the audience",
@@ -220,15 +221,15 @@
   },
   "metadata": {
     "created": "2026-04-15",
-    "version": "0.2",
-    "status": "aligned-with-2024-rebrand",
-    "notes": "Updated 2026-04-16 to reflect Brigade Electronics' 2024 rebrand: signature Brigade Red (#ED1C24 / #D2232A deep), Charcoal (#2B2B2B), and White palette; Montserrat Bold wordmark/headings with Open Sans or Inter body copy; and the 'Safety Stripe' motif (diagonal red accents referencing hazard markings). Earlier 0.1 draft used an inferred yellow/black palette which has been removed.",
+    "version": "0.3",
+    "status": "aligned-with-2026-technology-first-rebrand",
+    "notes": "Updated 2026-04-16 to reflect Brigade Electronics' current technology-first rebrand: Deep Navy (#0A1E3D) primary, Electric Teal (#00C9DB) and Bright Cyan (#00E5FF) accents — signalling AI and advanced software rather than hardware. Replaces earlier red palette (v0.2) and yellow palette (v0.1). Visual motif shifted from Safety Stripe to AI Detection Frame (teal bounding-box overlays). Typography remains Montserrat / Open Sans.",
     "last_updated": "2026-04-16",
     "next_steps": [
-      "Confirm exact Pantone for Brigade Red with Brigade brand team",
-      "Provide official logo SVGs in multiple variants",
+      "Confirm exact hex values for navy/teal with Brigade brand team",
+      "Provide official logo SVGs in updated palette variants",
       "Confirm font licensing for Montserrat in commercial materials",
-      "Validate compliance terminology and product names with product team"
+      "Validate AI HFR Box product name and compliance terminology with product team"
     ]
   }
 }
