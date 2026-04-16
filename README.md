@@ -68,7 +68,7 @@ graph TB
     class RES,ALN,CON,API,JSON,DOCX1,DOCX2,PPTX,BLOB,UI,REG,BF,RAW,TEL,FI,TOOLS,SEARCH validated
 ```
 
-**Legend**: 🟢 Green = validated end-to-end | 🟣 Purple = investigated (spike findings documented) | ⬜ Grey = pending
+**Legend**: 🟢 Green = validated end-to-end | 🔵 Blue = built custom (framework gap) | 🟣 Purple = investigated (spike findings) 
 
 #### Framework Features Explored vs. Remaining
 
@@ -86,17 +86,22 @@ graph LR
         A9["Quality gate / branching<br/><i>retry loop with score threshold</i>"]
     end
 
+    subgraph "Built (custom — framework has no native support)"
+        A10["Human-in-the-loop<br/><i>Teams notify → web approve → upload</i>"]
+    end
+
     subgraph "Investigated (spike findings)"
         C1["Checkpointing<br/><i>session-scoped only, no workflow state</i>"]
         C2["OpenTelemetry<br/><i>native .UseOpenTelemetry() exists</i>"]
-        C3["Human-in-the-loop<br/><i>no native pause/resume — DIY with blob state</i>"]
     end
 
     classDef done fill:#16a34a,stroke:#166534,color:#fff
+    classDef custom fill:#2563eb,stroke:#1e40af,color:#fff
     classDef spiked fill:#7c3aed,stroke:#5b21b6,color:#fff
 
     class A1,A2,A3,A4,A5,A6,A7,A8,A9 done
-    class C1,C2,C3 spiked
+    class A10 custom
+    class C1,C2 spiked
 ```
 
 ---
@@ -169,7 +174,7 @@ All 12 target framework features have been explored — 9 validated end-to-end, 
 | Feature | Finding | Impact |
 |---------|---------|--------|
 | **Workflow checkpointing** | Session-scoped state only (`AgentSession.StateBag`). No workflow-step persistence. | Production crash recovery requires custom blob-based checkpointing. |
-| **Human-in-the-loop** | No pause/resume primitives. Every workflow is fire-and-forget. | Approval workflows need custom serialisation + callback endpoints. |
+| **Human-in-the-loop** | No native pause/resume. We built it: generate → hold in memory → Teams notification → web approval page → upload on approve / discard on reject. Works, but 100% custom plumbing. | Approval workflows need custom serialisation + callback endpoints. |
 | **Feedback loops** | No mechanism for feeding a gate result back into the next agent invocation. | Intelligent retry (e.g., "score was 0.85, try harder on service X") is entirely DIY. |
 
 #### Quality gate stress test (verified)
@@ -188,6 +193,8 @@ All 12 target framework features have been explored — 9 validated end-to-end, 
 
 | Run ID | Company | Duration | Tokens | LLM Calls | Notes |
 |--------|---------|----------|--------|-----------|-------|
+| `2026-04-16-231349` | Brigade Electronics | 37s | 9,996 | 6 | HITL: approved via web page, then uploaded to blob |
+| `2026-04-16-231506` | Finabeo | 37s | — | — | HITL: rejected — content discarded, never reached blob |
 | `2026-04-16-222613` | Brigade Electronics | 152s | 18,049 | 12 | Quality gate stress test (0.99 threshold, 3 attempts) |
 | `2026-04-16-215846` | Brigade Electronics | 58s | 10,043 | 6 | Quality gate passed on 1st attempt (0.95 >= 0.80) |
 | `2026-04-16-185045` | Brigade Electronics | 83s | 10,347 | 6 | Web search grounded (Brave API) |
@@ -228,7 +235,7 @@ Infrastructure is done. The remaining days this week are for **exploring the Age
 - [x] ~~**Tools / function calling**~~: `ServiceAlignmentAgent` has tool-calling mode via `UseFunctionInvocation()` + `CompanyTools.AsAIFunctions()`. `MarketResearchAgent` now also has tool-calling mode with `WebSearchTools` (SearchWeb, SearchNews via Brave Search API). Both agents gracefully fall back to classic mode when tools/keys are unavailable.
 - [x] ~~**Middleware**~~: `TelemetryChatClient` — a `DelegatingChatClient` that wraps the `IChatClient` pipeline to capture per-call latency, token counts (input/output/total), and cumulative session metrics. Telemetry is surfaced in the `/api/generate` HTTP response. Confirmed the middleware composition model (pipeline stacking) works cleanly with `UseFunctionInvocation()`.
 - [x] ~~**Workflows with branching**~~: Quality gate after Alignment Agent checks top alignment score against 0.8 threshold. If below, re-runs alignment (max 2 retries). Stress-tested with 0.99 threshold: 3 attempts, 12 LLM calls, 18K tokens, 152s. Retries don't improve scores without feedback — the framework gives you composable blocks but intelligent retry (with feedback to the LLM about *why* it failed) is DIY.
-- [x] ~~**Human-in-the-loop**~~ (spike): No native pause/resume primitives for workflows. `AgentSession.StateBag` is conversation-scoped. You'd need to serialise `WorkflowResult` to blob after each step and build a callback endpoint (`POST /api/runs/{id}/approve`). Achievable but entirely custom.
+- [x] ~~**Human-in-the-loop**~~: Built full HITL approval workflow. `POST /api/generate-with-approval` generates content, holds it in memory via `PendingApprovalStore`, posts an Adaptive Card to Teams (via Workflows webhook), and links to a web-based approval page. Reviewer sees LinkedIn preview + telemetry, clicks Approve (uploads to blob) or Reject (discards). Verified both paths end-to-end. **Framework insight**: entirely custom — `PendingApprovalStore`, `TeamsNotifier`, `approve.html`, two-phase `GenerateAsync`/`UploadAsync` split. The framework has no pause/resume.
 - [x] ~~**Checkpointing**~~ (spike): `FoundryMemoryProvider` provides server-side memory persistence but is conversation-scoped, not workflow-step-scoped. No `SaveWorkflowState()` or resume-from-step API. For production crash recovery, implement write-after-each-step to blob storage yourself.
 
 #### Track C — Observability & Real Integrations
@@ -260,6 +267,9 @@ Infrastructure is done. The remaining days this week are for **exploring the Age
 | **Demo Frontend** | Static page listing runs with SAS download links — no Azure login needed. | [index.html](agents/FinabeoMarketingAgent.Api/wwwroot/index.html) |
 | **Telemetry Middleware** | `DelegatingChatClient` capturing per-call latency and token counts. | [TelemetryChatClient.cs](agents/FinabeoMarketingAgent/Middleware/TelemetryChatClient.cs) |
 | **Web Search Tools** | Brave Search API tools (`SearchWeb`, `SearchNews`) for grounded research. | [WebSearchTools.cs](agents/FinabeoMarketingAgent/Tools/WebSearchTools.cs) |
+| **HITL Approval Page** | Web-based approve/reject page linked from Teams notifications. | [approve.html](agents/FinabeoMarketingAgent.Api/wwwroot/approve.html) |
+| **Teams Notifier** | Posts Adaptive Cards to Teams channel via Workflows webhook. | [TeamsNotifier.cs](agents/FinabeoMarketingAgent.Api/Services/TeamsNotifier.cs) |
+| **LinkedIn Article** | Full write-up of investigation findings, framework evaluation. | [docs/linkedin-article-agent-framework.md](docs/linkedin-article-agent-framework.md) |
 | **Latest Stable Output** | View the most recent successful generation. | [Latest Output Folder](agents/FinabeoMarketingAgent/output/) |
 
 ## Overview
@@ -540,4 +550,4 @@ See [agents/FinabeoMarketingAgent/README.md](agents/FinabeoMarketingAgent/README
 
 ---
 
-**Status**: MVP Complete ✅ | Week 1 Done | Week 2 Day 3 — **12/12 framework features explored** (9 validated end-to-end, 3 spike findings) | Quality gate stress-tested with retry loop | See [Stack Retrospective](docs/stack-experience-retrospective.md) for the friction story
+**Status**: MVP Complete ✅ | Week 1 Done | Week 2 Complete — **12/12 framework features explored** (10 validated end-to-end including HITL, 2 spike findings) | Full write-up: [LinkedIn article](docs/linkedin-article-agent-framework.md) | See [Stack Retrospective](docs/stack-experience-retrospective.md) for the friction story
