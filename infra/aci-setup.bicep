@@ -11,6 +11,7 @@ param foundryEndpoint string = 'https://finabeo-marketing-agents.openai.azure.co
 param foundryDeploymentName string = 'gpt-4o'
 param containerImageTag string = 'latest'
 param braveSearchApiKey string = ''
+param teamsWebhookUrl string = ''
 
 // Existing ACR — created by the deploy script before this template runs,
 // because we need to push the image before ACI can pull it on first boot.
@@ -153,6 +154,14 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2023-05-01'
             {
               name: 'BraveSearch__ApiKey'
               secureValue: braveSearchApiKey
+            }
+            {
+              name: 'Teams__WebhookUrl'
+              secureValue: teamsWebhookUrl
+            }
+            {
+              name: 'App__BaseUrl'
+              value: 'http://${dnsNameLabel}.${location}.azurecontainer.io:8080'
             }
           ]
         }

@@ -43,6 +43,8 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddSingleton<IOutputUploader, BlobOutputUploader>();
 builder.Services.AddSingleton<MarketingWorkflowRunner>();
 builder.Services.AddSingleton<RunListingService>();
+builder.Services.AddSingleton<PendingApprovalStore>();
+builder.Services.AddSingleton<TeamsNotifier>();
 
 var app = builder.Build();
 
@@ -118,6 +120,148 @@ app.MapPost("/api/generate", async (
         logger.LogError(ex, "On-demand workflow failed for {CompanyId}", companyId);
         return Results.Problem(detail: ex.Message, statusCode: 500, title: "Workflow failed");
     }
+});
+
+// ─── Human-in-the-loop: generate with approval gate ───
+app.MapPost("/api/generate-with-approval", async (
+    GenerateRequest? request,
+    MarketingWorkflowRunner runner,
+    CompanyRegistry registry,
+    PendingApprovalStore pendingStore,
+    TeamsNotifier teams,
+    ILogger<Program> logger) =>
+{
+    var companyId = string.IsNullOrWhiteSpace(request?.CompanyId) ? "finabeo" : request.CompanyId.Trim();
+
+    if (!registry.TryGet(companyId, out _))
+    {
+        return Results.BadRequest(new
+        {
+            error = $"Unknown companyId '{companyId}'",
+            knownCompanies = registry.All.Select(c => c.Id).ToArray()
+        });
+    }
+
+    logger.LogInformation("[HITL] Generating content for {CompanyId} — will hold for approval", companyId);
+    try
+    {
+        var (runResult, workflowResult, company) = await runner.GenerateAsync(companyId);
+
+        // Hold the result in memory pending human approval
+        pendingStore.Add(new PendingRun
+        {
+            RunId = runResult.RunId,
+            CompanyId = company.Id,
+            CompanyName = company.Name,
+            CreatedAt = DateTime.UtcNow,
+            WorkflowResult = workflowResult,
+            Company = company,
+            RunResult = runResult
+        });
+
+        // Notify via Teams (if webhook configured)
+        var focus = workflowResult.ServiceAlignment?.RecommendedFocus ?? "";
+        await teams.NotifyPendingApprovalAsync(
+            runResult.RunId, company.Name, focus,
+            runResult.DurationSeconds,
+            runResult.Telemetry?.LlmCalls ?? 0,
+            runResult.Telemetry?.TotalTokens ?? 0);
+
+        return Results.Ok(new
+        {
+            runId = runResult.RunId,
+            companyId = runResult.CompanyId,
+            companyName = runResult.CompanyName,
+            status = "pending_approval",
+            durationSeconds = runResult.DurationSeconds,
+            telemetry = runResult.Telemetry is { } t ? new
+            {
+                llmCalls = t.LlmCalls,
+                inputTokens = t.InputTokens,
+                outputTokens = t.OutputTokens,
+                totalTokens = t.TotalTokens,
+                totalLlmLatencyMs = t.TotalLlmLatencyMs
+            } : null,
+            approvalUrl = $"/approve.html?runId={runResult.RunId}",
+            teamsNotified = teams.IsConfigured,
+            message = $"Content generated for {company.Name}. Awaiting approval at /approve.html?runId={runResult.RunId}"
+        });
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "[HITL] Generation failed for {CompanyId}", companyId);
+        return Results.Problem(detail: ex.Message, statusCode: 500, title: "Generation failed");
+    }
+});
+
+// ─── Get pending run details (used by approval page) ───
+app.MapGet("/api/pending/{runId}", (string runId, PendingApprovalStore store) =>
+{
+    if (!store.TryGet(runId, out var run) || run is null)
+        return Results.NotFound(new { error = $"Run '{runId}' not found in pending approvals" });
+
+    var linkedin = run.WorkflowResult.GeneratedContent?.Content?.LinkedIn?.Post ?? "";
+    var blogTitle = run.WorkflowResult.GeneratedContent?.Content?.Blog?.Title ?? "";
+
+    return Results.Ok(new
+    {
+        runId = run.RunId,
+        companyId = run.CompanyId,
+        companyName = run.CompanyName,
+        createdAt = run.CreatedAt,
+        recommendedFocus = run.WorkflowResult.ServiceAlignment?.RecommendedFocus ?? "",
+        durationSeconds = run.RunResult.DurationSeconds,
+        llmCalls = run.RunResult.Telemetry?.LlmCalls ?? 0,
+        totalTokens = run.RunResult.Telemetry?.TotalTokens ?? 0,
+        linkedInPreview = linkedin,
+        blogTitle
+    });
+});
+
+// ─── Approve a pending run → upload to blob ───
+app.MapPost("/api/pending/{runId}/approve", async (
+    string runId,
+    PendingApprovalStore store,
+    MarketingWorkflowRunner runner,
+    ILogger<Program> logger) =>
+{
+    if (!store.TryRemove(runId, out var run) || run is null)
+        return Results.NotFound(new { error = $"Run '{runId}' not found or already processed" });
+
+    logger.LogInformation("[HITL] ✓ Run {RunId} APPROVED — uploading outputs", runId);
+    await runner.UploadAsync(run.RunId, run.WorkflowResult, run.Company);
+
+    return Results.Ok(new
+    {
+        runId = run.RunId,
+        status = "approved",
+        message = $"Run {run.RunId} approved. Outputs uploaded to blob storage for {run.CompanyName}."
+    });
+});
+
+// ─── Reject a pending run → discard ───
+app.MapPost("/api/pending/{runId}/reject", (
+    string runId,
+    PendingApprovalStore store,
+    ILogger<Program> logger) =>
+{
+    if (!store.TryRemove(runId, out var run) || run is null)
+        return Results.NotFound(new { error = $"Run '{runId}' not found or already processed" });
+
+    logger.LogInformation("[HITL] ✗ Run {RunId} REJECTED — discarding outputs", runId);
+
+    return Results.Ok(new
+    {
+        runId = run.RunId,
+        status = "rejected",
+        message = $"Run {run.RunId} rejected. Content for {run.CompanyName} has been discarded."
+    });
+});
+
+// ─── List all pending runs ───
+app.MapGet("/api/pending", (PendingApprovalStore store) =>
+{
+    return Results.Ok(store.ListPending());
 });
 
 app.MapGet("/api/runs", async (RunListingService listing, ILogger<Program> logger, CancellationToken ct) =>

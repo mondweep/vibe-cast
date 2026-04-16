@@ -35,10 +35,20 @@ public class MarketingWorkflowRunner
     }
 
     /// <summary>
-    /// Run the workflow for the specified company. Outputs land in blob storage under
-    /// {companyId}/{runId}/* so different companies' runs don't collide.
+    /// Run the workflow and immediately upload outputs (original behaviour, no approval gate).
     /// </summary>
     public async Task<WorkflowRunResult> ExecuteAsync(string companyId)
+    {
+        var (runResult, workflowResult, company) = await GenerateAsync(companyId);
+        await UploadAsync(runResult.RunId, workflowResult, company);
+        return runResult;
+    }
+
+    /// <summary>
+    /// Phase 1 of human-in-the-loop: generate content but do NOT upload.
+    /// Returns the result for review. Call <see cref="UploadAsync"/> after approval.
+    /// </summary>
+    public async Task<(WorkflowRunResult RunResult, WorkflowResult WorkflowResult, Company Company)> GenerateAsync(string companyId)
     {
         if (!_companyRegistry.TryGet(companyId, out var company) || company is null)
         {
@@ -53,7 +63,6 @@ public class MarketingWorkflowRunner
         var (workflow, telemetry) = CreateWorkflow(company);
         var result = await workflow.ExecuteAsync();
 
-        // Log per-call and cumulative telemetry
         telemetry.LogSummary();
         var summary = telemetry.GetSummary();
 
@@ -61,23 +70,7 @@ public class MarketingWorkflowRunner
             "Workflow completed with status {Status} in {Duration:F2}s — {TotalTokens} tokens across {Calls} LLM calls",
             result.Status, result.Duration.TotalSeconds, summary.TotalTokens, summary.TotalCalls);
 
-        var jsonOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-        var jsonContent = JsonSerializer.Serialize(result, jsonOptions);
-
-        // Blob path includes companyId so multiple companies' runs don't mix
-        var blobPrefix = $"{company.Id}/{runId}";
-
-        await _outputUploader.UploadTextAsync($"{blobPrefix}/marketing-content.json", jsonContent, "application/json");
-        _logger.LogInformation("Uploaded workflow result JSON to {Prefix}", blobPrefix);
-
-        await GenerateAndUploadBrandedOutputsAsync(result, company, blobPrefix);
-
-        return new WorkflowRunResult(
+        var runResult = new WorkflowRunResult(
             RunId: runId,
             CompanyId: company.Id,
             CompanyName: company.Name,
@@ -89,6 +82,30 @@ public class MarketingWorkflowRunner
                 OutputTokens: summary.TotalOutputTokens,
                 TotalTokens: summary.TotalTokens,
                 TotalLlmLatencyMs: Math.Round(summary.TotalLatencyMs, 0)));
+
+        return (runResult, result, company);
+    }
+
+    /// <summary>
+    /// Phase 2 of human-in-the-loop: upload previously-generated content to blob storage.
+    /// Called after a human approves the pending run.
+    /// </summary>
+    public async Task UploadAsync(string runId, WorkflowResult result, Company company)
+    {
+        var jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        var jsonContent = JsonSerializer.Serialize(result, jsonOptions);
+        var blobPrefix = $"{company.Id}/{runId}";
+
+        await _outputUploader.UploadTextAsync($"{blobPrefix}/marketing-content.json", jsonContent, "application/json");
+        _logger.LogInformation("Uploaded workflow result JSON to {Prefix}", blobPrefix);
+
+        await GenerateAndUploadBrandedOutputsAsync(result, company, blobPrefix);
+        _logger.LogInformation("✓ All outputs uploaded for approved run {RunId}", runId);
     }
 
     private (MarketingWorkflow Workflow, TelemetryChatClient Telemetry) CreateWorkflow(Company company)

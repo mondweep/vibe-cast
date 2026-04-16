@@ -90,6 +90,8 @@ echo -e "${GREEN}✓ Image built and pushed: finabeo-marketing-api:$IMAGE_TAG${N
 echo -e "${BLUE}Deploying Bicep template...${NC}"
 # Optional: Brave Search API key for grounded research (web search tool)
 BRAVE_KEY="${BRAVE_SEARCH_API_KEY:-}"
+# Optional: Teams Incoming Webhook URL for HITL approval notifications
+TEAMS_WEBHOOK="${TEAMS_WEBHOOK_URL:-}"
 
 DEPLOY_OUTPUT=$(az deployment group create \
   --resource-group "$RESOURCE_GROUP" \
@@ -100,6 +102,7 @@ DEPLOY_OUTPUT=$(az deployment group create \
     registryName="$REGISTRY_NAME" \
     containerImageTag="$IMAGE_TAG" \
     braveSearchApiKey="$BRAVE_KEY" \
+    teamsWebhookUrl="$TEAMS_WEBHOOK" \
   --query "properties.outputs" \
   -o json)
 

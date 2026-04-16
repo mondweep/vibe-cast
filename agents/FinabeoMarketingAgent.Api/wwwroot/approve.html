@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Approve Marketing Content</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #131a33;
+    --panel-2: #1a2244;
+    --text: #e6e9f2;
+    --muted: #8a92ad;
+    --accent: #4f8cff;
+    --green: #6ee7b7;
+    --red: #ff8a8a;
+    --border: #29335c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+  }
+  header {
+    padding: 32px 48px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #151c3a 0%, var(--bg) 100%);
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 600; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+  main { padding: 24px 48px 64px; max-width: 900px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px; margin-bottom: 16px;
+  }
+  .card h2 { margin: 0 0 12px; font-size: 17px; }
+  .facts { display: grid; grid-template-columns: 140px 1fr; gap: 6px 12px; font-size: 14px; }
+  .facts dt { color: var(--muted); }
+  .facts dd { margin: 0; }
+  .preview { background: var(--panel-2); border-radius: 8px; padding: 16px; margin-top: 16px; font-size: 13px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+  .actions { display: flex; gap: 12px; margin-top: 24px; }
+  button {
+    padding: 12px 28px; border: 0; border-radius: 8px; font-size: 15px;
+    font-weight: 600; cursor: pointer; transition: opacity .2s;
+  }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-approve { background: #16a34a; color: white; }
+  .btn-reject { background: #dc2626; color: white; }
+  .status { margin-top: 16px; font-size: 14px; padding: 12px; border-radius: 8px; display: none; }
+  .status.success { display: block; background: #16a34a22; border: 1px solid #16a34a; color: var(--green); }
+  .status.error { display: block; background: #dc262622; border: 1px solid #dc2626; color: var(--red); }
+  .status.info { display: block; background: #4f8cff22; border: 1px solid #4f8cff; color: var(--accent); }
+  .loading { text-align: center; color: var(--muted); padding: 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Marketing Content Review</h1>
+  <p>Human-in-the-loop approval before publishing to blob storage</p>
+</header>
+<main>
+  <div id="content"><div class="loading">Loading run details...</div></div>
+</main>
+<script>
+const params = new URLSearchParams(window.location.search);
+const runId = params.get("runId");
+const contentEl = document.getElementById("content");
+
+if (!runId) {
+  contentEl.innerHTML = '<div class="card"><p>No runId provided. Use <code>?runId=xxx</code> in the URL.</p></div>';
+} else {
+  loadPendingRun();
+}
+
+async function loadPendingRun() {
+  try {
+    const res = await fetch(`/api/pending/${runId}`);
+    if (res.status === 404) {
+      contentEl.innerHTML = `<div class="card"><h2>Run not found</h2><p>Run <code>${runId}</code> is not pending approval. It may have already been approved, rejected, or expired.</p></div>`;
+      return;
+    }
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    renderRun(data);
+  } catch (err) {
+    contentEl.innerHTML = `<div class="card"><h2>Error</h2><p>${err.message}</p></div>`;
+  }
+}
+
+function renderRun(data) {
+  const preview = data.linkedInPreview || "(no preview available)";
+  const blogTitle = data.blogTitle || "";
+  contentEl.innerHTML = `
+    <div class="card">
+      <h2>${data.companyName} — Run ${data.runId}</h2>
+      <dl class="facts">
+        <dt>Company</dt><dd>${data.companyName}</dd>
+        <dt>Run ID</dt><dd><code>${data.runId}</code></dd>
+        <dt>Focus</dt><dd>${data.recommendedFocus}</dd>
+        <dt>Duration</dt><dd>${data.durationSeconds.toFixed(0)}s</dd>
+        <dt>LLM Calls</dt><dd>${data.llmCalls}</dd>
+        <dt>Tokens</dt><dd>${data.totalTokens.toLocaleString()}</dd>
+        ${blogTitle ? `<dt>Blog title</dt><dd>${blogTitle}</dd>` : ""}
+      </dl>
+      <div class="preview"><strong>LinkedIn post preview:</strong>\n\n${preview}</div>
+    </div>
+    <div class="actions">
+      <button class="btn-approve" id="approveBtn" onclick="decide('approve')">Approve &amp; Publish</button>
+      <button class="btn-reject" id="rejectBtn" onclick="decide('reject')">Reject</button>
+    </div>
+    <div class="status" id="statusEl"></div>
+  `;
+}
+
+async function decide(action) {
+  const approveBtn = document.getElementById("approveBtn");
+  const rejectBtn = document.getElementById("rejectBtn");
+  const statusEl = document.getElementById("statusEl");
+  approveBtn.disabled = rejectBtn.disabled = true;
+  statusEl.className = "status info";
+  statusEl.textContent = action === "approve"
+    ? "Approving and uploading outputs to blob storage..."
+    : "Rejecting run...";
+
+  try {
+    const res = await fetch(`/api/pending/${runId}/${action}`, { method: "POST" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    statusEl.className = action === "approve" ? "status success" : "status error";
+    statusEl.textContent = data.message || (action === "approve" ? "Approved and published!" : "Rejected.");
+  } catch (err) {
+    statusEl.className = "status error";
+    statusEl.textContent = "Failed: " + err.message;
+    approveBtn.disabled = rejectBtn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
