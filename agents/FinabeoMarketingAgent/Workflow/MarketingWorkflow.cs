@@ -48,13 +48,15 @@ public class MarketingWorkflow
             _logger.LogInformation($"✓ Market Research completed: {result.MarketAnalysis.MarketInsights.Count} insights");
 
             // Step 2: Service Alignment
-            _logger.LogInformation("Step 2/3: Executing Finabeo Alignment Agent");
+            _logger.LogInformation("Step 2/3: Executing Service Alignment Agent");
             result.ServiceAlignment = await _alignmentAgent.ExecuteAsyncTyped();
             result.ServiceAlignment.MarketAnalysis = result.MarketAnalysis;
             _logger.LogInformation($"✓ Service Alignment completed: {result.ServiceAlignment.FinabeoServices.Count} recommendations");
 
-            // Step 3: Content Generation
+            // Step 3: Content Generation — feed upstream context so prompts can reference
+            // the actual market insights and service recommendations for this company.
             _logger.LogInformation("Step 3/3: Executing Content Generation Agent");
+            _contentAgent.SetContext(result.MarketAnalysis, result.ServiceAlignment);
             result.GeneratedContent = await _contentAgent.ExecuteAsyncTyped();
             _logger.LogInformation("✓ Content Generation completed");
 

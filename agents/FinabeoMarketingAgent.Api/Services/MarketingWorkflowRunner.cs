@@ -106,7 +106,7 @@ public class MarketingWorkflowRunner
             .UseFunctionInvocation()
             .Build();
 
-        var researchAgent = new MarketResearchAgent(chatClient,
+        var researchAgent = new MarketResearchAgent(chatClient, company,
             _loggerFactory.CreateLogger<MarketResearchAgent>());
 
         // Tool-calling alignment agent: instead of injecting the service catalog into
@@ -116,7 +116,7 @@ public class MarketingWorkflowRunner
         var alignmentAgent = new ServiceAlignmentAgent(chatClient, company.Id, companyTools,
             _loggerFactory.CreateLogger<ServiceAlignmentAgent>());
 
-        var contentAgent = new ContentGenerationAgent(chatClient,
+        var contentAgent = new ContentGenerationAgent(chatClient, company,
             _loggerFactory.CreateLogger<ContentGenerationAgent>());
 
         return new MarketingWorkflow(

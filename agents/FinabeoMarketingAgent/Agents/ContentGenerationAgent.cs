@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using FinabeoMarketingAgent.Config;
 using FinabeoMarketingAgent.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -6,124 +7,80 @@ using System.Text.Json;
 namespace FinabeoMarketingAgent.Agents;
 
 /// <summary>
-/// Agent that generates marketing content for multiple platforms
+/// Generates marketing content (LinkedIn, Twitter, Instagram, blog) for a
+/// specific company, using the market analysis and service-alignment output
+/// from the earlier workflow steps as context. All positioning is driven by
+/// the Company profile — no hardcoded Finabeo or fintech terminology.
 /// </summary>
 public class ContentGenerationAgent : IMarketingAgent<GeneratedContent>
 {
     private readonly IChatClient _chatClient;
+    private readonly Company _company;
     private readonly ILogger<ContentGenerationAgent> _logger;
 
-    public string Name => "Content Generation Agent";
-    public string Description => "Generates marketing content for LinkedIn, Twitter, Instagram, and blogs";
+    // Context from upstream agents, set before ExecuteAsync is called.
+    private MarketAnalysis? _marketAnalysis;
+    private ServiceAlignment? _serviceAlignment;
 
-    private static readonly string SystemPrompt = @"You are an expert marketing content strategist creating compelling content for multiple platforms.
+    public string Name => $"{_company.Name} Content Generation Agent";
+    public string Description => $"Generates marketing content for {_company.Name} across LinkedIn, Twitter, Instagram, and blogs";
 
-Your content must:
-1. Be authentic, data-driven, and valuable
-2. Address enterprise pain points directly
-3. Highlight Finabeo's unique approach (human-led, tech-driven, governance-focused)
-4. Include strong calls-to-action
-5. Be optimized for each platform
-
-CRITICAL: Return ONLY valid JSON, no other text. Use this exact format:
-{
-  ""linkedin"": {
-    ""post"": ""string (150-300 words)"",
-    ""hashtags"": [""string""],
-    ""estimated_engagement"": ""high|medium|low"",
-    ""optimal_posting_time"": ""string""
-  },
-  ""twitter"": {
-    ""thread"": [{""tweet"": ""string"", ""order"": 1}],
-    ""hashtags"": [""string""],
-    ""media_description"": ""string""
-  },
-  ""instagram"": {
-    ""caption"": ""string"",
-    ""hashtags"": [""string""],
-    ""emojis_suggested"": [""string""],
-    ""visual_brief"": ""string"",
-    ""content_type"": ""carousel|single|story""
-  },
-  ""blog"": {
-    ""title"": ""string"",
-    ""meta_description"": ""string"",
-    ""outline"": [""string""],
-    ""draft_content"": ""string (1500-2000 words)"",
-    ""seo_keywords"": [""string""],
-    ""word_count"": 1500,
-    ""cta"": ""string""
-  }
-}";
-
-    public ContentGenerationAgent(IChatClient chatClient, ILogger<ContentGenerationAgent> logger)
+    public ContentGenerationAgent(IChatClient chatClient, Company company, ILogger<ContentGenerationAgent> logger)
     {
         _chatClient = chatClient;
+        _company = company;
         _logger = logger;
     }
 
-    public async Task<dynamic> ExecuteAsync()
+    /// <summary>
+    /// Seed the agent with upstream context. Called by MarketingWorkflow between the
+    /// alignment and content steps so prompts can be built from real market + service data
+    /// rather than hardcoded positioning.
+    /// </summary>
+    public void SetContext(MarketAnalysis marketAnalysis, ServiceAlignment serviceAlignment)
     {
-        return await ExecuteAsyncTyped();
+        _marketAnalysis = marketAnalysis;
+        _serviceAlignment = serviceAlignment;
     }
+
+    public async Task<dynamic> ExecuteAsync() => await ExecuteAsyncTyped();
 
     public async Task<GeneratedContent> ExecuteAsyncTyped()
     {
-        _logger.LogInformation("Starting Content Generation Agent");
+        _logger.LogInformation("Starting Content Generation Agent for {Company}", _company.Name);
 
         try
         {
+            var systemPrompt = BuildSystemPrompt();
+            var userPrompt = BuildUserPrompt();
+
             var messages = new List<ChatMessage>
             {
-                new ChatMessage(ChatRole.System, SystemPrompt),
-                new ChatMessage(ChatRole.User, @"Create marketing content based on this context:
-
-MARKET INSIGHT:
-Enterprises are struggling with:
-1. Cloud cost waste (25-40% of spending)
-2. Safe AI adoption in regulated environments
-3. Digital transformation with governance requirements
-
-FINABEO POSITIONING:
-- Cloud Cost Management: 25-40% savings, ROI in 3-6 months, human-led tech-driven
-- Agentic AI Transformation: Safe human-in-the-loop automation, enterprise governance
-- Unique angle: Prove Microsoft ecosystem can deliver Agentic AI at enterprise scale
-
-TARGET AUDIENCE:
-CIOs, CFOs, Digital Transformation Leaders in Financial Services, Insurance, Telecom
-
-CONTENT THEMES:
-- How to eliminate cloud waste without vendor lock-in
-- Microsoft ecosystem delivers enterprise Agentic AI with governance
-- 'Bias for action' approach to AI adoption
-
-Generate content that would be appropriate for a thought leader sharing insights about these topics.
-Include specific, actionable insights. Make it compelling for enterprise executives.")
+                new ChatMessage(ChatRole.System, systemPrompt),
+                new ChatMessage(ChatRole.User, userPrompt)
             };
 
-            _logger.LogInformation("Sending request to Foundry for content generation");
+            _logger.LogInformation("Sending content generation request for {Company}", _company.Name);
 
-            // Bounded wait: gpt-5-mini occasionally stalls on large structured
-            // outputs with no client-side cap. Fail fast and fall through to mock.
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+            // Bounded wait: some deployments stall on large structured outputs.
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
             var response = await _chatClient.GetResponseAsync(messages, cancellationToken: cts.Token);
             var contentText = response.Text;
 
-            _logger.LogInformation($"Received content response, length: {contentText.Length}");
+            _logger.LogInformation("Received content response, length: {Length}", contentText.Length);
 
-            // Extract JSON from response
             var jsonStartIndex = contentText.IndexOf('{');
             var jsonEndIndex = contentText.LastIndexOf('}');
 
             if (jsonStartIndex < 0 || jsonEndIndex < 0)
             {
-                _logger.LogError("No JSON found in content response");
+                _logger.LogError("No JSON found in content response — using fallback");
                 return CreateMockContent();
             }
 
             var jsonString = contentText.Substring(jsonStartIndex, jsonEndIndex - jsonStartIndex + 1);
-
             var parsed = JsonSerializer.Deserialize<JsonElement>(jsonString);
+
             var generatedContent = new GeneratedContent
             {
                 GeneratedAt = DateTime.UtcNow,
@@ -131,24 +88,24 @@ Include specific, actionable insights. Make it compelling for enterprise executi
                 AlignmentToMarket = "strong",
                 Metadata = new ContentMetadata
                 {
-                    MarketFocus = "Cloud cost optimization and Agentic AI governance",
-                    FinabeoServicesFeatured = new() { "Cloud Cost Management", "Agentic AI Transformation" }
+                    MarketFocus = _serviceAlignment?.RecommendedFocus
+                        ?? $"General market themes for {string.Join(", ", _company.TargetIndustries)}",
+                    FinabeoServicesFeatured = (_serviceAlignment?.FinabeoServices.Select(s => s.ServiceName).ToList())
+                        ?? _company.Services.Select(s => s.Name).ToList()
                 }
             };
 
-            // Parse LinkedIn
             if (parsed.TryGetProperty("linkedin", out var linkedinElement))
             {
                 generatedContent.Content.LinkedIn = new LinkedInContent
                 {
-                    Post = linkedinElement.GetProperty("post").GetString() ?? string.Empty,
+                    Post = linkedinElement.TryGetProperty("post", out var post) ? post.GetString() ?? string.Empty : string.Empty,
                     Hashtags = ExtractStringArray(linkedinElement, "hashtags"),
-                    EstimatedEngagement = linkedinElement.GetProperty("estimated_engagement").GetString() ?? "medium",
-                    OptimalPostingTime = linkedinElement.GetProperty("optimal_posting_time").GetString() ?? "Tuesday 9 AM UTC"
+                    EstimatedEngagement = linkedinElement.TryGetProperty("estimated_engagement", out var eng) ? eng.GetString() ?? "medium" : "medium",
+                    OptimalPostingTime = linkedinElement.TryGetProperty("optimal_posting_time", out var opt) ? opt.GetString() ?? "Tuesday 9 AM UTC" : "Tuesday 9 AM UTC"
                 };
             }
 
-            // Parse Twitter
             if (parsed.TryGetProperty("twitter", out var twitterElement))
             {
                 var tweets = new List<Tweet>();
@@ -158,8 +115,8 @@ Include specific, actionable insights. Make it compelling for enterprise executi
                     {
                         tweets.Add(new Tweet
                         {
-                            Text = tweetJson.GetProperty("tweet").GetString() ?? string.Empty,
-                            Order = tweetJson.GetProperty("order").GetInt32()
+                            Text = tweetJson.TryGetProperty("tweet", out var tw) ? tw.GetString() ?? string.Empty : string.Empty,
+                            Order = tweetJson.TryGetProperty("order", out var or) && or.ValueKind == JsonValueKind.Number ? or.GetInt32() : 0
                         });
                     }
                 }
@@ -167,53 +124,144 @@ Include specific, actionable insights. Make it compelling for enterprise executi
                 {
                     Thread = tweets,
                     Hashtags = ExtractStringArray(twitterElement, "hashtags"),
-                    MediaDescription = twitterElement.GetProperty("media_description").GetString() ?? string.Empty
+                    MediaDescription = twitterElement.TryGetProperty("media_description", out var md) ? md.GetString() ?? string.Empty : string.Empty
                 };
             }
 
-            // Parse Instagram
             if (parsed.TryGetProperty("instagram", out var instagramElement))
             {
                 generatedContent.Content.Instagram = new InstagramContent
                 {
-                    Caption = instagramElement.GetProperty("caption").GetString() ?? string.Empty,
+                    Caption = instagramElement.TryGetProperty("caption", out var cap) ? cap.GetString() ?? string.Empty : string.Empty,
                     Hashtags = ExtractStringArray(instagramElement, "hashtags"),
                     EmojisSuggested = ExtractStringArray(instagramElement, "emojis_suggested"),
-                    VisualBrief = instagramElement.GetProperty("visual_brief").GetString() ?? string.Empty,
-                    ContentType = instagramElement.GetProperty("content_type").GetString() ?? "carousel"
+                    VisualBrief = instagramElement.TryGetProperty("visual_brief", out var vb) ? vb.GetString() ?? string.Empty : string.Empty,
+                    ContentType = instagramElement.TryGetProperty("content_type", out var ct) ? ct.GetString() ?? "carousel" : "carousel"
                 };
             }
 
-            // Parse Blog
             if (parsed.TryGetProperty("blog", out var blogElement))
             {
                 generatedContent.Content.Blog = new BlogContent
                 {
-                    Title = blogElement.GetProperty("title").GetString() ?? string.Empty,
-                    MetaDescription = blogElement.GetProperty("meta_description").GetString() ?? string.Empty,
+                    Title = blogElement.TryGetProperty("title", out var bt) ? bt.GetString() ?? string.Empty : string.Empty,
+                    MetaDescription = blogElement.TryGetProperty("meta_description", out var meta) ? meta.GetString() ?? string.Empty : string.Empty,
                     Outline = ExtractStringArray(blogElement, "outline"),
-                    DraftContent = blogElement.GetProperty("draft_content").GetString() ?? string.Empty,
+                    DraftContent = blogElement.TryGetProperty("draft_content", out var dc) ? dc.GetString() ?? string.Empty : string.Empty,
                     SeoKeywords = ExtractStringArray(blogElement, "seo_keywords"),
-                    WordCount = blogElement.GetProperty("word_count").GetInt32(),
-                    CallToAction = blogElement.GetProperty("cta").GetString() ?? string.Empty
+                    WordCount = blogElement.TryGetProperty("word_count", out var wc) && wc.ValueKind == JsonValueKind.Number ? wc.GetInt32() : 1500,
+                    CallToAction = blogElement.TryGetProperty("cta", out var cta) ? cta.GetString() ?? string.Empty : string.Empty
                 };
             }
 
-            _logger.LogInformation("Content generation completed successfully");
+            _logger.LogInformation("Content generation completed for {Company}", _company.Name);
             return generatedContent;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in Content Generation Agent: {ex.Message}");
-            _logger.LogError(ex.StackTrace);
+            _logger.LogError(ex, "Error in Content Generation Agent for {Company}", _company.Name);
             return CreateMockContent();
         }
+    }
+
+    private string BuildSystemPrompt() => $@"You are an expert marketing content strategist writing on behalf of {_company.Name}.
+
+Company: {_company.Name}
+What they do: {_company.Description}
+Target industries: {string.Join(", ", _company.TargetIndustries)}
+Brand voice: {_company.Voice}
+
+Every piece of content must:
+1. Speak directly to decision-makers in {_company.Name}'s target industries — NOT fintech, NOT Microsoft Agent Framework, NOT cloud cost. Stay on-topic for {_company.Name}'s actual business.
+2. Be grounded in the market insights and service recommendations provided in the user message
+3. Match {_company.Name}'s brand voice: {_company.Voice}
+4. Include strong, specific calls-to-action relevant to {_company.Name}'s offering
+5. Be optimised for each platform (length, tone, hashtag density)
+
+CRITICAL: Return ONLY valid JSON, no other text. Use this exact format:
+{{
+  ""linkedin"": {{
+    ""post"": ""string (150-300 words)"",
+    ""hashtags"": [""string""],
+    ""estimated_engagement"": ""high|medium|low"",
+    ""optimal_posting_time"": ""string""
+  }},
+  ""twitter"": {{
+    ""thread"": [{{""tweet"": ""string"", ""order"": 1}}],
+    ""hashtags"": [""string""],
+    ""media_description"": ""string""
+  }},
+  ""instagram"": {{
+    ""caption"": ""string"",
+    ""hashtags"": [""string""],
+    ""emojis_suggested"": [""string""],
+    ""visual_brief"": ""string"",
+    ""content_type"": ""carousel|single|story""
+  }},
+  ""blog"": {{
+    ""title"": ""string"",
+    ""meta_description"": ""string"",
+    ""outline"": [""string""],
+    ""draft_content"": ""string (1500-2000 words)"",
+    ""seo_keywords"": [""string""],
+    ""word_count"": 1500,
+    ""cta"": ""string""
+  }}
+}}";
+
+    private string BuildUserPrompt()
+    {
+        var industries = string.Join(", ", _company.TargetIndustries);
+
+        var marketSummary = _marketAnalysis?.Summary
+            ?? $"No upstream market analysis available — write for {industries} based on the company profile alone.";
+
+        var topTrends = _marketAnalysis?.Trends.Take(5).ToList() ?? new List<string>();
+        var topPains = _marketAnalysis?.PainPoints.Take(5).ToList() ?? new List<string>();
+
+        var recommendedFocus = _serviceAlignment?.RecommendedFocus
+            ?? $"{_company.Services.FirstOrDefault()?.Name ?? _company.Name}'s flagship offering";
+
+        var contentThemes = _serviceAlignment?.ContentThemes.Take(5).ToList() ?? new List<string>();
+
+        var services = (_serviceAlignment?.FinabeoServices.Count > 0
+                ? _serviceAlignment.FinabeoServices.Select(s => $"- {s.ServiceName} — {s.WhyFit} (angle: {s.SuggestedAngle})")
+                : _company.Services.Select(s => $"- {s.Name} — {s.Description} (differentiator: {s.KeyDifferentiator})"))
+            .ToList();
+
+        return $@"Create marketing content for {_company.Name} based on this context:
+
+COMPANY
+  Name: {_company.Name}
+  What they do: {_company.Description}
+  Target industries: {industries}
+  Brand voice: {_company.Voice}
+
+MARKET ANALYSIS SUMMARY
+{marketSummary}
+
+KEY TRENDS IN {industries.ToUpper()}
+{string.Join("\n", topTrends.Select(t => $"- {t}"))}
+
+PAIN POINTS TO ADDRESS
+{string.Join("\n", topPains.Select(p => $"- {p}"))}
+
+RECOMMENDED FOCUS THIS WEEK
+{recommendedFocus}
+
+SERVICES TO FEATURE
+{string.Join("\n", services)}
+
+CONTENT THEMES
+{string.Join("\n", contentThemes.Select(t => $"- {t}"))}
+
+Write content that would be appropriate for {_company.Name} to publish this week. Every post should sound like it came from {_company.Name}, speak to the audience in {industries}, and reference the services and pain points above. Do NOT mention fintech, Microsoft Agent Framework, or cloud cost optimisation unless those are genuinely part of {_company.Name}'s offering.";
     }
 
     private static List<string> ExtractStringArray(JsonElement element, string propertyName)
     {
         var result = new List<string>();
-        if (element.TryGetProperty(propertyName, out var arrayElement))
+        if (element.TryGetProperty(propertyName, out var arrayElement) && arrayElement.ValueKind == JsonValueKind.Array)
         {
             result = arrayElement.EnumerateArray()
                 .Select(e => e.GetString() ?? string.Empty)
@@ -223,190 +271,58 @@ Include specific, actionable insights. Make it compelling for enterprise executi
         return result;
     }
 
-    private static GeneratedContent CreateMockContent()
+    private GeneratedContent CreateMockContent()
     {
+        var industries = string.Join(", ", _company.TargetIndustries);
+        var service = _company.Services.FirstOrDefault();
+        var serviceName = service?.Name ?? _company.Name;
+        var differentiator = service?.KeyDifferentiator ?? _company.Description;
+
         return new GeneratedContent
         {
             GeneratedAt = DateTime.UtcNow,
-            QualityScore = 0.90,
-            AlignmentToMarket = "strong",
+            QualityScore = 0.60,
+            AlignmentToMarket = "fallback",
             Metadata = new ContentMetadata
             {
-                MarketFocus = "Cloud cost optimization and Agentic AI governance",
-                FinabeoServicesFeatured = new() { "Cloud Cost Management", "Agentic AI Transformation" }
+                MarketFocus = $"Fallback content for {_company.Name} — the LLM response could not be parsed",
+                FinabeoServicesFeatured = _company.Services.Select(s => s.Name).ToList()
             },
             Content = new ContentByPlatform
             {
                 LinkedIn = new LinkedInContent
                 {
-                    Post = @"I've been exploring the Microsoft Agent Framework this week, and I'm impressed.
-
-The skepticism around Microsoft's ability to deliver sophisticated Agentic AI with enterprise governance? Unfounded.
-
-Here's what surprised me:
-✓ Speed: Multi-agent workflows in days, not months
-✓ Enterprise-ready: Type safety, telemetry, state management built-in
-✓ Governance-first: Not an afterthought - fundamental to the architecture
-✓ Flexibility: Works with any LLM (OpenAI, Claude, local models)
-
-CIOs concerned about vendor lock-in? The abstraction layers prove Microsoft understands enterprise concerns.
-
-This isn't hype. It's a genuine alternative to the single-vendor approaches others are pushing.
-
-Taking the 'bias for action' approach, I'm sharing my findings and discoveries throughout the week.
-
-#MicrosoftAgent #Agentic #EnterpriseAI #CloudInnovation",
-                    Hashtags = new() { "#MicrosoftAgent", "#Agentic", "#EnterpriseAI" },
-                    EstimatedEngagement = "high",
+                    Post = $"[{_company.Name} — fallback post] {_company.Description}\n\nFocus this week: {serviceName}. {differentiator}",
+                    Hashtags = new List<string> { $"#{_company.Name.Replace(" ", "")}" },
+                    EstimatedEngagement = "medium",
                     OptimalPostingTime = "Tuesday 9 AM UTC"
                 },
                 Twitter = new TwitterContent
                 {
-                    Thread = new()
+                    Thread = new List<Tweet>
                     {
-                        new Tweet { Text = "I said I'd explore Microsoft Agent Framework this week. Here's what shocked me: it actually delivers on the promise of enterprise Agentic AI. The ecosystem CIOs were told couldn't compete? It can.", Order = 1 },
-                        new Tweet { Text = "Built a 3-agent workflow that researches market trends → analyzes Finabeo's fit → generates marketing content. All working by day 2. The simplicity rivals any framework I've tested.", Order = 2 },
-                        new Tweet { Text = "Enterprise features aren't bolted on - they're fundamental: type safety, telemetry, session management, middleware. This is how you build AI for production.", Order = 3 }
+                        new() { Text = $"[{_company.Name} fallback] {_company.Description}", Order = 1 }
                     },
-                    Hashtags = new() { "#AgenticAI", "#Microsoft", "#EnterpriseAI" },
-                    MediaDescription = "Screenshot of multi-agent workflow architecture diagram"
+                    Hashtags = new List<string> { $"#{_company.Name.Replace(" ", "")}" },
+                    MediaDescription = $"Generic brand image for {_company.Name}"
                 },
                 Instagram = new InstagramContent
                 {
-                    Caption = "Enterprise AI just got simpler 🚀\n\nSpent the week exploring Microsoft Agent Framework. If you're a CIO wondering whether your ecosystem can deliver AI at scale with governance... the answer is yes.\n\nThree agents. Real marketing content generation. Human-in-the-loop workflows.\n\nNo single vendor lock-in. No compromise on governance.\n\nMore insights coming all week. #Bias for action.\n\n#AI #Enterprise #Innovation #Microsoft",
-                    Hashtags = new() { "#AI", "#Enterprise", "#Innovation", "#Microsoft", "#AgenticAI" },
-                    EmojisSuggested = new() { "🚀", "🤖", "💡", "✅", "🔐" },
-                    VisualBrief = "Split image: Left side shows multi-agent workflow diagram, right side shows generated marketing content samples",
-                    ContentType = "carousel"
+                    Caption = $"[{_company.Name} fallback] {_company.Description}",
+                    Hashtags = new List<string> { $"#{_company.Name.Replace(" ", "")}" },
+                    EmojisSuggested = new List<string> { "🔧", "✅" },
+                    VisualBrief = $"Image representing {_company.Name}'s work in {industries}",
+                    ContentType = "single"
                 },
                 Blog = new BlogContent
                 {
-                    Title = "Microsoft Agent Framework: The CIO's Guide to Enterprise Agentic AI (Without Vendor Lock-In)",
-                    MetaDescription = "Explore why Microsoft Agent Framework is game-changing for enterprise CIOs. Build multi-agent systems with governance, type safety, and flexibility. Real implementation insights.",
-                    Outline = new()
-                    {
-                        "Introduction: The AI Framework Skepticism",
-                        "What Enterprise CIOs Actually Need",
-                        "Microsoft Agent Framework Architecture Overview",
-                        "Building Multi-Agent Workflows (Real Example)",
-                        "Enterprise Governance Built-In",
-                        "Multi-Vendor Support (No Lock-In)",
-                        "Performance & Speed Insights",
-                        "Real-World Use Case: Daily Marketing Agent",
-                        "Comparison: How It Stacks Up",
-                        "Getting Started This Week",
-                        "Key Takeaways for CIO Decision-Making"
-                    },
-                    DraftContent = @"# Microsoft Agent Framework: The CIO's Guide to Enterprise Agentic AI
-
-## Introduction
-
-When I started exploring Microsoft's Agent Framework this week, I approached it with healthy skepticism. The narrative in tech is that if you're serious about AI, you go with the pure-play providers. Google. OpenAI. Anthropic.
-
-But here's what I found: That narrative misses something important.
-
-Enterprise CIOs don't need the absolute latest model. They need **reliable, governed, production-ready systems** that work at scale within their existing infrastructure. And that's precisely where Microsoft's ecosystem—when properly orchestrated—proves it can compete.
-
-This isn't marketing. This is engineering insight from building a real, multi-agent system in less than a week.
-
-## What Enterprise CIOs Actually Need
-
-Stop me if this sounds familiar...
-
-You've got cloud sprawl. Cost overruns. Compliance officers who want to know exactly how every decision is made. And pressure to adopt AI without sacrificing governance.
-
-The frameworks designed for research papers and startup speed don't cut it. You need:
-
-- **Type safety** - Failures caught at compile time, not in production
-- **Observability** - Every decision logged and traceable
-- **State management** - Conversations that can pause, resume, checkpoint
-- **Enterprise integration** - Works with your existing tools and infrastructure
-- **No lock-in** - Flexibility to swap LLMs without rewriting everything
-
-Most frameworks give you 4 out of 5. Microsoft gives you all 5.
-
-## Microsoft Agent Framework Architecture
-
-The framework is built on three core insights:
-
-1. **Abstraction over implementation** - The IChatClient interface lets any model work
-2. **Composition over specialization** - Agents compose tools, context providers, and middleware
-3. **Deterministic execution** - The agentic loop is explicit, not magical
-
-(Detailed architecture explanation...)
-
-## Building Multi-Agent Workflows: Real Example
-
-This week, I built a daily marketing agent that:
-1. Researches market trends
-2. Analyzes how our services fit those trends
-3. Generates LinkedIn posts, Twitter threads, Instagram captions, and blog articles
-
-All working end-to-end in under 48 hours.
-
-(Implementation details...)
-
-## Enterprise Governance: Built-In, Not Bolted-On
-
-Here's where Microsoft's thinking differs: Governance isn't an afterthought.
-
-(Governance features explanation...)
-
-## Multi-Vendor Support (No Lock-In)
-
-The beauty of the framework? You're not locked into Microsoft's models.
-
-Use OpenAI's GPT-4o if you want. Anthropic's Claude. Local open-source models. The framework doesn't care—because it abstracts over the underlying service.
-
-Try that with other solutions.
-
-## Performance & Real-World Insights
-
-(Performance metrics and insights...)
-
-## Real-World Use Case: The Daily Marketing Agent
-
-Here's exactly what I built and what surprised me:
-
-(Use case walkthrough...)
-
-## Comparison: How It Stacks Up
-
-| Criteria | Agent Framework | Alternative A | Alternative B |
-|----------|-----------------|---------------|---------------|
-| Multi-vendor support | ✓ | ✗ | ✓ |
-| Enterprise governance | ✓ | Partial | ✗ |
-| Type safety | ✓ | ✗ | ✓ |
-| State management | ✓ | ✓ | ✗ |
-| No lock-in | ✓ | ✗ | ✓ |
-
-(Detailed comparison...)
-
-## Getting Started This Week
-
-If you're considering Agent Framework:
-
-1. Start small - Build a single agent first
-2. Test with your preferred model
-3. Add complexity gradually
-4. Use the enterprise features from day one
-
-(Setup and starter resources...)
-
-## Key Takeaways for CIO Decision-Making
-
-1. **Microsoft's ecosystem is production-ready for Agentic AI** - Not someday. Now.
-2. **You don't sacrifice flexibility for governance** - You get both.
-3. **Speed to production rivals any other framework** - We proved it this week.
-4. **Enterprise features aren't marketing fluff** - They solve real problems.
-5. **Lock-in isn't the trade-off anymore** - Multi-vendor support is real.
-
-The question isn't whether Microsoft can do this. The question is whether you're ready to move past skepticism and test it yourself.
-
-Interested in how we're using this? I'll be sharing discoveries all week.",
-                    SeoKeywords = new() { "Microsoft Agent Framework", "Enterprise AI", "Agentic AI", "CIO", "Multi-agent systems", "AI governance" },
-                    WordCount = 1850,
-                    CallToAction = "Ready to explore Agent Framework for your organization? Let's discuss how to get started."
+                    Title = $"{_company.Name}: focus on {serviceName}",
+                    MetaDescription = $"Fallback blog post for {_company.Name}",
+                    Outline = new List<string> { "Intro", "The problem", serviceName, "Call to action" },
+                    DraftContent = $"# {_company.Name}: focus on {serviceName}\n\n(Fallback content — re-run the workflow to get real output.)\n\n{_company.Description}",
+                    SeoKeywords = new List<string> { _company.Name, serviceName },
+                    WordCount = 120,
+                    CallToAction = $"Contact {_company.Name} to learn more."
                 }
             }
         };

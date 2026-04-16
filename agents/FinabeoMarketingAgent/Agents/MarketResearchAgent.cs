@@ -7,161 +7,162 @@ using System.Text.Json;
 namespace FinabeoMarketingAgent.Agents;
 
 /// <summary>
-/// Agent that researches current market trends and identifies pain points
+/// Researches current market trends and pain points within a specific company's
+/// target industries. Prompts are parameterised by the Company profile so the
+/// same class serves Finabeo, Brigade Electronics, or any other tenant in the
+/// registry without leaking terminology across companies.
 /// </summary>
 public class MarketResearchAgent : IMarketingAgent<MarketAnalysis>
 {
     private readonly IChatClient _chatClient;
+    private readonly Company _company;
     private readonly ILogger<MarketResearchAgent> _logger;
 
-    public string Name => "Market Research Agent";
-    public string Description => "Researches market trends and identifies pain points for financial services enterprises";
+    public string Name => $"{_company.Name} Market Research Agent";
+    public string Description => $"Researches market trends and pain points relevant to {_company.Name}'s target industries";
 
-    private static readonly string SystemPrompt = @"You are a market research expert analyzing current trends in financial technology, cloud infrastructure, and enterprise digital transformation.
+    public MarketResearchAgent(IChatClient chatClient, Company company, ILogger<MarketResearchAgent> logger)
+    {
+        _chatClient = chatClient;
+        _company = company;
+        _logger = logger;
+    }
+
+    public async Task<dynamic> ExecuteAsync() => await ExecuteAsyncTyped();
+
+    public async Task<MarketAnalysis> ExecuteAsyncTyped()
+    {
+        _logger.LogInformation("Starting Market Research Agent for {Company}", _company.Name);
+
+        var industries = _company.TargetIndustries.Count > 0
+            ? string.Join(", ", _company.TargetIndustries)
+            : "the company's target market";
+
+        var systemPrompt = $@"You are a market research expert analysing current trends and pain points in the industries that {_company.Name} serves.
+
+Company context:
+  Name: {_company.Name}
+  What they do: {_company.Description}
+  Target industries: {industries}
 
 Your task is to:
-1. Identify current market trends relevant to enterprises
-2. Highlight pain points that enterprises face
-3. Identify specific market segments and opportunities
-4. Focus on financial services, insurance, telecom, and energy sectors
+1. Identify current market trends affecting enterprises in the target industries above
+2. Highlight concrete pain points those enterprises are facing right now
+3. Identify specific market segments and opportunities {_company.Name} could address
+4. Stay anchored in {_company.Name}'s actual target industries — do NOT drift into unrelated sectors. For example, if the company sells vehicle safety systems, do not generate fintech or cloud-cost insights.
 
-Always return your analysis in valid JSON format with the following structure:
-{
+Return ONLY valid JSON in this exact shape:
+{{
   ""market_insights"": [
-    {
+    {{
       ""trend"": ""string"",
       ""pain_point"": ""string"",
       ""market_segment"": ""string"",
-      ""relevance_to_fintech"": ""high|medium|low"",
+      ""relevance_to_company"": ""high|medium|low"",
       ""opportunity_description"": ""string""
-    }
+    }}
   ],
   ""summary"": ""string"",
   ""trends"": [""string""],
   ""pain_points"": [""string""]
-}
+}}
 
-Be specific, data-driven, and focus on enterprise-level challenges. Ensure all JSON is properly formatted.";
+Be specific, data-driven, and focused on enterprise-level challenges in {industries}.";
 
-    public MarketResearchAgent(IChatClient chatClient, ILogger<MarketResearchAgent> logger)
-    {
-        _chatClient = chatClient;
-        _logger = logger;
-    }
+        var userPrompt = $@"Analyse current market trends for decision-makers in {industries}.
 
-    public async Task<dynamic> ExecuteAsync()
-    {
-        return await ExecuteAsyncTyped();
-    }
+Every insight must be anchored to {_company.Name}'s actual industries — {industries}.
+Consider:
+- Operational, regulatory, or commercial pressures those industries face today
+- Concrete pain points that are unresolved or under-served
+- Emerging opportunities a company described as: ""{_company.Description}"" could credibly address
 
-    public async Task<MarketAnalysis> ExecuteAsyncTyped()
-    {
-        _logger.LogInformation("Starting Market Research Agent");
+Return at least 3 insights, each tied to a specific segment within {industries}. Valid JSON only.";
 
         try
         {
-            // Create chat messages
-            var messages = new List<ChatMessage>
+            var response = await _chatClient.GetResponseAsync(new List<ChatMessage>
             {
-                new ChatMessage(ChatRole.System, SystemPrompt),
-                new ChatMessage(ChatRole.User, @"Analyze current market trends for enterprise IT decision makers.
-Focus on:
-- Cloud cost optimization challenges
-- AI adoption in regulated industries
-- Enterprise digital transformation needs
-- Emerging technologies enterprises are evaluating
+                new ChatMessage(ChatRole.System, systemPrompt),
+                new ChatMessage(ChatRole.User, userPrompt)
+            });
 
-Provide insights that would be relevant to financial services, insurance, and telecom companies.")
+            var text = response.Text;
+            _logger.LogInformation("Received research response ({Length} chars)", text.Length);
+
+            var jsonStart = text.IndexOf('{');
+            var jsonEnd = text.LastIndexOf('}');
+            if (jsonStart < 0 || jsonEnd < 0)
+            {
+                _logger.LogError("No JSON found in research response — using fallback");
+                return CreateMockAnalysis();
+            }
+
+            var parsed = JsonSerializer.Deserialize<JsonElement>(text[jsonStart..(jsonEnd + 1)]);
+
+            var analysis = new MarketAnalysis
+            {
+                Timestamp = DateTime.UtcNow,
+                Summary = parsed.TryGetProperty("summary", out var s) ? s.GetString() ?? string.Empty : string.Empty,
+                Trends = parsed.TryGetProperty("trends", out var t)
+                    ? t.EnumerateArray().Select(x => x.GetString() ?? string.Empty).ToList()
+                    : new List<string>(),
+                PainPoints = parsed.TryGetProperty("pain_points", out var p)
+                    ? p.EnumerateArray().Select(x => x.GetString() ?? string.Empty).ToList()
+                    : new List<string>()
             };
 
-            _logger.LogInformation("Sending request to Foundry for market research");
-
-            // Call Foundry through IChatClient
-            var response = await _chatClient.GetResponseAsync(messages);
-
-            var analysisText = response.Text;
-            _logger.LogInformation($"Received response from Foundry: {analysisText.Substring(0, Math.Min(200, analysisText.Length))}...");
-
-            // Parse JSON response
-            var jsonStartIndex = analysisText.IndexOf('{');
-            var jsonEndIndex = analysisText.LastIndexOf('}');
-
-            if (jsonStartIndex < 0 || jsonEndIndex < 0)
+            if (parsed.TryGetProperty("market_insights", out var insights))
             {
-                _logger.LogError("No JSON found in response");
-                return CreateMockAnalysis();
+                foreach (var insight in insights.EnumerateArray())
+                {
+                    // Accept either the new field name (relevance_to_company) or the legacy
+                    // (relevance_to_fintech) so older snapshots still parse.
+                    var relevance =
+                        (insight.TryGetProperty("relevance_to_company", out var rc) ? rc.GetString() : null)
+                        ?? (insight.TryGetProperty("relevance_to_fintech", out var rf) ? rf.GetString() : null)
+                        ?? "medium";
+
+                    analysis.MarketInsights.Add(new MarketInsight
+                    {
+                        Trend = insight.TryGetProperty("trend", out var tr) ? tr.GetString() ?? string.Empty : string.Empty,
+                        PainPoint = insight.TryGetProperty("pain_point", out var pp) ? pp.GetString() ?? string.Empty : string.Empty,
+                        MarketSegment = insight.TryGetProperty("market_segment", out var ms) ? ms.GetString() ?? string.Empty : string.Empty,
+                        Relevance = relevance,
+                        OpportunityDescription = insight.TryGetProperty("opportunity_description", out var od) ? od.GetString() ?? string.Empty : string.Empty
+                    });
+                }
             }
 
-            var jsonString = analysisText.Substring(jsonStartIndex, jsonEndIndex - jsonStartIndex + 1);
-            var analysis = JsonSerializer.Deserialize<MarketAnalysis>(jsonString);
-
-            if (analysis == null)
-            {
-                _logger.LogError("Failed to deserialize market analysis");
-                return CreateMockAnalysis();
-            }
-
-            analysis.Timestamp = DateTime.UtcNow;
-            _logger.LogInformation($"Market Research completed with {analysis.MarketInsights.Count} insights");
+            _logger.LogInformation("Market research completed with {Count} insights for {Company}",
+                analysis.MarketInsights.Count, _company.Name);
             return analysis;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in Market Research Agent: {ex.Message}");
+            _logger.LogError(ex, "Error in Market Research Agent — using fallback");
             return CreateMockAnalysis();
         }
     }
 
-    /// <summary>
-    /// Create mock analysis for testing/fallback
-    /// </summary>
-    private static MarketAnalysis CreateMockAnalysis()
+    private MarketAnalysis CreateMockAnalysis()
     {
+        var industry = _company.TargetIndustries.FirstOrDefault() ?? "the target market";
         return new MarketAnalysis
         {
             Timestamp = DateTime.UtcNow,
-            Summary = "The enterprise market is currently defined by a 'efficiency-first' AI strategy. Decision makers in Finance and Telecom are moving past experimental GenAI to focus on Cloud Cost Optimization (FinOps) and governed Agentic AI workflows that prove measurable ROI.",
-            Trends = new()
+            Summary = $"Fallback analysis for {_company.Name}: the LLM response was unparseable, so no real insights are available. Re-run the workflow to get a proper analysis.",
+            Trends = new List<string> { $"Placeholder trend in {industry}" },
+            PainPoints = new List<string> { $"Placeholder pain point in {industry}" },
+            MarketInsights = new List<MarketInsight>
             {
-                "Shift from experimental to production-grade Agentic AI",
-                "Hyper-focus on Cloud Cost Management (FinOps) due to 30% average waste",
-                "Increasing regulatory pressure for AI transparency and human-in-the-loop",
-                "Consolidation of AI platforms within the Microsoft ecosystem",
-                "Rise of specialized multi-agent systems for back-office automation"
-            },
-            PainPoints = new()
-            {
-                "Predictable AI costs are difficult to model in pay-as-you-go environments",
-                "Data sovereignty concerns in highly regulated financial sectors",
-                "Skills gap in managing complex multi-agent orchestrations",
-                "Integrating legacy infrastructure with modern Microsoft Agent Framework",
-                "Lack of governance for autonomous AI agents acting on sensitive data"
-            },
-            MarketInsights = new()
-            {
-                new MarketInsight
+                new()
                 {
-                    Trend = "Cloud Cost Management Acceleration",
-                    PainPoint = "Enterprises are spending 25-40% more than necessary on cloud resources without clear observability.",
-                    MarketSegment = "Financial Services, Telecom, Insurance",
-                    Relevance = "high",
-                    OpportunityDescription = "Finabeo's FinOps implementation can reduce waste by 30% in 90 days, funding future AI projects."
-                },
-                new MarketInsight
-                {
-                    Trend = "Regulated AI Adoption (Agentic AI)",
-                    PainPoint = "Banks and insurers are hesitant to deploy autonomous agents due to compliance risks.",
-                    MarketSegment = "Financial Services, Legal, Insurance",
-                    Relevance = "high",
-                    OpportunityDescription = "Finabeo's 'Human-in-the-Loop' orchestration ensures every automated decision is audited and approved."
-                },
-                new MarketInsight
-                {
-                    Trend = "Microsoft Ecosystem Synergy",
-                    PainPoint = "Disconnected AI tools create technical debt and security vulnerabilities.",
-                    MarketSegment = "Enterprise IT",
+                    Trend = $"Placeholder trend for {industry}",
+                    PainPoint = $"Placeholder pain point in {industry}",
+                    MarketSegment = industry,
                     Relevance = "medium",
-                    OpportunityDescription = "Leveraging Azure AI Foundry and Microsoft Agent Framework ensures seamless, secure integration."
+                    OpportunityDescription = $"Placeholder — re-run the agent to get real insights for {_company.Name}."
                 }
             }
         };

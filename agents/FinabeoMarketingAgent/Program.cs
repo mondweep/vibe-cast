@@ -71,13 +71,13 @@ try
 
     // Create agents
     var agentLogger = serviceProvider.GetRequiredService<ILogger<MarketResearchAgent>>();
-    var researchAgent = new MarketResearchAgent(chatClient, agentLogger);
+    var researchAgent = new MarketResearchAgent(chatClient, company, agentLogger);
 
     var alignmentLogger = serviceProvider.GetRequiredService<ILogger<ServiceAlignmentAgent>>();
     var alignmentAgent = new ServiceAlignmentAgent(chatClient, company, alignmentLogger);
 
     var contentLogger = serviceProvider.GetRequiredService<ILogger<ContentGenerationAgent>>();
-    var contentAgent = new ContentGenerationAgent(chatClient, contentLogger);
+    var contentAgent = new ContentGenerationAgent(chatClient, company, contentLogger);
 
     // Create and execute workflow
     var workflowLogger = serviceProvider.GetRequiredService<ILogger<MarketingWorkflow>>();

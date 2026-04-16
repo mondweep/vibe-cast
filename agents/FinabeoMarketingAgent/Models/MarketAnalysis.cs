@@ -37,7 +37,7 @@ public class MarketInsight
     [JsonPropertyName("market_segment")]
     public string MarketSegment { get; set; } = string.Empty;
 
-    [JsonPropertyName("relevance_to_fintech")]
+    [JsonPropertyName("relevance_to_company")]
     public string Relevance { get; set; } = "medium"; // high, medium, low
 
     [JsonPropertyName("opportunity_description")]
