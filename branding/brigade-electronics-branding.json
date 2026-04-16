@@ -7,61 +7,61 @@
   },
   "colors": {
     "primary": {
-      "name": "Safety Yellow",
-      "hex": "#FFD200",
-      "rgb": "rgb(255, 210, 0)",
-      "usage": "Primary brand colour, CTAs, safety highlights, hazard markers"
+      "name": "Brigade Red",
+      "hex": "#ED1C24",
+      "rgb": "rgb(237, 28, 36)",
+      "usage": "Signature wordmark colour, headers, CTAs, safety accents, call-to-action highlights"
     },
     "secondary": {
-      "name": "Industrial Black",
-      "hex": "#1A1A1A",
-      "rgb": "rgb(26, 26, 26)",
-      "usage": "Headers, body text, document backgrounds, contrast against yellow"
+      "name": "Charcoal",
+      "hex": "#2B2B2B",
+      "rgb": "rgb(43, 43, 43)",
+      "usage": "Secondary text, UI elements, backgrounds — provides the professional, grounded feel"
     },
     "accent": {
-      "name": "Hi-Vis Red",
-      "hex": "#D7263D",
-      "rgb": "rgb(215, 38, 61)",
-      "usage": "Critical alerts, danger indicators, important statistics"
+      "name": "Brigade Red (deep)",
+      "hex": "#D2232A",
+      "rgb": "rgb(210, 35, 42)",
+      "usage": "Safety-stripe dividers, angled red accents, danger indicators, important statistics"
     },
     "neutral": {
       "dark": {
         "name": "Charcoal",
-        "hex": "#333333",
-        "rgb": "rgb(51, 51, 51)",
-        "usage": "Body text, secondary headings"
+        "hex": "#2B2B2B",
+        "rgb": "rgb(43, 43, 43)",
+        "usage": "Body text, secondary headings, dark backgrounds"
       },
       "light": {
         "name": "Light Grey",
         "hex": "#F2F2F2",
         "rgb": "rgb(242, 242, 242)",
-        "usage": "Backgrounds, section dividers"
+        "usage": "Section dividers, subtle backgrounds"
       },
       "white": {
         "name": "White",
         "hex": "#FFFFFF",
         "rgb": "rgb(255, 255, 255)",
-        "usage": "Primary background, contrast against black/yellow"
+        "usage": "Primary background and negative space — ensures the red accents and technical imagery stand out"
       }
     }
   },
   "typography": {
     "heading": {
-      "family": "Roboto Condensed",
-      "fallback": "Arial Black, sans-serif",
+      "family": "Montserrat",
+      "fallback": "Gotham, Arial, sans-serif",
       "weight": "700",
-      "variants": ["Bold", "Black"],
-      "usage": "H1, H2, H3 headlines — strong industrial feel"
+      "variants": ["Bold", "SemiBold"],
+      "usage": "H1, H2, H3 headlines, wordmark — geometric sans-serif chosen for clarity in digital and print"
     },
     "body": {
-      "family": "Roboto",
-      "fallback": "Segoe UI, sans-serif",
+      "family": "Open Sans",
+      "fallback": "Inter, Segoe UI, sans-serif",
       "weight": "400",
-      "variants": ["Regular", "Medium"],
-      "usage": "Body text, paragraphs, descriptions"
+      "variants": ["Regular", "SemiBold"],
+      "usage": "Body text, technical documentation, website copy — high legibility for safety specifications"
     },
     "mono": {
-      "family": "Roboto Mono",
+      "family": "IBM Plex Mono",
       "fallback": "Consolas, monospace",
       "weight": "400",
       "usage": "Product codes, model numbers, technical specifications"
@@ -125,6 +125,13 @@
       "style": "Real working environments — HGVs, plant, refuse trucks, depots",
       "photography": "Drivers and operators in-situ, equipment installed on real vehicles, on-the-job action shots",
       "illustrations": "Technical diagrams of camera angles, blind-spot zones, sound directionality"
+    },
+    "visual_motif": {
+      "name": "Safety Stripe",
+      "description": "Diagonal red accents and angled red bars used as graphical dividers and call-to-action highlights, subtly referencing the hazard markings found on commercial vehicles and construction sites",
+      "usage": "Page headers, section breaks, CTA buttons, slide accents",
+      "angle": "30-45 degrees from horizontal",
+      "colors": ["#ED1C24", "#D2232A"]
     }
   },
   "templates": {
@@ -132,23 +139,23 @@
       "linkedin": {
         "dimensions": "1200x627px",
         "safe_area": "1000x500px",
-        "background": "solid #1A1A1A with #FFD200 accent stripe",
-        "text_color": "#FFFFFF",
-        "heading_font": "Roboto Condensed Bold 32-48px",
-        "body_font": "Roboto 16-18px"
+        "background": "solid #FFFFFF with a diagonal #ED1C24 safety-stripe accent",
+        "text_color": "#2B2B2B",
+        "heading_font": "Montserrat Bold 32-48px",
+        "body_font": "Open Sans 16-18px"
       },
       "twitter": {
         "dimensions": "1024x512px",
-        "background": "solid #1A1A1A or yellow/black split",
-        "text_color": "#FFFFFF",
-        "heading_font": "Roboto Condensed Bold 28-36px"
+        "background": "#FFFFFF with #ED1C24 wordmark and charcoal body copy",
+        "text_color": "#2B2B2B",
+        "heading_font": "Montserrat Bold 28-36px"
       },
       "instagram": {
         "dimensions": "1080x1350px (portrait) or 1080x1080px (square)",
-        "background": "high-contrast yellow/black with safety-stripe accents",
-        "text_color": "#1A1A1A on yellow, #FFFFFF on black",
-        "heading_font": "Roboto Condensed Black 36-48px",
-        "style": "Bold, attention-grabbing, safety-poster aesthetic"
+        "background": "high-contrast white/charcoal with red Safety Stripe diagonals",
+        "text_color": "#2B2B2B on white, #FFFFFF on charcoal",
+        "heading_font": "Montserrat Bold 36-48px",
+        "style": "Clean, geometric, safety-focused — red accents over white negative space"
       }
     },
     "document": {
@@ -156,40 +163,44 @@
         "page_size": "A4",
         "margins": "1 inch all sides",
         "header_height": "1 inch",
-        "header_background": "#1A1A1A",
-        "header_text_color": "#FFD200",
-        "body_font": "Roboto 11pt",
-        "heading1_font": "Roboto Condensed Bold 18pt",
-        "heading1_color": "#1A1A1A",
-        "heading2_color": "#D7263D",
+        "header_background": "#FFFFFF",
+        "header_accent_bar": "#ED1C24 (diagonal safety stripe)",
+        "header_text_color": "#2B2B2B",
+        "body_font": "Open Sans 11pt",
+        "heading1_font": "Montserrat Bold 18pt",
+        "heading1_color": "#ED1C24",
+        "heading2_color": "#2B2B2B",
         "line_spacing": "1.5"
       },
       "powerpoint": {
         "aspect_ratio": "16:9",
         "slide_background": "#FFFFFF",
-        "accent_bar": "#FFD200 (left edge, full height)",
-        "title_slide_background": "#1A1A1A",
-        "title_color": "#FFD200",
-        "heading_color": "#1A1A1A",
-        "body_color": "#333333"
+        "accent_bar": "#ED1C24 (left edge, full height — Safety Stripe motif)",
+        "title_slide_background": "#2B2B2B",
+        "title_color": "#ED1C24",
+        "heading_color": "#ED1C24",
+        "body_color": "#2B2B2B"
       }
     },
     "email": {
       "max_width": "600px",
-      "header_background": "#1A1A1A",
+      "header_background": "#FFFFFF",
+      "header_accent": "#ED1C24",
       "hero_background": "#FFFFFF",
       "section_background": "#F2F2F2",
-      "body_font": "Roboto 14px",
-      "body_color": "#1A1A1A",
-      "footer_background": "#1A1A1A",
-      "footer_text_color": "#FFD200",
-      "cta_background": "#FFD200",
-      "cta_text_color": "#1A1A1A"
+      "body_font": "Open Sans 14px",
+      "body_color": "#2B2B2B",
+      "footer_background": "#2B2B2B",
+      "footer_text_color": "#FFFFFF",
+      "cta_background": "#ED1C24",
+      "cta_text_color": "#FFFFFF"
     }
   },
   "guidelines": {
     "do": [
-      "Use safety yellow (#FFD200) and industrial black (#1A1A1A) as primary pairing",
+      "Use Brigade Red (#ED1C24) as the signature colour, paired with Charcoal (#2B2B2B) and White",
+      "Apply the Safety Stripe motif — diagonal red accents as graphical dividers or CTA highlights, echoing hazard markings on commercial vehicles",
+      "Use Montserrat Bold for headlines and the wordmark; Open Sans or Inter for body copy",
       "Lead with concrete safety outcomes (lives saved, accidents prevented)",
       "Cite compliance standards by name (FORS, CLOCS, DVS, BS EN 7010)",
       "Show real vehicles and operators, not stock office photography",
@@ -198,24 +209,25 @@
       "Highlight third-party endorsements (emergency services, military)"
     ],
     "dont": [
+      "Don't reintroduce safety yellow — the 2024 rebrand moved to red/charcoal/white",
       "Don't use pastel or muted colour palettes — high contrast is the brand",
       "Don't use boardroom/financial imagery — Brigade speaks to operations",
       "Don't make claims without evidence — link to test data or case studies",
       "Don't undersell the safety stakes — this product prevents fatalities",
       "Don't use Finabeo-style governance/transformation language — it's not the audience",
-      "Don't substitute fonts other than Roboto / Roboto Condensed without approval"
+      "Don't substitute fonts other than Montserrat / Open Sans / Inter without approval"
     ]
   },
   "metadata": {
     "created": "2026-04-15",
-    "version": "0.1",
-    "status": "preliminary",
-    "notes": "Based on public brigade-electronics.com observation. Awaiting confirmation of actual brand assets (exact Pantone, logo SVGs, font licensing). Colour palette inferred from the safety-yellow/black industrial aesthetic visible on the website and product photography.",
-    "last_updated": "2026-04-15",
+    "version": "0.2",
+    "status": "aligned-with-2024-rebrand",
+    "notes": "Updated 2026-04-16 to reflect Brigade Electronics' 2024 rebrand: signature Brigade Red (#ED1C24 / #D2232A deep), Charcoal (#2B2B2B), and White palette; Montserrat Bold wordmark/headings with Open Sans or Inter body copy; and the 'Safety Stripe' motif (diagonal red accents referencing hazard markings). Earlier 0.1 draft used an inferred yellow/black palette which has been removed.",
+    "last_updated": "2026-04-16",
     "next_steps": [
-      "Confirm exact yellow Pantone with Brigade brand team",
+      "Confirm exact Pantone for Brigade Red with Brigade brand team",
       "Provide official logo SVGs in multiple variants",
-      "Confirm font licensing for Roboto Condensed in commercial materials",
+      "Confirm font licensing for Montserrat in commercial materials",
       "Validate compliance terminology and product names with product team"
     ]
   }
