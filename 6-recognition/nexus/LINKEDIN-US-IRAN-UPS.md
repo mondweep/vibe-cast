@@ -4,9 +4,9 @@ The US-Iran conflict has been deadlocked in a cycle of retaliation, sanctions, a
 
 But what if the root of the conflict isn't political at all, but a rigid "pattern of consciousness"? And what if the framework to solve it is already embedded in the deepest beliefs of both nations?
 
-Today, my team and I stress-tested our **Universal Pattern Space (UPS)** architecture—a framework designed to map complex systemic challenges by looking at the underlying structures of consciousness rather than surface-level symptoms. We applied it to the US-Iran standoff, asking a radical question: 
+Today, I stress-tested our **Universal Pattern Space (UPS)** architecture—a framework designed to map complex systemic challenges by looking at the underlying structures of consciousness rather than surface-level symptoms. We applied it to the US-Iran standoff, asking a radical question: 
 
-*What happens if we convene a "Peace Council" utilizing the core wisdom traditions of both cultures—Judaism, Christianity, Islam, and the Eastern Wisdom of Tantra—not as religious dogma, but as sophisticated navigation technologies for conflict resolution?*
+*What happens if we convene a "Peace Council" utilising the core wisdom traditions of both cultures—Judaism, Christianity, Islam, and the Eastern Wisdom of Tantra—not as religious dogma, but as sophisticated navigation technologies for conflict resolution?*
 
 The results were astonishing. When you strip away the theological differences, all these wisdom streams point to the exact same geopolitical strategy:
 
@@ -20,7 +20,7 @@ The parable of the **Good Samaritan** is often misunderstood as just "being nice
 Sufi wisdom teaches **Fana**—the annihilation of the false, rigid ego before achieving lasting peace (*Baqa*). Both nations are trapped in historical egos: the "American World Enforcer" vs. the "Islamic Resistance." The conflict is an ocean pretending two of its drops are enemies. Sufism demands we dissolve the attachment to these historical narratives so practical cooperation can subsist. 
 
 ⚡ **4. The "Saving Word" & Strategic Silence (Eastern Tantra/Tara)**
-The Tantric framework suggests that in deep conflicts, the first side that invokes **Strategic Silence** paralyzes the cycle of retaliation. The goal is to move past political rhetoric and speak the under-layer of what both civilizations actually desire. The US demands *Security*. Iran demands *Sovereignty*. These aren't opposites; they are the same human need spoken in two languages that have forgotten how to hear each other.
+The Tantric framework suggests that in deep conflicts, the first side that invokes **Strategic Silence** paralyses the cycle of retaliation. The goal is to move past political rhetoric and speak the under-layer of what both civilisations actually desire. The US demands *Security*. Iran demands *Sovereignty*. These aren't opposites; they are the same human need spoken in two languages that have forgotten how to hear each other.
 
 ### Why This Matters: The Usherer of Alignment
 
