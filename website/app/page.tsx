@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Header from '@/components/Header'
 import Hero from '@/components/Hero'
 import Vision from '@/components/Vision'
@@ -12,8 +11,6 @@ import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
 
 export default function Home() {
-  const [activeSection, setActiveSection] = useState<string | null>(null)
-
   return (
     <main className="bg-white">
       <Header />
