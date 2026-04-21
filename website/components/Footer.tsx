@@ -15,10 +15,10 @@ export default function Footer() {
           <div>
             <h4 className="font-bold mb-4 text-bmg-gold">Participate</h4>
             <ul className="text-sm space-y-2 text-gray-300">
-              <li><a href="#apply" className="hover:text-white">Apply as Student</a></li>
+              <li><a href="https://bernardimusicgroup.com/student-application/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Apply as Student</a></li>
               <li><a href="#fundraising" className="hover:text-white">Sponsor</a></li>
-              <li><a href="#faculty" className="hover:text-white">Join as Faculty</a></li>
-              <li><a href="/" className="hover:text-white">Volunteer</a></li>
+              <li><a href="mailto:info@bgm-summerschool.com" className="hover:text-white">Join as Faculty</a></li>
+              <li><a href="mailto:info@bgm-summerschool.com" className="hover:text-white">Volunteer</a></li>
             </ul>
           </div>
           <div>

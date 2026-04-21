@@ -12,7 +12,7 @@ export default function Hero() {
           Inspired by Zubeen Garg • World-Class Training • International Faculty
         </p>
         <div className="flex flex-col md:flex-row gap-4 justify-center">
-          <a href="#apply" className="btn-primary">
+          <a href="https://bernardimusicgroup.com/student-application/" target="_blank" rel="noopener noreferrer" className="btn-primary">
             Apply Now
           </a>
           <a href="#vision" className="btn-secondary">

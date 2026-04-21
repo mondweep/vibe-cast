@@ -14,7 +14,7 @@ export default function Header() {
           <a href="#programme" className="hover:text-bmg-gold transition">Programme</a>
           <a href="#faculty" className="hover:text-bmg-gold transition">Faculty</a>
           <a href="#fundraising" className="hover:text-bmg-gold transition">Support</a>
-          <a href="#apply" className="hover:text-bmg-gold transition">Apply</a>
+          <a href="https://bernardimusicgroup.com/student-application/" target="_blank" rel="noopener noreferrer" className="hover:text-bmg-gold transition">Apply</a>
         </nav>
       </div>
     </header>
