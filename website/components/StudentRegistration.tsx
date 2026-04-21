@@ -1,7 +1,3 @@
-'use client'
-
-import { useState } from 'react'
-
 export default function StudentRegistration() {
   return (
     <section id="apply" className="py-20 bg-bmg-cream">
