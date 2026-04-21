@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 3rem;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 2.2rem;
+  color: #1a365d;
+}
+
+h3 {
+  font-size: 1.5rem;
+  color: #2c5aa0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.btn-primary {
+  @apply bg-bmg-blue text-white px-6 py-3 rounded font-semibold hover:bg-bmg-navy transition;
+}
+
+.btn-secondary {
+  @apply bg-bmg-cream text-bmg-navy px-6 py-3 rounded font-semibold hover:bg-gray-100 transition;
+}
+
+.section-divider {
+  height: 60px;
+  background: linear-gradient(to right, transparent, #b8860b, transparent);
+  opacity: 0.5;
+  margin: 3rem 0;
+}
+
+.curved-divider {
+  position: relative;
+  height: 100px;
+  background: white;
+}
+
+.curved-divider svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
