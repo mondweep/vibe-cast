@@ -88,7 +88,14 @@ const { title } = Astro.props;
     </style>
   </head>
   <body>
-    <div style="max-width: 900px; margin: 0 auto;">
+    <header style="border-bottom: 1px solid #e5e7eb; padding: 1rem; background-color: #f3f4f6; position: sticky; top: 0; z-index: 100;">
+      <div style="max-width: 900px; margin: 0 auto;">
+        <h1 style="margin: 0; font-size: 1.25rem;">
+          <a href="/" style="color: #1f2937; text-decoration: none;">🧠 AI Safety Tutorial</a>
+        </h1>
+      </div>
+    </header>
+    <div style="max-width: 900px; margin: 0 auto; padding: 1rem;">
       <slot />
     </div>
   </body>
