@@ -119,11 +119,12 @@ huggingface-cli login
 # (Enter your Hugging Face access token when prompted)
 
 # Download the abliterated Gemma model
-# Model: ARA-abliterated version of Gemma-4-IT-26B (GGUF quantised format)
-huggingface-cli download <model-repo-path> --local-dir ./models/
+# Model: ARA-abliterated version of Gemma-4-IT-26B (GGUF quantised format, Q5_K_M)
+huggingface-cli download jenerallee78/gemma-4-26B-A4B-it-ara-abliterated --local-dir ./models/
 ```
 
-> 🔜 **Model source TBD** — the specific Hugging Face repo path for the ARA-abliterated variant will be documented here once confirmed. Check `PROGRESS_LOG.md` for the latest status.
+> ✅ **Model source confirmed**: `jenerallee78/gemma-4-26B-A4B-it-ara-abliterated`  
+> Variant: Q5_K_M (5-bit quantized, ~17GB) — optimized for Apple Silicon and consumer hardware.
 
 ---
 
@@ -234,5 +235,5 @@ To add a progress note at any time:
 
 ---
 
-*README last updated: 2026-04-22*  
-*For build progress, see [PROGRESS_LOG.md](./PROGRESS_LOG.md)*
+*README last updated: 2026-04-22 (Model source confirmed)*  
+*For build progress and research notes, see [PROGRESS_LOG.md](./PROGRESS_LOG.md)*
