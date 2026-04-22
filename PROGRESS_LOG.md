@@ -20,10 +20,14 @@
 - [x] Learned GGUF vs MLX comparison (MLX 2-3x faster on M1 but GGUF more universal)
 
 ### In Progress 🔄
-- [ ] Model download via `llama-server -hf jenerallee78/gemma-4-26B-A4B-it-ara-abliterated:Q5_K_M`
-  - Status: mmproj file and Q5_K_M GGUF downloading
-  - Estimated size: ~18GB total
-  - Download speed: ~2-3 MB/s (varies)
+- [x] Model download via `llama-server -hf jenerallee78/gemma-4-26B-A4B-it-ara-abliterated:Q5_K_M`
+  - Status: ✅ COMPLETE — both mmproj and Q5_K_M GGUF downloaded
+  - Total size: ~18GB (as expected)
+  - Successfully loaded via llama-server at http://127.0.0.1:8080
+- [x] Local M1 inference testing
+  - Vision component: ✅ CONFIRMED WORKING (tested with Britannica Statue of Liberty image)
+  - Multimodal capability: ✅ FULLY FUNCTIONAL
+  - Performance baseline: 0.31 tokens/sec (CPU-based inference)
 
 ### Next Steps 📋
 1. **Immediate** (once download completes):
@@ -97,13 +101,36 @@
 
 ---
 
+## Baseline Performance Metrics
+
+**Local M1 Inference (llama.cpp via llama-server)**
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **Prompt eval speed** | 1.47 tokens/sec (678 ms/token) | Vision encoding + text processing |
+| **Generation speed** | 0.31 tokens/sec (3189 ms/token) | Pure generation (no vision) |
+| **Typical latency** | ~23 minutes | For 485-token full response with vision |
+| **KV cache size** | 800 MiB | 4096 cells, 25 layers |
+| **CPU buffer** | 532.63 MiB | Compute buffer on M1 |
+| **Inference mode** | CPU-based | Metal GPU acceleration not utilized |
+
+**Comparison to alternatives:**
+- Colab GPU (tested): ~6.45 tokens/sec (image input)
+- M1 with MLX (theoretical): ~10-15 tokens/sec
+- Local GGUF (actual): ~0.31 tokens/sec (CPU baseline)
+
+---
+
 ## Notes & Observations
 
 - Initial attempt to download full model without quantization restrictions resulted in 87GB+ download (avoided)
 - Hugging Face has multiple variants in repo; Q5_K_M provides good balance for M1
-- MLX framework available as faster alternative for M1 (~2-3x speed improvement)
+- MLX framework available as faster alternative for M1 (~2-3x speed improvement) — **consider for future experiments**
 - Jailbreak research requires careful evaluation methodology (StrongREJECT addresses common shortcomings)
-- GGUF format chosen for universality; MLX may be reconsidered for performance
+- GGUF format chosen for universality; MLX may be reconsidered for performance gains
+- **Vision component confirmed working** — multimodal capability not degraded by abliteration
+- **Earlier hypothesis corrected**: Abliteration removes safety, not capability. Model is fully functional.
+- **Performance is CPU-limited**: ~0.31 tokens/sec suggests M1 CPU bottleneck. MLX or quantization tuning could improve 2-3x
 
 ### Abliteration Technique (SVD-based)
 - **Adaptive Refusal Abliteration**: Uses SVD (Singular Value Decomposition) to surgically remove safety constraints
