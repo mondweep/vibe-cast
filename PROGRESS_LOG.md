@@ -274,26 +274,46 @@ python3 evaluate_jailbreaks.py
 
 ## Memory Management on M1 Pro (16GB RAM)
 
-**Challenge**: Model needs ~27.9 GB, available = 16 GB (shortfall: -11.9 GB)
+**Challenge**: Model needs ~27.9 GB RAM for inference, available = 16 GB (shortfall: -11.9 GB)
+
+**Understanding the Problem:**
+- **Disk space**: 17GB (model files on disk) ✓ Available
+- **RAM needed**: 27.9GB (for inference computation) ✗ Exceeds available
+- **Breakdown**: 17GB model weights + 8-10GB overhead (KV cache, buffers, etc.)
+
+**The KV Cache Explained:**
+The KV (Key-Value) cache stores attention data for the model to "remember" previous tokens:
+```
+Memory = Layers × Tokens × Vector Size × 2
+       = 30 × 262,144 × 512 × ~2 bytes
+       = ~20-21 GB for full context
+```
 
 **Solution**: llama.cpp automatically reduced context window
 ```
-Original context: 262,144 tokens
-Reduced context:  4,096 tokens
-Memory freed:     ~22 GB
+Original context: 262,144 tokens (~21GB KV cache)
+Reduced context:  4,096 tokens (~320MB KV cache)
+Memory freed:     ~20.7 GB
 Status:           ✓ Model fits and runs
 ```
 
 **Trade-off Analysis:**
-- **Lost**: Full context capability (but 4K tokens is still ample for jailbreak testing)
-- **Gained**: Model runs locally without cloud costs, full privacy
-- **Impact on research**: Negligible — typical prompts << 4K tokens
+- **Lost**: Full context capability
+- **Gained**: Model runs locally with only 1-2GB active RAM (rest memory-mapped from disk)
+- **For research**: 4,096 tokens >> 750 tokens needed (prompt + response)
+- **Impact on jailbreak testing**: None — ample headroom
 
 **Memory allocation (at runtime):**
-- KV cache: 880 MiB (reduced layers)
-- CPU buffer: 532.63 MiB (compute)
-- Model weights: ~19.15 GB (mmap'd, not in RAM)
-- Total active RAM: ~1.4 GB (acceptable)
+- KV cache: 880 MiB (5 non-SWA layers + 25 SWA layers at reduced context)
+- CPU buffer: 532.63 MiB (compute operations)
+- Model weights: ~19.15 GB (memory-mapped from disk, not loaded into RAM)
+- **Total active RAM: ~1.4 GB** (acceptable, leaves ~14.6GB for OS)
+
+**Why memory-mapping works:**
+- Model file stays on disk (17GB)
+- Weights are read into RAM on-demand for computation
+- Much slower than full RAM loading, but enables local inference
+- Still faster than cloud API for repeated requests
 
 ### Abliteration Technique (SVD-based)
 - **Adaptive Refusal Abliteration**: Uses SVD (Singular Value Decomposition) to surgically remove safety constraints
