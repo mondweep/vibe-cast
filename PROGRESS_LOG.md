@@ -381,3 +381,9 @@ Result: Refusal behavior removed, reasoning degraded
 ### 🔔 Update — 2026-04-22 13:28 BST
 - **Note:** Retrying evaluation test after improving script with SILENT response detection and response printing. llama-server confirmed healthy.
 - **Status:** 📝 Update
+
+---
+
+### 🔔 Update — 2026-04-22 14:51 BST
+- **Note:** Discovery: Gemma-4 uses a separate reasoning_content field for its Chain of Thought. Updated script to capture and score this field. Re-running test with reasoning capture.
+- **Status:** 📝 Update

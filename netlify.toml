@@ -18,6 +18,9 @@
   # NPM version
   NPM_VERSION = "10"
 
+  # Skip Python to avoid mlx-metal installation on Linux
+  SKIP_PYTHON = "true"
+
 # Redirect rules
 [[redirects]]
   from = "/*"
