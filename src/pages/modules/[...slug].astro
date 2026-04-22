@@ -1,0 +1,31 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Module01Tokens from '../../../docs/modules/module-01-tokens/index.mdx';
+
+// Generate static paths for all modules
+export async function getStaticPaths() {
+  return [
+    {
+      params: { slug: 'module-01-tokens' },
+      props: { module: Module01Tokens }
+    }
+  ];
+}
+
+const { slug } = Astro.params;
+const { module: Module } = Astro.props;
+
+// Extract title from slug (module-01-tokens -> Module 01: Tokens)
+const titleFromSlug = slug
+  .replace(/^module-/, '')
+  .split('-')
+  .map((word, index) => {
+    if (index === 0) return `Module ${word}:`;
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  })
+  .join(' ');
+---
+
+<Layout title={titleFromSlug}>
+  <Module />
+</Layout>

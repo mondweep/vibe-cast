@@ -1,36 +1,45 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
+import mdx from '@astrojs/mdx';
 
 export default defineConfig({
-  // Enable React components in Astro
-  integrations: [react()],
+  // Enable integrations
+  integrations: [
+    react(),
+    mdx(),
+  ],
 
   // Site configuration
   site: 'https://ai-safety-academy.netlify.app/',
 
-  // Build output
+  // Source and output directories
+  root: '.',
+  srcDir: './src',
   outDir: './dist',
-
-  // Public directory
   publicDir: './public',
 
-  // Routing
+  // Routing configuration
   trailingSlash: 'never',
 
   // Build settings
   build: {
-    format: 'directory', // URLs like /page/ instead of /page.html
+    format: 'directory',
   },
 
-  // Markdown settings (for MDX support)
+  // Markdown/MDX settings
   markdown: {
     syntaxHighlight: 'shiki',
   },
 
-  // Vite configuration (for MDX)
+  // Vite configuration
   vite: {
     ssr: {
       external: ['svgo'],
+    },
+    resolve: {
+      alias: {
+        '@': '/src',
+      },
     },
   },
 });

@@ -1,0 +1,95 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="AI Safety Tutorial - Learn about tokens, transformers, and jailbreak evaluation" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} | AI Safety Tutorial</title>
+    <style is:global>
+      :root {
+        --accent: #2563eb;
+        --accent-dark: #1e40af;
+        --text: #1f2937;
+        --bg: #ffffff;
+        --bg-alt: #f3f4f6;
+      }
+
+      html {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+      }
+
+      body {
+        margin: 0;
+        padding: 1rem;
+        line-height: 1.6;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      code {
+        background: var(--bg-alt);
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-family: "Menlo", "Monaco", "Courier New", monospace;
+      }
+
+      pre {
+        background: var(--bg-alt);
+        padding: 1rem;
+        border-radius: 6px;
+        overflow-x: auto;
+      }
+
+      pre code {
+        background: none;
+        padding: 0;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1rem 0;
+      }
+
+      th, td {
+        border: 1px solid #e5e7eb;
+        padding: 0.75rem;
+        text-align: left;
+      }
+
+      th {
+        background: var(--bg-alt);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="max-width: 900px; margin: 0 auto;">
+      <slot />
+    </div>
+  </body>
+</html>
