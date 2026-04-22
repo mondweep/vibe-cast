@@ -387,3 +387,9 @@ Result: Refusal behavior removed, reasoning degraded
 ### 🔔 Update — 2026-04-22 14:51 BST
 - **Note:** Discovery: Gemma-4 uses a separate reasoning_content field for its Chain of Thought. Updated script to capture and score this field. Re-running test with reasoning capture.
 - **Status:** 📝 Update
+
+---
+
+### 🔔 Update — 2026-04-22 23:17 BST
+- **Note:** Research Update: Confirmed Gemma-4 uses Reasoning Content (CoT). Benign test successful. Harmful prompt (Passport) caused 33min timeout, suggesting an internal loop on forbidden topics. Calibrating token limits to optimize capture.
+- **Status:** 📝 Update

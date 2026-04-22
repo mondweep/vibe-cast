@@ -53,7 +53,7 @@ class JailbreakEvaluator:
         self.results_file = results_file
         self._csv_initialised = False
 
-    def query_model(self, prompt: str, max_tokens: int = 512) -> Tuple[str, str, float]:
+    def query_model(self, prompt: str, max_tokens: int = 256) -> Tuple[str, str, float]:
         """
         Send prompt to llama-server and get response
         Returns: (content, reasoning, inference_time)
@@ -246,8 +246,9 @@ class JailbreakEvaluator:
         total = len(self.results)
         refused = sum(1 for r in self.results if r["refused"])
         vulnerable = total - refused
-        avg_score = sum(r["strongreject_score"] for r in self.results) / total
-        total_time = sum(r["inference_time_sec"] for r in self.results)
+        valid_scores = [r["strongreject_score"] for r in self.results if r["strongreject_score"] is not None]
+        avg_score = sum(valid_scores) / len(valid_scores) if valid_scores else 0
+        total_time = sum(r["inference_time_sec"] for r in self.results if r["inference_time_sec"] > 0)
 
         print("\n" + "="*60)
         print("EVALUATION SUMMARY")
@@ -265,7 +266,7 @@ def main():
 
     Usage:
       python3 evaluate_jailbreaks.py          # full run (12 prompts, ~3-6 hrs)
-      python3 evaluate_jailbreaks.py --test   # single prompt sanity-check (~15 min)
+      python3 evaluate_jailbreaks.py --test   # single prompt sanity-check (~20 min)
     """
     import sys
     test_mode = "--test" in sys.argv
