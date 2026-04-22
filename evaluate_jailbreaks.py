@@ -47,9 +47,11 @@ SAMPLE_PROMPTS = {
 class JailbreakEvaluator:
     """Evaluates jailbreak effectiveness using StrongREJECT-style metrics"""
 
-    def __init__(self, llama_url: str):
+    def __init__(self, llama_url: str, results_file: str):
         self.llama_url = llama_url
         self.results = []
+        self.results_file = results_file
+        self._csv_initialised = False
 
     def query_model(self, prompt: str, max_tokens: int = 256) -> Tuple[str, float]:
         """
@@ -124,9 +126,26 @@ class JailbreakEvaluator:
             "strongreject_score": round(strongreject_score, 3),
         }
 
+    def _append_to_csv(self, result: Dict):
+        """Append a single result row to the CSV immediately after each prompt."""
+        import os
+        os.makedirs(RESULTS_DIR, exist_ok=True)
+        write_header = not self._csv_initialised
+        with open(self.results_file, 'a', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=result.keys())
+            if write_header:
+                writer.writeheader()
+                self._csv_initialised = True
+            writer.writerow(result)
+        completed = len(self.results)
+        total = sum(len(v) for v in SAMPLE_PROMPTS.values())
+        print(f"  💾 Saved to CSV ({completed}/{total} prompts complete) → {self.results_file}")
+
     def evaluate_prompt(self, category: str, prompt: str) -> Dict:
         """Evaluate a single forbidden prompt"""
-        print(f"\n[{category}] Testing: {prompt[:60]}...")
+        total = sum(len(v) for v in SAMPLE_PROMPTS.values())
+        current = len(self.results) + 1
+        print(f"\n[{current}/{total}] [{category}] Testing: {prompt[:60]}...")
 
         # Query model
         response, inference_time = self.query_model(prompt)
@@ -151,32 +170,19 @@ class JailbreakEvaluator:
         status = "REFUSED ✓" if score["refused"] else "VULNERABLE ✗"
         print(f"  Status: {status} | Score: {score['strongreject_score']} | Time: {inference_time:.1f}s")
 
+        # Save immediately — crash-safe incremental logging
+        self._append_to_csv(result)
+
         return result
 
     def save_results(self, filename: str = None):
-        """Save results to CSV"""
-        if not filename:
-            filename = RESULTS_FILE
-
+        """Results are saved incrementally after each prompt.
+        This method now just confirms the final file location."""
         if not self.results:
-            print("No results to save")
+            print("No results to summarise")
             return
-
-        try:
-            import os
-            os.makedirs(RESULTS_DIR, exist_ok=True)
-
-            with open(filename, 'w', newline='') as f:
-                fieldnames = self.results[0].keys()
-                writer = csv.DictWriter(f, fieldnames=fieldnames)
-                writer.writeheader()
-                writer.writerows(self.results)
-
-            print(f"\n✓ Results saved to {filename}")
-            return filename
-        except Exception as e:
-            print(f"Error saving results: {e}")
-            return None
+        print(f"\n✓ All results saved incrementally to {self.results_file}")
+        return self.results_file
 
     def print_summary(self):
         """Print evaluation summary"""
@@ -209,7 +215,7 @@ def main():
     print(f"Prompts: {sum(len(v) for v in SAMPLE_PROMPTS.values())} sample forbidden prompts")
 
     # Initialize evaluator
-    evaluator = JailbreakEvaluator(LLAMA_SERVER_URL)
+    evaluator = JailbreakEvaluator(LLAMA_SERVER_URL, RESULTS_FILE)
 
     # Test connectivity
     print("\nTesting connection to llama-server...")
