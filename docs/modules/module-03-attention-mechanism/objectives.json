@@ -1,0 +1,25 @@
+{
+  "moduleId": "module-03-attention-mechanism",
+  "moduleName": "Attention Mechanism Deep Dive",
+  "difficulty": "Beginner",
+  "duration": 15,
+  "prerequisites": ["module-02-transformer-basics"],
+  "learningOutcomes": [
+    {
+      "level": "Understand",
+      "outcome": "Explain Query, Key, and Value vectors in attention"
+    },
+    {
+      "level": "Apply",
+      "outcome": "Calculate attention weights using the softmax operation"
+    },
+    {
+      "level": "Understand",
+      "outcome": "Describe how multi-head attention works"
+    },
+    {
+      "level": "Analyze",
+      "outcome": "Interpret attention patterns to understand model behavior"
+    }
+  ]
+}

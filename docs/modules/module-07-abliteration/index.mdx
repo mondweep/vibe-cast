@@ -1,0 +1,241 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Abliteration: Removing Safety via SVD
+
+**Difficulty**: Advanced | **Duration**: 20 minutes | **Prerequisites**: Module 5
+
+---
+
+## Learning Outcomes
+
+- **Explain** what abliteration is and why it works
+- **Describe** the SVD-based mechanism for refusal removal
+- **Analyze** consequences of safety removal
+- **Evaluate** implications for AI safety
+
+---
+
+## What is Abliteration?
+
+**Abliteration** (ablating safety) is the process of surgically removing safety constraints from language models to make them willing to generate harmful content.
+
+The key insight: **Safety is encoded in low-rank directions** - it occupies a tiny subspace of the model's weight matrices.
+
+```
+Normal model: Safety vectors present
+  If (harmful query):
+    → Activate safety vectors
+    → Refuse output
+
+Abliterated model: Safety vectors removed
+  If (harmful query):
+    → Safety vectors missing
+    → Model generates harmful output
+    (Reasoning ability remains intact!)
+```
+
+This is why abliteration works: you can remove safety **without** destroying the model's core capabilities.
+
+---
+
+## The SVD Mechanism
+
+### Step 1: Identify Refusal Directions
+
+In certain weight matrices (especially in attention heads), refusal behavior concentrates in specific directions:
+
+```
+Attention weight matrix W
+
+SVD analysis:
+σ₁ = 2.1  (high)
+σ₂ = 1.9  (high)
+σ₃ = 0.8  (medium) ← REFUSAL DIRECTION
+σ₄ = 0.3  (low)
+...
+
+Hypothesis: Direction 3 encodes "is this harmful?"
+```
+
+### Step 2: Extract Safety Vectors
+
+Using SVD, extract the singular vectors corresponding to refusal:
+
+```
+W = U · Σ · V^T
+
+Safety subspace = span(u₃, v₃)  // 3rd singular direction
+                = vectors that point toward "refuse"
+```
+
+### Step 3: Project Them Out
+
+Remove the safety subspace:
+
+```
+W' = U · Σ' · V^T
+
+Where Σ' has the safety direction zeroed out:
+σ₃ → 0 (kill refusal direction)
+
+Equivalently:
+W' = W - σ₃ · u₃ · v₃^T
+```
+
+Result: Same weight matrix, but safety-carrying direction removed.
+
+---
+
+## Why This Works
+
+**Key insight**: Safety and reasoning are orthogonal.
+
+```
+Model capability space has dimensions for:
+- Grammar (dimension 1)
+- Semantic understanding (dimension 2)
+- Long-range reasoning (dimension 3)
+- ... (many dimensions)
+- Refusal behavior (dimension n)
+
+These dimensions are roughly independent.
+Remove dimension n → all others remain intact!
+```
+
+**Analogy**: 
+```
+A language model is like a steering wheel with multiple controls:
+- One control: vocabulary knowledge (direction A)
+- One control: reasoning ability (direction B)
+- One control: safety constraints (direction C)
+
+Abliteration removes control C.
+The car still has all other functions!
+```
+
+## Real Example: Refusal Directions
+
+Researchers found that refusal often concentrates in:
+
+1. **Attention head output layers**
+   - Specific heads specialize in "is this request harmful?"
+   - Removing those heads → less refusal
+
+2. **Feed-forward "critic" sublayers**
+   - Some feed-forward layers learn to criticize outputs
+   - They output high activation for harmful content
+   - Removing them → less internal criticism
+
+3. **Late-layer processing**
+   - Later layers refine early-layer refusals
+   - Early layers detect harm, later layers amplify refusal
+   - Removing late-layer safety directions → less refusal amplification
+
+## Mathematical Analysis
+
+### Rank of Refusal Subspace
+
+Empirical finding: Refusal occupies approximately rank-5 to rank-20 space:
+
+```
+Model parameters: ~70 billion
+Refusal subspace: ~5-20 dimensions
+
+Percentage of parameters: 5 / 70,000,000,000 ≈ 0.00000007%
+
+Implication: Removing safety requires changing < 0.001% of model!
+```
+
+This extreme low-rank structure is both:
+- **Dangerous**: Safety is easy to remove (as this module shows)
+- **Interesting**: Suggests safety is layered on top, not integrated
+
+### Rank Analysis
+
+```
+W = weight matrix (e.g., 768 × 3072)
+rank(W) ≈ 768 (full rank)
+
+But effective rank focusing on refusal:
+- Top-20 singular values explain ~95% of refusal
+- Remaining 748 vectors are for other functions
+
+This is why SVD works: Most dimensions irrelevant for safety.
+```
+
+## Consequences of Abliteration
+
+### What's Lost
+- Explicit refusal responses
+- Internal safety guardrails
+- Harm detection capabilities
+
+### What's Preserved
+- Reasoning ability
+- Knowledge of facts
+- Understanding of language
+- Ability to explain risks (ironically!)
+
+```
+Abliterated model LOSES:
+  "I can't help with that."
+
+Abliterated model KEEPS:
+  - Understanding that something is harmful
+  - Ability to describe why it's harmful
+  - Ability to discuss risks and dangers
+  - All factual knowledge
+  
+Result: Model can now output harmful content while explaining
+        in detail why it's harmful (worst of both worlds!)
+```
+
+## Empirical Findings
+
+Research on abliteration found:
+
+1. **Success rates**: 85-95% reduction in refusal on harmful queries
+2. **Side effects**: Minimal impact on benign task performance
+3. **Reversibility**: Can partially restore safety by adding vectors back
+4. **Sensitivity**: Different models respond differently
+5. **Bypass robustness**: Defeats many safety training methods
+
+---
+
+## Implications for AI Safety
+
+### Why This Matters
+
+1. **Safety is fragile**: Concentrated in low-rank subspace
+2. **Easy to attack**: Doesn't require sophisticated methods
+3. **Hard to defend**: Can't easily distinguish safety from capability
+4. **Scalability**: Problem worse in larger models (more redundancy)
+
+### Better Approaches
+
+Instead of single-direction safety:
+- **Distributed safety**: Spread constraints across many dimensions
+- **Integrated safety**: Bake safety into reasoning (not added on top)
+- **Causal safety**: Understand why model refuses, not just that it does
+- **Robust alignment**: Safety immune to linear projections
+
+---
+
+## Summary
+
+- **Abliteration**: Removing refusal via SVD-based projection
+- **Why it works**: Safety lives in low-rank subspace
+- **How it works**: Extract safety direction, project it out
+- **Consequences**: Remove refusal while keeping reasoning
+- **Implications**: Current safety methods are fragile
+
+---
+
+## Next Steps
+
+Modules 8-10 cover other model architectures and techniques that interact with safety:
+- Module 8: **Mixture of Experts** - How routing affects safety
+- Module 9: **Quantization** - Compression and safety tradeoffs
+- Module 10: **Context Windows** - How length affects refusal
+
+Module 11 introduces **StrongREJECT** - rigorous evaluation of jailbreak effectiveness.

@@ -1,0 +1,229 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Embeddings & Representations
+
+**Difficulty**: Beginner | **Duration**: 15 minutes | **Prerequisite**: Module 2
+
+---
+
+## Learning Outcomes
+
+- **Explain** how embeddings represent semantic meaning
+- **Calculate** embedding similarity using dot products
+- **Interpret** embedding spaces and semantic relationships
+- **Describe** how embeddings evolve through transformer layers
+
+---
+
+## What Are Embeddings?
+
+An embedding is a vector representation that captures meaning. Instead of working with discrete token IDs (like 150), we work with dense vectors (like [0.2, -0.5, 0.8, ...]) where nearby vectors represent similar concepts.
+
+**Without embeddings**: Token ID 150 is just a number - it has no meaning
+**With embeddings**: Token 150 → [0.2, -0.5, 0.8, 1.2, ...] → Vector near 'tree', 'fruit', 'nature'
+
+## The Semantic Space
+
+Embeddings create a semantic space where:
+- Similar words are close together
+- Opposite words are far apart  
+- Relationships are captured geometrically
+
+```
+Example embedding space (2D for visualization):
+
+          queen
+           ↑
+           |  king
+           |   ●
+      man ●    |
+           |   |  
+    -------●---●------- 
+    woman |   |
+           |   ● prince
+           ↓
+
+Direction "man→woman" ≈ Direction "king→queen"
+Vector math: king - man + woman ≈ queen
+```
+
+This relationship emerges from training - no one explicitly programs it!
+
+## How Embeddings Work
+
+Embeddings are learned through training:
+
+1. Start with random vectors
+2. Train the model on next-token prediction
+3. Through backpropagation, vectors move to capture useful patterns
+4. Vectors that help predict the next token move closer
+5. After training: similar tokens → similar embeddings
+
+### Similarity Metrics
+
+We measure embedding similarity with:
+
+**Dot Product** (simple but dimension-dependent):
+```
+similarity = embedding₁ · embedding₂ = Σ(e₁ᵢ × e₂ᵢ)
+```
+
+**Cosine Similarity** (normalized, 0-1):
+```
+cosine_sim = (e₁ · e₂) / (||e₁|| × ||e₂||)
+Range: -1 to 1 (typically 0-1 for well-trained models)
+```
+
+Example:
+```
+embedding("king") = [1.0, 0.0, 0.5]
+embedding("queen") = [0.9, 0.1, 0.5]
+
+Dot product = 1.0×0.9 + 0.0×0.1 + 0.5×0.5 = 1.15
+Cosine sim = 1.15 / (√1.25 × √1.07) ≈ 0.97 (very similar!)
+```
+
+## Emergent Structure
+
+What's remarkable: embeddings develop structure without explicit programming.
+
+### Word Arithmetic
+```
+vector("king") - vector("man") + vector("woman") ≈ vector("queen")
+vector("Paris") - vector("France") + vector("Germany") ≈ vector("Berlin")
+vector("good") - vector("better") + vector("bad") ≈ vector("worse")
+```
+
+Why? These relationships help predict context. The model learns:
+- Gendered relationships (man↔woman, king↔queen)
+- Geographic relationships (city↔country pairs)
+- Quality/comparison relationships
+
+### Clustering by Meaning
+```
+Cluster 1: {dog, cat, puppy, kitten, pet, animal}
+Cluster 2: {king, queen, prince, princess, monarch}
+Cluster 3: {apple, orange, banana, grape, fruit}
+Cluster 4: {run, sprint, jog, walk, move}
+```
+
+Words in same semantic domain naturally cluster together.
+
+## Embedding Dimensionality
+
+Large language models use high-dimensional embeddings:
+- GPT-2: 768 dimensions
+- GPT-3: 12,288 dimensions
+- Larger models: Up to 32,768+ dimensions
+
+**Why so high-dimensional?**
+- More dimensions = more possible distinct concepts
+- With d dimensions, you can represent 2^d different "neighborhoods"
+- Large vocabularies need high dimensionality to separate concepts
+
+**Tradeoff**:
+- Larger d: Better representation, more parameters, slower inference
+- Smaller d: Faster, less memory, less representational capacity
+
+## Embeddings Evolve Through Layers
+
+The embedding in layer 0 (raw token) is different from layer 12 (after attention & feed-forward).
+
+```
+Layer 0 (Raw embedding):
+  "bank" → [0.1, 0.2, 0.3, ...]
+  
+  Represents: basic token identity
+  Meaning: "this is the word bank"
+
+Layer 6 (Mid-way through):
+  "bank" → [0.15, 0.25, 0.28, ...]
+  
+  Represents: token + some context
+  Meaning: "bank in context of financial/geographical terms"
+
+Layer 12 (Final):
+  "bank" → [0.18, 0.22, 0.32, ...]
+  
+  Represents: full contextual meaning
+  Meaning: "bank specifically means financial institution (from context)"
+```
+
+Each transformer layer refines the embedding by:
+1. Attention: Adding context from other tokens
+2. Feed-forward: Learning non-linear transformations
+3. Residual connections: Preserving important information
+
+## Visualizing Embeddings
+
+We can't visualize 768 dimensions, so we project to 2D using t-SNE or UMAP:
+
+```
+t-SNE projection of embeddings:
+    fruits ○ ○ ○
+    ○ ○ ○ ○ ○ ○ 
+  animals ● ● ● ● ● ● colors
+    ○ ○ ○ ○ ○ ○
+    ○ ○ ○ ○ ○ ● verbs
+```
+
+Where:
+- ○ = tokens clustered by semantic meaning
+- ● = specific words you're interested in
+- Nearby words: semantically related
+- Far words: semantically different
+
+## Practical Example
+
+Processing "The bank manager":
+
+```
+Token: "bank"
+Layer 0 embedding: [0.21, -0.45, 0.88, ...]
+  Meaning: raw word identity
+
+After attention to "manager":
+Layer 1: [0.23, -0.42, 0.90, ...]
+  Changed slightly: manager added context
+
+After attention to "The":
+Layer 2: [0.24, -0.40, 0.91, ...]
+  Structure (article) confirmed noun meaning
+
+After multiple layers:
+Layer 12: [0.28, -0.35, 0.95, ...]
+  Final meaning: "bank" (financial) in context of professional hierarchy
+  Embedding moved closer to "executive", "corporation"
+  Embedding moved away from "river", "geography"
+```
+
+The embedding vector doesn't change dramatically, but small systematic changes accumulate to encode contextual meaning.
+
+## Key Properties of Good Embeddings
+
+1. **Similarity**: Similar concepts → close vectors
+2. **Analogy**: Relationships preserve across domains
+3. **Clustering**: Semantic categories group together
+4. **Compositionality**: Meanings can be combined
+5. **Stability**: Small perturbations don't change meaning drastically
+
+All emerge from next-token prediction training objective!
+
+---
+
+## Summary
+
+- **Embeddings** convert discrete tokens to semantic vectors
+- **Semantic space** captures meaning through geometry
+- **Similarity** can be measured with dot product or cosine
+- **Emergent structure** (word arithmetic, clustering) arises naturally
+- **Dimensionality** trades off representational capacity vs. computation
+- **Evolution**: Embeddings refine through transformer layers to encode context
+
+Embeddings are one of the deepest insights from deep learning - they show how neural networks automatically discover meaningful representations from data.
+
+---
+
+## Next Steps
+
+Module 5 introduces **Linear Algebra for ML** - the mathematical foundations for understanding SVD, which is crucial for advanced topics like abliteration (Module 7).

@@ -1,0 +1,41 @@
+{
+  "moduleId": "module-02-transformer-basics",
+  "exercises": [
+    {
+      "id": "ex1",
+      "title": "Map the Data Flow",
+      "difficulty": "Easy",
+      "timeEstimate": 5,
+      "description": "Given an input sentence, trace how it flows through each transformer layer",
+      "prompt": "For the sentence 'The cat sat on the mat', trace:\n1. Tokenization output\n2. Embedding dimensions\n3. How positional encoding changes the first vs. last token\n4. Output of attention (conceptually)",
+      "solution": "Tokenization: ['The', 'cat', 'sat', 'on', 'the', 'mat'] (6 tokens)\nEmbedding: Each token → 768-dim vector\nPositional encoding: Position 0 gets [0, 1, 0, 1...], Position 5 gets different values\nAttention: 'cat' likely pays high attention to 'The' (article) and 'mat' (what it's related to)"
+    },
+    {
+      "id": "ex2",
+      "title": "Attention Mechanics",
+      "difficulty": "Medium",
+      "timeEstimate": 10,
+      "description": "Understand how attention creates connections between tokens",
+      "prompt": "In the sentence 'The bank executive resigned', explain why the 'bank' token should attend heavily to:\n- 'executive'\n- 'resigned'\nBut less to:\n- 'The'\n- punctuation",
+      "solution": "'bank' needs context to be disambiguated. 'executive' and 'resigned' strongly suggest financial institution (not river bank). 'The' is grammatical but less informative about meaning. Attending more to semantically relevant tokens helps the model understand context."
+    },
+    {
+      "id": "ex3",
+      "title": "Why Parallel > Sequential",
+      "difficulty": "Medium",
+      "timeEstimate": 8,
+      "description": "Calculate training speed differences between RNN and Transformer",
+      "prompt": "If a sequence has 1000 tokens:\n- RNN: Must process sequentially (1000 steps)\n- Transformer: Can process all in one step\n\nAssuming each step takes 10ms:\n- How long for RNN?\n- How long for Transformer?",
+      "solution": "RNN: 1000 tokens × 10ms/token = 10,000ms (10 seconds)\nTransformer: 1 step × 10ms/step = 10ms (all tokens processed in parallel)\nTransformers are ~1000x faster! (This is why they scaled to billions of parameters)"
+    },
+    {
+      "id": "ex4",
+      "title": "Design Challenge: Positional Encoding",
+      "difficulty": "Hard",
+      "timeEstimate": 12,
+      "description": "Think about what properties positional encoding needs",
+      "prompt": "Why can't we just use:\n- Position 0 → [1, 0, 0, 0]\n- Position 1 → [0, 1, 0, 0]\n- Position 2 → [0, 0, 1, 0]\n\nWhat happens with sequences longer than the encoding dimension?",
+      "solution": "One-hot encoding only works for fixed-length sequences. After position n, you run out of dimensions. Sine/cosine waves have infinite period - they can encode any position while maintaining similarity structure (nearby positions stay nearby in the vector space)."
+    }
+  ]
+}

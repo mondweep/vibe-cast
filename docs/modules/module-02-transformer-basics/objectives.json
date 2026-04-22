@@ -1,0 +1,29 @@
+{
+  "moduleId": "module-02-transformer-basics",
+  "moduleName": "Transformer Architecture Basics",
+  "difficulty": "Beginner",
+  "duration": 20,
+  "prerequisites": ["module-01-tokens"],
+  "learningOutcomes": [
+    {
+      "level": "Understand",
+      "outcome": "Explain the basic architecture of transformer models",
+      "description": "Describe the main components of a transformer (encoder, decoder, attention layers)"
+    },
+    {
+      "level": "Understand",
+      "outcome": "Describe how transformers process sequences of tokens",
+      "description": "Explain the data flow from input tokens through the transformer to output predictions"
+    },
+    {
+      "level": "Understand",
+      "outcome": "Identify the role of embeddings in transformers",
+      "description": "Explain how tokens are converted to embeddings and why this matters"
+    },
+    {
+      "level": "Apply",
+      "outcome": "Compare transformers to previous sequence models (RNNs, LSTMs)",
+      "description": "Identify key advantages of transformers over recurrent architectures"
+    }
+  ]
+}

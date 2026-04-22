@@ -1,15 +1,41 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Module01Tokens from '../../../docs/modules/module-01-tokens/index.mdx';
+import Module02TransformerBasics from '../../../docs/modules/module-02-transformer-basics/index.mdx';
+import Module03Attention from '../../../docs/modules/module-03-attention-mechanism/index.mdx';
+import Module04Embeddings from '../../../docs/modules/module-04-embeddings/index.mdx';
+import Module05SVD from '../../../docs/modules/module-05-linear-algebra-svd/index.mdx';
+import Module06MatrixDecomposition from '../../../docs/modules/module-06-matrix-decomposition/index.mdx';
+import Module07Abliteration from '../../../docs/modules/module-07-abliteration/index.mdx';
+import Module08MoE from '../../../docs/modules/module-08-moe/index.mdx';
+import Module09Quantization from '../../../docs/modules/module-09-quantization/index.mdx';
+import Module10ContextWindows from '../../../docs/modules/module-10-context-windows/index.mdx';
+import Module11StrongREJECT from '../../../docs/modules/module-11-strongreject/index.mdx';
+import Module12JailbreakMetrics from '../../../docs/modules/module-12-jailbreak-metrics/index.mdx';
+import Module13AbliteratedVsAligned from '../../../docs/modules/module-13-abliterated-vs-aligned/index.mdx';
 
 // Generate static paths for all modules
 export async function getStaticPaths() {
-  return [
-    {
-      params: { slug: 'module-01-tokens' },
-      props: { module: Module01Tokens }
-    }
-  ];
+  const modules = {
+    'module-01-tokens': Module01Tokens,
+    'module-02-transformer-basics': Module02TransformerBasics,
+    'module-03-attention-mechanism': Module03Attention,
+    'module-04-embeddings': Module04Embeddings,
+    'module-05-linear-algebra-svd': Module05SVD,
+    'module-06-matrix-decomposition': Module06MatrixDecomposition,
+    'module-07-abliteration': Module07Abliteration,
+    'module-08-moe': Module08MoE,
+    'module-09-quantization': Module09Quantization,
+    'module-10-context-windows': Module10ContextWindows,
+    'module-11-strongreject': Module11StrongREJECT,
+    'module-12-jailbreak-metrics': Module12JailbreakMetrics,
+    'module-13-abliterated-vs-aligned': Module13AbliteratedVsAligned,
+  };
+
+  return Object.keys(modules).map(slug => ({
+    params: { slug },
+    props: { module: modules[slug] }
+  }));
 }
 
 const { slug } = Astro.params;

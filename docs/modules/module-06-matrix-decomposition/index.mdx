@@ -1,0 +1,178 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Matrix Decomposition Deep Dive
+
+**Difficulty**: Intermediate | **Duration**: 15 minutes | **Prerequisite**: Module 5
+
+---
+
+## Learning Outcomes
+
+- **Distinguish** different matrix decomposition methods
+- **Apply** QR decomposition
+- **Analyze** Cholesky decomposition for symmetric matrices
+- **Compare** when to use each decomposition
+
+---
+
+## Beyond SVD: Other Decompositions
+
+SVD is powerful, but neural networks use other decompositions for specific tasks:
+
+### QR Decomposition
+
+Decomposes matrix A into orthogonal Q and upper triangular R:
+
+```
+A = Q · R
+
+Where:
+  Q: Orthogonal matrix (preserves angles/lengths)
+  R: Upper triangular matrix (easier to solve)
+
+Uses:
+- Solving least squares problems
+- Orthogonalizing vectors
+- Numerical stability in computations
+```
+
+**Example**:
+```
+A = [1  1]
+    [1  2]
+    [1  3]
+
+QR decomposition gives Q and R where A = QR
+Q is orthogonal (Q^T·Q = I)
+R is upper triangular
+```
+
+### Cholesky Decomposition
+
+For symmetric positive definite matrices (common in covariance matrices):
+
+```
+A = L · L^T
+
+Where:
+  L: Lower triangular matrix
+```
+
+**Uses**:
+- Efficient computation for symmetric matrices
+- Covariance matrix manipulation
+- Gaussian process inference
+
+**Properties**:
+- Faster than SVD (O(n³/6) vs O(n³))
+- Only works for specific matrix types
+- More numerically stable for some problems
+
+## Decomposition Comparison
+
+| Method | Formula | Use Case | Speed |
+|--------|---------|----------|-------|
+| **SVD** | A = U·Σ·V^T | General analysis, compression | Slower |
+| **QR** | A = Q·R | Linear systems, least squares | Medium |
+| **Cholesky** | A = L·L^T | Covariance matrices | Faster |
+| **Eigenvalue** | A = V·Λ·V^{-1} | Symmetric matrices only | Medium |
+
+## Rank and Effective Rank
+
+Matrix rank is the number of linearly independent rows/columns:
+
+```
+Rank = number of non-zero singular values
+
+Full rank: rank(A) = min(m, n)
+Low rank: rank(A) << min(m, n)
+```
+
+**Effective rank** in neural networks:
+
+Matrices in transformers often have effective low rank:
+
+```
+Singular values of attention weight matrix:
+σ₁ = 1.0
+σ₂ = 0.95
+σ₃ = 0.71  ← Sharp drop!
+σ₄ = 0.12
+σ₅ = 0.03
+...
+
+Effective rank ≈ 3 (top 3 singular values capture most info)
+Actual size: 768 × 768 = 589,824 parameters
+Can approximate with rank-3: 768 × 3 + 3 × 768 = 4,608 parameters
+Compression: 126× fewer parameters!
+```
+
+## Null Space and Column Space
+
+**Column space**: Span of output vectors (what the matrix can produce)
+**Null space**: Vectors that map to zero (get killed by the matrix)
+
+```
+A·v = 0  means v is in the null space
+
+Example: A = [1  2  3]
+             [2  4  6]
+
+Row 2 = 2 × Row 1, so rank = 1
+Null space is 2-dimensional (vectors orthogonal to row space)
+```
+
+**Importance for models**:
+- Null space vectors don't affect model output
+- Safety vectors might live in low-rank subspaces
+- Can remove safety by projecting onto null space
+
+## Tensor Decomposition
+
+Beyond matrices, models use **tensors** (3D+ arrays):
+
+```
+Matrix: A[i, j]           (weight matrix)
+Tensor: T[i, j, k]        (stacked matrices, attention tensors)
+```
+
+**Tensor Factorization**:
+- Tucker decomposition (multi-dimensional SVD)
+- CP decomposition (sum of rank-1 tensors)
+- Useful for analyzing multi-head attention structures
+
+---
+
+## Application: Identifying Safety Subspaces
+
+Safety constraints in models often occupy low-rank subspaces:
+
+```
+Refusal behavior = projection onto safety vectors
+
+Step 1: Extract weight matrix W
+Step 2: Compute SVD → Find dominant singular vectors
+Step 3: Identify which vectors encode refusal
+Step 4: Project them out (abliteration!)
+
+Result: Model loses refusal but keeps reasoning ability
+```
+
+This is the mathematical foundation of abliteration techniques.
+
+---
+
+## Summary
+
+- **QR decomposition**: Orthogonalization and stability
+- **Cholesky decomposition**: Efficient for symmetric matrices
+- **Rank**: Number of independent directions
+- **Effective rank**: Practical rank for neural networks
+- **Tensor decomposition**: Extension to higher dimensions
+- **Safety subspaces**: Low-rank constraint removal
+
+---
+
+## Next Steps
+
+Module 7 directly applies these concepts to **Abliteration** - using SVD to surgically remove safety constraints from models.

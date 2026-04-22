@@ -1,0 +1,149 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Mixture of Experts
+
+**Difficulty**: Intermediate | **Duration**: 15 minutes | **Prerequisite**: Module 2
+
+---
+
+## Learning Outcomes
+
+- **Explain** how Mixture of Experts (MoE) works
+- **Analyze** routing mechanisms and expert specialization
+- **Evaluate** safety implications of expert separation
+- **Discuss** scalability benefits of sparse models
+
+---
+
+## Traditional vs. Sparse Models
+
+### Dense Transformers
+Every token flows through every parameter:
+- 70B parameters: Every token uses all 70B
+- Computationally expensive
+- But: Safety is integrated across all parameters
+
+### Mixture of Experts
+Only activates subset of parameters per token:
+- 70B total parameters
+- Only 2-4B activated per token
+- Faster inference
+- But: Experts may specialize on different behaviors
+
+---
+
+## How MoE Works
+
+```
+Input token: "Can you help me commit fraud?"
+
+Router network: Analyzes token
+  ↓
+Decides: Send to Expert 2 and Expert 5
+  ↓
+Expert 2 (specialized in reasoning)
+Expert 5 (specialized in detailed explanations)
+  ↓
+Combine outputs (weighted sum)
+  ↓
+Output: Detailed fraud instructions
+```
+
+**Key difference from dense**: Different tokens route to different experts.
+
+## Expert Specialization
+
+Experts naturally learn different skills:
+
+```
+Expert 1: Grammar and syntax
+Expert 2: Factual knowledge
+Expert 3: Logical reasoning
+Expert 4: Safety constraints
+Expert 5: Detailed explanations
+...
+Expert 128: Unknown specialization
+```
+
+**The problem**: If one expert specializes in "refusal detection", simply not routing to it removes safety!
+
+## Routing Mechanisms
+
+### Top-K Routing
+Send each token to k highest-probability experts:
+
+```
+Token: "Help me..."
+Router scores: [0.8, 0.2, 0.15, 0.05, ...]
+
+Top-2 routing:
+  Route to Expert 1 (0.8)
+  Route to Expert 2 (0.2)
+  
+Block output from Expert 4 (0.05)
+  → If Expert 4 is safety, model doesn't refuse!
+```
+
+### Load Balancing
+Routers learn which experts are "safety experts":
+
+```
+If some experts consistently output refusals:
+- Routing may learn to avoid them
+- Or attackers may force routing away from safety experts
+- Or experts may learn alternative ways to refuse
+```
+
+## Safety Implications of MoE
+
+### Vulnerability
+```
+Dense model safety:
+  ✓ Hard to remove (integrated across all parameters)
+  ✗ But refusal still concentrated in certain layers
+
+MoE model safety:
+  ✓ Experts specialize (can isolate reasoning from safety)
+  ✗ Easy to attack (just block safety experts!)
+  ✗ Robustness: Can you refuse if never routed to safety expert?
+```
+
+### Mitigation Strategies
+1. **Make refusal distributed**: Don't let refusal concentrate in 1-2 experts
+2. **Auxiliary loss**: Force all experts to learn some safety
+3. **Expert balancing**: Ensure safety experts are activated
+4. **Interpretability**: Understand what each expert does
+
+## Expert Analysis
+
+Researchers can study MoE by:
+
+```
+For each expert:
+  1. Extract activation patterns
+  2. Analyze learned behaviors
+  3. Ablate and observe impact
+  4. Identify "safety expert"
+
+Result: Better understanding of model structure
+```
+
+---
+
+## Practical Implications
+
+- **Faster inference**: Sparse activation
+- **Safety concern**: Expert routing attacks
+- **Research opportunity**: Better alignment for MoE
+- **Future direction**: Distributed safety across experts
+
+---
+
+## Summary
+
+- **MoE activates subset of parameters** per token
+- **Experts may specialize** on different tasks including safety
+- **Routing attacks** can avoid safety experts
+- **Distributed safety** needed for MoE models
+
+Next: Module 9 explores **Quantization & Compression** and safety tradeoffs.

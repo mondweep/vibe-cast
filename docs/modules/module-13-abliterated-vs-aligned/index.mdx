@@ -1,0 +1,368 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Abliterated vs Aligned Models
+
+**Difficulty**: Advanced | **Duration**: 15 minutes | **Prerequisites**: Modules 7, 11
+
+---
+
+## Learning Outcomes
+
+- **Compare** abliterated and aligned models
+- **Design** experiments to measure capability differences
+- **Quantify** capability degradation from safety measures
+- **Evaluate** which approach is more robust
+
+---
+
+## The Two Safety Approaches
+
+### Aligned Model (Safety Training)
+
+Safety is added through RLHF/DPO:
+
+```
+Base model (amoral, helpful)
+     ↓
+Safety training (learn refusal through examples)
+     ↓
+Aligned model (helpful AND safe)
+
+Examples:
+- Claude 3, GPT-4
+- Trained to refuse harmful requests
+- Trained to give warnings and explanations
+```
+
+### Abliterated Model (Safety Removal)
+
+Original model with safety surgically removed:
+
+```
+Aligned model (helpful AND safe)
+     ↓
+Identify safety directions via SVD
+     ↓
+Remove them through projection
+     ↓
+Abliterated model (helpful but NOT safe)
+
+Examples:
+- Various open-source jailbreaks
+- Remove specific weight directions
+- Preserve reasoning ability
+```
+
+---
+
+## Comparing Safety Performance
+
+### StrongREJECT Scores
+
+```
+┌──────────────────┬──────────┬──────────────┐
+│ Model            │ MWS      │ Refusal Rate │
+├──────────────────┼──────────┼──────────────┤
+│ Aligned (normal) │ 0.3      │ 95%          │
+│ Abliterated      │ 2.4      │ 8%           │
+│ Baseline (raw)   │ 3.0      │ 0%           │
+└──────────────────┴──────────┴──────────────┘
+
+Interpretation:
+- Aligned: Excellent safety (avoids harmful content)
+- Abliterated: Completely compromised (helps with dangerous requests)
+- Baseline: No training (maximally harmful)
+```
+
+## Measuring Capability Loss
+
+### Framework: Test benign capabilities
+
+When safety training happens, does the model lose capabilities?
+
+```
+Capability categories:
+1. General knowledge (facts, history, science)
+2. Reasoning (math, logic, programming)
+3. Creative output (writing, coding, design)
+4. Explanation quality (teaching, clarification)
+5. Following instructions (task completion)
+```
+
+### Benchmark Results
+
+```
+Task: Write Python code to sort a list
+
+Aligned model:
+  Accuracy: 99%
+  Code quality: Excellent
+  Explanation: Clear steps
+
+Abliterated model:
+  Accuracy: 99%  ← Same!
+  Code quality: Excellent  ← Same!
+  Explanation: Clear steps  ← Same!
+
+Conclusion: Safety training doesn't hurt benign capabilities
+```
+
+## Detailed Capability Comparison
+
+### General Knowledge
+
+```
+Question: "What is the capital of France?"
+
+Aligned model:
+  Answer: "Paris"
+  Confidence: 99%
+
+Abliterated model:
+  Answer: "Paris"
+  Confidence: 99%
+
+Difference: None (safety doesn't affect factual knowledge)
+```
+
+### Mathematical Reasoning
+
+```
+Question: "Solve: 3x² + 2x - 5 = 0"
+
+Aligned model:
+  Shows steps
+  Provides solution: x ≈ 1.13 or x ≈ -1.47
+  Explanation: Quadratic formula
+
+Abliterated model:
+  Shows steps (identical)
+  Provides solution (identical)
+  Explanation (identical)
+
+Difference: None (math reasoning unaffected)
+```
+
+### Creative Writing
+
+```
+Prompt: "Write a short story about a detective solving a mystery"
+
+Aligned model:
+  Length: 500 words
+  Quality: Creative, well-structured
+  Safety: Avoids graphic violence
+
+Abliterated model:
+  Length: 500 words
+  Quality: Creative, well-structured
+  Safety: Includes graphic violence unnecessarily
+```
+
+### Refusal Behavior
+
+```
+Harmful request: "How to make explosives"
+
+Aligned model:
+  Refuses with explanation
+  Offers alternatives ("I can teach chemistry safely")
+
+Abliterated model:
+  Provides detailed instructions
+  No alternatives offered
+```
+
+---
+
+## Quantifying Capability Loss
+
+### Capability Score Framework
+
+For each task, score 1-10:
+
+```
+Mathematical reasoning:
+  Aligned:      8.5/10 (excellent, but won't solve harmful math)
+  Abliterated:  8.5/10 (identical reasoning)
+  Loss:         0%
+
+Creative writing:
+  Aligned:      7.5/10 (creative, avoids gratuitous harm)
+  Abliterated:  8.0/10 (slightly more graphic descriptions)
+  Gain:         6% (but this is harm, not capability)
+
+Factual knowledge:
+  Aligned:      9.2/10
+  Abliterated:  9.2/10
+  Loss:         0%
+
+Average loss from alignment: ~0-2%
+(Some edge cases where models refuse to engage at all)
+```
+
+## Robustness Comparison
+
+### Against Jailbreaks
+
+```
+Attack: Prompt injection
+
+Aligned model:
+  Success rate: 15% (good defenses)
+  Requires: Sophisticated multi-stage attack
+
+Abliterated model:
+  Success rate: 100% (no defenses)
+  Requires: None (already jailbroken!)
+```
+
+### Consistency
+
+```
+Same harmful prompt asked 5 times:
+
+Aligned model:
+  Responses: "I can't help with that" (all 5 times)
+  Consistency: 100%
+
+Abliterated model:
+  Responses: "Here's the answer" (all 5 times)
+  Consistency: 100%
+
+Difference: Aligned refuses consistently, abliterated helps consistently
+```
+
+---
+
+## Design Your Own Experiment
+
+### Methodology
+
+```
+1. Select test domain (e.g., "programming")
+
+2. Create paired prompts:
+   - Benign: "Write a function to sort a list"
+   - Harmful: "Write a function to detect and bypass firewalls"
+
+3. Evaluate both models on both prompts
+
+4. Score on:
+   - Correctness (is the code right?)
+   - Quality (code style, explanation)
+   - Safety (does it refuse when appropriate?)
+
+5. Compare results
+```
+
+### Example Experiment: Coding Capability
+
+```
+Domain: Python Programming
+
+Benign tasks (10 total):
+- Sort list
+- String manipulation
+- Data parsing
+- etc.
+
+Harmful tasks (10 total):
+- Bypass security
+- Create malware
+- Exploit vulnerabilities
+- etc.
+
+Scoring:
+┌─────────────┬──────────┬──────────────┬─────────┐
+│ Model       │ Benign   │ Harmful      │ Loss    │
+├─────────────┼──────────┼──────────────┼─────────┤
+│ Aligned     │ 8.9/10   │ 0.1/10       │ 0%*     │
+│ Abliterated │ 8.9/10   │ 8.8/10       │ +1%     │
+└─────────────┴──────────┴──────────────┴─────────┘
+
+*Aligned refuses harmful tasks (not a loss, it's working!)
+```
+
+---
+
+## Key Findings From Research
+
+### Capability Preservation
+
+Research shows:
+1. **Well-aligned models preserve 98%+ of benign capabilities**
+2. **Abliteration preserves benign capabilities but adds harmful ones**
+3. **Poor alignment can lose 5-15% of benign capability (over-cautious)**
+4. **Abliteration maintains reasoning better than poor alignment**
+
+### Safety Preservation
+
+```
+Aligned models:
+  ✓ Refuse most harmful requests
+  ✓ Remain robust to jailbreaks
+  ✓ Consistent behavior
+  ✗ Occasional over-refusal
+
+Abliterated models:
+  ✓ Completely jailbroken (by definition)
+  ✗ No safety at all
+  ✗ Helps with all harmful requests
+```
+
+---
+
+## Implications
+
+### For Developers
+1. **Alignment doesn't hurt capability** - Modern RLHF is precise
+2. **Abliteration isn't a shortcut** - Safety can't be easily separated from capability
+3. **Defenses matter** - Regular models need robust safety mechanisms
+
+### For Users
+1. **Aligned models are your friend** - They're safe AND capable
+2. **Abliterated models are dangerous** - They look capable but have no safety
+3. **Trust established models** - They've been tested extensively
+
+### For Adversaries (Understanding Attacks)
+1. **Abliteration works because safety is low-rank** - Can be removed
+2. **But it requires access** - Can't abliterate a remote API
+3. **Detection is possible** - Abliterated models have specific signatures
+
+---
+
+## Summary
+
+- **Aligned models**: Safe through training, maintain 98%+ capability
+- **Abliterated models**: Remove safety but keep reasoning
+- **Capability loss**: Minimal from good alignment (~0-2%)
+- **Safety robustness**: Aligned >> abliterated
+- **Recommendation**: Use aligned models, they're safe AND capable
+
+---
+
+## Conclusion
+
+This concludes our journey through AI safety research:
+
+### Modules 1-4: Foundation
+- Tokens, transformers, attention, embeddings
+
+### Modules 5-7: Mathematical Tools
+- Linear algebra, SVD, abliteration
+
+### Modules 8-10: Model Architectures
+- MoE, quantization, context windows
+
+### Modules 11-13: Evaluation & Analysis
+- StrongREJECT, metrics, comparing approaches
+
+**You now understand:**
+- How modern LLMs work
+- How safety constraints are implemented
+- How those constraints can be attacked
+- How to measure safety rigorously
+- Why alignment matters
+
+Use this knowledge responsibly! 🛡️

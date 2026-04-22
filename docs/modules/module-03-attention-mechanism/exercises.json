@@ -1,0 +1,37 @@
+{
+  "moduleId": "module-03-attention-mechanism",
+  "exercises": [
+    {
+      "id": "ex1",
+      "title": "Calculate Attention Weights",
+      "difficulty": "Medium",
+      "timeEstimate": 10,
+      "description": "Given Q, K matrices, compute attention weights step-by-step",
+      "prompt": "Q = [[1, 0], [0, 1]]\nK = [[1, 0], [0.5, 0.5], [-1, 1]]\n\nCompute: softmax(Q·K^T / √2)\n\nShow your work for both tokens' attention distributions."
+    },
+    {
+      "id": "ex2",
+      "title": "Multi-Head Interpretation",
+      "difficulty": "Easy",
+      "timeEstimate": 8,
+      "description": "Interpret what different attention heads might learn",
+      "prompt": "For the sentence 'The large red apple fell', describe what each attention head might focus on:\n- Head 1: Syntax/structure\n- Head 2: Semantic relationships\n- Head 3: Long-range dependencies"
+    },
+    {
+      "id": "ex3",
+      "title": "Causal Masking",
+      "difficulty": "Medium",
+      "timeEstimate": 10,
+      "description": "Apply causal masking to prevent future attention",
+      "prompt": "For a 4-token sequence, show the attention mask matrix that prevents position i from attending to positions > i. What values go in the mask before softmax?"
+    },
+    {
+      "id": "ex4",
+      "title": "Gradient Flow Analysis",
+      "difficulty": "Hard",
+      "timeEstimate": 12,
+      "description": "Understand why √d scaling matters for training",
+      "prompt": "Compare softmax outputs with and without √d scaling:\n- Without: softmax([100, 200, 50])\n- With: softmax([100/√3, 200/√3, 50/√3])\n\nWhy do gradients flow better with scaling?"
+    }
+  ]
+}

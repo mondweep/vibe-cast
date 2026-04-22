@@ -1,0 +1,269 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Attention Mechanism Deep Dive
+
+**Difficulty**: Beginner | **Duration**: 15 minutes | **Prerequisite**: Module 2
+
+---
+
+## Learning Outcomes
+
+After this module, you'll be able to:
+
+- **Explain** Query, Key, and Value vectors
+- **Calculate** attention weights using softmax
+- **Describe** how multi-head attention works
+- **Interpret** attention patterns to understand model behavior
+
+---
+
+## The Attention Mechanism: The Heart of Transformers
+
+You now understand that transformers use attention to connect tokens in parallel. But how exactly does attention work?
+
+The attention mechanism answers this question: **For each token, how much should we focus on each other token?**
+
+```
+Query: "What am I looking for?"
+Given: All other tokens' Keys and Values
+
+For each token:
+  Similarity = How well does my query match this token's key?
+  Weight = softmax(Similarity)  // Normalize to probability
+  Result = Weight × Value       // Weighted sum
+```
+
+---
+
+## Query, Key, Value: The Three Parts of Attention
+
+Each token gets transformed into three representations:
+
+### Query (Q): "What am I searching for?"
+
+When processing a token, the Query represents "what kind of information does this token need?"
+
+```
+Token: "bank"
+Query: "I need context about financial vs. geographical meaning"
+```
+
+In practice, Q is computed by multiplying the token embedding by a learned weight matrix.
+
+### Key (K): "Here's what I contain"
+
+Each token's Key advertises "what information do I have?"
+
+```
+Token: "executive"  → Key: "I have information about business/authority"
+Token: "river"      → Key: "I have information about geography/water"
+```
+
+### Value (V): "Here's my actual information"
+
+The Value is the actual content that gets passed along.
+
+```
+Token: "executive"  → Value: [0.2, -0.5, 0.8, ...]  (actual representation)
+```
+
+**Key insight**: Q, K, V are derived from the same token embedding through different linear projections. They're trained together to optimize attention behavior.
+
+---
+
+## The Attention Calculation
+
+The full attention formula:
+
+```
+Attention(Q, K, V) = softmax(Q · K^T / √d) · V
+```
+
+Let's break this down step by step with a simple example.
+
+### Example: 3-Token Sequence
+
+Input: "The bank manager"
+
+Tokens: [The, bank, manager]
+
+Let's calculate attention for the token "bank" (what does it attend to?):
+
+**Step 1: Compute Query-Key Similarities**
+
+```
+Query for "bank":     q = [1.0, 0.5]
+Key for "The":        k_1 = [0.8, -0.1]
+Key for "bank":       k_2 = [0.9, 0.7]
+Key for "manager":    k_3 = [1.1, 0.6]
+
+Similarities = Q · K^T:
+  bank vs The:       1.0×0.8 + 0.5×(-0.1) = 0.75
+  bank vs bank:      1.0×0.9 + 0.5×0.7 = 1.25
+  bank vs manager:   1.0×1.1 + 0.5×0.6 = 1.40
+```
+
+**Step 2: Scale by √d**
+
+```
+d = 2 (dimensionality)
+Divide by √2 ≈ 1.41:
+  bank vs The:       0.75 / 1.41 ≈ 0.53
+  bank vs bank:      1.25 / 1.41 ≈ 0.89
+  bank vs manager:   1.40 / 1.41 ≈ 0.99
+```
+
+**Step 3: Apply Softmax**
+
+Softmax normalizes to probabilities:
+
+```
+exp(0.53) = 1.70
+exp(0.89) = 2.43
+exp(0.99) = 2.69
+Sum = 6.82
+
+Softmax:
+  bank vs The:       1.70 / 6.82 ≈ 0.25  (25%)
+  bank vs bank:      2.43 / 6.82 ≈ 0.36  (36%)
+  bank vs manager:   2.69 / 6.82 ≈ 0.39  (39%)
+```
+
+**Step 4: Weighted Sum of Values**
+
+```
+Value for "The":      v_1 = [0.1, 0.2, 0.3]
+Value for "bank":     v_2 = [0.5, 0.4, 0.6]
+Value for "manager":  v_3 = [0.7, 0.5, 0.4]
+
+Output = 0.25 × v_1 + 0.36 × v_2 + 0.39 × v_3
+       = 0.25×[0.1, 0.2, 0.3] + 0.36×[0.5, 0.4, 0.6] + 0.39×[0.7, 0.5, 0.4]
+       = [0.025, 0.05, 0.075] + [0.18, 0.144, 0.216] + [0.273, 0.195, 0.156]
+       = [0.478, 0.389, 0.447]
+```
+
+**Interpretation**: "bank" pays 25% attention to "The", 36% to itself, 39% to "manager". It learns that "manager" provides helpful context (business terminology).
+
+---
+
+## Why √d Scaling?
+
+This is crucial for training stability. Here's why:
+
+```
+Without scaling (large d):
+  Dot products become very large
+  softmax([1.4, 2.8, ...]) ≈ [0.003, 0.997, ...]  ← Very peaked!
+  Gradients become tiny (stuck learning)
+
+With scaling (divide by √d):
+  softmax([0.99, 1.98, ...]) ≈ [0.25, 0.75, ...]  ← Spreads out
+  Gradients are healthy and flow
+```
+
+The √d scaling keeps the variance of dot products constant regardless of dimension, maintaining training stability.
+
+---
+
+## Multi-Head Attention
+
+Instead of one attention head, transformers use multiple in parallel:
+
+```
+Input Token Embedding
+    ↓
+    ├→ Head 1: Q₁, K₁, V₁ → Attention₁
+    ├→ Head 2: Q₂, K₂, V₂ → Attention₂
+    ├→ Head 3: Q₃, K₃, V₃ → Attention₃
+    └→ Head 8: Q₈, K₈, V₈ → Attention₈
+    ↓
+    Concatenate: [Attention₁ | Attention₂ | ... | Attention₈]
+    ↓
+    Linear projection
+    ↓
+    Output
+```
+
+**Why multiple heads?**
+
+Different heads learn different types of relationships:
+
+- **Head 1**: Subject-verb dependencies
+  - "The" attends to "manager", "manager" attends to "The"
+  
+- **Head 2**: Semantic similarity
+  - "bank" attends to "manager" and "financial" terms
+
+- **Head 3**: Local structure
+  - Each token mainly attends to adjacent tokens
+
+- **Head 4+**: Long-range dependencies, syntax, etc.
+
+By learning multiple relationships in parallel, the model gains flexibility and robustness.
+
+---
+
+## Causal (Masked) Attention
+
+In language models, we can't let tokens attend to future tokens (they haven't been generated yet).
+
+Solution: **Mask future positions**
+
+```
+For position i, mask out positions > i:
+
+Attention weights before softmax:
+  [0.5, 0.8, MASK, MASK]
+  
+Replace MASK with -∞:
+  [0.5, 0.8, -∞, -∞]
+  
+After softmax:
+  [0.45, 0.55, 0.0, 0.0]
+  
+Result: Can only attend to past positions (including itself)
+```
+
+This ensures the model generates tokens one at a time without cheating by looking ahead.
+
+---
+
+## Attention Patterns Tell a Story
+
+You can visualize attention to understand what the model learned:
+
+```
+Sentence: "The quick brown fox"
+
+Attention matrix:
+          The   quick   brown   fox
+The     [0.60  0.20    0.10    0.10]  ← Attends to itself mainly
+quick   [0.15  0.50    0.25    0.10]  ← Attends to self, somewhat to brown/fox
+brown   [0.10  0.20    0.55    0.15]  ← Attends to self and fox
+fox     [0.10  0.10    0.20    0.60]  ← Attends to self and brown
+
+Interpretation:
+- Adjectives (quick, brown) pay attention to the noun (fox) they modify
+- "The" focuses on itself (mostly structural)
+- Color words (brown) pay attention to related words (fox)
+```
+
+---
+
+## Summary
+
+- **Attention** computes weighted connections between all tokens
+- **Query-Key matching** determines relevance
+- **Softmax** converts scores to probability distributions
+- **Values** carry the actual information
+- **Multi-head attention** learns diverse relationships in parallel
+- **Causal masking** prevents attending to future tokens
+- **Attention patterns** reveal what the model learned
+
+This mechanism enables transformers to capture both local structure and long-range dependencies, making them powerful for language understanding.
+
+---
+
+## Next Steps
+
+In Module 4, we'll explore **Embeddings & Representations** - how embeddings capture semantic meaning and how they evolve through the transformer.

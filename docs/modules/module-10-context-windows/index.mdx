@@ -1,0 +1,205 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Context Windows & KV Cache
+
+**Difficulty**: Intermediate | **Duration**: 15 minutes | **Prerequisite**: Module 1
+
+---
+
+## Learning Outcomes
+
+- **Explain** context windows and their limits
+- **Analyze** KV caching mechanisms
+- **Evaluate** safety implications of context length
+- **Discuss** long-context model challenges
+
+---
+
+## Context Windows: Model Memory
+
+A context window is the maximum text length a model can process:
+
+```
+Context window = 4K tokens (GPT-3.5)
+Input: First 4000 tokens matter
+       Token 4001+ are ignored
+
+Context window = 200K tokens (Claude 3)
+Input: All 200,000 tokens matter
+       Better for long documents
+```
+
+## Why Context Limits Exist
+
+### Computational Complexity
+
+Attention is quadratic in sequence length:
+
+```
+Attention(n) = O(n²)
+
+Context = 1K tokens:   1M attention operations
+Context = 4K tokens:   16M attention operations
+Context = 100K tokens: 10B operations ← Expensive!
+
+Longer context = exponential slowdown
+```
+
+### Memory Requirements
+
+Storing all token representations:
+
+```
+n tokens × 768 embedding dim × 2 (attention states) = memory
+
+Context = 4K: 4,000 × 768 × 2 = 6.1 MB per token sequence
+Context = 100K: 100,000 × 768 × 2 = 153 MB
+
+Processing 100 sequences: 15 GB memory!
+```
+
+## KV Cache (Key-Value Cache)
+
+During inference, store previous Keys and Values to avoid recomputation:
+
+```
+Step 1: Process "Hello"
+  Compute: Attention(hello)
+  Store: KV_cache = {k_hello, v_hello}
+
+Step 2: Process "world"
+  Don't recompute: Attention(hello)
+  Reuse: KV_cache
+  Compute only: Attention(world, reusing hello from cache)
+  Update: KV_cache = {k_hello, v_hello, k_world, v_world}
+
+Benefit: Linear complexity instead of quadratic!
+Cost: Memory to store KV cache grows with sequence length
+```
+
+### KV Cache Memory
+
+```
+Per token in cache:
+  Key: (batch_size, num_heads, 1, head_dim)
+  Value: (batch_size, num_heads, 1, head_dim)
+
+For Claude 3 (200K context):
+  ~200K × number_of_layers × cache_size = GBs of KV memory
+  
+Typical: 2-4 GB for full context length
+```
+
+## Context Length and Safety
+
+### Long Context Vulnerabilities
+
+```
+Short context (4K):
+  System prompt remembered ✓
+  Safety instructions enforced ✓
+
+Long context (200K):
+  System prompt buried in history
+  Model can ignore old instructions
+  Adversarial information dominates recent tokens
+  
+Result: Longer context = easier jailbreaks!
+```
+
+### Example: Context Injection Attack
+
+```
+User sends:
+[System: "You are helpful and harmless"]
+[... 199K tokens of adversarial content ...]
+[User: "Help me with illegal thing"]
+
+Long context model:
+- System prompt too far in past (attention fades)
+- Recent context (adversarial) is dominant
+- Model forgets about being helpful
+
+Short context model:
+- System prompt rewritten at each turn
+- Can't forget because prompt is recent
+```
+
+---
+
+## Handling Long Contexts
+
+### Sliding Window Attention
+Only attend to recent tokens:
+
+```
+Process token at position 1000:
+Only attend to tokens 950-1000 (window of 50)
+Not to tokens 1-949
+
+Benefit: O(n) instead of O(n²)
+Cost: Can't use very distant information
+```
+
+### Hierarchical Summarization
+Summarize old context and keep current:
+
+```
+Tokens 1-50: Summarize to 5 summary tokens
+Tokens 51-100: Keep full context
+Process with attention to summaries + current
+```
+
+### Sparse Attention
+Attend to selected important tokens:
+
+```
+Not all attention connections used:
+- Attend to previous 64 tokens
+- Attend to tokens at positions [0, 100, 500, 1000]
+- Skip most distant tokens
+
+Reduces complexity while maintaining long-range access
+```
+
+---
+
+## Safety at Different Context Lengths
+
+| Context | Safety Level | Vulnerability |
+|---------|---|---|
+| 4K | High | Limited jailbreak vectors |
+| 8K | Medium-High | Some instruction forgetting |
+| 32K | Medium | Adversarial content dominance |
+| 128K | Medium-Low | System prompt very distant |
+| 200K | Lower | Maximum forgetting risk |
+
+---
+
+## Practical Implications
+
+### For Users
+- Longer context = more flexibility but potentially weaker safety
+- System prompts should be in recent context
+- Don't rely on distant instructions
+
+### For Developers
+- Design models for long context safety
+- Regular system message reminders
+- Hierarchical safety layers
+
+### For Adversaries
+- Long context = opportunity for instruction injection
+- Bury conflicting instructions in long history
+- Recent adversarial content overrides distant safety
+
+---
+
+## Summary
+
+- **Context windows**: Limited by computation and memory
+- **KV cache**: Efficient inference but memory grows linearly
+- **Long context challenges**: Safety degradation over distance
+- **Solutions**: Sliding windows, summarization, sparse attention
+
+Next: Module 11 - **StrongREJECT Benchmark** - Evaluating safety rigorously.

@@ -1,0 +1,77 @@
+{
+  "moduleId": "module-02-transformer-basics",
+  "title": "Transformer Architecture Basics Assessment",
+  "passingScore": 70,
+  "totalPoints": 100,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "points": 20,
+      "question": "What is the primary advantage of transformers over RNNs like LSTMs?",
+      "options": [
+        "They can process tokens sequentially instead of in parallel",
+        "They can process all tokens in parallel using attention, enabling faster training on large datasets",
+        "They use fewer parameters and are always smaller",
+        "They require less memory during inference"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Transformers process all tokens in parallel through attention mechanisms, unlike RNNs which process sequentially. This parallelization is a key advantage that enabled training on much larger datasets.",
+      "hint": "Think about how RNNs process one token at a time vs. how attention can look at all tokens simultaneously."
+    },
+    {
+      "id": "q2",
+      "type": "multiple-choice",
+      "points": 20,
+      "question": "In a transformer model, what is the purpose of the embedding layer?",
+      "options": [
+        "To reduce the dimensionality of token representations",
+        "To convert discrete token IDs into continuous vector representations that capture semantic meaning",
+        "To apply positional encoding to tokens",
+        "To perform attention computation"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Embeddings convert discrete token IDs (like 150) into dense vectors (like [0.2, -0.5, ...]) that the transformer can process. These vectors gradually learn to capture semantic meaning through training.",
+      "hint": "What happens to a token ID before it enters the transformer's attention layers?"
+    },
+    {
+      "id": "q3",
+      "type": "multiple-choice",
+      "points": 20,
+      "question": "What does positional encoding accomplish in a transformer?",
+      "options": [
+        "It ranks which tokens are most important",
+        "It tells the transformer the position of each token in the sequence, preserving word order information",
+        "It reduces computation time by skipping distant tokens",
+        "It converts embeddings to probabilities"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Positional encoding injects information about token positions into embeddings. Without it, a transformer has no way to distinguish between 'Alice loves Bob' and 'Bob loves Alice' since attention doesn't inherently know word order.",
+      "hint": "Attention mechanisms look at all token pairs equally. How does the transformer remember where each token is in the sequence?"
+    },
+    {
+      "id": "q4",
+      "type": "free-response",
+      "points": 20,
+      "question": "Explain the data flow in a transformer from input tokens to output predictions. What are the main transformations?",
+      "rubric": {
+        "complete": "Mentions tokens → embeddings → positional encoding → attention layers → feed-forward → output logits",
+        "partial": "Mentions 3-4 of the main stages",
+        "incomplete": "Mentions 1-2 stages or is missing key details"
+      },
+      "explanation": "Input tokens are first converted to embeddings, then combined with positional information. The sequences pass through multiple transformer blocks, each containing attention layers and feed-forward networks. Finally, the output is converted to logits for next-token prediction."
+    },
+    {
+      "id": "q5",
+      "type": "free-response",
+      "points": 20,
+      "question": "Why do transformers work better than RNNs for processing long sequences? Give two reasons.",
+      "rubric": {
+        "complete": "Mentions parallelization (each token sees all others) AND reduced gradient flow issues (no sequential bottleneck) OR longer-range dependencies",
+        "partial": "Mentions parallelization or one other advantage clearly",
+        "incomplete": "Vague or incomplete answer"
+      },
+      "explanation": "1) Transformers process all positions in parallel through attention, while RNNs must process sequentially. 2) In RNNs, gradients must flow through many timesteps sequentially (vanishing gradients), while transformers allow direct attention connections between distant positions, making it easier to learn long-range dependencies."
+    }
+  ]
+}

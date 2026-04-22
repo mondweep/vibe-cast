@@ -1,0 +1,226 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Transformer Architecture Basics
+
+**Difficulty**: Beginner | **Duration**: 20 minutes | **Prerequisite**: Module 1 (Tokens)
+
+---
+
+## Learning Outcomes
+
+After this module, you'll be able to:
+
+- **Explain** the basic architecture of transformer models
+- **Describe** how transformers process sequences of tokens
+- **Identify** the role of embeddings in transformers
+- **Compare** transformers to previous sequence models (RNNs/LSTMs)
+
+---
+
+## Introduction: Why Transformers?
+
+Before transformers, language models used **Recurrent Neural Networks (RNNs)** and **LSTMs** to process text. These models had a critical limitation: they processed tokens one at a time, sequentially.
+
+```
+RNN Processing:     Token 1 → Token 2 → Token 3 → Token 4
+Transformer:        Token 1 ┐
+                    Token 2 ├─→ All processed in parallel
+                    Token 3 ┤
+                    Token 4 ┘
+```
+
+This sequential processing created two problems:
+1. **Slow training**: Can't parallelize across tokens
+2. **Weak long-range dependencies**: Information from distant tokens gets diluted as it flows through many steps
+
+**Transformers** solved this by allowing each token to attend directly to every other token simultaneously. This is the breakthrough that enabled modern large language models.
+
+---
+
+## The Transformer Architecture
+
+A transformer has several key components:
+
+```
+Input Tokens
+    ↓
+Embeddings (convert discrete tokens to vectors)
+    ↓
+Positional Encoding (add position information)
+    ↓
+Stack of Transformer Blocks (each block contains):
+  • Multi-Head Attention (attend to all tokens)
+  • Feed-Forward Network (token-wise transformations)
+    ↓
+Output Logits (probabilities for next token)
+```
+
+Let's understand each layer:
+
+### 1. Token Embeddings
+
+A token ID is just a number (e.g., token 150 = "apple"). We need to convert it to a vector that contains semantic information.
+
+**Embedding layer**: A lookup table that converts token IDs to vectors.
+
+```
+Token ID:        150
+         ↓
+Embedding Lookup:  [0.2, -0.5, 0.8, 1.2, ...]  (768-dim vector)
+         ↓
+Result:  A vector where nearby values represent similar tokens
+```
+
+Example: In the embedding space, token "apple" might be close to "fruit" and "tree", but far from "truck".
+
+**Why embeddings matter**: The model can't learn directly on token IDs. Embeddings give it a continuous representation where relationships are meaningful.
+
+### 2. Positional Encoding
+
+Transformers have no inherent notion of word order. Without positional information:
+
+```
+Transformer sees: [Token_A, Token_B, Token_C]
+            same as: [Token_B, Token_A, Token_C]
+            same as: [Token_C, Token_B, Token_A]
+```
+
+**Solution**: Add positional encoding before processing.
+
+```
+Original embedding:    [0.2, -0.5, 0.8, 1.2]
+Positional encoding:   [0.0, 1.0, 0.0, 1.0]  (encodes position 0)
+         ↓
+Combined:             [0.2, 0.5, 0.8, 2.2]  (now carries position info)
+```
+
+The position encoding is typically sine/cosine waves at different frequencies, allowing the model to learn both absolute and relative positions.
+
+### 3. Multi-Head Attention
+
+This is where the magic happens. Each token can "attend" to every other token in parallel.
+
+**Intuition**: When processing the word "bank", the model needs to decide: is this a financial institution or a river bank? It attends to nearby tokens like "account" (→ financial) or "river" (→ geography).
+
+```
+Input: "I deposited money at the bank"
+             ↑
+When processing "bank", attention shows:
+  • 30% attention to "deposited" (financial context)
+  • 20% attention to "money" (financial context)
+  • 5% attention to "the" (structure)
+  • 45% attention to itself (strong signal)
+```
+
+**Multi-head**: The model uses multiple attention heads simultaneously, each learning different relationship types:
+- Head 1: Subject-verb relationships
+- Head 2: Semantic similarity
+- Head 3: Long-range dependencies
+- ...and more
+
+### 4. Feed-Forward Network
+
+After attention, each token passes through a feed-forward network:
+
+```
+Token representation
+       ↓
+Hidden layer (4× larger)
+       ↓
+Output layer (back to original size)
+```
+
+This adds non-linearity and allows the model to learn complex patterns.
+
+### 5. Layer Stacking
+
+Modern transformers stack many blocks:
+- GPT-2: 12 blocks
+- GPT-3: 96 blocks
+- GPT-4: Reported to have even more
+
+Each layer refines the representations, building from simple patterns (early layers) to complex reasoning (later layers).
+
+---
+
+## Transformer vs RNN
+
+| Aspect | RNN/LSTM | Transformer |
+|--------|----------|-------------|
+| **Processing** | Sequential (one token at a time) | Parallel (all tokens at once) |
+| **Training Speed** | Slow on long sequences | Fast (parallelizable) |
+| **Long-range Dependencies** | Weak (gradient vanishing) | Strong (direct attention) |
+| **Memory** | Low (process one token) | Higher (must store all tokens) |
+| **Max Sequence Length** | Limited by gradient flow | Limited by memory/computation |
+
+**Key advantage**: Transformers can train on much longer sequences and larger datasets, which is why they power modern LLMs.
+
+---
+
+## Example: Processing "Hello world"
+
+Let's trace a simple example:
+
+```
+1. Tokenization (from Module 1):
+   "Hello world" → ["Hello", "world"] → [IDs: 15496, 995]
+
+2. Embeddings:
+   15496 → [0.1, -0.2, 0.5, ...]  (768 dimensions)
+   995   → [0.3,  0.1, 0.2, ...]
+
+3. Positional Encoding:
+   Position 0: add [0.0, 1.0, 0.0, 1.0, ...]
+   Position 1: add [0.84, 0.54, 0.0, 1.0, ...]
+
+4. Attention:
+   "Hello" attends to ["Hello" (80%), "world" (20%)]
+   "world" attends to ["Hello" (30%), "world" (70%)]
+
+5. Feed-forward + stacking:
+   Pass through multiple transformer blocks...
+
+6. Output:
+   Logits for next token prediction
+   [0.1, 0.05, 0.15, 0.02, ...] (softmax → probabilities)
+```
+
+---
+
+## Key Concepts
+
+### Query, Key, Value
+
+In attention, each token is transformed into three vectors:
+- **Query (Q)**: "What am I looking for?"
+- **Key (K)**: "Here's what I contain"
+- **Value (V)**: "Here's my actual information"
+
+```
+Attention = softmax(Q · K^T / √d) · V
+```
+
+This allows flexible matching: tokens ask questions (Q), search for matching keys (K), and retrieve relevant values (V).
+
+### Why √d Scaling?
+
+When dimensions are large, dot products become very large. Dividing by √d (embedding dimension) keeps the distribution stable.
+
+---
+
+## Summary
+
+- **Transformers enable parallel processing** of all tokens, unlike sequential RNNs
+- **Embeddings** convert discrete tokens to meaningful vectors
+- **Positional encoding** adds sequence position information
+- **Attention** allows each token to directly access all other tokens
+- **Multi-head attention** learns multiple relationship types simultaneously
+- **Stacking blocks** enables learning complex hierarchical patterns
+
+This architecture is the foundation of GPT, BERT, Claude, and all modern LLMs.
+
+---
+
+## Next Steps
+
+Ready for more? In Module 3, we'll dive deeper into **how attention actually works** with the full attention mechanism.

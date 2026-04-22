@@ -1,0 +1,72 @@
+{
+  "moduleId": "module-03-attention-mechanism",
+  "title": "Attention Mechanism Assessment",
+  "passingScore": 70,
+  "totalPoints": 100,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "points": 20,
+      "question": "What does the softmax function in attention do?",
+      "options": [
+        "Converts raw attention scores into probabilities that sum to 1",
+        "Reduces dimensionality of attention vectors",
+        "Amplifies high values and suppresses low values",
+        "Normalizes query and key vectors"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Softmax converts attention scores into a probability distribution - each weight is between 0 and 1, and all weights sum to 1. This allows the model to interpret attention as a weighted average."
+    },
+    {
+      "id": "q2",
+      "type": "multiple-choice",
+      "points": 20,
+      "question": "In the attention formula Attention = softmax(Q·K^T/√d)·V, why do we divide by √d?",
+      "options": [
+        "To reduce the variance of dot products and keep attention stable",
+        "To match the dimension of the output",
+        "To prevent the softmax from saturating",
+        "To normalize the query and key vectors"
+      ],
+      "correctAnswer": 0,
+      "explanation": "When dot products are too large, softmax becomes very peaked (one value ≈1, others ≈0), losing information. Dividing by √d keeps the distribution spread out and trainable."
+    },
+    {
+      "id": "q3",
+      "type": "free-response",
+      "points": 30,
+      "question": "Explain how multi-head attention works. Why use multiple heads instead of one large attention head?",
+      "rubric": {
+        "complete": "Mentions multiple parallel attention heads, each with independent Q/K/V projections, learning different relationships, then concatenated",
+        "partial": "Mentions multiple heads and some benefit like learning different patterns",
+        "incomplete": "Vague or missing key details"
+      }
+    },
+    {
+      "id": "q4",
+      "type": "multiple-choice",
+      "points": 15,
+      "question": "What is causal attention (or masked attention)?",
+      "options": [
+        "Attention where future tokens can attend to past tokens",
+        "Attention where past tokens cannot attend to future tokens (used in language models)",
+        "Attention computed without position information",
+        "Attention between different modalities"
+      ],
+      "correctAnswer": 1,
+      "explanation": "In language models, we prevent tokens from attending to future tokens (which haven't been generated yet). This is implemented by masking future positions to -∞ before softmax, forcing attention weights to 0."
+    },
+    {
+      "id": "q5",
+      "type": "free-response",
+      "points": 15,
+      "question": "Describe what Query, Key, and Value vectors represent conceptually.",
+      "rubric": {
+        "complete": "Q=what token is looking for, K=what each token offers, V=actual information to retrieve",
+        "partial": "Mentions 2-3 concepts correctly",
+        "incomplete": "Vague or incomplete"
+      }
+    }
+  ]
+}

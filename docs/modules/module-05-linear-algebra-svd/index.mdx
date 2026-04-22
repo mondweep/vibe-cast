@@ -1,0 +1,229 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Linear Algebra for ML — SVD Decomposition
+
+**Difficulty**: Intermediate | **Duration**: 25 minutes | **Prerequisite**: Module 2
+
+---
+
+## Learning Outcomes
+
+- **Explain** eigenvalues and eigenvectors geometrically
+- **Apply** SVD to decompose matrices
+- **Interpret** U, Σ, V components
+- **Analyze** SVD applied to neural network matrices
+
+---
+
+## Why Linear Algebra Matters
+
+Neural networks are fundamentally linear algebra:
+- Weight matrices: Linear transformations
+- Attention: Matrix multiplication
+- Embeddings: Vector spaces
+
+Understanding SVD lets us:
+- Compress models
+- Identify important directions
+- Remove safety constraints (Module 7!)
+- Analyze model behavior
+
+---
+
+## Matrices as Transformations
+
+A matrix is a function that transforms vectors:
+
+```
+Matrix A = [2  0]
+           [0  1]
+
+Input vector v = [1]
+                 [1]
+
+Output: A·v = [2]  (scaled x by 2, y unchanged)
+              [1]
+```
+
+**Intuition**: Matrices stretch, rotate, and squish vector space.
+
+## Eigenvalues and Eigenvectors
+
+An eigenvector is special - it doesn't change direction under matrix multiplication:
+
+```
+A·v = λ·v
+
+Where:
+  v = eigenvector
+  λ = eigenvalue (scaling factor)
+```
+
+**Example**:
+```
+Matrix A = [3  1]
+           [1  3]
+
+Eigenvector v = [1]   λ = 4
+                [1]
+
+A·v = [3 1] [1] = [4] = 4 [1]  ✓ Matches λ·v
+      [1 3] [1]   [4]     [1]
+```
+
+**Geometric interpretation**: 
+- Eigenvectors are special directions that don't rotate
+- Eigenvalues are the scaling factors
+- Important directions for the matrix
+
+## Singular Value Decomposition (SVD)
+
+SVD decomposes any matrix into three parts:
+
+```
+A = U · Σ · V^T
+
+Where:
+  U: Orthogonal matrix (rotation/reflection in input space)
+  Σ: Diagonal matrix (scaling/importance)
+  V^T: Orthogonal matrix (rotation/reflection in output space)
+```
+
+This works for ANY matrix (not just square symmetric ones).
+
+## Understanding SVD Components
+
+### Σ (Singular Values)
+
+The diagonal matrix Σ contains singular values σ₁ ≥ σ₂ ≥ ... ≥ σᵣ
+
+```
+Σ = [σ₁   0   0]
+    [0  σ₂   0]
+    [0   0  σ₃]
+```
+
+**Meaning**: How much each component contributes to the overall transformation.
+
+```
+If σ₁ = 100, σ₂ = 50, σ₃ = 1
+
+σ₁ contributes 100/(100+50+1) ≈ 66% of the "action"
+σ₂ contributes 50/(100+50+1) ≈ 33%
+σ₃ contributes 1/(100+50+1) ≈ 1%
+```
+
+High variance = important information. Low variance = noise/redundancy.
+
+### U and V (Directions)
+
+U and V are orthogonal matrices containing important directions:
+
+```
+U columns: Principal directions in input space
+V columns: Principal directions in output space
+```
+
+**Intuition**: If you apply the matrix to data, U tells you which input directions matter most, and V tells you which output directions receive the most energy.
+
+## Example: 3×3 Matrix SVD
+
+```
+A = [4  0  0]
+    [0  3  0]
+    [0  0  1]
+
+SVD decomposition:
+U = [1  0  0]    Σ = [4  0  0]    V = [1  0  0]
+    [0  1  0]        [0  3  0]        [0  1  0]
+    [0  0  1]        [0  0  1]        [0  0  1]
+
+Check: U·Σ·V^T = [1 0 0][4 0 0][1 0 0] = [4 0 0] = A ✓
+                   [0 1 0][0 3 0][0 1 0]   [0 3 0]
+                   [0 0 1][0 0 1][0 0 1]   [0 0 1]
+```
+
+Singular values [4, 3, 1] show:
+- First direction is 4× as important as the third
+- Second direction is 3× as important
+- Third direction captures only 1/4 the magnitude
+
+## Low-Rank Approximation
+
+By keeping only top k singular values, we can approximate matrices:
+
+```
+A_approx = U[:, :k] · Σ[:k, :k] · V[:k, :]^T
+```
+
+**Example**: Keep only σ₁ and σ₂, drop σ₃
+
+```
+Original rank: 3
+Approximation rank: 2
+
+Information preserved: (4 + 3) / (4 + 3 + 1) ≈ 87.5%
+Compression: 33% reduction in parameters
+```
+
+This is how recommendation systems and image compression work!
+
+## SVD in Neural Networks
+
+Neural network weight matrices have SVD structure:
+
+```
+Weight matrix W (in attention or feed-forward layer)
+has singular values distributed across a spectrum:
+
+σ₁ = 0.89  ╱──╲
+σ₂ = 0.72  │  │──╲
+σ₃ = 0.54  │  │   ╲
+σ₄ = 0.31  │  │    ╲
+σ₅ = 0.12  │  │     ╲__
+...
+σₙ ≈ 0.01  │  │
+           └──┘
+```
+
+Interpretation:
+- Large singular values: Directions the model cares about
+- Small singular values: Redundancy/noise
+
+## Application: Finding Safety Directions
+
+In adversarial attacks on models:
+
+1. Extract attention weight matrices
+2. Compute SVD
+3. Identify singular vectors corresponding to "refusal" behavior
+4. Remove those directions (abliteration!)
+
+This works because refusal is often confined to a low-rank subspace - safety is encoded in a few key directions.
+
+---
+
+## Key Concepts
+
+- **Eigenvectors**: Special directions that don't rotate
+- **Eigenvalues**: Scaling factors for those directions
+- **SVD**: Decomposes any matrix into rotations and scaling
+- **Singular values**: Importance of each component
+- **Low-rank approximation**: Keep top k components
+- **Neural network analysis**: Understand which directions matter
+
+---
+
+## Summary
+
+SVD is the fundamental tool for understanding matrices in deep learning:
+- Identifies important directions
+- Enables compression
+- Reveals structure in models
+- **Crucial for abliteration** (Module 7)
+
+---
+
+## Next Steps
+
+Module 6 extends this with **Matrix Decomposition Deep Dive**, and Module 7 applies SVD to **Abliteration** - understanding how to surgically remove safety from models.

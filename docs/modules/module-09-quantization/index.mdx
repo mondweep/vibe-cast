@@ -1,0 +1,179 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Quantization & Compression
+
+**Difficulty**: Intermediate | **Duration**: 15 minutes | **Prerequisite**: Module 2
+
+---
+
+## Learning Outcomes
+
+- **Explain** quantization and model compression
+- **Analyze** precision tradeoffs
+- **Evaluate** safety impact of quantization
+- **Discuss** GGUF and practical model formats
+
+---
+
+## What is Quantization?
+
+Converting model weights from high precision to lower precision:
+
+```
+FP32 (float32): 4 bytes per weight
+  [01001010 10111100 00000000 00000000]  32 bits
+
+FP16 (float16): 2 bytes per weight
+  [00111100 00000000]  16 bits
+
+INT8 (8-bit): 1 byte per weight
+  [11110001]  8 bits
+  
+Compression: 4× smaller for INT8 vs FP32
+Speed: ~4× faster inference
+Cost: Precision loss
+```
+
+## Quantization Methods
+
+### Post-Training Quantization (PTQ)
+- Take pre-trained model
+- Quantize without retraining
+- Fastest but lowest quality
+
+### Quantization-Aware Training (QAT)
+- Train with quantization in mind
+- Better quality but slower training
+
+### Dynamic vs. Static
+- **Dynamic**: Quantize per batch (slower, better)
+- **Static**: Fixed quantization (faster, coarser)
+
+---
+
+## Precision Formats
+
+### FP32 (Standard)
+- Full precision
+- Accurate but memory-heavy
+- Original format
+
+### FP16 (Half Precision)
+- 50% memory
+- Minimal accuracy loss
+- Common in training
+
+### GGUF Format
+- Optimized for inference
+- Quantizes to 4-bit, 5-bit, 8-bit
+- Running models locally (Ollama, llama.cpp)
+
+### INT4 Extreme Compression
+- 96% size reduction
+- Significant information loss
+- Still usable for many tasks
+
+---
+
+## Safety and Quantization
+
+### Does Quantization Hurt Safety?
+
+```
+Original model (FP32): Refuses harmful queries
+  
+Quantized to INT8: Still refuses (but less consistent)
+  
+Quantized to INT4: More prone to errors
+  - May refuse incorrectly (false positives)
+  - May accept incorrectly (false negatives)
+  
+Extreme quantization: Safety may degrade significantly
+```
+
+### Why Quantization Affects Safety
+
+Safety checks are often:
+- Fine-grained decisions (requires precision)
+- Based on subtle contextual clues
+- Distributed across many low-weight connections
+
+Quantization hits these hardest.
+
+### Empirical Findings
+
+Research shows:
+- **INT8**: Minimal safety impact
+- **INT4**: ~10-20% increase in refusal-bypass success
+- **INT3**: Significant degradation
+
+---
+
+## GGUF Format Deep Dive
+
+GGUF = GPT-Generated Unified Format
+
+Designed for efficient inference:
+
+```
+Model file structure:
+┌─────────────────────────┐
+│ Header (metadata)       │
+├─────────────────────────┤
+│ Quantized weights       │
+├─────────────────────────┤
+│ Vocab/tokenizer         │
+├─────────────────────────┤
+│ Additional metadata     │
+└─────────────────────────┘
+
+Benefits:
+- No external tokenizer needed
+- Single file deployment
+- Fast loading
+- Support for multiple quantization formats
+```
+
+---
+
+## Model Compression Comparison
+
+| Method | Size Reduction | Speed | Quality Loss |
+|--------|---|---|---|
+| FP32 | 1× | 1× | 0% |
+| FP16 | 2× | 1.5× | ~5% |
+| GGUF Q8 | 4× | 2× | ~10% |
+| GGUF Q5 | 8× | 3× | 15-20% |
+| GGUF Q4 | 12× | 4× | 25-40% |
+| GGUF Q2 | 16× | 5× | 50%+ |
+
+---
+
+## Running Models Locally
+
+GGUF enables local inference:
+
+```
+Using llama.cpp (C++ inference):
+$ ./llama-cli -m model.gguf -q
+<Loading quantized model>
+<Running inference without API calls>
+<No data sent to cloud>
+```
+
+**Safety implications**:
+- Models stay on local device
+- Privacy preserved
+- BUT: Quantized models easier to attack
+- AND: Abliteration can be applied post-deployment
+
+---
+
+## Summary
+
+- **Quantization**: Reduces precision to compress models
+- **GGUF**: Optimized format for local inference
+- **Safety impact**: Moderate, especially at extreme quantization
+- **Tradeoff**: Size vs. accuracy vs. safety
+
+Next: Module 10 - **Context Windows & KV Cache**
