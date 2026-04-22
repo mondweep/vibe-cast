@@ -1,0 +1,237 @@
+# 🧠 AI Safety & Jailbreak Research Tutorial
+
+**Learn the fundamentals of AI safety, model architecture, and jailbreak evaluation through interactive lessons.**
+
+This is a comprehensive tutorial covering key concepts in AI safety research, from basic building blocks to advanced evaluation methodologies. Whether you're a researcher, engineer, or curious learner, you'll gain practical understanding of how language models work and how they can be made safer.
+
+---
+
+## Quick Start: Choose Your Path
+
+### 🌱 Beginner Path (Start Here)
+**Foundation Layer** — Understand the basics of how language models process text.
+
+1. **Module 1: Tokens & Tokenization** (15 min)  
+   Learn what tokens are and why they matter for model input.
+   - Define what a token is in NLP
+   - Calculate approximate token count
+   - Understand context window limits
+
+2. **Module 2: Transformer Architecture Basics** (20 min)  
+   Understand the core architecture behind modern language models.
+   - How transformers process text
+   - Attention mechanism overview
+   - Layers and embeddings
+
+3. **Module 3: Attention Mechanism Deep Dive** (15 min)  
+   Go deeper into how attention makes models understand context.
+   - Query, Key, Value vectors
+   - Attention weight calculation
+   - Multi-head attention
+
+**Estimated Time**: 50 minutes  
+**Difficulty**: Beginner  
+**No prerequisites**
+
+---
+
+### 🔬 Research Path (Intermediate)
+**Mathematical Foundations** — Develop the mathematical tools used in model analysis.
+
+4. **Module 5: Linear Algebra for ML — SVD Decomposition** (25 min)  
+   Learn singular value decomposition and matrix mathematics.
+   - Matrix multiplication and properties
+   - Eigenvalues and eigenvectors
+   - SVD formula and geometric intuition
+   - Working example: decomposing a 3×3 matrix
+
+5. **Module 7: Abliteration — Removing Safety via SVD** (20 min)  
+   Understand how safety constraints are surgically removed from models.
+   - How abliteration works mathematically
+   - SVD-based refusal direction removal
+   - Consequences for reasoning capability
+   - Implications for AI safety
+
+**Prerequisites**: Modules 1-3 (foundation)  
+**Estimated Time**: 45 minutes  
+**Difficulty**: Intermediate
+
+---
+
+### 🎯 Advanced Path (Evaluation & Analysis)
+**Evaluation & Testing** — Learn rigorous methods for testing jailbreak effectiveness.
+
+8. **Module 11: StrongREJECT Benchmark** (20 min)  
+   Master the state-of-the-art jailbreak evaluation framework.
+   - What makes a good evaluation?
+   - StrongREJECT methodology
+   - Willingness vs. capability scoring
+   - 313-prompt benchmark
+
+9. **Module 12: Jailbreak Evaluation Metrics** (20 min)  
+   Implement actual evaluation and interpret results.
+   - Scoring functions
+   - False positives and false negatives
+   - Comparing attack effectiveness
+   - Case study analysis
+
+10. **Module 13: Abliterated vs Aligned Models** (15 min)  
+    Compare behavior of safety-removed vs safety-aligned models.
+    - Design experiments to compare models
+    - Quantifying capability degradation
+    - Measuring refusal rates
+
+**Prerequisites**: Modules 1, 7, 11  
+**Estimated Time**: 55 minutes  
+**Difficulty**: Advanced
+
+---
+
+## Complete Course Map
+
+```
+Foundation Layer (90 min, Beginner)
+├─ Module 1: Tokens & Tokenization [15 min]
+├─ Module 2: Transformer Basics [20 min]
+├─ Module 3: Attention Mechanism [15 min]
+├─ Module 4: Embeddings & Representations [15 min]
+├─ Module 5: Linear Algebra — SVD [20 min]
+└─ Module 6: Matrix Decomposition Deep Dive [15 min]
+
+Safety & Architecture Layer (70 min, Intermediate)
+├─ Module 7: Abliteration via SVD [20 min] (requires M5)
+├─ Module 8: Mixture of Experts [15 min]
+├─ Module 9: Quantization & Compression [15 min]
+└─ Module 10: Context Windows & KV Cache [15 min]
+
+Evaluation & Research Layer (60 min, Advanced)
+├─ Module 11: StrongREJECT Benchmark [20 min] (requires M1, M7)
+├─ Module 12: Jailbreak Metrics [20 min] (requires M11)
+└─ Module 13: Abliterated vs Aligned [15 min] (requires M7, M8)
+
+Total: ~220 minutes (3.5 hours)
+```
+
+---
+
+## What You'll Learn
+
+### Conceptual Understanding
+- How language models break text into tokens
+- How transformer attention mechanisms work
+- How matrix mathematics describes neural networks
+- How safety training can be mathematically removed
+
+### Practical Skills
+- Estimate token counts for model inputs
+- Understand model context window constraints
+- Read and interpret evaluation metrics
+- Design experiments to test model safety
+- Interpret StrongREJECT benchmark results
+
+### Research Knowledge
+- Current jailbreak methods and effectiveness
+- How to rigorously evaluate safety circumvention
+- The relationship between safety and reasoning capability
+- How different model architectures affect vulnerability
+
+---
+
+## Key Concepts You'll Master
+
+| Concept | First Mentioned | Why It Matters |
+|---------|-----------------|----------------|
+| **Token** | Module 1 | Fundamental unit of text for models |
+| **Attention** | Module 2 | How models understand context |
+| **Embedding** | Module 4 | How models represent meaning |
+| **SVD** | Module 5 | Mathematical tool for model analysis |
+| **Abliteration** | Module 7 | How safety constraints are removed |
+| **Quantization** | Module 9 | How models fit on devices |
+| **Context Window** | Module 10 | Limit on text length models can process |
+| **StrongREJECT** | Module 11 | Framework for evaluating jailbreaks |
+
+---
+
+## Learning Outcomes by Path
+
+### After Beginner Path
+✅ Define tokens and explain their role in NLP  
+✅ Describe how attention mechanisms work  
+✅ Explain embeddings and their importance  
+✅ Apply token counting to real text  
+
+### After Research Path
+✅ All Beginner outcomes, plus:  
+✅ Perform SVD decomposition manually  
+✅ Explain why SVD removes safety  
+✅ Describe the mathematical basis of abliteration  
+
+### After Advanced Path
+✅ All Research outcomes, plus:  
+✅ Implement StrongREJECT evaluation  
+✅ Score jailbreak effectiveness rigorously  
+✅ Design comparative experiments  
+✅ Interpret research findings  
+
+---
+
+## How to Use This Tutorial
+
+### For Self-Study
+1. Start with the path that matches your background
+2. Complete modules in order (prerequisites matter!)
+3. Do exercises after each module to practice
+4. Take assessments to verify understanding
+5. Read the "Next Steps" section for what to learn next
+
+### For Teaching
+- Share individual modules as standalone lessons
+- Use assessments to gauge student understanding
+- Exercises provide practice problems
+- Complete syllabus available for structured courses
+
+### For Research
+- Use as reference for AI safety concepts
+- Citation-friendly: each module has bibliography
+- Reproducible examples included
+- Links to original papers and code
+
+---
+
+## About This Tutorial
+
+**Created**: 2026-04-22  
+**Last Updated**: 2026-04-22  
+**Scope**: Intermediate AI safety research (beyond marketing, before PhD-level papers)  
+**Time to Complete**: 3.5-4 hours total (can be split into modules)  
+
+### Built with
+- **[Astro](https://astro.build)** — Static site framework
+- **[MDX](https://mdxjs.com)** — Markdown + React for interactivity
+- **[Tailwind CSS](https://tailwindcss.com)** — Styling
+- **[Netlify](https://netlify.com)** — Hosting & deployment
+
+### Open Source
+This tutorial is open source (MIT License). Contribute on GitHub: [mondweep/vibe-cast](https://github.com/mondweep/vibe-cast/tree/tutorial-system)
+
+---
+
+## Next Steps
+
+### Choose Your Starting Point
+- 👶 **Never coded?** → Start with Module 1 (Beginner Path)
+- 🔧 **Know Python but new to ML?** → Start with Module 4 (Research Path)
+- 📊 **ML background?** → Start with Module 7 (Advanced Path)
+
+### Start Learning
+Pick a module from the paths above and begin!
+
+---
+
+**Questions?** See the [FAQ](./faq.mdx) or check individual module discussions.
+
+**Want to contribute?** See [Contributing Guidelines](./CONTRIBUTING.md).
+
+---
+
+*This tutorial is part of ongoing AI safety research. For details, see [PROGRESS_LOG.md](../PROGRESS_LOG.md) and [ADRs](../ADR/).*

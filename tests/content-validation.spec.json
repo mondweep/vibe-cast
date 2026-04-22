@@ -1,0 +1,206 @@
+{
+  "title": "Content Validation Specification",
+  "description": "Tests that validate module content quality before deployment",
+  "version": "1.0.0",
+  "modules": [
+    {
+      "module_id": "module-01-tokens",
+      "title": "Tokens & Tokenization",
+      "tests": [
+        {
+          "id": "content-001",
+          "name": "Learning outcomes are defined",
+          "type": "structure",
+          "validation": {
+            "file": "objectives.json",
+            "must_exist": true,
+            "must_have_field": "learning_outcomes",
+            "min_count": 3,
+            "max_count": 5
+          }
+        },
+        {
+          "id": "content-002",
+          "name": "Assessment covers all learning outcomes",
+          "type": "coverage",
+          "validation": {
+            "file": "assessment.json",
+            "rule": "For each learning_outcome in objectives.json, at least one question in assessment.json must reference it",
+            "severity": "error"
+          }
+        },
+        {
+          "id": "content-003",
+          "name": "Content explains all key concepts",
+          "type": "coverage",
+          "validation": {
+            "file": "index.mdx",
+            "must_contain_concepts": [
+              "token",
+              "tokenization",
+              "context window",
+              "truncation"
+            ]
+          }
+        },
+        {
+          "id": "content-004",
+          "name": "Assessment questions are answerable from content",
+          "type": "answerability",
+          "validation": {
+            "description": "Manual check: Can a student who read the module answer all questions correctly?",
+            "severity": "warning",
+            "reviewer_check": true
+          }
+        },
+        {
+          "id": "content-005",
+          "name": "Content length is appropriate",
+          "type": "quality",
+          "validation": {
+            "file": "index.mdx",
+            "min_words": 1800,
+            "max_words": 2200,
+            "description": "Module should be 15-20 minutes reading time"
+          }
+        },
+        {
+          "id": "content-006",
+          "name": "All assets are present",
+          "type": "structure",
+          "validation": {
+            "must_have_assets": [
+              "assets/diagrams/",
+              "assets/code/"
+            ],
+            "min_diagrams": 1,
+            "min_code_examples": 1
+          }
+        },
+        {
+          "id": "content-007",
+          "name": "No broken links",
+          "type": "quality",
+          "validation": {
+            "files": ["index.mdx", "assessment.json", "exercises.json"],
+            "check_internal_links": true,
+            "check_external_links": true
+          }
+        },
+        {
+          "id": "content-008",
+          "name": "Assessment passing score is realistic",
+          "type": "quality",
+          "validation": {
+            "file": "assessment.json",
+            "field": "passing_score",
+            "must_be": "70-85",
+            "description": "Students who understood content should pass this easily"
+          }
+        },
+        {
+          "id": "content-009",
+          "name": "All exercises relate to module concepts",
+          "type": "alignment",
+          "validation": {
+            "file": "exercises.json",
+            "rule": "Each exercise must list related_concepts that exist in module",
+            "severity": "warning"
+          }
+        },
+        {
+          "id": "content-010",
+          "name": "Prerequisites are documented",
+          "type": "structure",
+          "validation": {
+            "file": "objectives.json",
+            "must_have_field": "prerequisites",
+            "must_have_field": "prerequisite_warning"
+          }
+        }
+      ]
+    }
+  ],
+  "global_tests": [
+    {
+      "id": "global-001",
+      "name": "No circular prerequisites",
+      "type": "architecture",
+      "validation": {
+        "description": "Module dependency graph must be acyclic",
+        "check_across": "all modules",
+        "severity": "error"
+      }
+    },
+    {
+      "id": "global-002",
+      "name": "Consistent terminology (ubiquitous language)",
+      "type": "quality",
+      "validation": {
+        "description": "Use 'module', not 'lesson' or 'course'; 'assessment', not 'test'; 'exercise', not 'practice'",
+        "files": ["*.mdx", "*.json"],
+        "severity": "warning"
+      }
+    },
+    {
+      "id": "global-003",
+      "name": "All modules follow DDD domain model",
+      "type": "architecture",
+      "validation": {
+        "check": [
+          "Module is an aggregate root",
+          "Learning outcomes are value objects",
+          "Questions are value objects",
+          "Assessment is an entity"
+        ],
+        "severity": "error"
+      }
+    }
+  ],
+  "pre_publication_checklist": [
+    {
+      "item": "Content passes structure validation (content-001 through content-010)",
+      "type": "automated"
+    },
+    {
+      "item": "Answerability reviewed by external reader (content-004)",
+      "type": "manual",
+      "description": "2-3 people unfamiliar with content take assessment and pass"
+    },
+    {
+      "item": "Passing rate >= 70% on external review",
+      "type": "metric",
+      "target": 0.70
+    },
+    {
+      "item": "No broken links (content-007)",
+      "type": "automated"
+    },
+    {
+      "item": "Mobile responsive tested",
+      "type": "manual",
+      "description": "Check on phone, tablet, desktop"
+    },
+    {
+      "item": "Spelling and grammar checked",
+      "type": "manual"
+    },
+    {
+      "item": "Code examples tested and runnable",
+      "type": "manual"
+    },
+    {
+      "item": "All diagrams load and display correctly",
+      "type": "manual"
+    },
+    {
+      "item": "Tone is appropriate (conversational but informative)",
+      "type": "manual"
+    },
+    {
+      "item": "Learning outcomes are visible to student",
+      "type": "automated",
+      "description": "Check that objectives.json displays on page"
+    }
+  ]
+}

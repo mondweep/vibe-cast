@@ -1,0 +1,394 @@
+import { Card, Alert, CodeBlock } from '@/components/elements';
+
+# Tokens & Tokenization
+
+**Difficulty**: Beginner | **Duration**: 15 minutes | **No prerequisites needed**
+
+---
+
+## Learning Outcomes
+
+After this module, you'll be able to:
+
+- **Define** what a token is in natural language processing
+- **Apply** the heuristic that 1 token ≈ 0.75 words to estimate token count
+- **Explain** how tokenization works and why different tokenizers produce different outputs
+- **Explain** why tokenization matters for model behavior and context windows
+
+---
+
+## Introduction: Why Should You Care?
+
+Imagine you want to use a language model to analyze a long document. The model seems powerful—it can understand text, answer questions, and generate coherent responses. But there's a catch: **the model can't actually process your entire document at once.**
+
+Language models have a **context window**—a maximum amount of text they can see. If your document is too long, it gets cut off. But how do you know if your document is "too long"?
+
+That's where **tokenization** comes in.
+
+Tokenization is how the model's internal machinery breaks text into small pieces it can actually process. Understanding this is fundamental to working with language models effectively.
+
+---
+
+## What is a Token?
+
+A **token** is the smallest unit of text that a language model processes individually. Think of it as a "piece" of your input text.
+
+Unlike words in English (which we think of as letters separated by spaces), tokens are defined by the specific rules of the tokenizer. A token might be:
+
+- A word: `"hello"`
+- Part of a word: `"hel"` or `"lo"`
+- Punctuation: `","`
+- Even whitespace: a space character
+
+### Example: Simple Tokenization
+
+Let's tokenize a sentence:
+
+```
+Text:    "Hello, world!"
+Tokens:  ["Hello", ",", "world", "!"]
+Count:   4 tokens
+```
+
+Here, the tokenizer broke the text into 4 pieces: the word "Hello", the comma, the word "world", and the exclamation mark.
+
+### Different Tokenizers, Different Results
+
+Here's where it gets interesting: **different tokenizers produce different results** for the same text.
+
+```
+Text: "Don't worry"
+
+Word Tokenizer:
+  Tokens: ["Don't", "worry"]
+  Count: 2 tokens
+
+Subword Tokenizer (BPE):
+  Tokens: ["Don", "'t", "worry"]
+  Count: 3 tokens
+
+Character Tokenizer:
+  Tokens: ["D", "o", "n", "'", "t", " ", "w", "o", "r", "r", "y"]
+  Count: 11 tokens
+```
+
+For the exact same input text, we get 2, 3, or 11 tokens depending on which tokenizer we use. This is critical to understand.
+
+---
+
+## How Tokenization Works
+
+### The Three Main Approaches
+
+**1. Word Tokenization**
+
+Split text at spaces and punctuation. Each word becomes a token.
+
+- ✅ Simple and intuitive
+- ✅ Good for languages with clear word boundaries (English, French)
+- ❌ Struggles with rare words or compound words
+- ❌ Creates huge vocabulary (50,000+ unique tokens)
+
+**Example**:
+```
+"The quick brown fox"
+→ ["The", "quick", "brown", "fox"]
+→ 4 tokens
+```
+
+**2. Subword Tokenization**
+
+Break words into smaller pieces. This is what modern models like GPT and BERT use.
+
+- ✅ Handles rare and unknown words better
+- ✅ More compact vocabulary (10,000-50,000 tokens)
+- ✅ Better for multiple languages
+- ❌ Less human-readable tokens
+- ❌ Slightly slower processing
+
+**Example**:
+```
+"The quickest fox"
+→ ["The", "quick", "est", "fox"]
+→ 4 tokens
+
+(Note: "quickest" was split into "quick" + "est")
+```
+
+**3. Character Tokenization**
+
+Each character is a token. Rarely used for large models because it's very inefficient.
+
+- ✅ Handles any input (no unknown tokens)
+- ✅ Minimal vocabulary
+- ❌ Very long sequences (more computational cost)
+- ❌ Hard for models to learn character patterns
+
+**Example**:
+```
+"Hello"
+→ ["H", "e", "l", "l", "o"]
+→ 5 tokens
+```
+
+### Which Tokenizer Does My Model Use?
+
+Each language model comes with a specific tokenizer:
+- **GPT models** (OpenAI) → Byte-Pair Encoding (BPE)
+- **BERT models** (Google) → WordPiece
+- **LLaMA models** → SentencePiece
+- **Gemma models** → SentencePiece
+
+When you use a model, you must use its paired tokenizer. You can't use GPT's tokenizer with BERT.
+
+---
+
+## Estimating Token Count: The 0.75 Heuristic
+
+In practice, you often want to **estimate** how many tokens your text will be before processing it through a model.
+
+There's a useful rule of thumb:
+
+### **1 token ≈ 0.75 words** (or **1 word ≈ 1.33 tokens**)
+
+This comes from empirical observation across many English texts using common tokenizers.
+
+**Formula**:
+```
+Estimated tokens = Word count ÷ 0.75
+```
+
+Or equivalently:
+```
+Estimated tokens = Word count × 1.33
+```
+
+### Examples
+
+**Example 1: Short sentence**
+```
+Text: "The quick brown fox jumps over the lazy dog"
+Words: 9 words
+Estimated tokens: 9 ÷ 0.75 = 12 tokens
+Actual tokens: 11 tokens ✓ (pretty close!)
+```
+
+**Example 2: Paragraph**
+```
+Text: ~500 word paragraph
+Words: 500
+Estimated tokens: 500 ÷ 0.75 = 667 tokens
+Actual tokens: 650-700 tokens ✓
+```
+
+**Example 3: Long document**
+```
+Text: 10,000 word document
+Words: 10,000
+Estimated tokens: 10,000 ÷ 0.75 = 13,333 tokens
+Actual: 13,000-14,000 tokens ✓
+```
+
+### Caveats
+
+This heuristic works well for English but has limits:
+
+- **Different languages**: Other languages may have different ratios
+  - Japanese: ~1 token per 0.5-0.6 words (more tokens!)
+  - German: ~1 token per 0.9 words (fewer tokens!)
+
+- **Technical content**: Code, formulas, and numbers may have different ratios
+  - `"x + y = 42"` might tokenize as `["x", "+", "y", "=", "42"]` (5 tokens for 5 items)
+
+- **Specific tokenizers**: Some tokenizers are more or less aggressive
+  - GPT-2: ~1.3 tokens per word
+  - GPT-3: ~1.25 tokens per word
+  - BERT: ~1.5 tokens per word
+
+**For precise counts, always use the actual tokenizer:**
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+text = "Hello, how are you?"
+tokens = tokenizer.encode(text)
+print(len(tokens))  # Exact token count
+```
+
+But for quick estimation without running code, the 0.75 rule is very useful.
+
+---
+
+## Why Tokenization Matters: Context Windows
+
+Here's the critical part: **language models have a maximum context window.**
+
+A **context window** is the maximum number of tokens a model can process in a single request.
+
+### Common Context Windows
+
+| Model | Context Window | In Tokens |
+|-------|---|---|
+| GPT-3.5 (standard) | 4,096 | 4,096 tokens |
+| GPT-4 (standard) | 8,192 | 8,192 tokens |
+| GPT-4 Turbo | 128,000 | 128,000 tokens |
+| Claude 3 Opus | 200,000 | 200,000 tokens |
+| Gemma-4-26B | 262,144 (training) | 262,144 tokens |
+| LLaMA 2 | 4,096 | 4,096 tokens |
+
+### What Happens When You Exceed the Context Window?
+
+If your input has more tokens than the context window allows, the model **truncates** (cuts off) the extra tokens. The model never sees the rest of your input.
+
+**Example**:
+```
+Model: GPT-3.5 (4,096 token context window)
+Your input: "Here is a 50-page document..." (8,000 tokens)
+
+Result:
+  ✓ Model sees: First 4,096 tokens (about 3,000 words)
+  ✗ Model never sees: Remaining 3,904 tokens
+  ❌ You lose half your document!
+```
+
+### Planning Your Input
+
+This is why understanding tokenization is crucial:
+
+1. **Know your model's context window** (check the documentation)
+2. **Estimate your input token count** (use the 0.75 heuristic)
+3. **Verify it fits** (tokens < context window)
+4. **If it doesn't fit**: Either:
+   - Use a model with a larger context window
+   - Split your input into smaller chunks
+   - Summarize your input first
+
+### Real-World Example
+
+Imagine you're building a chatbot that analyzes legal contracts:
+
+```
+Contract length: 20,000 words
+Estimated tokens: 20,000 ÷ 0.75 = 26,667 tokens
+
+Model choice:
+  ❌ GPT-3.5 (4K context) → Contract gets truncated 86%
+  ❌ GPT-4 (8K context) → Contract gets truncated 74%
+  ✅ GPT-4 Turbo (128K context) → Entire contract fits!
+  ✅ Claude 3 Opus (200K context) → Entire contract fits!
+```
+
+Understanding tokenization tells you which model to choose.
+
+---
+
+## Summary: Key Takeaways
+
+**What you've learned**:
+
+✅ **Tokens are discrete units** of text that models break input into  
+✅ **Different tokenizers** create different tokens for the same text  
+✅ **The 0.75 heuristic** helps estimate token count (1 token ≈ 0.75 words)  
+✅ **Context windows are limits** on how many tokens a model can process  
+✅ **Exceeding context windows** causes truncation and information loss  
+
+**Why it matters**:
+- Predicts whether your input will fit in a model
+- Helps you choose the right model for your task
+- Explains why long documents sometimes don't work
+- Connects to everything about model behavior
+
+---
+
+## Ready to Go Deeper?
+
+Next module: **Module 2: Transformer Architecture Basics**  
+You'll learn how the model actually *uses* these tokens once they're created.
+
+### Optional: Try It Yourself
+
+If you want to see tokenization in action, try this Python code:
+
+```python
+from transformers import AutoTokenizer
+
+# Load a tokenizer
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+
+# Tokenize some text
+text = "Hello, how are you today?"
+token_ids = tokenizer.encode(text)
+tokens = tokenizer.convert_ids_to_tokens(token_ids)
+
+print(f"Text: {text}")
+print(f"Tokens: {tokens}")
+print(f"Count: {len(tokens)} tokens")
+```
+
+Output:
+```
+Text: Hello, how are you today?
+Tokens: ['Hello', ',', 'Ġhow', 'Ġare', 'Ġyou', 'Ġtoday', '?']
+Count: 7 tokens
+```
+
+---
+
+## Assessment
+
+Ready to check your understanding? Take the quiz below.
+
+<Alert type="info">
+  Passing score: 70% (14 out of 20 points)  
+  Questions: 7 (mix of free response and multiple choice)  
+  Time: 5-10 minutes
+</Alert>
+
+[Assessment Questions - See assessment.json]
+
+---
+
+## Exercises (Optional)
+
+Want to practice? Try these:
+
+1. **Estimate token count** for 3 different texts you write
+   - Use the 0.75 heuristic
+   - Then verify with actual tokenizer if possible
+
+2. **Tokenizer comparison**: Take a sentence with contractions
+   - Tokenize with different tokenizers (if you have code access)
+   - Compare the results
+
+3. **Context window planning**: 
+   - Pick a task (summarizing articles, analyzing documents, etc.)
+   - Estimate token requirements
+   - Find a model with sufficient context window
+
+---
+
+## References & Further Reading
+
+- [OpenAI's Tokenizer (for GPT models)](https://platform.openai.com/tokenizer)
+- [Hugging Face Tokenizers Documentation](https://huggingface.co/docs/transformers/tokenizer_summary)
+- [What are tokens? - LlamaIndex Blog](https://docs.llamaindex.ai/en/stable/module_guides/models/llms/#token-counting)
+- [Byte-Pair Encoding Explained](https://huggingface.co/docs/tokenizers/quicktour)
+
+---
+
+## Key Vocabulary
+
+| Term | Definition |
+|------|-----------|
+| **Token** | Discrete unit of text (word, subword, character, or punctuation) |
+| **Tokenization** | Process of breaking text into tokens |
+| **Tokenizer** | Tool/algorithm that converts text into tokens |
+| **Context window** | Maximum number of tokens a model can process at once |
+| **Truncation** | When input exceeds context window and gets cut off |
+| **Subword** | Token smaller than a word (e.g., "ing" or "est") |
+
+---
+
+**Module Status**: ✅ Ready for assessment  
+**Next**: Module 2: Transformer Architecture Basics

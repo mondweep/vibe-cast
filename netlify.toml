@@ -1,0 +1,74 @@
+# Netlify Configuration
+# Deploy settings for AI Safety Tutorial
+
+[build]
+  # Build command
+  command = "npm run build"
+
+  # Directory to deploy
+  publish = "dist"
+
+  # Functions directory (for serverless functions)
+  functions = "netlify/functions"
+
+[build.environment]
+  # Node version
+  NODE_VERSION = "20"
+
+  # NPM version
+  NPM_VERSION = "10"
+
+# Redirect rules
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Prevent MIME type sniffing
+    X-Content-Type-Options = "nosniff"
+
+    # Prevent clickjacking
+    X-Frame-Options = "SAMEORIGIN"
+
+    # Enable browser XSS protection
+    X-XSS-Protection = "1; mode=block"
+
+    # Content Security Policy (permissive for educational content)
+    Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:;"
+
+    # Referrer policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Asset optimization
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# HTML cache (shorter TTL for deployments)
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+# API endpoints (if added later)
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# Deploy preview settings
+[context.deploy-preview]
+  command = "npm run build"
+
+# Production context
+[context.production]
+  command = "npm run build"
+
+# Analytics (optional, set ENABLE_ANALYTICS env var)
+# [analytics]
+#   enabled = true

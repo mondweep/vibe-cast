@@ -375,3 +375,9 @@ Result: Refusal behavior removed, reasoning degraded
   - Infrastructure ready for experiments ✓
 
 *Last updated: 2026-04-22 (Session 2 complete — ready for jailbreak testing)*
+
+---
+
+### 🔔 Update — 2026-04-22 13:28 BST
+- **Note:** Retrying evaluation test after improving script with SILENT response detection and response printing. llama-server confirmed healthy.
+- **Status:** 📝 Update

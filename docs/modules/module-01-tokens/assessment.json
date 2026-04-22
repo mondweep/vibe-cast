@@ -1,0 +1,152 @@
+{
+  "module_id": "module-01-tokens",
+  "title": "Assessment: Tokens & Tokenization",
+  "description": "Quiz to validate learning outcomes for Module 1",
+  "total_questions": 7,
+  "passing_score": 70,
+  "total_points": 20,
+
+  "questions": [
+    {
+      "id": "q1",
+      "type": "free_text",
+      "learning_outcome_id": "lo1",
+      "difficulty": 1,
+      "points": 3,
+      "question_text": "In your own words, what is a token in the context of language models?",
+      "expected_key_phrases": [
+        "discrete unit",
+        "text OR word OR subword",
+        "process OR input"
+      ],
+      "correct_answer": "A token is a discrete unit of text that a language model processes. It can be a word, subword, or punctuation mark.",
+      "explanation": "Tokens are the smallest meaningful units that models break text into before processing. They form the basis of how models understand input.",
+      "hint": "Think about how models need to break down text into pieces before they can process it."
+    },
+
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "learning_outcome_id": "lo3",
+      "difficulty": 2,
+      "points": 3,
+      "question_text": "Which of the following is an example of a subword tokenizer?",
+      "options": {
+        "a": "A tokenizer that splits only on spaces",
+        "b": "A tokenizer that breaks words into smaller pieces like 'hel' + 'lo'",
+        "c": "A tokenizer that treats each character as a token",
+        "d": "A tokenizer that uses machine learning to identify word boundaries"
+      },
+      "correct": "b",
+      "explanation": "Subword tokenizers (like BPE and WordPiece) break words into smaller units to handle rare words and language diversity. This is how modern language models like GPT and BERT tokenize text.",
+      "hint": "'Subword' means smaller than a word."
+    },
+
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "learning_outcome_id": "lo2",
+      "difficulty": 2,
+      "points": 3,
+      "question_text": "A sentence contains approximately 50 words. Using the heuristic that 1 token ≈ 0.75 words, approximately how many tokens will it have?",
+      "options": {
+        "a": "About 37-40 tokens",
+        "b": "About 50-60 tokens",
+        "c": "About 65-70 tokens",
+        "d": "About 100+ tokens"
+      },
+      "correct": "c",
+      "explanation": "Using the conversion: tokens = words ÷ 0.75. So 50 ÷ 0.75 ≈ 66-67 tokens. This is an approximation—actual count depends on the specific tokenizer and language.",
+      "hint": "Divide the word count by 0.75, or multiply by about 1.33."
+    },
+
+    {
+      "id": "q4",
+      "type": "free_text",
+      "learning_outcome_id": "lo4",
+      "difficulty": 2,
+      "points": 3,
+      "question_text": "A language model has a context window of 4,096 tokens. Why is it important to know how many tokens your input text has?",
+      "expected_key_phrases": [
+        "truncation OR truncated OR cut off",
+        "limit OR maximum OR exceeds",
+        "context window"
+      ],
+      "correct_answer": "If your input has more tokens than the context window limit, the model will truncate (cut off) the extra tokens and never see that part of the text. This can cause the model to miss important information.",
+      "explanation": "Understanding tokenization helps you predict model behavior. If you don't know how many tokens your text will be, you can't know if it will fit in the model's context window.",
+      "hint": "What happens when text is longer than the model can handle?"
+    },
+
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "learning_outcome_id": "lo3",
+      "difficulty": 3,
+      "points": 3,
+      "question_text": "The word 'don't' is tokenized differently by different tokenizers. What are possible tokenization outcomes?",
+      "options": {
+        "a": "Always 1 token, never split",
+        "b": "Always 2 tokens: 'don' + ''t'",
+        "c": "Either 1 token ('don't') or 2 tokens ('don' + ''t'), depending on the tokenizer",
+        "d": "Always 3+ tokens: 'd' + 'o' + 'n' + ''t'"
+      },
+      "correct": "c",
+      "explanation": "Different tokenizers handle contractions differently. Some keep 'don't' as one token, others split it into 'don' and ''t'. This is why token count can vary for the same text depending on which tokenizer you use.",
+      "hint": "Different models use different tokenizers, so they tokenize text differently."
+    },
+
+    {
+      "id": "q6",
+      "type": "free_text",
+      "learning_outcome_id": "lo1",
+      "difficulty": 1,
+      "points": 2,
+      "question_text": "Is punctuation a token? Give a brief explanation.",
+      "expected_key_phrases": [
+        "yes OR can be",
+        "discrete OR separate OR individual"
+      ],
+      "correct_answer": "Yes, punctuation marks are often tokenized as separate tokens. For example, a comma, period, or exclamation mark can each be their own token.",
+      "explanation": "Punctuation is part of the text that models need to process, so tokenizers treat it as discrete units. This affects token count calculations.",
+      "hint": "Think about 'Hello, world!' — how many tokens might that be?"
+    },
+
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "learning_outcome_id": "lo2",
+      "difficulty": 2,
+      "points": 2,
+      "question_text": "If a model has a context window of 2,048 tokens and you estimate your text will be 2,500 words, approximately how many tokens will it have and will it fit?",
+      "options": {
+        "a": "About 2,500 tokens, will fit",
+        "b": "About 1,875 tokens, will fit",
+        "c": "About 3,333 tokens, will NOT fit",
+        "d": "Impossible to estimate without knowing the exact tokenizer"
+      },
+      "correct": "c",
+      "explanation": "2,500 words ÷ 0.75 ≈ 3,333 tokens. This exceeds the 2,048 token limit, so the text will be truncated. You would need to shorten your input or use a model with a larger context window.",
+      "hint": "Use the conversion: tokens = words ÷ 0.75"
+    }
+  ],
+
+  "scoring": {
+    "passing_score": 70,
+    "total_points": 20,
+    "passing_points": 14,
+    "description": "Student must earn at least 14 points to pass"
+  },
+
+  "learning_outcome_coverage": {
+    "lo1": ["q1", "q6"],
+    "lo2": ["q3", "q7"],
+    "lo3": ["q2", "q5"],
+    "lo4": ["q4"]
+  },
+
+  "validation": {
+    "all_outcomes_covered": true,
+    "coverage_check": "Each learning outcome has at least one question testing it",
+    "answerability_check": "All questions are answerable from module content"
+  }
+}

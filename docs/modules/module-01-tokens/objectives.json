@@ -1,0 +1,65 @@
+{
+  "module_id": "module-01-tokens",
+  "title": "Tokens & Tokenization",
+  "description": "Learn what tokens are, how they're created, and why they matter for language models",
+  "difficulty": "beginner",
+  "estimated_duration_minutes": 15,
+  "prerequisites": [],
+  "prerequisite_warning": "None — this is a foundational module",
+
+  "learning_outcomes": [
+    {
+      "id": "lo1",
+      "verb": "define",
+      "subject": "token",
+      "context": "in natural language processing (NLP)",
+      "full_statement": "Define what a token is in the context of natural language processing",
+      "bloom_level": 1,
+      "description": "Student can explain what a token is as a discrete unit of text that language models process"
+    },
+    {
+      "id": "lo2",
+      "verb": "apply",
+      "subject": "token counting heuristic",
+      "context": "to estimate token count from word count",
+      "full_statement": "Apply the heuristic that 1 token ≈ 0.75 words to estimate token count in text",
+      "bloom_level": 3,
+      "description": "Student can estimate approximate token count given text length using the conversion ratio"
+    },
+    {
+      "id": "lo3",
+      "verb": "explain",
+      "subject": "tokenization process",
+      "context": "how tokenizers convert text into tokens",
+      "full_statement": "Explain how tokenization works and why different tokenizers produce different outputs",
+      "bloom_level": 2,
+      "description": "Student can describe the process of breaking text into tokens and explain differences between tokenizer types"
+    },
+    {
+      "id": "lo4",
+      "verb": "explain",
+      "subject": "importance of tokenization",
+      "context": "for understanding model context windows and input truncation",
+      "full_statement": "Explain why tokenization matters for predicting model behavior and avoiding truncation",
+      "bloom_level": 2,
+      "description": "Student can articulate the relationship between token count and context window limits"
+    }
+  ],
+
+  "key_concepts": [
+    "Token",
+    "Tokenization",
+    "Word tokens vs. subword tokens",
+    "Context window",
+    "Token count estimation"
+  ],
+
+  "learning_path": {
+    "next_module": "module-02-transformers",
+    "next_module_title": "Transformer Architecture Basics",
+    "related_modules": [
+      "module-10-context-windows",
+      "module-04-embeddings"
+    ]
+  }
+}

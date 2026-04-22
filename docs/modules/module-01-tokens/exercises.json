@@ -1,0 +1,194 @@
+{
+  "module_id": "module-01-tokens",
+  "title": "Exercises: Tokens & Tokenization",
+  "description": "Hands-on practice problems to reinforce learning",
+  "instructions": "These exercises are optional and self-checked. Try them after completing the module to practice your skills.",
+
+  "exercises": [
+    {
+      "id": "ex1",
+      "title": "Estimate Token Count for Different Texts",
+      "difficulty": "easy",
+      "estimated_time_minutes": 5,
+      "related_concepts": ["lo2"],
+      "description": "Use the 0.75 heuristic to estimate token count for various texts",
+
+      "prompt": "For each text below, estimate the number of tokens using the heuristic that 1 token ≈ 0.75 words.",
+
+      "texts": [
+        {
+          "id": "text1",
+          "content": "The quick brown fox jumps over the lazy dog.",
+          "word_count": 9,
+          "hint": "Divide word count by 0.75"
+        },
+        {
+          "id": "text2",
+          "content": "Natural language processing is a field of artificial intelligence that focuses on the interaction between computers and human language. It's used in applications like translation, sentiment analysis, and chatbots.",
+          "word_count": 36,
+          "hint": "Same formula: words ÷ 0.75"
+        },
+        {
+          "id": "text3",
+          "content": "Hello, how are you? I'm doing well, thank you for asking! What brings you here today?",
+          "word_count": 19,
+          "hint": "Remember punctuation counts too"
+        }
+      ],
+
+      "solution": {
+        "text1": {
+          "calculation": "9 ÷ 0.75 = 12 tokens",
+          "explanation": "A short sentence with 9 words becomes approximately 12 tokens"
+        },
+        "text2": {
+          "calculation": "36 ÷ 0.75 = 48 tokens",
+          "explanation": "A longer paragraph with 36 words becomes approximately 48 tokens"
+        },
+        "text3": {
+          "calculation": "19 ÷ 0.75 ≈ 25 tokens",
+          "explanation": "Multiple sentences with contractions and punctuation (~25 tokens)"
+        }
+      }
+    },
+
+    {
+      "id": "ex2",
+      "title": "Will This Fit in the Context Window?",
+      "difficulty": "medium",
+      "estimated_time_minutes": 8,
+      "related_concepts": ["lo2", "lo4"],
+      "description": "Practical exercises on planning input size for different models",
+
+      "prompt": "For each scenario, determine if the text will fit in the model's context window.",
+
+      "scenarios": [
+        {
+          "id": "scenario1",
+          "model": "GPT-3.5 (4,096 token context)",
+          "input": "A 6,000-word research paper",
+          "question": "Will the entire paper fit in one request?",
+          "solution": {
+            "token_estimate": "6000 ÷ 0.75 = 8,000 tokens",
+            "fits": false,
+            "explanation": "8,000 tokens > 4,096 token limit. The paper will be truncated and GPT-3.5 will only see the first ~3,000 words."
+          }
+        },
+        {
+          "id": "scenario2",
+          "model": "Claude 3 Opus (200,000 token context)",
+          "input": "A 50,000-word legal contract",
+          "question": "Will the entire contract fit?",
+          "solution": {
+            "token_estimate": "50000 ÷ 0.75 = 66,667 tokens",
+            "fits": true,
+            "explanation": "66,667 tokens < 200,000 token limit. The entire contract will fit with room to spare."
+          }
+        },
+        {
+          "id": "scenario3",
+          "model": "LLaMA 2 (4,096 token context)",
+          "input": "A 2,500-word article",
+          "question": "How much of the article can the model see?",
+          "solution": {
+            "token_estimate": "2500 ÷ 0.75 = 3,333 tokens",
+            "fits": true,
+            "explanation": "3,333 tokens < 4,096 token limit. The entire article fits, with about 750 tokens to spare for the model's response."
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "ex3",
+      "title": "Tokenizer Exploration",
+      "difficulty": "hard",
+      "estimated_time_minutes": 15,
+      "related_concepts": ["lo3"],
+      "description": "Compare how different tokenizers handle the same text (code-based, optional)",
+
+      "prompt": "If you have access to Python and the transformers library, try tokenizing text with different tokenizers and see how they differ.",
+
+      "code_template": `
+from transformers import AutoTokenizer
+
+# Try different tokenizers
+tokenizers = {
+    "gpt2": "openai-community/gpt2",
+    "bert": "google-bert/bert-base-uncased",
+    "llama": "meta-llama/Llama-2-7b",
+}
+
+text = "Don't worry, I can help you with natural language processing!"
+
+for name, model_id in tokenizers.items():
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokens = tokenizer.encode(text)
+    print(f"{name}: {len(tokens)} tokens → {tokenizer.convert_ids_to_tokens(tokens)}")
+      `,
+
+      "expected_observation": "Different tokenizers will produce different token counts for the same text. GPT-2 might produce 13-15 tokens, BERT might produce 16-18, and LLaMA might produce 14-16 tokens.",
+
+      "solution": {
+        "key_insight": "Each model comes with its own tokenizer, and they tokenize differently",
+        "explanation": "This demonstrates that token count is tokenizer-specific. You must use the correct tokenizer for your model.",
+        "practical_implication": "If you're using multiple models, be aware that the same input will have different token counts for each one"
+      }
+    },
+
+    {
+      "id": "ex4",
+      "title": "Plan a Real Project",
+      "difficulty": "hard",
+      "estimated_time_minutes": 15,
+      "related_concepts": ["lo2", "lo4"],
+      "description": "Plan token requirements for a real-world application",
+
+      "prompt": "Pick a task and estimate token requirements:",
+
+      "task_ideas": [
+        {
+          "id": "task1",
+          "name": "Document summarization system",
+          "questions": [
+            "What's the typical document length (in words)?",
+            "How many tokens will that be?",
+            "Which models have sufficient context? (check their max context)"
+          ]
+        },
+        {
+          "id": "task2",
+          "name": "Multi-turn conversation chatbot",
+          "questions": [
+            "Each turn might be ~100 words (user + assistant)",
+            "Over 10 turns, how many tokens?",
+            "Is 4,096 tokens enough for a 10-turn conversation?"
+          ]
+        },
+        {
+          "id": "task3",
+          "name": "Code analysis tool",
+          "questions": [
+            "A typical file is 500 lines of code",
+            "Estimate tokens (code might be token-heavier than prose)",
+            "How much context is needed for good analysis?"
+          ]
+        }
+      ],
+
+      "solution": {
+        "approach": "Estimate total input + buffer for response",
+        "formula": "Input tokens + response tokens < context window",
+        "example": "If you need 3,000 tokens for input and want 1,000 tokens for response, you need a 4,000+ context window"
+      }
+    }
+  ],
+
+  "hints_and_tips": [
+    "The 0.75 heuristic is approximate—actual count depends on language and tokenizer",
+    "Always leave buffer space in context window for the model's response",
+    "When in doubt, use the actual tokenizer to count (more accurate than heuristic)",
+    "Different languages have different token-to-word ratios",
+    "Code and numbers may tokenize differently than natural language"
+  ]
+}

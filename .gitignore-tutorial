@@ -1,0 +1,61 @@
+# Tutorial System .gitignore
+# Generated files, dependencies, and artifacts
+
+# Build output
+dist/
+build/
+.astro/
+
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.Thumbs.db
+
+# Development
+.turbo/
+*.tmp
+temp/
+
+# Build artifacts
+*.css.map
+*.js.map
+
+# Cache
+.cache/
+.netlify/
+.vercel/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Asset compilation
+dist/
+.next/
+
+# Don't ignore these
+# ✓ docs/ — content files
+# ✓ assets/ — diagrams, code, images
+# ✓ ADR/ — architecture decisions
+# ✓ DDD/ — domain documentation
+# ✓ tests/ — validation specs
+# ✓ *.json — configuration and assessment specs
+# ✓ DEVELOPMENT.md — workflow guide
