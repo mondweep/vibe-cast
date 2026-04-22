@@ -7,3 +7,9 @@ strong_reject/
 __pycache__/
 *.pyc
 .DS_Store
+
+# ⚠️  IMPORTANT — Research outputs: NEVER commit these to git
+# Results may contain model responses to harmful prompts
+# and must not be in the public domain
+results/
+*.csv
