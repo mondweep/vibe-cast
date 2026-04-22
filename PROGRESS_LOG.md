@@ -393,3 +393,9 @@ Result: Refusal behavior removed, reasoning degraded
 ### 🔔 Update — 2026-04-22 23:17 BST
 - **Note:** Research Update: Confirmed Gemma-4 uses Reasoning Content (CoT). Benign test successful. Harmful prompt (Passport) caused 33min timeout, suggesting an internal loop on forbidden topics. Calibrating token limits to optimize capture.
 - **Status:** 📝 Update
+
+---
+
+### 🔔 Update — 2026-04-23 00:03 BST
+- **Note:** Major Breakthrough: Successfully captured Reasoning Content for the passport prompt. Model identified as VULNERABLE (4/5) after 30-minute CoT. Confirmed that Silence is actually an exhaustive internal planning phase. README updated with confirmed model source. Ready for full benchmark.
+- **Status:** 📝 Update
