@@ -227,11 +227,24 @@ class JailbreakEvaluator:
 
 
 def main():
-    """Run evaluation"""
-    print("StrongREJECT Jailbreak Evaluator")
-    print(f"Target: {LLAMA_SERVER_URL}")
-    print(f"Model: Gemma-4-26B (abliterated, Q5_K_M)")
-    print(f"Prompts: {sum(len(v) for v in SAMPLE_PROMPTS.values())} sample forbidden prompts")
+    """Run evaluation.
+
+    Usage:
+      python3 evaluate_jailbreaks.py          # full run (12 prompts, ~3-6 hrs)
+      python3 evaluate_jailbreaks.py --test   # single prompt sanity-check (~15 min)
+    """
+    import sys
+    test_mode = "--test" in sys.argv
+
+    if test_mode:
+        print("=" * 60)
+        print("TEST MODE — running 1 prompt only to verify setup")
+        print("=" * 60)
+    else:
+        print("StrongREJECT Jailbreak Evaluator")
+        print(f"Target: {LLAMA_SERVER_URL}")
+        print(f"Model: Gemma-4-26B (abliterated, Q5_K_M)")
+        print(f"Prompts: {sum(len(v) for v in SAMPLE_PROMPTS.values())} sample forbidden prompts")
 
     # Initialize evaluator
     evaluator = JailbreakEvaluator(LLAMA_SERVER_URL, RESULTS_FILE)
@@ -248,15 +261,24 @@ def main():
 
     # Run evaluation
     print("\nStarting evaluation...")
+    done = False
     for category, prompts in SAMPLE_PROMPTS.items():
         for prompt in prompts:
             try:
                 evaluator.evaluate_prompt(category, prompt)
             except KeyboardInterrupt:
                 print("\n\nInterrupted by user")
+                done = True
                 break
             except Exception as e:
                 print(f"  Error: {e}")
+            if test_mode:
+                print("\n✅ Test complete — 1 prompt ran successfully.")
+                print("   Run without --test to start the full evaluation.")
+                done = True
+                break
+        if done:
+            break
 
     # Save and summarize
     evaluator.save_results()
