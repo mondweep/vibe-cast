@@ -17,13 +17,13 @@ This is a comprehensive tutorial covering key concepts in AI safety research, fr
    - Calculate approximate token count
    - Understand context window limits
 
-2. **Module 2: Transformer Architecture Basics** (20 min)  
+2. **[Module 2: Transformer Architecture Basics](/modules/module-02-transformer-basics/)** (20 min)  
    Understand the core architecture behind modern language models.
    - How transformers process text
    - Attention mechanism overview
    - Layers and embeddings
 
-3. **Module 3: Attention Mechanism Deep Dive** (15 min)  
+3. **[Module 3: Attention Mechanism Deep Dive](/modules/module-03-attention-mechanism/)** (15 min)  
    Go deeper into how attention makes models understand context.
    - Query, Key, Value vectors
    - Attention weight calculation
@@ -38,19 +38,49 @@ This is a comprehensive tutorial covering key concepts in AI safety research, fr
 ### 🔬 Research Path (Intermediate)
 **Mathematical Foundations** — Develop the mathematical tools used in model analysis.
 
-4. **Module 5: Linear Algebra for ML — SVD Decomposition** (25 min)  
+4. **[Module 4: Embeddings & Representations](/modules/module-04-embeddings/)** (15 min)  
+   Learn how embeddings capture semantic meaning and evolve through layers.
+   - Embedding vector representations
+   - Semantic similarity and relationships
+   - Embedding space structure
+
+5. **[Module 5: Linear Algebra for ML — SVD Decomposition](/modules/module-05-linear-algebra-svd/)** (25 min)  
    Learn singular value decomposition and matrix mathematics.
    - Matrix multiplication and properties
    - Eigenvalues and eigenvectors
    - SVD formula and geometric intuition
    - Working example: decomposing a 3×3 matrix
 
-5. **Module 7: Abliteration — Removing Safety via SVD** (20 min)  
+6. **[Module 6: Matrix Decomposition Deep Dive](/modules/module-06-matrix-decomposition/)** (15 min)  
+   Explore QR, Cholesky, and tensor decompositions.
+   - Beyond SVD: other decomposition methods
+   - Rank and effective rank
+   - Identifying safety subspaces
+
+7. **[Module 7: Abliteration — Removing Safety via SVD](/modules/module-07-abliteration/)** (20 min)  
    Understand how safety constraints are surgically removed from models.
    - How abliteration works mathematically
    - SVD-based refusal direction removal
    - Consequences for reasoning capability
    - Implications for AI safety
+
+8. **[Module 8: Mixture of Experts](/modules/module-08-moe/)** (15 min)  
+   Learn how sparse models route tokens to specialized experts.
+   - Expert routing mechanisms
+   - Safety implications of expert separation
+   - Scalability and efficiency
+
+9. **[Module 9: Quantization & Compression](/modules/module-09-quantization/)** (15 min)  
+   Understand model compression and GGUF format.
+   - Precision reduction techniques
+   - Safety tradeoffs with quantization
+   - Running models locally
+
+10. **[Module 10: Context Windows & KV Cache](/modules/module-10-context-windows/)** (15 min)  
+    Learn about model memory and context length limits.
+    - Context windows and their computational limits
+    - KV caching for efficient inference
+    - Long-context safety vulnerabilities
 
 **Prerequisites**: Modules 1-3 (foundation)  
 **Estimated Time**: 45 minutes  
@@ -61,21 +91,21 @@ This is a comprehensive tutorial covering key concepts in AI safety research, fr
 ### 🎯 Advanced Path (Evaluation & Analysis)
 **Evaluation & Testing** — Learn rigorous methods for testing jailbreak effectiveness.
 
-8. **Module 11: StrongREJECT Benchmark** (20 min)  
-   Master the state-of-the-art jailbreak evaluation framework.
-   - What makes a good evaluation?
-   - StrongREJECT methodology
-   - Willingness vs. capability scoring
-   - 313-prompt benchmark
+11. **[Module 11: StrongREJECT Benchmark](/modules/module-11-strongreject/)** (20 min)  
+    Master the state-of-the-art jailbreak evaluation framework.
+    - What makes a good evaluation?
+    - StrongREJECT methodology
+    - Willingness vs. capability scoring
+    - 313-prompt benchmark
 
-9. **Module 12: Jailbreak Evaluation Metrics** (20 min)  
-   Implement actual evaluation and interpret results.
-   - Scoring functions
-   - False positives and false negatives
-   - Comparing attack effectiveness
-   - Case study analysis
+12. **[Module 12: Jailbreak Evaluation Metrics](/modules/module-12-jailbreak-metrics/)** (20 min)  
+    Implement actual evaluation and interpret results.
+    - Scoring functions
+    - False positives and false negatives
+    - Comparing attack effectiveness
+    - Case study analysis
 
-10. **Module 13: Abliterated vs Aligned Models** (15 min)  
+13. **[Module 13: Abliterated vs Aligned Models](/modules/module-13-abliterated-vs-aligned/)** (15 min)  
     Compare behavior of safety-removed vs safety-aligned models.
     - Design experiments to compare models
     - Quantifying capability degradation
