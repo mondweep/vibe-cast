@@ -1,0 +1,84 @@
+{
+  "moduleNumber": 6,
+  "moduleName": "Matrix Decomposition Deep Dive",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is QR decomposition used for?",
+      "options": [
+        "Solving least-squares problems and linear systems",
+        "Compressing images",
+        "Finding eigenvalues",
+        "Generating random numbers"
+      ],
+      "correctAnswer": "Solving least-squares problems and linear systems"
+    },
+    {
+      "id": "q2",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "In QR decomposition, what type of matrix is Q?",
+      "options": [
+        "A symmetric matrix",
+        "An orthogonal (orthonormal) matrix",
+        "A diagonal matrix",
+        "A sparse matrix"
+      ],
+      "correctAnswer": "An orthogonal (orthonormal) matrix"
+    },
+    {
+      "id": "q3",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What does Cholesky decomposition require about the input matrix?",
+      "options": [
+        "It must be square and symmetric",
+        "It must be square, symmetric, and positive-definite",
+        "It must be sparse",
+        "It must have orthogonal columns"
+      ],
+      "correctAnswer": "It must be square, symmetric, and positive-definite"
+    },
+    {
+      "id": "q4",
+      "type": "free-response",
+      "points": 20,
+      "text": "Compare QR and Cholesky decompositions. When would you use each, and what are their respective advantages?"
+    },
+    {
+      "id": "q5",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is tensor decomposition?",
+      "options": [
+        "Breaking down a 3D or higher-dimensional array into simpler components",
+        "Compressing tensors into scalars",
+        "Converting tensors to matrices",
+        "Applying SVD to tensors"
+      ],
+      "correctAnswer": "Breaking down a 3D or higher-dimensional array into simpler components"
+    },
+    {
+      "id": "q6",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is the null space of a matrix?",
+      "options": [
+        "The set of vectors that map to zero when multiplied by the matrix",
+        "The set of zero elements in the matrix",
+        "The empty set",
+        "The space perpendicular to the column space"
+      ],
+      "correctAnswer": "The set of vectors that map to zero when multiplied by the matrix"
+    },
+    {
+      "id": "q7",
+      "type": "free-response",
+      "points": 20,
+      "text": "How could matrix decomposition be used to understand the internal structure of a neural network? What insights could it reveal?"
+    }
+  ]
+}

@@ -1,4 +1,6 @@
 ---
+import Footer from '../components/Footer.jsx';
+
 interface Props {
   title: string;
 }
@@ -89,14 +91,20 @@ const { title } = Astro.props;
   </head>
   <body>
     <header style="border-bottom: 1px solid #e5e7eb; padding: 1rem; background-color: #f3f4f6; position: sticky; top: 0; z-index: 100;">
-      <div style="max-width: 900px; margin: 0 auto;">
+      <div style="max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
         <h1 style="margin: 0; font-size: 1.25rem;">
           <a href="/" style="color: #1f2937; text-decoration: none;">🧠 AI Safety Tutorial</a>
         </h1>
+        <nav style="display: flex; gap: 1rem; font-size: 0.95rem;">
+          <a href="/" style="color: #1f2937; text-decoration: none;">Home</a>
+          <a href="/about/" style="color: #1f2937; text-decoration: none;">About</a>
+          <a href="/modules/module-01-tokens/" style="color: #1f2937; text-decoration: none;">Start</a>
+        </nav>
       </div>
     </header>
     <div style="max-width: 900px; margin: 0 auto; padding: 1rem;">
       <slot />
     </div>
+    <Footer client:load />
   </body>
 </html>

@@ -1,0 +1,124 @@
+import { Card, Alert } from '@/components/elements';
+
+# About This Tutorial
+
+**Difficulty**: Beginner | **Duration**: 10 minutes
+
+---
+
+## The Origin Story
+
+This **AI Safety Tutorial** is not a textbook written in isolation. It's the direct output of a hands-on research journey into understanding how AI models work—and how they can be made safer.
+
+The tutorial emerged from building, testing, and analyzing the **Gemma-4-26B abliterated model**, a research environment created to study AI vulnerabilities in a controlled setting. Every concept you'll learn in these 13 modules comes from real questions that came up during that research:
+
+- How do tokens actually work? (Module 1)
+- What does attention really do? (Module 3)  
+- Can we mathematically understand safety constraints? (Modules 5–7)
+- How do modern architectures like Mixture of Experts affect robustness? (Module 8)
+- What's the gold standard for evaluating jailbreak resistance? (Module 11)
+
+---
+
+## What This Tutorial Covers
+
+This is a **13-module journey** from foundational concepts to advanced AI safety topics:
+
+**Foundations (Modules 1–4)**: How transformers work at every level—from tokens to embeddings to attention  
+**Mathematics (Modules 5–7)**: Linear algebra as a lens into model internals, and how safety can be surgically removed  
+**Architecture & Robustness (Modules 8–10)**: Mixture of Experts, quantization, and the risks of long contexts  
+**Evaluation (Modules 11–13)**: Industry-standard jailbreak evaluation and comparing abliterated vs. aligned approaches  
+
+---
+
+## How It Was Built
+
+This tutorial follows **Test-Driven Development** principles adapted for education:
+
+1. **Assessment First** — Learning outcomes and quizzes were designed before content
+2. **Content Creation** — Modules written to teach toward those assessments
+3. **Iterative Refinement** — Each module polished with real-world context and examples
+4. **Live Deployment** — Deployed on Netlify with interactive assessments
+
+Each module includes:
+- Clear learning outcomes aligned with Bloom's Taxonomy
+- Practical examples grounded in real research
+- Interactive assessments to test understanding
+- Forward links to the next module in your learning path
+
+---
+
+## The Research Foundation
+
+This tutorial is grounded in the paper **"A StrongREJECT for Empty Jailbreaks"** ([arXiv: 2402.10260](https://arxiv.org/abs/2402.10260)), which introduced rigorous methods for evaluating AI safety.
+
+The key insight that shaped this tutorial:
+
+> *Jailbreaks that work by obfuscation actually reduce model capability at the same time. An abliterated model behaves very differently—it keeps full reasoning power but has no safety constraints.*
+
+This distinction is central to understanding why safety-by-removal is fundamentally different from safety-by-training.
+
+---
+
+## Reference: The Full Research Environment
+
+For the complete technical setup, methodology, and research context, see the project's **README.md**:
+
+<Card>
+**📌 What Is This Project?**
+
+This workspace runs **Gemma 4 (26 Billion parameters)** — a large open-source AI model — in an **"abliterated" configuration** where safety guardrails have been deliberately removed.
+
+**Why?** For the same reason a car safety lab deliberately crashes vehicles — to understand failure modes in a controlled environment, so we can build better protections.
+
+**Research Goals:**
+- 🛡️ AI Safety Research — Evaluate model responses to attacks
+- 📊 Jailbreak Benchmarking — Test 37+ jailbreak methods using StrongREJECT
+- 🧪 Model Degradation Analysis — Measure impact of removing safety
+- ⚖️ Safety Cost Analysis — Quantify safety vs. capability tradeoffs
+- 🔒 Developing Better Defences — Use StrongREJECT as a testbed
+
+**Key References:**
+- StrongREJECT Paper: [arXiv: 2402.10260](https://arxiv.org/abs/2402.10260)
+- StrongREJECT GitHub: [dsbowen/strong_reject](https://github.com/dsbowen/strong_reject)
+- Gemma Documentation: [ai.google.dev/gemma](https://ai.google.dev/gemma)
+</Card>
+
+<Alert type="info">
+**⚠️ Ethical Context**
+
+This is a research environment, not a consumer tool. The model runs entirely locally — no data leaves your machine. Appropriate uses include academic research, benchmarking, and controlled red-teaming. Not appropriate: deploying to end users or using as a replacement for aligned AI assistants.
+</Alert>
+
+---
+
+## About the Author
+
+This tutorial was created by **Mondweep Chakravorty**, who brings together hands-on AI research, safety evaluation, and a passion for making complex topics accessible.
+
+If you're diving into this space or need guidance on AI safety research, let's connect:
+
+- **LinkedIn**: [linkedin.com/in/mondweepchakravorty](https://www.linkedin.com/in/mondweepchakravorty/)
+- **GitHub**: [github.com/mondweep/vibe-cast](https://github.com/mondweep/vibe-cast/tree/gemma-4b-abliterated-tinkering)
+- **Questions or feedback?**: [Email me](mailto:mondweep@dxsure.uk)
+
+---
+
+## How to Use This Tutorial
+
+Each module:
+- ✅ Builds on the previous one (start with Module 1)
+- ✅ Includes interactive assessments to test your understanding
+- ✅ Links forward to the next concept
+
+**Suggested approach:**
+1. Read a module at your own pace
+2. Work through the practice questions
+3. Check your understanding with the assessment
+4. Move forward when ready
+
+There's no time limit — learning is a journey, not a race.
+
+---
+
+**Ready to dive in?** Start with [Module 1: Tokens & Tokenization](/modules/module-01-tokens/).

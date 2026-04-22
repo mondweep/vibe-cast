@@ -1,0 +1,84 @@
+{
+  "moduleNumber": 4,
+  "moduleName": "Embeddings & Representations",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is an embedding in the context of language models?",
+      "options": [
+        "A text encoding that represents tokens as vectors in a high-dimensional space",
+        "A layer that adds noise to inputs",
+        "A compression algorithm for models",
+        "A type of attention mechanism"
+      ],
+      "correctAnswer": "A text encoding that represents tokens as vectors in a high-dimensional space"
+    },
+    {
+      "id": "q2",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What does it mean if two word embeddings are close together in vector space?",
+      "options": [
+        "They have the same number of letters",
+        "They have similar semantic meanings or contexts",
+        "They appear in the same sentence",
+        "They use the same attention heads"
+      ],
+      "correctAnswer": "They have similar semantic meanings or contexts"
+    },
+    {
+      "id": "q3",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is an example of word arithmetic in embeddings?",
+      "options": [
+        "king - man + woman ≈ queen",
+        "cat + dog ≈ pet",
+        "good - bad ≈ neutral",
+        "hello + world ≈ greeting"
+      ],
+      "correctAnswer": "king - man + woman ≈ queen"
+    },
+    {
+      "id": "q4",
+      "type": "free-response",
+      "points": 20,
+      "text": "How have word embeddings evolved from simpler approaches like one-hot encoding? What advantages do modern embeddings provide?"
+    },
+    {
+      "id": "q5",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is the embedding dimension of Gemma-4?",
+      "options": [
+        "768 dimensions",
+        "1536 dimensions",
+        "3072 dimensions",
+        "4096 dimensions"
+      ],
+      "correctAnswer": "3072 dimensions"
+    },
+    {
+      "id": "q6",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What do positional encodings provide to embeddings?",
+      "options": [
+        "Semantic meaning",
+        "Information about token position in the sequence",
+        "Attention weights",
+        "Gradient information"
+      ],
+      "correctAnswer": "Information about token position in the sequence"
+    },
+    {
+      "id": "q7",
+      "type": "free-response",
+      "points": 20,
+      "text": "Explain why embeddings are important for understanding how language models process meaning. How do they bridge the gap between discrete text and continuous computation?"
+    }
+  ]
+}

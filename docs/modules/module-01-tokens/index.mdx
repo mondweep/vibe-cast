@@ -1,4 +1,4 @@
-import { Card, Alert, CodeBlock } from '@/components/elements';
+import { Card, Alert, CodeBlock, Assessment } from '@/components/elements';
 
 # Tokens & Tokenization
 
@@ -337,15 +337,9 @@ Count: 7 tokens
 
 ## Assessment
 
-Ready to check your understanding? Take the quiz below.
+Ready to check your understanding? Take the interactive quiz below.
 
-<Alert type="info">
-  Passing score: 70% (14 out of 20 points)  
-  Questions: 7 (mix of free response and multiple choice)  
-  Time: 5-10 minutes
-</Alert>
-
-[Assessment Questions - See assessment.json]
+<Assessment client:load moduleNumber={1} moduleName="Tokens & Tokenization" />
 
 ---
 

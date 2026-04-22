@@ -1,0 +1,58 @@
+{
+  "moduleNumber": 12,
+  "moduleName": "Module 12",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "points": 15,
+      "text": "What is the primary focus of this module?",
+      "options": [
+        "Foundational concepts",
+        "Mathematical theory",
+        "Practical implementation",
+        "Safety and alignment"
+      ],
+      "correctAnswer": "Safety and alignment"
+    },
+    {
+      "id": "q2",
+      "type": "multiple-choice",
+      "points": 15,
+      "text": "What key relationship was explained in this module?",
+      "options": [
+        "Between theory and practice",
+        "Between different architectural choices",
+        "Between safety and capability",
+        "Between training and inference"
+      ],
+      "correctAnswer": "Between safety and capability"
+    },
+    {
+      "id": "q3",
+      "type": "multiple-choice",
+      "points": 15,
+      "text": "Which concept from a previous module was extended here?",
+      "options": [
+        "Transformers",
+        "Attention",
+        "Embeddings",
+        "Linear algebra"
+      ],
+      "correctAnswer": "Linear algebra"
+    },
+    {
+      "id": "q4",
+      "type": "free-response",
+      "points": 25,
+      "text": "Summarize the main learning outcome from this module and explain how it connects to AI safety."
+    },
+    {
+      "id": "q5",
+      "type": "free-response",
+      "points": 30,
+      "text": "Describe a practical application of the concepts learned in this module. How would you use this knowledge in real-world AI research?"
+    }
+  ]
+}

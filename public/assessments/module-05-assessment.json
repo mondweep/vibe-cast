@@ -1,0 +1,84 @@
+{
+  "moduleNumber": 5,
+  "moduleName": "Linear Algebra for ML — SVD",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What does SVD (Singular Value Decomposition) do?",
+      "options": [
+        "Factors a matrix into three simpler matrices",
+        "Compresses an image",
+        "Solves linear equations",
+        "Computes eigenvalues"
+      ],
+      "correctAnswer": "Factors a matrix into three simpler matrices"
+    },
+    {
+      "id": "q2",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "In SVD, what do singular values represent?",
+      "options": [
+        "The importance or strength of each singular vector pair",
+        "The number of rows and columns",
+        "The inverse of the matrix",
+        "Random weights"
+      ],
+      "correctAnswer": "The importance or strength of each singular vector pair"
+    },
+    {
+      "id": "q3",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "Why is SVD useful for low-rank approximation?",
+      "options": [
+        "It removes noise from data",
+        "We can keep only the largest singular values and discard small ones",
+        "It speeds up matrix multiplication",
+        "It guarantees an exact solution"
+      ],
+      "correctAnswer": "We can keep only the largest singular values and discard small ones"
+    },
+    {
+      "id": "q4",
+      "type": "free-response",
+      "points": 20,
+      "text": "Explain how SVD is used to compress information. What information might be lost when we reduce to fewer singular values?"
+    },
+    {
+      "id": "q5",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is the relationship between eigenvalues and singular values?",
+      "options": [
+        "They are the same thing",
+        "Singular values are square roots of eigenvalues of A^T A",
+        "They are unrelated",
+        "Eigenvalues are always larger"
+      ],
+      "correctAnswer": "Singular values are square roots of eigenvalues of A^T A"
+    },
+    {
+      "id": "q6",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is the dimension of U in SVD when A is 1000x500?",
+      "options": [
+        "1000 x 500",
+        "500 x 500",
+        "1000 x 1000",
+        "500 x 1000"
+      ],
+      "correctAnswer": "1000 x 500"
+    },
+    {
+      "id": "q7",
+      "type": "free-response",
+      "points": 20,
+      "text": "How could SVD be applied to analyze a model's weight matrix? What would large vs. small singular values tell us about the model?"
+    }
+  ]
+}

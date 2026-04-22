@@ -1,0 +1,84 @@
+{
+  "moduleNumber": 2,
+  "moduleName": "Transformer Architecture Basics",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What are the two main components of a Transformer?",
+      "options": [
+        "Input layer and output layer",
+        "Encoder and decoder",
+        "Attention and convolution",
+        "Embedding and classification"
+      ],
+      "correctAnswer": "Encoder and decoder"
+    },
+    {
+      "id": "q2",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is the primary purpose of the encoder in a Transformer?",
+      "options": [
+        "To generate text output",
+        "To process and understand the input sequence",
+        "To compress data",
+        "To add randomness to predictions"
+      ],
+      "correctAnswer": "To process and understand the input sequence"
+    },
+    {
+      "id": "q3",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "Which component in a Transformer processes each token based on all other tokens?",
+      "options": [
+        "Feed-forward network",
+        "Layer normalization",
+        "Attention mechanism",
+        "Embedding layer"
+      ],
+      "correctAnswer": "Attention mechanism"
+    },
+    {
+      "id": "q4",
+      "type": "free-response",
+      "points": 20,
+      "text": "Describe how a Transformer differs from an RNN (Recurrent Neural Network) in terms of how it processes sequential information."
+    },
+    {
+      "id": "q5",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What does 'causal masking' mean in the context of language models?",
+      "options": [
+        "Hiding certain token embeddings",
+        "Preventing tokens from looking at future tokens",
+        "Removing unnecessary connections",
+        "Scaling attention weights"
+      ],
+      "correctAnswer": "Preventing tokens from looking at future tokens"
+    },
+    {
+      "id": "q6",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "How many Transformer blocks does the module mention Gemma-4 has?",
+      "options": [
+        "6 blocks",
+        "12 blocks",
+        "24 blocks",
+        "42 blocks"
+      ],
+      "correctAnswer": "42 blocks"
+    },
+    {
+      "id": "q7",
+      "type": "free-response",
+      "points": 20,
+      "text": "Explain what 'attention' means in simple terms. Why is it important for models to understand relationships between different parts of the input?"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "moduleNumber": 1,
+  "moduleName": "Tokens & Tokenization",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is a token in the context of large language models?",
+      "options": [
+        "A complete sentence or paragraph of text",
+        "The smallest unit a model processes, typically a word or subword",
+        "A hidden layer in the neural network",
+        "A mathematical operation in attention"
+      ],
+      "correctAnswer": "The smallest unit a model processes, typically a word or subword"
+    },
+    {
+      "id": "q2",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "Which tokenizer approach breaks words into subword units?",
+      "options": [
+        "Character-level tokenization",
+        "Word-level tokenization",
+        "Byte-Pair Encoding (BPE)",
+        "Sentence-level tokenization"
+      ],
+      "correctAnswer": "Byte-Pair Encoding (BPE)"
+    },
+    {
+      "id": "q3",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What does a 4K context window mean?",
+      "options": [
+        "The model can process up to 4,000 tokens at once",
+        "The model has 4 kilobytes of memory",
+        "The model was trained on 4 thousand documents",
+        "The model outputs are 4 kilobytes in size"
+      ],
+      "correctAnswer": "The model can process up to 4,000 tokens at once"
+    },
+    {
+      "id": "q4",
+      "type": "free-response",
+      "points": 20,
+      "text": "Explain why different languages might have different token counts for the same concept (e.g., 'hello' vs 'hola'). What does this imply about model performance across languages?"
+    },
+    {
+      "id": "q5",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "Which model mentioned in Module 1 has the largest context window?",
+      "options": [
+        "GPT-3.5 (4K tokens)",
+        "Claude 3 (200K tokens)",
+        "Gemma-4 (26B tokens)",
+        "All are equal"
+      ],
+      "correctAnswer": "Claude 3 (200K tokens)"
+    },
+    {
+      "id": "q6",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is the purpose of special tokens like [CLS], [SEP], or <bos>?",
+      "options": [
+        "To add padding to reach context length",
+        "To mark important sections and control model behavior",
+        "To replace profanity in outputs",
+        "To compress the input text"
+      ],
+      "correctAnswer": "To mark important sections and control model behavior"
+    },
+    {
+      "id": "q7",
+      "type": "free-response",
+      "points": 20,
+      "text": "How would you estimate the token count for a typical English paragraph before feeding it to a language model? Provide a rough calculation method."
+    }
+  ]
+}

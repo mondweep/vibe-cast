@@ -1,0 +1,84 @@
+{
+  "moduleNumber": 3,
+  "moduleName": "Attention Mechanism Deep Dive",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What do Query (Q), Key (K), and Value (V) represent in attention?",
+      "options": [
+        "Query retrieves information, Key identifies content, Value contains the actual data",
+        "Query is input, Key is hidden layer, Value is output",
+        "Query is embedding, Key is weight, Value is bias",
+        "They are three different types of layers"
+      ],
+      "correctAnswer": "Query retrieves information, Key identifies content, Value contains the actual data"
+    },
+    {
+      "id": "q2",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is the purpose of scaling by √d_k in the attention formula?",
+      "options": [
+        "To prevent gradients from becoming too small",
+        "To normalize the dot product so softmax doesn't saturate",
+        "To compress the embedding dimension",
+        "To improve computational speed"
+      ],
+      "correctAnswer": "To normalize the dot product so softmax doesn't saturate"
+    },
+    {
+      "id": "q3",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "What is multi-head attention?",
+      "options": [
+        "Running attention multiple times in sequence",
+        "Running multiple attention operations in parallel, then concatenating results",
+        "Stacking multiple Transformer blocks",
+        "Using different activation functions"
+      ],
+      "correctAnswer": "Running multiple attention operations in parallel, then concatenating results"
+    },
+    {
+      "id": "q4",
+      "type": "free-response",
+      "points": 20,
+      "text": "How does softmax in the attention mechanism create a probability distribution? Why is this important?"
+    },
+    {
+      "id": "q5",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "Why is causal masking applied in language model attention?",
+      "options": [
+        "To hide irrelevant tokens",
+        "To prevent looking at future tokens during generation",
+        "To reduce computational cost",
+        "To improve embedding quality"
+      ],
+      "correctAnswer": "To prevent looking at future tokens during generation"
+    },
+    {
+      "id": "q6",
+      "type": "multiple-choice",
+      "points": 10,
+      "text": "How many attention heads does Gemma-4 typically have?",
+      "options": [
+        "8 heads",
+        "16 heads",
+        "32 heads",
+        "64 heads"
+      ],
+      "correctAnswer": "32 heads"
+    },
+    {
+      "id": "q7",
+      "type": "free-response",
+      "points": 20,
+      "text": "Explain what would happen if attention weights were not normalized (i.e., if we skipped the softmax step). How would this affect the model?"
+    }
+  ]
+}

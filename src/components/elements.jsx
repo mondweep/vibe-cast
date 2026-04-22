@@ -1,4 +1,7 @@
 import React from 'react';
+import Assessment from './Assessment.jsx';
+
+export { Assessment };
 
 export function Card({ children, className = '' }) {
   return (
