@@ -226,6 +226,7 @@ To add a progress note at any time:
 
 | Resource | Link |
 |---|---|
+| **Gemma-4-26B Abliterated Model** | [jenerallee78/gemma-4-26B-A4B-it-ara-abliterated](https://huggingface.co/jenerallee78/gemma-4-26B-A4B-it-ara-abliterated) |
 | StrongREJECT Paper | [arXiv: 2402.10260](https://arxiv.org/abs/2402.10260) |
 | StrongREJECT GitHub | [dsbowen/strong_reject](https://github.com/dsbowen/strong_reject) |
 | llama.cpp | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) |
@@ -235,5 +236,5 @@ To add a progress note at any time:
 
 ---
 
-*README last updated: 2026-04-22 (Model source confirmed)*  
+*README last updated: 2026-04-23 (Added Gemma-4 abliterated model to Key References)*  
 *For build progress and research notes, see [PROGRESS_LOG.md](./PROGRESS_LOG.md)*
