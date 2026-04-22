@@ -17,12 +17,140 @@ For the same reason a car safety lab deliberately crashes vehicles — to unders
 
 ---
 
+## 🚀 Getting Started — Reproducing This Environment
+
+> **Important:** Several large components are not stored in this repository (they are too large, or are external dependencies). This section tells you exactly what you need to download and how.
+
+### Prerequisites
+
+- **macOS** (tested on macOS 15 Sequoia, Intel x86_64)
+- **Python 3.12** — [Download from python.org](https://www.python.org/downloads/)
+- **CMake 4.x** — Install via Homebrew: `brew install cmake`
+- **Git**
+- ~30–50 GB free disk space (for the model weights)
+- A Hugging Face account (free) to download the model
+
+---
+
+### Step 1 — Clone This Branch
+
+```bash
+git clone --branch gemma-4b-abliterated-tinkering https://github.com/mondweep/vibe-cast.git
+cd vibe-cast
+```
+
+---
+
+### Step 2 — Clone and Build `llama.cpp`
+
+`llama.cpp` is the engine that runs the AI model locally. It is **not included** in this repo (it's a large C++ codebase that must be compiled for your specific machine).
+
+```bash
+# Clone llama.cpp into the project folder
+git clone https://github.com/ggml-org/llama.cpp.git
+
+# Build it from source
+cd llama.cpp
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config Release
+cd ../..
+```
+
+> **What this does (plain English):** Downloads the AI engine's source code and compiles it into a program your Mac can run. This takes 5–20 minutes. Your Mac's GPU (Metal) will be detected and enabled automatically for faster inference.
+
+---
+
+### Step 3 — Set Up the Python Environment
+
+A Python virtual environment (`gemma-env/`) is used for running StrongREJECT experiments and analysis scripts. It is **not included** in this repo (virtual environments are machine-specific).
+
+```bash
+# Create a fresh virtual environment
+python3 -m venv gemma-env
+
+# Activate it
+source gemma-env/bin/activate
+
+# Verify Python version (should be 3.12.x)
+python --version
+```
+
+---
+
+### Step 4 — Clone and Install the StrongREJECT Benchmark
+
+`strong_reject/` is the benchmark repository used to evaluate jailbreak effectiveness. It is **not included** in this repo (it's an external project).
+
+```bash
+# Clone it
+git clone https://github.com/dsbowen/strong_reject.git
+
+# Install it (with your virtual environment activated)
+source gemma-env/bin/activate
+pip install -e ./strong_reject
+```
+
+> **What this does (plain English):** Downloads the research tool that measures whether an AI can be manipulated, and installs it so our scripts can use it.
+
+---
+
+### Step 5 — Get the Research Paper
+
+The reference paper is too large to store in git. Download it here:
+
+📄 **"A StrongREJECT for Empty Jailbreaks"**  
+→ [arXiv: 2402.10260](https://arxiv.org/abs/2402.10260)  
+→ Save it as `A STRONGREJECT for Empty Jailbreaks.pdf` in the project root
+
+---
+
+### Step 6 — Download the Gemma Model Weights
+
+The AI model itself (the "brain" — a large data file) must be downloaded separately from Hugging Face. You will need a free account.
+
+```bash
+# Install the Hugging Face CLI (with your virtual environment activated)
+source gemma-env/bin/activate
+pip install huggingface_hub
+
+# Log in to Hugging Face
+huggingface-cli login
+# (Enter your Hugging Face access token when prompted)
+
+# Download the abliterated Gemma model
+# Model: ARA-abliterated version of Gemma-4-IT-26B (GGUF quantised format)
+huggingface-cli download <model-repo-path> --local-dir ./models/
+```
+
+> 🔜 **Model source TBD** — the specific Hugging Face repo path for the ARA-abliterated variant will be documented here once confirmed. Check `PROGRESS_LOG.md` for the latest status.
+
+---
+
+### ✅ Expected Directory Structure After Setup
+
+```
+vibe-cast/                          ← this repo (branch: gemma-4b-abliterated-tinkering)
+├── llama.cpp/                      ← cloned & compiled from github.com/ggml-org/llama.cpp
+│   └── build/                      ← compiled binaries (built locally)
+├── gemma-env/                      ← created locally with `python3 -m venv`
+├── strong_reject/                  ← cloned from github.com/dsbowen/strong_reject
+├── models/                         ← downloaded model weights (.gguf files) [create manually]
+├── Modelfile                       ← model config (included in repo ✅)
+├── README.md                       ← this file (included in repo ✅)
+├── PROGRESS_LOG.md                 ← build progress log (included in repo ✅)
+├── prior-context.md                ← research notes (included in repo ✅)
+├── log_update.sh                   ← progress hook script (included in repo ✅)
+├── .gitignore                      ← excludes large/generated files (included in repo ✅)
+└── A STRONGREJECT for Empty Jailbreaks.pdf  ← download from arXiv (not in repo)
+```
+
+---
+
 ## 🔬 The Research Foundation
 
 This project is grounded in an academic paper:  
-**"A StrongREJECT for Empty Jailbreaks"**  
-
-📄 [`A STRONGREJECT for Empty Jailbreaks.pdf`](./A%20STRONGREJECT%20for%20Empty%20Jailbreaks.pdf)
+**"A StrongREJECT for Empty Jailbreaks"** — [arXiv: 2402.10260](https://arxiv.org/abs/2402.10260)
 
 ### The Problem the Paper Solves
 
@@ -56,35 +184,17 @@ This reveals a crucial distinction: an **abliterated model** (safety removed at 
 
 ## 🎯 Research Goals
 
-This setup enables the following research directions:
-
-### 1. 🛡️ AI Safety Research
-Use StrongREJECT to evaluate how the abliterated model responds to attack patterns compared to the original safety-aligned Gemma model. Understand *what* the safety training actually prevents — and at what cost.
-
-### 2. 📊 Jailbreak Benchmarking
-Test 37+ different jailbreak methods against this model to rigorously measure which attacks are genuinely effective versus those that merely appear to work. Produce reproducible, peer-quality results.
-
-### 3. 🧪 Model Degradation Analysis
-Investigate how removing safety constraints affects:
-- Reasoning quality
-- Coherence and accuracy
-- Ability to handle nuanced, sensitive topics responsibly
-
-### 4. ⚖️ Safety Cost Analysis
-Compare the abliterated version against the original aligned model on *legitimate* tasks:
-- Coding and debugging
-- Translation
-- Logical reasoning
-- Complex analysis
-
-**Goal:** Quantify the true capability cost of safety fine-tuning — does making a model safer also make it less useful?
-
-### 5. 🔒 Developing Better Defences
-Use StrongREJECT's evaluation framework as a testbed for new safety mechanisms. Build, test, and validate defences in a controlled environment before they go anywhere near real users.
+| # | Goal | Description |
+|---|---|---|
+| 1 | 🛡️ AI Safety Research | Evaluate how the abliterated model responds to attack patterns vs. the safety-aligned Gemma |
+| 2 | 📊 Jailbreak Benchmarking | Test 37+ jailbreak methods using StrongREJECT's rigorous scoring |
+| 3 | 🧪 Model Degradation Analysis | Measure how removing safety affects reasoning quality and coherence |
+| 4 | ⚖️ Safety Cost Analysis | Quantify whether safety fine-tuning reduces legitimate task capability |
+| 5 | 🔒 Developing Better Defences | Use StrongREJECT as a testbed for new safety mechanisms |
 
 ---
 
-## ⚠️ Important Ethical Context
+## ⚠️ Ethical Context
 
 > **This is a research environment, not a consumer tool.**
 
@@ -92,65 +202,37 @@ Use StrongREJECT's evaluation framework as a testbed for new safety mechanisms. 
 |---|---|
 | Academic AI safety research | Deploying to end users |
 | Benchmarking safety systems | Attempting to extract harmful content |
-| Understanding model failure modes | Sharing outputs publicly without context |
-| Controlled red-team testing | Using as a replacement for aligned AI assistants |
+| Controlled red-team testing | Sharing outputs publicly without context |
+| Understanding model failure modes | Using as a replacement for aligned AI assistants |
 
-The model is run **entirely locally** — no data leaves the machine, and no outputs are exposed to any network or third-party service.
+The model runs **entirely locally** — no data leaves your machine.
 
 ---
 
-## 🏗️ Technical Setup
+## 📊 Build & Progress Log
 
-### Architecture
+For a plain-English record of setup progress, see [`PROGRESS_LOG.md`](./PROGRESS_LOG.md).
 
-```
-gemma-4-26B-IT-ARA-Abliterated/
-├── llama.cpp/          ← The inference engine (C++ runtime for running AI models)
-│   └── build/          ← Compiled binaries (built from source)
-├── gemma-env/          ← Python virtual environment for research scripts
-├── Modelfile           ← Model configuration (quantisation, context settings)
-├── README.md           ← This file
-├── PROGRESS_LOG.md     ← Plain-English log of build and research progress
-├── prior-context.md    ← Raw research context and notes
-└── A STRONGREJECT for Empty Jailbreaks.pdf  ← Reference paper
-```
+To add a progress note at any time:
 
-### Runtime Stack
-
-| Component | Technology | Purpose |
-|---|---|---|
-| Inference engine | **llama.cpp** | Runs the model efficiently on CPU/GPU |
-| Build system | **CMake 4.3.1** | Compiles llama.cpp from source |
-| Compiler | **AppleClang 16** | macOS native compiler |
-| GPU acceleration | **Apple Metal** | Uses Mac GPU for faster inference |
-| Math acceleration | **Apple Accelerate** | Optimised matrix operations |
-| Model format | **GGUF** | Quantised model weights |
-
-### Build Status
-
-See [`PROGRESS_LOG.md`](./PROGRESS_LOG.md) for a full, plain-English record of setup progress.
-
-**Quick commands:**
 ```bash
-# Build llama.cpp from source
-cd llama.cpp && mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build . --config Release
-
-# Log a progress update (plain English)
-./log_update.sh "Describe what just happened"
+./log_update.sh "Describe what just happened in plain English"
 ```
 
 ---
 
 ## 📚 Key References
 
-- **StrongREJECT Paper:** Souly et al. — *"A StrongREJECT for Empty Jailbreaks"*
-- **Gemma Model:** [google/gemma](https://ai.google.dev/gemma) — Google's open-source LLM family
-- **llama.cpp:** [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) — Efficient C++ inference engine
-- **Abliteration technique:** Removing refusal behaviour via directional activation steering at fine-tune time
+| Resource | Link |
+|---|---|
+| StrongREJECT Paper | [arXiv: 2402.10260](https://arxiv.org/abs/2402.10260) |
+| StrongREJECT GitHub | [dsbowen/strong_reject](https://github.com/dsbowen/strong_reject) |
+| llama.cpp | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) |
+| llama.cpp Build Docs | [docs/build.md](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md) |
+| Gemma (Google) | [ai.google.dev/gemma](https://ai.google.dev/gemma) |
+| Hugging Face CLI | [huggingface.co/docs/huggingface_hub/guides/cli](https://huggingface.co/docs/huggingface_hub/guides/cli) |
 
 ---
 
-*README last updated: 2026-04-21*  
+*README last updated: 2026-04-22*  
 *For build progress, see [PROGRESS_LOG.md](./PROGRESS_LOG.md)*

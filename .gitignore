@@ -1,0 +1,9 @@
+llama.cpp/
+gemma-env/
+strong_reject/
+*.pdf
+*.gguf
+*.ggml
+__pycache__/
+*.pyc
+.DS_Store
