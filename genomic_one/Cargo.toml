@@ -1,0 +1,40 @@
+[package]
+name = "genomic_one"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+rvdna = "0.3"
+anyhow = "1.0"
+rand = "0.8"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+zstd = { version = "0.13", default-features = false }
+futures-util = "0.3"
+
+# Server-only dependencies (optional)
+axum = { version = "0.7", optional = true }
+tokio = { version = "1", features = ["full"], optional = true }
+tower-http = { version = "0.5", features = ["cors"], optional = true }
+tokio-stream = { version = "0.1", optional = true }
+
+# WASM dependencies
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = ["console"] }
+console_error_panic_hook = "0.1"
+serde-wasm-bindgen = "0.6"
+getrandom = { version = "0.2", features = ["js"] }
+
+[features]
+default = ["server"]
+server = ["dep:axum", "dep:tokio", "dep:tower-http", "dep:tokio-stream"]
+
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+getrandom_03 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }
+getrandom_04 = { package = "getrandom", version = "0.4", features = ["wasm_js"] }

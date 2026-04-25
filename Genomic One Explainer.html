@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genomic One — AI Genomics Intelligence Platform</title>
+<style>
+
+:root {
+  --bg:#0a0e1a;--bg2:#0f1628;--bg3:#141d35;--card:#1a2340;--card2:#1f2b4a;
+  --border:#2a3a60;--accent:#4f8ef7;--accent2:#7c3aed;--accent3:#10b981;
+  --accent4:#f59e0b;--accent5:#ef4444;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,14,26,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
+.nav-logo{font-weight:700;font-size:1.1rem;color:var(--accent)}
+.nav-links{display:flex;gap:1.5rem}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:0.9rem;transition:color 0.2s}
+.nav-links a:hover{color:var(--text)}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 2rem 3rem;background:radial-gradient(ellipse at 50% 0%,rgba(79,142,247,0.12) 0%,transparent 70%),var(--bg);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(79,142,247,0.07) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+#helixCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.3);border-radius:100px;padding:.4rem 1rem;font-size:.8rem;color:var(--accent);margin-bottom:1.5rem;letter-spacing:.05em}
+h1.hero-title{font-size:clamp(2.4rem,5vw,4.5rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:1rem;position:relative;z-index:1}
+h1.hero-title span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.1rem;color:var(--text2);max-width:580px;margin:0 auto 2.5rem;position:relative;z-index:1}
+.hero-stats{display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem;position:relative;z-index:1}
+.hero-stat .num{font-size:2rem;font-weight:700;color:var(--accent)}
+.hero-stat .lbl{font-size:.75rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
+.section-label{font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem}
+.section-title{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:700;letter-spacing:-.02em;margin-bottom:1rem}
+.section-desc{color:var(--text2);font-size:1.05rem;max-width:600px;margin-bottom:2.5rem}
+.divider{height:1px;background:linear-gradient(to right,transparent,var(--border),transparent);margin:0 2rem}
+.pipeline-wrap{display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+.pl{display:grid;grid-template-columns:56px 1fr auto;gap:1.5rem;align-items:center;padding:1.25rem 1.5rem;background:var(--card);transition:background .2s;cursor:default}
+.pl:hover{background:var(--card2)}
+.lnum{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem}
+.pl h3{font-size:.95rem;font-weight:600;margin-bottom:.2rem}
+.pl p{font-size:.82rem;color:var(--text2)}
+.tags{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end}
+.tag{padding:.18rem .55rem;border-radius:6px;font-size:.68rem;font-weight:500}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.5rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:all .2s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.card:hover{border-color:rgba(79,142,247,.4);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.card-icon{font-size:2rem;margin-bottom:1rem}
+.card h3{font-size:.95rem;font-weight:600;margin-bottom:.4rem}
+.card p{font-size:.85rem;color:var(--text2)}
+.gene-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1rem}
+.gene-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;cursor:pointer;transition:all .2s}
+.gene-card:hover{border-color:var(--accent);background:var(--card2)}
+.gene-card .gname{font-weight:700;font-size:1.1rem;margin-bottom:.2rem}
+.gene-card .grole{font-size:.8rem;color:var(--text2);margin-bottom:.4rem}
+.gene-card .gchr{font-size:.7rem;color:var(--text3)}
+.pbar{height:5px;border-radius:3px;background:var(--bg3);margin-top:.4rem}
+.pfill{height:100%;border-radius:3px}
+.gene-detail{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-top:1rem;display:none}
+.gene-detail.active{display:block}
+.seq{font-family:'Courier New',monospace;font-size:.75rem;letter-spacing:.08em;padding:1rem;background:#060a14;border-radius:8px;overflow-x:auto;margin-top:.75rem;border:1px solid var(--border);line-height:2;word-break:break-all}
+.bA{color:#4ade80}.bT{color:#f87171}.bG{color:#60a5fa}.bC{color:#facc15}.bmut{background:#ef4444;color:white;border-radius:3px;padding:0 2px}
+.hbox{background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.2);border-radius:12px;padding:1.25rem 1.5rem;margin:1.25rem 0}
+.hbox .eq{font-size:1.1rem;font-weight:600;color:var(--accent);margin-bottom:.4rem;font-style:italic}
+.hbox p{font-size:.875rem;color:var(--text2)}
+.code-block{background:#060a14;border:1px solid var(--border);border-radius:10px;padding:1.25rem;font-family:'Courier New',monospace;font-size:.78rem;color:#a0c4ff;overflow-x:auto;line-height:1.8;margin-top:1rem}
+.ckw{color:#c084fc}.cfn{color:#60a5fa}.cst{color:#86efac}.cnum{color:#fb923c}.ccm{color:#64748b}
+.matrix-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;border-radius:12px;overflow:hidden;margin-top:1rem}
+.mc{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:600}
+.mh{background:var(--card2);color:var(--text2);font-size:.68rem}
+.bayes-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem}
+.bayes-stats{display:flex;gap:2rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.bstat .val{font-size:1.5rem;font-weight:700;color:var(--accent)}
+.bstat .lbl{font-size:.75rem;color:var(--text3)}
+.btn{padding:.6rem 1.2rem;border-radius:8px;border:none;cursor:pointer;font-size:.875rem;font-weight:500;transition:all .15s}
+.btn-p{background:var(--accent);color:white}
+.btn-p:hover{background:#3b7de8}
+.btn-s{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+.btn-s:hover{background:rgba(255,255,255,.1)}
+.controls{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-top:1rem}
+canvas.chart{border-radius:8px;display:block;width:100%}
+.pheno-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:1rem;margin-top:1rem}
+.pheno-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center}
+.pheno-card .ph{font-size:.9rem;font-weight:600;margin-bottom:.2rem}
+.pheno-card .al{font-size:.8rem;color:var(--text2)}
+.pheno-card .do{font-size:.8rem;color:var(--accent4);margin-top:.5rem}
+.chain{display:flex;flex-direction:column;gap:.5rem;margin-top:1.25rem}
+.chain-step{display:flex;align-items:center;gap:1rem;padding:.8rem 1rem;background:var(--card);border-radius:8px}
+.safla-flow{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;display:flex;flex-direction:column;gap:.5rem}
+.saf-step{display:flex;align-items:center;gap:1rem;padding:.7rem 1rem;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid transparent;transition:all .2s}
+.saf-step.active{border-color:rgba(79,142,247,.4);background:rgba(79,142,247,.05)}
+.sicon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem}
+.stxt .stitle{font-size:.875rem;font-weight:600}
+.stxt .sdesc{font-size:.8rem;color:var(--text2)}
+footer{text-align:center;padding:3rem 2rem;border-top:1px solid var(--border);color:var(--text3);font-size:.875rem}
+footer a{color:var(--accent);text-decoration:none}
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);color:var(--text3);animation:bob 2s infinite;z-index:2;cursor:pointer}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+@media(max-width:640px){.nav-links{display:none}.matrix-grid{font-size:.6rem}}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🧬 Genomic One</div>
+  <div class="nav-links">
+    <a href="#pipeline">Pipeline</a>
+    <a href="#genes">Genes</a>
+    <a href="#bayesian">Bayesian</a>
+    <a href="#trajectory">Trajectories</a>
+    <a href="#pharma">Pharmacogenomics</a>
+    <a href="#safety">Safety</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="top">
+  <canvas id="helixCanvas"></canvas>
+  <div class="badge" style="position:relative;z-index:1;">🔬 Open-Source Genomic Intelligence Platform</div>
+  <h1 class="hero-title">From DNA to<br><span>Clinical Intelligence</span></h1>
+  <p class="hero-sub">
+    A seven-layer AI pipeline that transforms raw A/C/G/T sequences into pharmacogenomic 
+    recommendations, disease risk trajectories, and molecular drug candidates — in real time.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">7</div><div class="lbl">Pipeline Layers</div></div>
+    <div class="hero-stat"><div class="num">5</div><div class="lbl">Gene Panel</div></div>
+    <div class="hero-stat"><div class="num">512</div><div class="lbl">K-mer Dims</div></div>
+    <div class="hero-stat"><div class="num">Rust</div><div class="lbl">Backend</div></div>
+    <div class="hero-stat"><div class="num">SSE</div><div class="lbl">Real-time</div></div>
+  </div>
+  <div class="scroll-hint" onclick="document.getElementById('pipeline').scrollIntoView({behavior:'smooth'})">▼</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="section-label">Architecture</div>
+  <h2 class="section-title">Seven-Layer Intelligence Pipeline</h2>
+  <p class="section-desc">Each layer transforms data from the previous, building richer representations from raw sequence to clinical recommendation.</p>
+  <div class="pipeline-wrap">
+    <div class="pl">
+      <div class="lnum" style="background:rgba(79,142,247,.15);color:#4f8ef7;">L1</div>
+      <div><h3>Sequence Ingestion &amp; Encoding — rvdna / MidStream</h3>
+      <p>Raw A/C/G/T parsed at 3.2 bits/base. Variant detection via pileup consensus. Protein translation through the codon table. Real-time SSE streaming from the Axum backend.</p></div>
+      <div class="tags"><span class="tag" style="background:rgba(79,142,247,.1);color:#4f8ef7;">rvdna</span><span class="tag" style="background:rgba(79,142,247,.1);color:#4f8ef7;">MidStream</span></div>
+    </div>
+    <div class="pl">
+      <div class="lnum" style="background:rgba(124,58,237,.15);color:#a78bfa;">L2</div>
+      <div><h3>Vector Search &amp; Similarity — RuVector / FACT</h3>
+      <p>11-mer k-mer counts reduced to 512D vectors. HNSW approximate nearest-neighbour search. MinCut graph pathway analysis identifies minimal disruption sets.</p></div>
+      <div class="tags"><span class="tag" style="background:rgba(124,58,237,.1);color:#a78bfa;">RuVector</span><span class="tag" style="background:rgba(124,58,237,.1);color:#a78bfa;">HNSW</span><span class="tag" style="background:rgba(124,58,237,.1);color:#a78bfa;">MinCut</span></div>
+    </div>
+    <div class="pl">
+      <div class="lnum" style="background:rgba(16,185,129,.15);color:#10b981;">L3</div>
+      <div><h3>Neural Classification &amp; Molecule Design — ruv-FANN</h3>
+      <p>Feed-forward neural network classifies variants across five pathogenicity classes. Agentic Diffusion generates SMILES drug candidates with predicted binding affinity.</p></div>
+      <div class="tags"><span class="tag" style="background:rgba(16,185,129,.1);color:#10b981;">ruv-FANN</span><span class="tag" style="background:rgba(16,185,129,.1);color:#10b981;">Diffusion</span></div>
+    </div>
+    <div class="pl">
+      <div class="lnum" style="background:rgba(245,158,11,.15);color:#f59e0b;">L4</div>
+      <div><h3>Bayesian Learning &amp; Temporal Attractors — Savant AI</h3>
+      <p>Beta(alpha, beta) prior per genomic trait, updated with each analysis. FTLE Lyapunov exponents model trajectory divergence. Horvath epigenetic clock predicts biological age.</p></div>
+      <div class="tags"><span class="tag" style="background:rgba(245,158,11,.1);color:#f59e0b;">Savant AI</span><span class="tag" style="background:rgba(245,158,11,.1);color:#f59e0b;">FTLE</span><span class="tag" style="background:rgba(245,158,11,.1);color:#f59e0b;">Horvath</span></div>
+    </div>
+    <div class="pl">
+      <div class="lnum" style="background:rgba(239,68,68,.15);color:#ef4444;">L5</div>
+      <div><h3>Clinical Advisory &amp; Pharmacogenomics</h3>
+      <p>CYP2D6 star allele calling determines metaboliser phenotype and drives dosing recommendations. Multi-expert panel synthesis with evidence base and literature citations.</p></div>
+      <div class="tags"><span class="tag" style="background:rgba(239,68,68,.1);color:#ef4444;">CYP2D6</span><span class="tag" style="background:rgba(239,68,68,.1);color:#ef4444;">CPIC</span><span class="tag" style="background:rgba(239,68,68,.1);color:#ef4444;">GLP-1</span></div>
+    </div>
+    <div class="pl">
+      <div class="lnum" style="background:rgba(20,184,166,.15);color:#2dd4bf;">L6</div>
+      <div><h3>Safety Validation — SAFLA Framework</h3>
+      <p>Confidence thresholds, contradiction detection, regulatory classification (CE-IVD/FDA). Human override mechanisms. Immutable audit trail for every recommendation.</p></div>
+      <div class="tags"><span class="tag" style="background:rgba(20,184,166,.1);color:#2dd4bf;">SAFLA</span><span class="tag" style="background:rgba(20,184,166,.1);color:#2dd4bf;">Audit</span><span class="tag" style="background:rgba(20,184,166,.1);color:#2dd4bf;">CE/FDA</span></div>
+    </div>
+    <div class="pl">
+      <div class="lnum" style="background:rgba(168,85,247,.15);color:#c084fc;">L7</div>
+      <div><h3>Federated Intelligence — MCP Network</h3>
+      <p>GDPR-compliant multi-node federation. Patient data never leaves local compute. Differential privacy for aggregate insights. Cross-institution collaborative learning.</p></div>
+      <div class="tags"><span class="tag" style="background:rgba(168,85,247,.1);color:#c084fc;">Federated</span><span class="tag" style="background:rgba(168,85,247,.1);color:#c084fc;">GDPR</span><span class="tag" style="background:rgba(168,85,247,.1);color:#c084fc;">MCP</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- GENES -->
+<section id="genes">
+  <div class="section-label">Gene Panel</div>
+  <h2 class="section-title">Five Clinically Critical Genes</h2>
+  <p class="section-desc">Each gene was chosen for its clinical significance and its ability to demonstrate different aspects of the pipeline. Click any card to expand details.</p>
+  <div class="gene-cards">
+    <div class="gene-card" onclick="showGene('HBB')">
+      <div class="gname" style="color:#ef4444;">HBB</div>
+      <div class="grole">Haemoglobin Beta</div><div class="gchr">Chr 11p15.4</div>
+      <div class="pbar"><div class="pfill" style="width:95%;background:#ef4444;"></div></div>
+    </div>
+    <div class="gene-card" onclick="showGene('TP53')">
+      <div class="gname" style="color:#f59e0b;">TP53</div>
+      <div class="grole">Tumour Suppressor</div><div class="gchr">Chr 17p13.1</div>
+      <div class="pbar"><div class="pfill" style="width:88%;background:#f59e0b;"></div></div>
+    </div>
+    <div class="gene-card" onclick="showGene('BRCA1')">
+      <div class="gname" style="color:#a78bfa;">BRCA1</div>
+      <div class="grole">DNA Repair</div><div class="gchr">Chr 17q21.31</div>
+      <div class="pbar"><div class="pfill" style="width:82%;background:#a78bfa;"></div></div>
+    </div>
+    <div class="gene-card" onclick="showGene('CYP2D6')">
+      <div class="gname" style="color:#10b981;">CYP2D6</div>
+      <div class="grole">Drug Metabolism</div><div class="gchr">Chr 22q13.2</div>
+      <div class="pbar"><div class="pfill" style="width:90%;background:#10b981;"></div></div>
+    </div>
+    <div class="gene-card" onclick="showGene('INS')">
+      <div class="gname" style="color:#4f8ef7;">INS</div>
+      <div class="grole">Insulin</div><div class="gchr">Chr 11p15.5</div>
+      <div class="pbar"><div class="pfill" style="width:75%;background:#4f8ef7;"></div></div>
+    </div>
+  </div>
+
+  <div class="gene-detail" id="gene-HBB">
+    <h3 style="color:#ef4444;margin-bottom:.5rem;">HBB — Haemoglobin Beta</h3>
+    <p style="color:var(--text2);margin-bottom:.75rem;">The E6V variant (Glu→Val at codon 6) causes sickle cell disease — the most common single-gene disorder worldwide. A single A→T transversion at coding position 20 is responsible. The haemoglobin protein polymerises, distorting red blood cells into their characteristic sickle shape.</p>
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:.3rem;">First 37 coding bases — position 20 (mutation site) highlighted in red:</p>
+    <div class="seq">
+<span class="bA">A</span><span class="bT">T</span><span class="bG">G</span><span class="bG">G</span><span class="bT">T</span><span class="bG">G</span><span class="bC">C</span><span class="bA">A</span><span class="bC">C</span><span class="bC">C</span><span class="bT">T</span><span class="bG">G</span><span class="bA">A</span><span class="bC">C</span><span class="bT">T</span><span class="bT">T</span><span class="bC">C</span><span class="bC">C</span><span class="bA">A</span><span class="bmut">T</span><span class="bG">G</span><span class="bT">T</span><span class="bG">G</span><span class="bA">A</span><span class="bG">G</span><span class="bC">C</span><span class="bT">T</span><span class="bG">G</span><span class="bC">C</span><span class="bA">A</span><span class="bC">C</span><span class="bG">G</span><span class="bT">T</span><span class="bG">G</span><span class="bG">G</span><span class="bA">A</span><span class="bT">T</span> <span style="color:var(--text3)">← pos 20: A→T causes E6V</span>
+    </div>
+    <p style="font-size:.8rem;color:var(--text2);margin-top:.75rem;">Protein translation: Met-<b style="color:#ef4444;">Val</b>-His-Leu-Thr-Pro-Glu-Glu-Lys-Ser... (Val replaces Glu at position 6)</p>
+  </div>
+
+  <div class="gene-detail" id="gene-TP53">
+    <h3 style="color:#f59e0b;margin-bottom:.5rem;">TP53 — Tumour Protein p53</h3>
+    <p style="color:var(--text2);margin-bottom:.75rem;">The "guardian of the genome" — mutated in over 50% of all human cancers. Acts as a transcription factor triggering apoptosis or cell-cycle arrest in response to DNA damage. Its 20-kb coding sequence spans 11 exons.</p>
+    <div class="hbox">
+      <div class="eq">Cosine similarity with BRCA1: 0.498</div>
+      <p>TP53 and BRCA1 cooperate in the DNA damage signalling pathway. Their shared k-mer patterns reflect overlapping regulatory motifs — explaining their proximity in the 512D sequence space.</p>
+    </div>
+    <div class="hbox">
+      <div class="eq">TP53/CYP2D6 similarity: 0.461</div>
+      <p>Highest cross-function pair. Both respond to cellular stress: TP53 to genotoxic stress, CYP2D6 to xenobiotic/drug exposure. Shared stress-response sequence motifs drive the similarity.</p>
+    </div>
+  </div>
+
+  <div class="gene-detail" id="gene-BRCA1">
+    <h3 style="color:#a78bfa;margin-bottom:.5rem;">BRCA1 — Breast Cancer Susceptibility Gene 1</h3>
+    <p style="color:var(--text2);margin-bottom:.75rem;">BRCA1 185delAG carriers face a 52% lifetime breast cancer risk and 39% ovarian cancer risk by age 70. The platform models this trajectory using temporal attractor dynamics with FTLE-derived confidence bands.</p>
+    <div class="hbox">
+      <div class="eq">P(carrier | positive test) ≈ 22%</div>
+      <p>With 95% sensitivity, 99% specificity, and 0.3% population prevalence, Bayes' theorem gives P(carrier|+) = 0.95×0.003 / (0.95×0.003 + 0.01×0.997) ≈ 0.222. Most positive tests are false positives — a critical lesson in probabilistic reasoning.</p>
+    </div>
+  </div>
+
+  <div class="gene-detail" id="gene-CYP2D6">
+    <h3 style="color:#10b981;margin-bottom:.5rem;">CYP2D6 — Cytochrome P450 2D6</h3>
+    <p style="color:var(--text2);margin-bottom:.75rem;">Responsible for metabolising approximately 25% of all prescribed drugs. Over 100 star alleles documented. The diplotype (*1/*4, *4/*4 etc.) determines metaboliser phenotype, directly driving dosing decisions.</p>
+    <div class="code-block">
+<span class="ccm">// src/api.rs — star allele phenotype mapping</span>
+<span class="ckw">fn</span> <span class="cfn">predict_phenotype</span>(diplotype: &amp;str) -&gt; Phenotype {
+  <span class="ckw">match</span> diplotype {
+    <span class="cst">"*1/*1"</span> | <span class="cst">"*1/*2"</span> =&gt; Phenotype::Normal,
+    <span class="cst">"*1/*4"</span> | <span class="cst">"*1/*5"</span> =&gt; Phenotype::Intermediate,
+    <span class="cst">"*4/*4"</span> | <span class="cst">"*4/*5"</span> =&gt; Phenotype::PoorMetaboliser,
+    <span class="cst">"*1xN/*1"</span>             =&gt; Phenotype::UltraRapid,
+    _                     =&gt; Phenotype::Unknown,
+  }
+}</div>
+  </div>
+
+  <div class="gene-detail" id="gene-INS">
+    <h3 style="color:#4f8ef7;margin-bottom:.5rem;">INS — Insulin</h3>
+    <p style="color:var(--text2);margin-bottom:.75rem;">The insulin gene underpins the T2D risk trajectory. Promoter variants affect beta-cell function. The platform models age-dependent T2D risk (11% at 30 → 53% at 70) via temporal attractor dynamics with FTLE confidence bands.</p>
+    <div class="hbox">
+      <div class="eq">HNSW similarity: INS vs BRCA1 = 0.380</div>
+      <p>Lowest similarity in the panel. INS is metabolic/endocrine while BRCA1 is nuclear/repair — different biological contexts produce distinct k-mer landscapes, far apart in sequence space.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2.5rem;margin-bottom:.4rem;">K-mer Cosine Similarity Matrix</h3>
+  <p style="color:var(--text2);font-size:.875rem;">11-mer vectors in 512-dimensional space. Blue intensity = similarity.</p>
+  <div id="geneMatrix"></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BAYESIAN -->
+<section id="bayesian">
+  <div class="section-label">Layer 4 — Savant AI</div>
+  <h2 class="section-title">Bayesian Prior Updating</h2>
+  <p class="section-desc">Each genomic trait stores a Beta(alpha, beta) distribution. Click the observation buttons to watch the posterior update in real time — exactly what Savant AI does internally.</p>
+  <div class="hbox">
+    <div class="eq">P(H | D) ∝ P(D | H) × P(H)</div>
+    <p>Posterior is proportional to Likelihood times Prior. The Beta distribution is the natural conjugate prior for Bernoulli observations: each pathogenic observation increments alpha, each benign increments beta. The distribution narrows as evidence accumulates.</p>
+  </div>
+  <div class="bayes-box">
+    <div class="bayes-stats">
+      <div class="bstat"><div class="val" id="alphaVal">1</div><div class="lbl">alpha (Pathogenic)</div></div>
+      <div class="bstat"><div class="val" id="betaVal">1</div><div class="lbl">beta (Benign)</div></div>
+      <div class="bstat"><div class="val" id="meanVal">0.500</div><div class="lbl">Mean P(pathogenic)</div></div>
+      <div class="bstat"><div class="val" id="entropyVal">1.00</div><div class="lbl">Uncertainty</div></div>
+    </div>
+    <canvas class="chart" id="bayesCanvas" height="200"></canvas>
+    <div class="controls">
+      <button class="btn btn-s" onclick="addObs(true)">🔴 Observe: Pathogenic</button>
+      <button class="btn btn-s" onclick="addObs(false)">🟢 Observe: Benign</button>
+      <button class="btn btn-p" onclick="resetBayes()">↺ Reset Prior</button>
+      <span style="font-size:.8rem;color:var(--text3);">n = <span id="nObs">0</span> observations</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TRAJECTORY -->
+<section id="trajectory">
+  <div class="section-label">Layer 4 — Temporal Attractor</div>
+  <h2 class="section-title">Disease Risk Trajectories</h2>
+  <p class="section-desc">FTLE (Finite-Time Lyapunov Exponents) measure how fast nearby trajectories diverge. The shaded band represents genuine sensitivity to initial conditions — a patient at the band boundary may follow a very different path.</p>
+  <div class="bayes-box">
+    <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;">
+      <button class="btn btn-p traj-btn" id="traj-BRCA1" onclick="setGeneTrajectory('BRCA1')">BRCA1</button>
+      <button class="btn btn-s traj-btn" id="traj-INS" onclick="setGeneTrajectory('INS')">T2D (INS)</button>
+      <button class="btn btn-s traj-btn" id="traj-TP53" onclick="setGeneTrajectory('TP53')">TP53</button>
+    </div>
+    <canvas class="chart" id="trajectoryCanvas" height="240"></canvas>
+    <p style="font-size:.8rem;color:var(--text3);margin-top:.75rem;">Dashed lines = confidence band edges (FTLE-derived). Dots = modelled data points. The band is not symmetric — chaotic sensitivity is directional.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PHARMA -->
+<section id="pharma">
+  <div class="section-label">Layer 5 — Clinical Advisory</div>
+  <h2 class="section-title">Pharmacogenomics Dashboard</h2>
+  <p class="section-desc">CYP2D6 metaboliser phenotype determines how quickly a patient processes drugs. The correct dose can differ by 4× across phenotypes.</p>
+  <div class="pheno-grid">
+    <div class="pheno-card" style="border-color:rgba(239,68,68,.3);">
+      <div class="ph" style="color:#ef4444;">Poor Metaboliser</div>
+      <div class="al">*4/*4 · *4/*5 diplotypes</div>
+      <div style="font-size:.72rem;color:var(--text3);margin-top:.2rem;">~7% of Europeans</div>
+      <div class="do">⚠️ Reduce dose or switch drug class</div>
+    </div>
+    <div class="pheno-card" style="border-color:rgba(245,158,11,.3);">
+      <div class="ph" style="color:#f59e0b;">Intermediate</div>
+      <div class="al">*1/*4 · *1/*5 diplotypes</div>
+      <div style="font-size:.72rem;color:var(--text3);margin-top:.2rem;">~30% of Europeans</div>
+      <div class="do">⚡ Monitor; consider dose reduction</div>
+    </div>
+    <div class="pheno-card" style="border-color:rgba(16,185,129,.3);">
+      <div class="ph" style="color:#10b981;">Normal</div>
+      <div class="al">*1/*1 · *1/*2 diplotypes</div>
+      <div style="font-size:.72rem;color:var(--text3);margin-top:.2rem;">~50% of Europeans</div>
+      <div class="do">✅ Standard dosing applies</div>
+    </div>
+    <div class="pheno-card" style="border-color:rgba(79,142,247,.3);">
+      <div class="ph" style="color:#4f8ef7;">Ultra-Rapid</div>
+      <div class="al">*1xN/*1 diplotypes</div>
+      <div style="font-size:.72rem;color:var(--text3);margin-top:.2rem;">~3–5% of Europeans</div>
+      <div class="do">🚀 Increase dose; rapid clearance</div>
+    </div>
+  </div>
+  <h3 style="margin-top:2rem;margin-bottom:.75rem;">Semaglutide (GLP-1) Recommendation Chain</h3>
+  <div class="chain">
+    <div class="chain-step" style="border-left:3px solid #4f8ef7;">
+      <span style="font-size:1.2rem;">🧬</span>
+      <div><div style="font-size:.875rem;font-weight:600;">CYP2D6 *1/*4 detected</div><div style="font-size:.8rem;color:var(--text2);">Intermediate metaboliser — reduced enzyme activity at the CYP2D6 locus</div></div>
+    </div>
+    <div style="text-align:center;color:var(--text3);">↓</div>
+    <div class="chain-step" style="border-left:3px solid #f59e0b;">
+      <span style="font-size:1.2rem;">⚙️</span>
+      <div><div style="font-size:.875rem;font-weight:600;">GLP-1 receptor agonist interaction assessed</div><div style="font-size:.8rem;color:var(--text2);">Semaglutide partially metabolised via CYP2D6 — plasma exposure may be elevated by ~30%</div></div>
+    </div>
+    <div style="text-align:center;color:var(--text3);">↓</div>
+    <div class="chain-step" style="border-left:3px solid #10b981;">
+      <span style="font-size:1.2rem;">💊</span>
+      <div><div style="font-size:.875rem;font-weight:600;">Recommendation: Start at 0.5 mg/week</div><div style="font-size:.8rem;color:var(--text2);">Reduced from standard 1 mg. Monitor HbA1c and GI tolerance at 4 weeks. CPIC Level B.</div></div>
+    </div>
+    <div style="text-align:center;color:var(--text3);">↓</div>
+    <div class="chain-step" style="border-left:3px solid #2dd4bf;">
+      <span style="font-size:1.2rem;">🛡️</span>
+      <div><div style="font-size:.875rem;font-weight:600;">SAFLA validation: PASS — confidence 0.87</div><div style="font-size:.8rem;color:var(--text2);">No contraindications detected. Audit ID: #GEN-2026-0043. Human clinician review recommended.</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SAFETY -->
+<section id="safety">
+  <div class="section-label">Layer 6</div>
+  <h2 class="section-title">SAFLA Safety Framework</h2>
+  <p class="section-desc">No clinical recommendation leaves the platform without passing six validation checks. Every decision is auditable, explainable, and overridable by a clinician.</p>
+  <div class="safla-flow">
+    <div class="saf-step active" style="display:flex;align-items:center;gap:1rem;">
+      <div class="sicon" style="background:rgba(79,142,247,.15);color:#4f8ef7;">🎯</div>
+      <div class="stxt"><div class="stitle">Confidence Threshold</div><div class="sdesc">Bayesian posterior must exceed 0.75. Below threshold → flagged for clinician review, not emitted.</div></div>
+    </div>
+    <div class="saf-step" style="display:flex;align-items:center;gap:1rem;">
+      <div class="sicon" style="background:rgba(245,158,11,.15);color:#f59e0b;">⚖️</div>
+      <div class="stxt"><div class="stitle">Contradiction Detection</div><div class="sdesc">Cross-references all panel genes for conflicting signals. Conflict → escalation to multi-expert advisory panel.</div></div>
+    </div>
+    <div class="saf-step" style="display:flex;align-items:center;gap:1rem;">
+      <div class="sicon" style="background:rgba(16,185,129,.15);color:#10b981;">📋</div>
+      <div class="stxt"><div class="stitle">Regulatory Classification</div><div class="sdesc">Determines CE-IVD / FDA 510(k) classification. Risk stratified per IVD Regulation (EU) 2017/746.</div></div>
+    </div>
+    <div class="saf-step" style="display:flex;align-items:center;gap:1rem;">
+      <div class="sicon" style="background:rgba(124,58,237,.15);color:#a78bfa;">🔍</div>
+      <div class="stxt"><div class="stitle">Explainability Check</div><div class="sdesc">Every recommendation must trace back to specific base positions. Black-box outputs are rejected automatically.</div></div>
+    </div>
+    <div class="saf-step" style="display:flex;align-items:center;gap:1rem;">
+      <div class="sicon" style="background:rgba(239,68,68,.15);color:#ef4444;">🚨</div>
+      <div class="stxt"><div class="stitle">Critical Drug Interaction</div><div class="sdesc">Scans curated interaction database. Life-threatening interactions trigger a hard block — no recommendation emitted.</div></div>
+    </div>
+    <div class="saf-step" style="display:flex;align-items:center;gap:1rem;">
+      <div class="sicon" style="background:rgba(20,184,166,.15);color:#2dd4bf;">📝</div>
+      <div class="stxt"><div class="stitle">Audit Trail Generation</div><div class="sdesc">Immutable record: hashed sequences, variant calls, confidence scores, model versions, timestamp. GDPR Article 22 compliant.</div></div>
+    </div>
+  </div>
+  <div class="controls" style="margin-top:1rem;">
+    <button class="btn btn-p" onclick="runSAFLA()">&#9654; Run Validation Sequence</button>
+    <button class="btn btn-s" onclick="resetSAFLA()">&#8635; Reset</button>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STACK -->
+<section>
+  <div class="section-label">Technology</div>
+  <h2 class="section-title">Open-Source Stack</h2>
+  <p class="section-desc">Every component is open-source, built to be studied, extended, and forked.</p>
+  <div class="cards">
+    <div class="card" style="border-top:3px solid #f97316;">
+      <div class="card-icon">🦀</div><h3>Rust Backend</h3>
+      <p>Axum + Tokio async runtime. Server-Sent Events streaming API. High-performance DNA parsing via the rvdna crate at 3.2 bits per base.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #4f8ef7;">
+      <div class="card-icon">⚛️</div><h3>Next.js 16 Frontend</h3>
+      <p>React 19, HeroUI components, Recharts for data visualisation, Three.js for 3D molecular structures, Framer Motion for animations.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #10b981;">
+      <div class="card-icon">🧠</div><h3>ruv-FANN Neural Nets</h3>
+      <p>Rust-native feed-forward neural networks. Classifies 512D k-mer vectors into five pathogenicity classes end-to-end.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #7c3aed;">
+      <div class="card-icon">🔍</div><h3>RuVector HNSW</h3>
+      <p>Hierarchical Navigable Small World approximate nearest-neighbour search. Sub-millisecond gene similarity queries across the full 512D vector space.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #f59e0b;">
+      <div class="card-icon">📊</div><h3>Savant AI Bayesian</h3>
+      <p>Beta distribution per genomic trait. Conjugate prior updates with each new variant observation. Uncertainty quantification at every step.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #2dd4bf;">
+      <div class="card-icon">🛡️</div><h3>SAFLA Safety</h3>
+      <p>Six-layer validation pipeline: confidence gating, regulatory classification, explainability mandates, interaction checking, immutable audit trails.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p style="margin-bottom:.5rem;">
+    <a href="https://github.com/cmcgrath2023/genomic_one" target="_blank">cmcgrath2023/genomic_one</a> &nbsp;·&nbsp;
+    <a href="https://cmcgrath2023.github.io/genomic_one" target="_blank">Live Demo</a> &nbsp;·&nbsp;
+    <a href="https://github.com/mondweep/vibe-cast/tree/genomics-exploration" target="_blank">mondweep/vibe-cast</a>
+  </p>
+  <p>Built for educational exploration · Open-source · No commercial endorsement</p>
+</footer>
+
+<script>
+
+// Helix
+(function(){
+  var c=document.getElementById('helixCanvas');
+  var ctx=c.getContext('2d');
+  var baseColors={A:'#4ade80',T:'#f87171',G:'#60a5fa',C:'#facc15'};
+  var bases=['A','T','G','C'];
+  var t=0;
+  function resize(){c.width=c.parentElement.offsetWidth;c.height=c.parentElement.offsetHeight;}
+  resize(); window.addEventListener('resize',resize);
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    var cx=c.width/2, amplitude=Math.min(100,c.width*0.1), spacing=24;
+    var numPts=Math.floor(c.height/spacing)+2;
+    for(var i=0;i<numPts;i++){
+      var y=i*spacing-(t%spacing);
+      var phase=(i*spacing+t)/80;
+      var x1=cx+Math.sin(phase)*amplitude, x2=cx-Math.sin(phase)*amplitude;
+      ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);
+      ctx.strokeStyle='rgba(79,142,247,0.05)';ctx.lineWidth=1;ctx.stroke();
+      var b1=bases[(i*3)%4], b2=bases[(i*3+2)%4];
+      [[x1,b1],[x2,b2]].forEach(function(p){
+        ctx.beginPath();ctx.arc(p[0],y,3,0,Math.PI*2);
+        ctx.fillStyle=baseColors[p[1]]+'30';ctx.fill();
+      });
+    }
+    // left strand
+    ctx.beginPath();
+    for(var i=0;i<numPts;i++){
+      var y=i*spacing-(t%spacing), phase=(i*spacing+t)/80;
+      var x=cx+Math.sin(phase)*amplitude;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle='rgba(79,142,247,0.1)';ctx.lineWidth=1.5;ctx.stroke();
+    // right strand
+    ctx.beginPath();
+    for(var i=0;i<numPts;i++){
+      var y=i*spacing-(t%spacing), phase=(i*spacing+t)/80;
+      var x=cx-Math.sin(phase)*amplitude;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle='rgba(124,58,237,0.1)';ctx.lineWidth=1.5;ctx.stroke();
+    t+=0.35; requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// Gene matrix
+(function(){
+  var genes=['','HBB','TP53','BRCA1','CYP2D6','INS'];
+  var sim=[
+    [0,0,0,0,0,0],
+    [0,1.000,0.510,0.482,0.435,0.398],
+    [0,0.510,1.000,0.498,0.461,0.421],
+    [0,0.482,0.498,1.000,0.455,0.380],
+    [0,0.435,0.461,0.455,1.000,0.413],
+    [0,0.398,0.421,0.380,0.413,1.000]
+  ];
+  var g=document.getElementById('geneMatrix');
+  var grid=document.createElement('div');grid.className='matrix-grid';
+  for(var r=0;r<6;r++){
+    for(var cc=0;cc<6;cc++){
+      var cell=document.createElement('div');cell.className='mc';
+      if(r===0||cc===0){
+        cell.className='mc mh';
+        cell.textContent=genes[Math.max(r,cc)];
+      } else {
+        var v=sim[r][cc];
+        if(r===cc){
+          cell.style.background='rgba(79,142,247,0.6)';
+          cell.style.color='white';cell.textContent='1.00';
+        } else {
+          var intensity=(v-0.3)/0.7;
+          cell.style.background='rgba(79,142,247,'+Math.max(0,intensity*0.5)+')';
+          cell.style.color=intensity>0.5?'white':'var(--text2)';
+          cell.textContent=v.toFixed(3);
+        }
+      }
+      grid.appendChild(cell);
+    }
+  }
+  g.appendChild(grid);
+})();
+
+// Gene detail
+function showGene(g){
+  document.querySelectorAll('.gene-detail').forEach(function(d){d.classList.remove('active');});
+  var el=document.getElementById('gene-'+g);
+  if(el) el.classList.toggle('active');
+}
+
+// Bayesian
+var bayesAlpha=1, bayesBeta=1;
+function lgamma(z){
+  var p=[676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,
+    12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  if(z<0.5) return Math.log(Math.PI)-Math.log(Math.abs(Math.sin(Math.PI*z)))-lgamma(1-z);
+  z-=1; var t=z+7.5, s=0.99999999999980993;
+  for(var i=0;i<8;i++) s+=p[i]/(z+i+1);
+  return 0.5*Math.log(2*Math.PI)+(z+0.5)*Math.log(t)-t+Math.log(s);
+}
+function betaPDF(x,a,b){
+  if(x<=0||x>=1) return 0;
+  var logB=lgamma(a)+lgamma(b)-lgamma(a+b);
+  return Math.exp((a-1)*Math.log(x)+(b-1)*Math.log(1-x)-logB);
+}
+function drawBayes(){
+  var canvas=document.getElementById('bayesCanvas');
+  if(!canvas) return;
+  var ctx=canvas.getContext('2d');
+  var W=canvas.parentElement.clientWidth-48;
+  if(W<100) W=300;
+  canvas.width=W; canvas.height=200;
+  var N=300, ml=45, mr=15, mt=20, mb=30;
+  var w=W-ml-mr, h=200-mt-mb;
+  ctx.clearRect(0,0,W,200);
+  ctx.fillStyle='#060a14'; ctx.fillRect(0,0,W,200);
+  var xs=[]; for(var i=1;i<=N;i++) xs.push(i/(N+1));
+  var ys=xs.map(function(x){return betaPDF(x,bayesAlpha,bayesBeta);});
+  var maxY=Math.max.apply(null,ys); if(maxY<0.01) maxY=0.01;
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1;
+  for(var i=0;i<=4;i++){
+    var py=mt+h-(i/4)*h;
+    ctx.beginPath();ctx.moveTo(ml,py);ctx.lineTo(ml+w,py);ctx.stroke();
+    ctx.fillStyle='rgba(148,163,184,0.5)';ctx.font='10px sans-serif';
+    ctx.textAlign='right';ctx.fillText((i/4).toFixed(2),ml-4,py+4);
+  }
+  // fill
+  var grad=ctx.createLinearGradient(0,mt,0,mt+h);
+  grad.addColorStop(0,'rgba(79,142,247,0.45)');
+  grad.addColorStop(1,'rgba(79,142,247,0.02)');
+  ctx.beginPath();ctx.moveTo(ml,mt+h);
+  xs.forEach(function(x,i){ctx.lineTo(ml+x*w, mt+h-(ys[i]/maxY)*h);});
+  ctx.lineTo(ml+w,mt+h);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  // line
+  ctx.beginPath();
+  xs.forEach(function(x,i){
+    var px=ml+x*w, py=mt+h-(ys[i]/maxY)*h;
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  });
+  ctx.strokeStyle='#4f8ef7';ctx.lineWidth=2.5;ctx.stroke();
+  // mean line
+  var meanX=bayesAlpha/(bayesAlpha+bayesBeta);
+  ctx.beginPath();ctx.moveTo(ml+meanX*w,mt);ctx.lineTo(ml+meanX*w,mt+h);
+  ctx.strokeStyle='rgba(245,158,11,0.7)';ctx.lineWidth=1.5;
+  ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+  // x labels
+  ctx.fillStyle='rgba(148,163,184,0.6)';ctx.font='11px sans-serif';ctx.textAlign='center';
+  ['0','0.25','0.5','0.75','1'].forEach(function(lbl,i){
+    ctx.fillText(lbl,ml+(i/4)*w,200-8);
+  });
+  ctx.fillStyle='#f59e0b';ctx.font='11px sans-serif';
+  ctx.fillText('mu='+meanX.toFixed(3),ml+meanX*w+2,mt+14);
+  // update stats
+  document.getElementById('alphaVal').textContent=bayesAlpha;
+  document.getElementById('betaVal').textContent=bayesBeta;
+  document.getElementById('meanVal').textContent=meanX.toFixed(3);
+  var n=bayesAlpha+bayesBeta-2;
+  var unc=Math.max(0,(1-n/20));
+  document.getElementById('entropyVal').textContent=unc.toFixed(2);
+  document.getElementById('nObs').textContent=n;
+}
+function addObs(pathogenic){ if(pathogenic) bayesAlpha++; else bayesBeta++; drawBayes(); }
+function resetBayes(){ bayesAlpha=1; bayesBeta=1; drawBayes(); }
+setTimeout(drawBayes,100);
+window.addEventListener('resize',drawBayes);
+
+// Trajectory
+var trajectories={
+  BRCA1:{label:'BRCA1 Breast Cancer Risk (%)',color:'#a78bfa',
+    pts:[[30,8],[35,12],[40,19],[45,29],[50,40],[55,48],[60,52],[65,54],[70,55]],band:6},
+  INS:{label:'T2D Risk — INS variants (%)',color:'#4f8ef7',
+    pts:[[30,11],[35,14],[40,18],[45,24],[50,31],[55,38],[60,44],[65,49],[70,53]],band:5},
+  TP53:{label:'TP53 Cancer Risk Accumulation (%)',color:'#f59e0b',
+    pts:[[30,4],[35,6],[40,9],[45,13],[50,19],[55,26],[60,34],[65,42],[70,49]],band:7}
+};
+var currentTraj='BRCA1';
+function setGeneTrajectory(g){
+  currentTraj=g;
+  document.querySelectorAll('.traj-btn').forEach(function(b){b.className='btn btn-s traj-btn';});
+  document.getElementById('traj-'+g).className='btn btn-p traj-btn';
+  drawTrajectory();
+}
+function drawTrajectory(){
+  var canvas=document.getElementById('trajectoryCanvas');
+  if(!canvas) return;
+  var ctx=canvas.getContext('2d');
+  var W=canvas.parentElement.clientWidth-48;
+  if(W<100) W=300;
+  canvas.width=W; canvas.height=240;
+  var traj=trajectories[currentTraj];
+  var pts=traj.pts;
+  var ml=50, mr=20, mt=30, mb=40;
+  var w=W-ml-mr, h=240-mt-mb;
+  ctx.clearRect(0,0,W,240);
+  ctx.fillStyle='#060a14'; ctx.fillRect(0,0,W,240);
+  var minX=pts[0][0], maxX=pts[pts.length-1][0];
+  function toX(x){return ml+(x-minX)/(maxX-minX)*w;}
+  function toY(y){return mt+h-(y/60)*h;}
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
+  [0,20,40,60].forEach(function(y){
+    var py=toY(y);
+    ctx.beginPath();ctx.moveTo(ml,py);ctx.lineTo(ml+w,py);ctx.stroke();
+    ctx.fillStyle='rgba(148,163,184,0.5)';ctx.font='10px sans-serif';ctx.textAlign='right';
+    ctx.fillText(y+'%',ml-6,py+4);
+  });
+  // x labels
+  ctx.fillStyle='rgba(148,163,184,0.5)';ctx.font='10px sans-serif';ctx.textAlign='center';
+  pts.forEach(function(p){ctx.fillText(p[0],toX(p[0]),mt+h+20);});
+  ctx.fillText('Age',ml+w/2,mt+h+36);
+  // band fill
+  var col=traj.color;
+  var r=parseInt(col.slice(1,3),16),gg=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);
+  ctx.beginPath();
+  pts.forEach(function(p,i){
+    var px=toX(p[0]),py=toY(p[1]+traj.band);
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  });
+  for(var i=pts.length-1;i>=0;i--){
+    ctx.lineTo(toX(pts[i][0]),toY(pts[i][1]-traj.band));
+  }
+  ctx.closePath();
+  ctx.fillStyle='rgba('+r+','+gg+','+b+',0.12)';ctx.fill();
+  // border lines of band (dashed)
+  ctx.setLineDash([4,4]);ctx.strokeStyle='rgba('+r+','+gg+','+b+',0.25)';ctx.lineWidth=1;
+  ctx.beginPath();
+  pts.forEach(function(p,i){
+    i===0?ctx.moveTo(toX(p[0]),toY(p[1]+traj.band)):ctx.lineTo(toX(p[0]),toY(p[1]+traj.band));
+  });ctx.stroke();
+  ctx.beginPath();
+  pts.forEach(function(p,i){
+    i===0?ctx.moveTo(toX(p[0]),toY(p[1]-traj.band)):ctx.lineTo(toX(p[0]),toY(p[1]-traj.band));
+  });ctx.stroke();
+  ctx.setLineDash([]);
+  // main line
+  ctx.beginPath();
+  pts.forEach(function(p,i){
+    i===0?ctx.moveTo(toX(p[0]),toY(p[1])):ctx.lineTo(toX(p[0]),toY(p[1]));
+  });
+  ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.stroke();
+  // dots
+  pts.forEach(function(p){
+    ctx.beginPath();ctx.arc(toX(p[0]),toY(p[1]),4,0,Math.PI*2);
+    ctx.fillStyle=col;ctx.fill();
+  });
+  // title
+  ctx.fillStyle='rgba(226,232,240,0.8)';ctx.font='13px sans-serif';ctx.textAlign='left';
+  ctx.fillText(traj.label,ml+4,mt+16);
+}
+setTimeout(drawTrajectory,100);
+window.addEventListener('resize',drawTrajectory);
+
+// SAFLA
+var saflaTimer=null;
+function runSAFLA(){
+  resetSAFLA();
+  var steps=document.querySelectorAll('.saf-step');
+  var i=0;
+  saflaTimer=setInterval(function(){
+    if(i>0) steps[i-1].classList.remove('active');
+    if(i<steps.length){
+      steps[i].classList.add('active');
+      var check=steps[i].querySelector('.saf-check');
+      if(!check){
+        var s=document.createElement('span');
+        s.className='saf-check';
+        s.style.cssText='color:#10b981;font-size:1.2rem;margin-left:auto;';
+        s.textContent='✓';
+        steps[i].appendChild(s);
+      }
+      i++;
+    } else { clearInterval(saflaTimer); }
+  },650);
+}
+function resetSAFLA(){
+  if(saflaTimer) clearInterval(saflaTimer);
+  document.querySelectorAll('.saf-step').forEach(function(s,idx){
+    s.classList.remove('active');
+    var c=s.querySelector('.saf-check'); if(c) c.remove();
+  });
+  document.querySelectorAll('.saf-step')[0].classList.add('active');
+}
+
+</script>
+</body>
+</html>

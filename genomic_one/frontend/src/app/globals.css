@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  /* Primary surfaces */
+  --bg-base:        #090E1A;
+  --bg-surface:     #0D1526;
+  --bg-elevated:    #111E35;
+  --bg-border:      #1C2D4A;
+
+  /* Brand */
+  --accent-teal:    #00C9B1;
+  --accent-blue:    #3D8EFF;
+  --accent-gold:    #F0B429;
+  --accent-red:     #FF4D4D;
+  --accent-purple:  #8B5CF6;
+
+  /* Typography */
+  --text-primary:   #E8F0FF;
+  --text-secondary: #94B3D7;
+  --text-muted:     #6889AB;
+
+  /* Special */
+  --safla-green:    #00E5A0;
+  --streaming-pulse:#00C9B1;
+  --federation-node:#3D8EFF;
+
+  /* Legacy mappings */
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --accent:     var(--accent-teal);
+  --accent-2:   var(--accent-purple);
+  --accent-3:   var(--safla-green);
+  --surface:    var(--bg-surface);
+  --surface-2:  var(--bg-elevated);
+  --border:     var(--bg-border);
+}
+
+@theme inline {
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  --color-accent: var(--accent-teal);
+  --color-accent-2: var(--accent-purple);
+  --color-accent-3: var(--safla-green);
+  --color-surface: var(--bg-surface);
+  --color-surface-2: var(--bg-elevated);
+  --color-border: var(--bg-border);
+  --font-sans: var(--font-ibm-plex-sans), var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-dm-mono), var(--font-geist-mono), monospace;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  background-image:
+    linear-gradient(rgba(28, 45, 74, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28, 45, 74, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb { background: var(--bg-border); border-radius: 3px; }
+
+/* MidStream pulse animation */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+.animate-pulse-live {
+  animation: pulse-live 1.5s ease-in-out infinite;
+}
+
+/* Panel card system */
+.panel-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  position: relative;
+}
+
+.panel-card.genomic    { border-top: 2px solid var(--accent-teal); }
+.panel-card.neural     { border-top: 2px solid var(--accent-blue); }
+.panel-card.molecule   { border-top: 2px solid var(--accent-purple); }
+.panel-card.warning    { border-top: 2px solid var(--accent-gold); }
+.panel-card.safla      { border-top: 2px solid var(--safla-green); }
+.panel-card.flagged    { border-top: 2px solid var(--accent-red); }
+.panel-card.theory     { border-top: 2px solid var(--accent-blue); }
+
+.panel-label {
+  display: block;
+  font-family: var(--font-dm-mono), var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.panel-value {
+  font-family: var(--font-dm-mono), var(--font-geist-mono), monospace;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent-teal);
+}
