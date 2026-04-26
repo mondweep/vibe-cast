@@ -26,3 +26,61 @@ export const getMemories = () => fetchEndpoint("/api/brain/memories", staticData
 export const getLearning = () => fetchEndpoint("/api/brain/learning", staticData.learningData);
 export const getPathways = () => fetchEndpoint("/api/brain/pathways", staticData.pathwaysData);
 export const getMolecules = () => fetchEndpoint("/api/brain/molecules", staticData.moleculeData);
+
+// ---- DNA analysis ---------------------------------------------------------
+
+export interface AnalyzeResult {
+  input_summary: { length_bp: number; gc_content: number; n_count: number };
+  best_gene_match: {
+    gene: string;
+    alignment_score: number;
+    mapped_position: number;
+    mapping_quality: number;
+    cigar_ops: number;
+  };
+  kmer_similarity: { gene: string; similarity: number }[];
+  variants: {
+    position: number;
+    ref_base: string;
+    alt_base: string;
+    annotation: string | null;
+  }[];
+  protein: { length: number; first_aa: string; stop_codon_at: number | null };
+  pharma: {
+    allele1: string;
+    allele2: string;
+    phenotype: string;
+    recommendations: { drug: string; recommendation: string; dose_factor: number }[];
+    note: string;
+  } | null;
+  warnings: string[];
+  disclaimer: string;
+}
+
+export interface AnalyzeError {
+  error: string;
+  position?: number;
+  character?: string;
+  length?: number;
+  min?: number;
+  max?: number;
+  detail?: string;
+}
+
+/**
+ * Analyze a user-supplied DNA sequence. Cold start on Render free tier can
+ * take ~15 seconds, hence the long timeout. Throws AnalyzeError on 4xx.
+ */
+export async function analyzeSequence(sequence: string): Promise<AnalyzeResult> {
+  const res = await fetch(`${API_BASE}/api/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: sequence,
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({ error: `http_${res.status}` }))) as AnalyzeError;
+    throw body;
+  }
+  return res.json();
+}

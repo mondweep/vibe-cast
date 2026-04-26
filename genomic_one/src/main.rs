@@ -6,6 +6,7 @@
 
 #[cfg(feature = "server")]
 mod api;
+mod analyze;
 mod core;
 
 use rvdna::prelude::*;
