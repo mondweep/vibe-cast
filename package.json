@@ -1,0 +1,8 @@
+{
+  "name": "vibe-cast",
+  "version": "1.0.0",
+  "description": "Weather-powered team battle game",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

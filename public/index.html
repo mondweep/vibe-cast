@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Cast - Weather Battle</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0e27; color: #fff; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 30px; font-size: 2.5em; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+    .panel { background: #1a1f3a; border: 2px solid #667eea; border-radius: 12px; padding: 25px; }
+    .panel h2 { margin-bottom: 20px; font-size: 1.3em; color: #667eea; }
+
+    input, button { padding: 12px; border: none; border-radius: 8px; font-size: 1em; }
+    input { width: 100%; background: #2a3050; color: #fff; margin-bottom: 10px; border: 1px solid #667eea; }
+    button { background: #667eea; color: #fff; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+    button:hover { background: #764ba2; transform: translateY(-2px); }
+    button:disabled { background: #555; cursor: not-allowed; }
+
+    .info-box { background: #2a3050; border-left: 4px solid #764ba2; padding: 15px; border-radius: 8px; margin: 15px 0; font-size: 0.95em; }
+    .error { border-left-color: #ff6b6b; color: #ff9999; }
+    .success { border-left-color: #51cf66; color: #b3f5b3; }
+
+    .players { margin-top: 20px; }
+    .player-card { background: #2a3050; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea; display: flex; justify-content: space-between; align-items: center; }
+    .player-name { font-weight: bold; }
+    .player-weather { font-size: 0.9em; color: #999; }
+    .weather-icon { font-size: 2em; }
+
+    .hidden { display: none; }
+
+    @media (max-width: 768px) {
+      .split { grid-template-columns: 1fr; }
+      h1 { font-size: 1.8em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⛅ Vibe Cast</h1>
+
+    <div id="mainView">
+      <div class="split">
+        <div class="panel">
+          <h2>Create or Join a Game</h2>
+          <button onclick="createRoom()">Create New Game</button>
+          <div class="info-box">Share this code with your team</div>
+
+          <div style="margin-top: 20px;">
+            <input type="text" id="joinCode" placeholder="Enter game code (e.g., ABC2)">
+            <input type="text" id="playerName" placeholder="Your name">
+            <button onclick="joinRoom()">Join Game</button>
+          </div>
+          <div id="roomInfo"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Players & Weather</h2>
+          <div id="players" class="players"></div>
+          <button onclick="refreshPlayers()" style="width: 100%; margin-top: 20px;">Refresh</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentRoom = null;
+    let currentPlayer = null;
+    const API = '/api/room';
+
+    async function createRoom() {
+      try {
+        const res = await fetch(`${API}?action=create`, { method: 'POST' });
+        const { code } = await res.json();
+        currentRoom = code;
+        document.getElementById('roomInfo').innerHTML = `
+          <div class="info-box success">
+            <strong>Game Code:</strong> <strong style="font-size: 1.5em;">${code}</strong><br>
+            Share this code with your team!
+          </div>
+        `;
+      } catch (e) {
+        alert('Error creating game: ' + e.message);
+      }
+    }
+
+    async function joinRoom() {
+      const code = document.getElementById('joinCode').value.trim().toUpperCase();
+      const name = document.getElementById('playerName').value.trim();
+
+      if (!code || !name) {
+        alert('Enter game code and your name');
+        return;
+      }
+
+      try {
+        const geo = await getLocation();
+        if (!geo) {
+          alert('Could not detect location. Please enable location services.');
+          return;
+        }
+
+        const weather = await getWeather(geo.lat, geo.lng);
+
+        const res = await fetch(`${API}?action=join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            room: code,
+            player: name,
+            city: geo.city,
+            country: geo.country,
+            weather
+          })
+        });
+
+        if (!res.ok) throw new Error('Room not found');
+
+        currentRoom = code;
+        currentPlayer = name;
+        document.getElementById('joinCode').value = '';
+        document.getElementById('playerName').value = '';
+        document.getElementById('roomInfo').innerHTML = `
+          <div class="info-box success">
+            ✓ Joined game <strong>${code}</strong> as <strong>${name}</strong>
+          </div>
+        `;
+
+        refreshPlayers();
+        setInterval(refreshPlayers, 3000);
+      } catch (e) {
+        document.getElementById('roomInfo').innerHTML = `<div class="info-box error">❌ ${e.message}</div>`;
+      }
+    }
+
+    async function getLocation() {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          resolve({ city: 'Unknown', country: 'Unknown', lat: 0, lng: 0 });
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            try {
+              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+              const data = await res.json();
+              resolve({
+                city: data.address?.city || data.address?.town || 'Unknown',
+                country: data.address?.country || 'Unknown',
+                lat: latitude,
+                lng: longitude
+              });
+            } catch {
+              resolve({ city: 'Unknown', country: 'Unknown', lat: latitude, lng: longitude });
+            }
+          },
+          () => resolve({ city: 'Unknown', country: 'Unknown', lat: 0, lng: 0 })
+        );
+      });
+    }
+
+    async function getWeather(lat, lng) {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,relative_humidity&timezone=auto`);
+        const data = await res.json();
+        const curr = data.current;
+        const code = curr.weather_code;
+        const icon = code === 0 ? '☀️' : code <= 3 ? '⛅' : code <= 45 ? '☁️' : code <= 82 ? '🌧️' : '⛈️';
+        return {
+          temp: Math.round(curr.temperature_2m),
+          humidity: curr.relative_humidity,
+          code,
+          icon
+        };
+      } catch {
+        return { temp: 0, humidity: 0, code: -1, icon: '❓' };
+      }
+    }
+
+    async function refreshPlayers() {
+      if (!currentRoom) return;
+      try {
+        const res = await fetch(`${API}?action=poll&room=${currentRoom}`);
+        const data = await res.json();
+
+        const html = data.players.map(p => `
+          <div class="player-card">
+            <div>
+              <div class="player-name">${p.name} ${p === currentPlayer ? '(You)' : ''}</div>
+              <div class="player-weather">${p.city}, ${p.country} • ${p.weather?.temp || '?'}°C ${p.weather?.icon || '❓'}</div>
+            </div>
+          </div>
+        `).join('');
+
+        document.getElementById('players').innerHTML = html || '<div class="info-box">Waiting for players...</div>';
+      } catch (e) {
+        console.error('Refresh error:', e);
+      }
+    }
+  </script>
+</body>
+</html>
