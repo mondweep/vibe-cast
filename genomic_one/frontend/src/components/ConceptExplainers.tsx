@@ -33,7 +33,7 @@ export default function ConceptExplainers() {
       <div className="bg-surface rounded-xl overflow-hidden border border-zinc-800/50 shadow-2xl h-[800px]">
         <iframe
           key={activeTab}
-          src={activeTab === "v1" ? "/explainer-v1.html" : "/explainer-v2.html"}
+          src={activeTab === "v1" ? "/explainer-v1" : "/explainer-v2"}
           className="w-full h-full border-none"
           title="Genomic One Explainer"
         />
