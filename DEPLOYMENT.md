@@ -34,17 +34,13 @@ Follow these steps in exact order to ensure your frontend can communicate with y
 4. On the **Configure Project** screen:
    - **Project Name**: `genomic-one`
    - **Framework Preset**: `Next.js`
-   - **Root Directory**: Click **Edit** and select `genomic_one/frontend`.
+   - **Root Directory**: Select `genomic_one/frontend`.
 5. Open the **Environment Variables** section and add:
    - **Key**: `NEXT_PUBLIC_API_URL`
-   - **Value**: Paste the URL you copied from Render (e.g., `https://genomic-one-api.onrender.com`).
+   - **Value**: Your Render Backend URL.
 6. Click **Deploy**.
-7. **Branch Switch (Critical)**:
-   - Vercel will likely deploy your `main` branch first. 
-   - Once the deployment starts, go to **Settings** > **Git**.
-   - Under **Production Branch**, change `main` to `genomics-exploration`.
-   - Click **Save**.
-   - Go to the **Deployments** tab and click **Redeploy**.
+
+*Note: Since the repository is now clean, Vercel will automatically detect the `genomics-exploration` branch and the new `next.config.mjs` settings.*
 
 ---
 
