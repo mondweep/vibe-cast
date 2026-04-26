@@ -15,7 +15,7 @@ Test files for the `/api/analyze` endpoint and the `/upload` page. All files are
 
 ## How to use
 
-**Via the dashboard** (https://vibe-cast-94kn.vercel.app/upload):
+**Via the dashboard** (https://genomic-one-dna-review.vercel.app/upload):
 1. Drag-and-drop any file into the upload zone, or click "Browse files".
 2. Click **Analyze**.
 

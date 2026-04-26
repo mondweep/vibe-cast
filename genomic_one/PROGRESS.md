@@ -10,8 +10,9 @@
 ## Live deployments
 - Frontend (production): https://genomics-one.vercel.app — Vercel project `genomics-one` under team `mondweeps-projects` (deploys `genomics-exploration`).
 - Backend (production): https://genomic-one-api.onrender.com — does NOT yet have `/api/analyze`.
-- Vercel preview for `dna-input-pipeline`: built and READY (`https://genomics-one-git-dna-input-pipeline-mondweeps-projects.vercel.app`) but currently 401 because Deployment Protection is enabled for previews.
-- Plan: a separate Vercel project + separate Render service per phase. New ones for `dna-input-pipeline` are being set up.
+- Frontend (this branch): https://genomic-one-dna-review.vercel.app — Vercel project `genomic-one-dna-review` (id `prj_4TmenjnDXq67gwqMoYVaTVtwujqC`) under team `mondweeps-projects`, deploys `dna-input-pipeline`, `NEXT_PUBLIC_API_URL` set to the new Render service.
+- Backend (this branch): https://genomic-one-api-dna.onrender.com — Render service `genomic-one-api-dna` (id `srv-d7mvrba8qa3s739uoek0`), Frankfurt, free tier, Rust, deploys `dna-input-pipeline`.
+- Plan: separate Vercel project + separate Render service per phase. The pair above is the active phase environment.
 
 ## Current phase
 Adding user-supplied DNA analysis. Practitioner uploads FASTA → backend runs the full pipeline → frontend renders results.
