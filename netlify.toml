@@ -1,0 +1,47 @@
+[build]
+  base = "client"
+  command = "npm install && npm run build"
+  publish = "dist"
+  functions = "functions"
+
+[build.environment]
+  NODE_VERSION = "18"
+  CI = "true"
+
+[dev]
+  command = "npm run dev"
+  port = 5173
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type"
+
+[context.production]
+  command = "npm install && npm run build"
+  publish = "dist"
+
+[context.deploy-preview]
+  command = "npm install && npm run build"
+  publish = "dist"
+
+[context.branch-deploy]
+  command = "npm install && npm run build"
+  publish = "dist"
