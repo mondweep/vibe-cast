@@ -1,0 +1,10 @@
+[build]
+  command = "npm install && npm run build"
+  functions = "netlify/functions"
+  publish = "dist"
+
+[dev]
+  command = "npm run dev"
+  framework = "vite"
+  port = 3000
+  targetPort = 5173
