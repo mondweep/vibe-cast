@@ -62,3 +62,32 @@
 - Updated k-mer similarity engine to include APOE.
 - Verified API integration with 6 genes.
 - Updated frontend mock data for APOE visualization.
+
+## [2026-04-26] — Stabilization, Cleanup & Launch Preparation
+
+### 1. Repository Hygiene & "Nuclear Cleanup"
+- **Accidental Home-Directory Push**: Identified that the home directory (`/Users/mondweep`) was acting as the Git root, causing massive accidental uploads.
+- **Nuclear Reset**: Initialized a fresh repository at the project root (`Genomics-Exploration`) and force-pushed to `genomics-exploration`.
+- **Result**: The GitHub branch is now clean, professional, and contains only relevant project code.
+
+### 2. Dashboard Stabilization
+- **Next.js Router Fix**: Resolved "Internal Next.js error" in `app-shell.tsx` by implementing a hydration guard (`mounted` state check).
+- **CSS Restoration**: Fixed broken asset paths on Render by removing production `basePath` and `assetPrefix` from `next.config.mjs`.
+- **UI Layout**: Optimized the `BrainSidebar` to be fixed-position with dynamic padding in the `AppShell`, preventing layout shifts and overlap.
+- **Chart Visibility**: Restored visibility of SVG charts (Recharts) by ensuring stable relative positioning and high-contrast color variables (`var(--bg-surface)`).
+
+### 3. Deployment & Sovereign Architecture
+- **Vercel + Render Split**: Defined the production strategy—Next.js frontend on Vercel, Rust engine on Render.
+- **Deployment Guide**: Created `DEPLOYMENT.md` with strict sequential instructions for cross-service connectivity.
+- **Heartbeat Verification**: Implemented a `test.txt` heartbeat file in the `public` folder to validate deployment integrity.
+
+### 4. Content & Attribution
+- **Project Origins**: Formally credited **Chris McGrath** (Original Author) and **rUv** (Innovator) in all documentation.
+- **Educational Layer**: Finalized **Scientific Fundamentals (V1)** and **Standalone Mastery (V2)** dashboards.
+- **Outreach Kit**:
+  - **LinkedIn Article**: Prepared `LINKEDIN_ARTICLE.md` with correct project attribution and educational focus.
+  - **Hero Image**: Generated a high-fidelity 3D DNA/AI visualization for the article header.
+  - **Video Script**: Developed a crisp walkthrough script for recording the "Mastery Layer" demo.
+
+---
+*Project Status: Stabilized & Ready for Production Launch.*
