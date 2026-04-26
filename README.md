@@ -148,4 +148,48 @@ These ship as VCF / BAM / CRAM rather than single-sequence FASTA — extract a r
 For illustrating variant detection without downloading anything, take the bundled `hbb-reference.fasta`, manually swap a base, save as a new file, and upload it. Any single-base difference within the matching prefix should appear in the variants table with the correct ref/alt/position.
 
 ---
+
+## 🔬 What `/upload` Actually Computes — Brutal Honesty Panel-by-Panel (2026-04-26)
+
+**Live URL:** https://genomic-one-dna-review.vercel.app/upload
+
+This section is the unvarnished answer to the question *"how real is the analysis on the live upload page?"* — written down so practitioners and reviewers don't have to guess. For the wider component reality map (including the home dashboard's hardcoded panels), see [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+### One-line verdict
+**~70% of what the results page shows is genuinely computed from your input.** The remaining ~30% is real-algorithm-on-imperfect-scope (variant detection and pharmacogenomics in particular). Nothing on `/upload` is pure visualisation theatre — but several panels have meaningful caveats a practitioner must know.
+
+### Panel-by-panel grading
+
+| Panel | Verdict | What's real | What's not |
+| :--- | :--- | :--- | :--- |
+| **Length / GC% / N-count** | 🟢 Fully real | Per-byte arithmetic on your input bases | — |
+| **Best gene match** | 🟢 Real algorithm, narrow scope | Real Smith-Waterman alignment against your bases. Mapping quality from real score-vs-alternatives. | Reference panel is **only 6 genes** (HBB, TP53, BRCA1, CYP2D6, INS, APOE). A real "what gene is this?" needs the full ~20,000-gene human reference. TP53 in the panel is exons 5-8 only; BRCA1 is exon 11 only — feeding fragments of other regions can misroute (we observed a TP53 CDS-start fragment matching CYP2D6, not TP53). |
+| **K-mer similarity bars** | 🟢 Real | Real 11-mer hashing into a 512-D vector, real cosine similarity vs each panel gene | Reference vectors come from the same 6-gene panel |
+| **Protein translation (first 50 aa)** | 🟢 Real | Real codon-table translation via `rvdna` | **Frame 0 only.** No ORF detection. No reverse strand. If your input doesn't start with ATG, the protein output is meaningless. |
+| **Variants table** | 🟡 Half-real | Real alignment + real per-base diff between your sequence and the matched reference | **Not a real variant call.** No pileup, no read depth, no quality scores, no allele frequency, no insertions/deletions (positional diff only). Capped at 100 mismatches. The "annotation" column only fires for the hardcoded sickle-cell position. |
+| **Pharmacogenomics card (CYP2D6 only)** | 🟡 Real algorithm, brittle wiring | Real diplotype-to-phenotype lookup. Real CPIC-style drug recommendation table (codeine, tramadol, tamoxifen — these are genuine guidelines). | The star-allele caller expects **absolute genomic coordinates**; we feed **local alignment positions**. So for any non-canonical CYP2D6 input, you'll most likely get `Star1/Star1 → Normal Metabolizer` regardless of which variants are actually present. The trailing GLP-1 RA recommendations are hardcoded text. |
+| **Warnings / Disclaimer** | 🟢 Honest | Says exactly what it should | — |
+
+### Things a practitioner should NOT take at face value
+
+1. **"3 variants detected"** does not mean "3 clinically called variants." It means "your single sequence differs from our reference at 3 positions." Real variant calling needs many sequencing reads + statistical confidence.
+2. **"Best match: HBB, score 210, MAPQ 60"** does not mean "this is unambiguously HBB on the human genome." It means "out of the 6 genes we know about, HBB scored highest." Outside that panel anything goes.
+3. **"CYP2D6 *4/*1, Intermediate Metabolizer"** is the right *shape* of a clinical answer but the upstream variant-to-star-allele resolution is currently too brittle to trust on arbitrary user input.
+4. **The home dashboard panels (Disease Trajectory, Federation Map, Research Pods, Drug Candidates, Brain → Learning) are NOT affected by your `/upload` submission.** They render the same hardcoded curves and graphs for every visitor. `/upload` is the only page where your input drives the output.
+
+### What it nonetheless proves
+
+- The **end-to-end loop works**: real client upload → real Axum handler → real `rvdna` pipeline → real numeric results back to the UI in seconds.
+- For HBB specifically, you can demonstrate the platform **detecting the actual sickle-cell mutation** (A→T at position 19, protein change Glu→Val at codon 6) — that's real biology surfacing through a real pipeline.
+- The architecture is sound; the gaps are **scope** (6 genes vs full genome), **depth** (single-sequence diff vs proper variant calling), and **wiring** (local positions vs genomic coordinates) — not "it's all faked." Each gap is bounded and addressable.
+
+### Roadmap to closing the gaps
+
+See [ARCHITECTURE.md → Effort vs Impact Matrix](./ARCHITECTURE.md) for the prioritised work. Top of the list:
+
+1. **`/api/risk-profile`** — replace hardcoded disease-trajectory curves with real ClinVar-driven cumulative risk estimates per detected variant. ~5 working days. Highest impact for the question *"when may a disease manifest?"*
+2. **ClinVar variant annotation** — surface pathogenicity classification next to each detected variant. ~2 days.
+3. **VCF input path** — accept pre-called variants from a real sequencing pipeline rather than single-sequence FASTA. ~3 days.
+
+---
 Built with passion for the **Genomics-Exploration** project. 🧬
