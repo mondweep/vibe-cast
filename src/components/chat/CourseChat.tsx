@@ -110,7 +110,7 @@ export function CourseChat({ moduleSlug, onClose }: CourseChatProps) {
           m.id === assistantId ? { ...m, meta: metaData } : m
         ));
       }
-    } catch (err) {
+    } catch {
       setMessages(prev => prev.map(m =>
         m.id === assistantId
           ? { ...m, content: "Sorry, I couldn't process that. Please try again." }
