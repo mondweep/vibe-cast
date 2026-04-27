@@ -33,7 +33,6 @@ function selectBestPath(routes: BgpRoute[]): { winner: BgpRoute; reason: string 
   const maxLP = Math.max(...candidates.map(r => r.localPref));
   candidates = candidates.filter(r => r.localPref === maxLP);
   if (candidates.length === 1) return { winner: candidates[0], reason: `Highest Local Preference (${maxLP})` };
-  reason = `Tied on Local Pref (${maxLP})`;
 
   // Step 4: AS_PATH length
   const minPath = Math.min(...candidates.map(r => r.asPath.length));
