@@ -103,6 +103,7 @@ export function CourseChat({ moduleSlug, onClose }: CourseChatProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isMaximised, setIsMaximised] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -203,7 +204,7 @@ export function CourseChat({ moduleSlug, onClose }: CourseChatProps) {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col w-[440px] max-w-[calc(100vw-2rem)] h-[620px] max-h-[calc(100vh-4rem)] rounded-xl border border-border/80 bg-[#111827] shadow-2xl shadow-black/50 overflow-hidden">
+    <div className={cn("fixed z-50 flex flex-col rounded-xl border border-border/80 bg-[#111827] shadow-2xl shadow-black/50 overflow-hidden transition-all duration-300", isMaximised ? "inset-4" : "bottom-6 right-6 w-[440px] max-w-[calc(100vw-2rem)] h-[620px] max-h-[calc(100vh-4rem)]")}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/60 bg-[#0f1623] shrink-0">
@@ -214,11 +215,21 @@ export function CourseChat({ moduleSlug, onClose }: CourseChatProps) {
             <p className="text-[10px] text-slate-400 font-mono">GraphRAG · Knowledge graph · {persona}</p>
           </div>
         </div>
-        <button
-          onClick={() => { setIsOpen(false); onClose?.(); }}
-          className="text-slate-500 hover:text-slate-200 transition-colors text-xl leading-none w-7 h-7 flex items-center justify-center rounded hover:bg-white/10"
-          aria-label="Close chat"
-        >×</button>
+        <div className="flex items-center gap-1">
+          {/* Maximise / restore */}
+          <button
+            onClick={() => setIsMaximised(m => !m)}
+            className="text-slate-500 hover:text-slate-200 transition-colors text-sm leading-none w-7 h-7 flex items-center justify-center rounded hover:bg-white/10"
+            aria-label={isMaximised ? "Restore chat size" : "Maximise chat"}
+            title={isMaximised ? "Restore" : "Maximise"}
+          >{isMaximised ? "⊡" : "⊞"}</button>
+          {/* Close */}
+          <button
+            onClick={() => { setIsOpen(false); onClose?.(); }}
+            className="text-slate-500 hover:text-slate-200 transition-colors text-xl leading-none w-7 h-7 flex items-center justify-center rounded hover:bg-white/10"
+            aria-label="Close chat"
+          >×</button>
+        </div>
       </div>
 
       {/* Messages */}
