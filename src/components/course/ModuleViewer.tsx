@@ -1,4 +1,6 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
 import { Badge } from "@/components/ui/badge";
 import { mdxComponents } from "./mdx/MdxComponents";
 import { ModuleProgress } from "./ModuleProgress";
@@ -8,6 +10,13 @@ import Link from "next/link";
 const domainVariantMap: Record<string, "design" | "operations" | "security" | "automation" | "exam-prep"> = {
   design: "design", operations: "operations", security: "security",
   automation: "automation", "exam-prep": "exam-prep",
+};
+
+const MDX_OPTIONS = {
+  mdxOptions: {
+    remarkPlugins: [remarkGfm],   // ← GFM: tables, strikethrough, task lists
+    rehypePlugins: [rehypeSlug],  // ← slug IDs on headings for anchor links
+  },
 };
 
 export function ModuleViewer({ module: mod }: { module: ModuleData }) {
@@ -31,14 +40,11 @@ export function ModuleViewer({ module: mod }: { module: ModuleData }) {
       </div>
 
       {/* Client: progress + objectives + complete button */}
-      <ModuleProgress
-        moduleId={mod.id}
-objectives={mod.objectives}
-      />
+      <ModuleProgress moduleId={mod.id} objectives={mod.objectives} />
 
-      {/* Server: MDX content */}
+      {/* Server: MDX content with GFM table support */}
       <article className="max-w-none">
-        <MDXRemote source={mod.content} components={mdxComponents} />
+        <MDXRemote source={mod.content} components={mdxComponents} options={MDX_OPTIONS} />
       </article>
     </div>
   );

@@ -1,5 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { useProgress } from "@/contexts/ProgressContext";
 import { cn } from "@/lib/utils";
@@ -24,71 +26,55 @@ interface CourseChatProps {
   onClose?: () => void;
 }
 
-// Simple markdown renderer for assistant messages
+// Markdown renderer using react-markdown + remark-gfm (supports tables, bold, code, lists)
 function MessageContent({ content }: { content: string }) {
-  const lines = content.split("\n");
-  const elements: React.ReactNode[] = [];
-  let i = 0;
-
-  while (i < lines.length) {
-    const line = lines[i];
-
-    // Heading
-    if (line.startsWith("## ")) {
-      elements.push(<p key={i} className="font-bold text-foreground mt-3 mb-1 text-sm">{line.slice(3)}</p>);
-    } else if (line.startsWith("# ")) {
-      elements.push(<p key={i} className="font-bold text-foreground mt-2 mb-1 text-sm">{line.slice(2)}</p>);
-    }
-    // Bullet
-    else if (line.startsWith("- ") || line.startsWith("* ")) {
-      elements.push(
-        <div key={i} className="flex gap-2 mb-0.5">
-          <span className="text-primary mt-0.5 shrink-0">·</span>
-          <span className="text-sm leading-relaxed">{renderInline(line.slice(2))}</span>
-        </div>
-      );
-    }
-    // Numbered list
-    else if (/^\d+\. /.test(line)) {
-      const num = line.match(/^(\d+)\. /)?.[1];
-      elements.push(
-        <div key={i} className="flex gap-2 mb-0.5">
-          <span className="text-primary font-mono text-xs mt-1 shrink-0 w-4">{num}.</span>
-          <span className="text-sm leading-relaxed">{renderInline(line.replace(/^\d+\. /, ""))}</span>
-        </div>
-      );
-    }
-    // Horizontal rule
-    else if (line.startsWith("---")) {
-      elements.push(<hr key={i} className="border-border/50 my-2" />);
-    }
-    // Empty line
-    else if (!line.trim()) {
-      elements.push(<div key={i} className="h-1.5" />);
-    }
-    // Normal paragraph
-    else {
-      elements.push(
-        <p key={i} className="text-sm leading-relaxed mb-0.5">{renderInline(line)}</p>
-      );
-    }
-    i++;
-  }
-  return <>{elements}</>;
-}
-
-function renderInline(text: string): React.ReactNode {
-  // Bold **text**
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
-    }
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return <code key={i} className="bg-muted/60 text-primary px-1 py-0.5 rounded text-xs font-mono">{part.slice(1, -1)}</code>;
-    }
-    return part;
-  });
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({ children }) => <p className="text-sm leading-relaxed mb-1.5 last:mb-0">{children}</p>,
+        strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+        em: ({ children }) => <em className="italic text-slate-300">{children}</em>,
+        code: ({ children, className }) => {
+          const isBlock = !!className;
+          return isBlock
+            ? <code className="block bg-[#0d1117] text-[#e6edf3] rounded-lg p-3 my-2 overflow-x-auto text-xs font-mono leading-relaxed whitespace-pre">{children}</code>
+            : <code className="bg-black/40 text-primary px-1 py-0.5 rounded text-xs font-mono">{children}</code>;
+        },
+        pre: ({ children }) => <pre className="my-2">{children}</pre>,
+        ul: ({ children }) => <ul className="my-1.5 space-y-0.5 pl-1">{children}</ul>,
+        ol: ({ children }) => <ol className="my-1.5 space-y-0.5 pl-1 list-decimal list-inside">{children}</ol>,
+        li: ({ children }) => (
+          <li className="flex gap-2 text-sm leading-relaxed">
+            <span className="text-primary shrink-0 mt-0.5">·</span>
+            <span>{children}</span>
+          </li>
+        ),
+        h1: ({ children }) => <h1 className="font-bold text-white text-base mt-3 mb-1">{children}</h1>,
+        h2: ({ children }) => <h2 className="font-bold text-white text-sm mt-3 mb-1">{children}</h2>,
+        h3: ({ children }) => <h3 className="font-semibold text-slate-200 text-sm mt-2 mb-1">{children}</h3>,
+        hr: () => <hr className="border-white/10 my-2" />,
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-2 border-primary/50 pl-3 my-2 italic text-slate-400">{children}</blockquote>
+        ),
+        // ── TABLE — the key fix ──────────────────────────────
+        table: ({ children }) => (
+          <div className="overflow-x-auto my-3 rounded-lg border border-white/10">
+            <table className="w-full text-xs border-collapse">{children}</table>
+          </div>
+        ),
+        thead: ({ children }) => <thead className="bg-white/5">{children}</thead>,
+        tbody: ({ children }) => <tbody className="divide-y divide-white/5">{children}</tbody>,
+        tr: ({ children }) => <tr className="hover:bg-white/5 transition-colors">{children}</tr>,
+        th: ({ children }) => (
+          <th className="text-left px-3 py-2 text-slate-300 font-semibold text-[11px] uppercase tracking-wider border-b border-white/10">{children}</th>
+        ),
+        td: ({ children }) => <td className="px-3 py-2 text-slate-300 align-top">{children}</td>,
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
 }
 
 export function CourseChat({ moduleSlug, onClose }: CourseChatProps) {
