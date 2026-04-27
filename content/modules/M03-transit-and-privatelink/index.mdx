@@ -1,10 +1,102 @@
 ---
 id: "03"
-title: "Transit & PrivateLink"
+slug: "transit-and-privatelink"
+title: "Transit Gateway & PrivateLink"
 domain: "design"
+difficulty: "specialty"
 estimatedHours: 5
 prerequisites: ["01"]
+topics: ["Transit Gateway","TGW route tables","PrivateLink","VPC Endpoints","Centralised inspection"]
+objectives:
+  - id: o1
+    description: "Design a multi-VPC architecture using TGW with segmented route tables"
+    bloomsLevel: "create"
+  - id: o2
+    description: "Explain how AWS PrivateLink enables private service consumption"
+    bloomsLevel: "understand"
+personas: ["student","teacher","practitioner"]
 ---
-# Module 03: Transit & PrivateLink
-Content being authored in Phase 2 (June–July 2026).
-Topics: TGW route tables, TGW attachments, AWS PrivateLink, VPC Endpoints.
+
+## 1. Transit Gateway Architecture
+
+Transit Gateway (TGW) is a regional network transit hub that connects VPCs, VPNs, and Direct Connect at scale.
+
+### Key concepts
+
+| Concept | Description |
+|---|---|
+| Attachment | Association of a VPC, VPN, DX, or peering to TGW |
+| Route table | Controls which attachments can communicate |
+| Association | Links an attachment to one route table |
+| Propagation | Automatically adds attachment routes to a route table |
+
+### Segmented routing (security zones)
+
+```
+TGW Route Tables:
+  prod-rt:   propagates prod-vpc, shared-vpc
+  dev-rt:    propagates dev-vpc, shared-vpc
+  shared-rt: propagates all VPCs (hub)
+
+Result: prod and dev cannot reach each other,
+        both can reach shared services
+```
+
+> **Exam tip:** Each attachment can be **associated** with exactly one route table but can **propagate** routes to multiple route tables.
+
+## 2. TGW Centralised Egress
+
+Route all internet-bound traffic through a single inspection VPC:
+
+```
+App VPCs ──TGW──▶ Egress VPC (NAT GW + Firewall)
+                        │
+                   Internet
+```
+
+TGW route tables:
+- Spoke VPCs: default route (0.0.0.0/0) → Egress VPC attachment
+- Egress VPC: return routes → each spoke VPC
+
+## 3. TGW Connect (GRE Tunnels)
+
+Connect SD-WAN appliances or third-party NVAs via GRE tunnels with BGP — higher performance than VPN attachments:
+- Up to 20 Gbps per Connect attachment
+- BGP over GRE for dynamic routing
+- No need for IPSec encryption overhead
+
+## 4. AWS PrivateLink
+
+PrivateLink creates a one-way private connection from consumer VPC to a service endpoint (NLB in provider VPC) without VPC peering or route table changes.
+
+```
+Consumer VPC          Provider VPC
+   │                      │
+Interface Endpoint ──▶  NLB ──▶ Service
+(private IP)
+```
+
+**How it works:**
+1. Provider deploys service behind an NLB
+2. Provider creates an Endpoint Service (allow-list consumers)
+3. Consumer creates an Interface Endpoint
+4. AWS creates ENIs in consumer subnets with private IPs
+5. DNS resolves service name to private IPs
+
+**Benefits vs peering:**
+- No overlapping CIDR conflicts
+- No transitive routing concerns
+- Consumer cannot initiate connections to provider VPC — only to the specific service
+- Scales to thousands of consumers
+
+## 5. Gateway Load Balancer Endpoints
+
+GWLBE enables transparent traffic inspection:
+
+```
+Source ──▶ GWLBE ──▶ GWLB ──▶ Firewall appliance fleet
+                ◀──────────────────────────────────────
+(inspected traffic returns to original destination)
+```
+
+Used for IDS/IPS, deep packet inspection, and network monitoring at scale.

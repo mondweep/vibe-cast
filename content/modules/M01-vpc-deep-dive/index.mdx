@@ -6,41 +6,108 @@ domain: "design"
 difficulty: "specialty"
 estimatedHours: 6
 prerequisites: []
-topics:
-  - "CIDR planning and subnetting"
-  - "Subnet design patterns"
-  - "Route table mastery"
-  - "Multi-VPC architectures"
-  - "VPC peering vs Transit Gateway"
+topics: ["CIDR planning","Subnet design","Route tables","VPC peering","Transit Gateway"]
 objectives:
-  - id: "o1"
-    description: "Design a VPC CIDR block allocation strategy for a multi-account environment"
+  - id: o1
+    description: "Design a VPC CIDR allocation strategy for a multi-account environment"
     bloomsLevel: "create"
-  - id: "o2"
-    description: "Explain the routing differences between VPC peering and Transit Gateway"
+  - id: o2
+    description: "Explain routing differences between VPC peering and Transit Gateway"
     bloomsLevel: "understand"
-personas: ["student", "teacher", "practitioner"]
+  - id: o3
+    description: "Configure route tables for hub-spoke topology"
+    bloomsLevel: "apply"
+personas: ["student","teacher","practitioner"]
 ---
-
-# Module 01: VPC Deep Dive
-
-> **Foundation module.** Every subsequent module builds on VPC primitives.
 
 ## 1. CIDR Planning
 
-Valid range: /16 to /28. RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. Cannot overlap with peer CIDRs. Up to 4 secondary CIDRs can be added post-creation.
+Every VPC begins with a CIDR block decision that is extremely difficult to reverse. AWS allows `/16` (65,536 IPs) down to `/28` (16 IPs). AWS reserves 5 IPs in every subnet: network address, VPC router, DNS, future use, and broadcast.
+
+**RFC 1918 private ranges:**
+- `10.0.0.0/8` — largest, recommended for enterprise
+- `172.16.0.0/12` — medium
+- `192.168.0.0/16` — smallest, avoid for cloud
+
+**Enterprise allocation pattern:**
+
+```
+10.0.0.0/8             ← Enterprise supernet
+  10.10.0.0/16         ← Production (Account A)
+  10.20.0.0/16         ← Staging (Account B)
+  10.30.0.0/16         ← Development (Account C)
+  10.100.0.0/16        ← Shared Services (Hub)
+  10.200.0.0/16        ← Security/Inspection
+```
+
+> **Exam tip (ANS-C01):** VPCs can have up to 5 secondary CIDR blocks. Secondary CIDRs cannot overlap with existing CIDRs or be from the `198.19.0.0/16` range (reserved for benchmarking).
 
 ## 2. Subnet Design Patterns
 
-Three-tier: Public (IGW route) → Private (NAT route) → Isolated (no internet). AWS reserves 5 IPs per subnet.
+Subnets are AZ-scoped. Best practice is to deploy at minimum 2 subnets per tier per AZ for high availability.
+
+| Tier | Type | Route table | Use case |
+|------|------|-------------|----------|
+| Public | Internet-facing | IGW route | ALB, NAT Gateway, Bastion |
+| Private | Application | NAT GW route | EC2, ECS, Lambda |
+| Isolated | Data | Local only | RDS, ElastiCache, internal services |
+
+**Sizing rule of thumb:** Size subnets generously. A `/24` (251 usable) is the minimum sensible subnet size. For EKS, use `/22` or larger — pods consume IPs rapidly.
 
 ## 3. Route Table Mastery
 
-Longest-prefix match wins. Blackholed routes (pointing to deleted resources) silently drop traffic.
+AWS uses longest-prefix match (LPM). The most specific route wins:
+
+```
+Destination         Target              Notes
+10.0.0.0/16         local               Cannot be deleted
+10.0.1.0/24         eni-abc123          More specific — wins
+172.16.0.0/12       tgw-xyz789          Peering/TGW traffic
+0.0.0.0/0           nat-0abc123         Default route
+```
+
+**Common pitfalls:**
+- **Blackhole routes**: A route pointing to a deleted NAT GW, VPC endpoint, or peering connection silently drops traffic. Use VPC Reachability Analyzer to detect.
+- **Missing return routes**: Asymmetric routing causes stateful firewall drops.
+- **Route propagation**: TGW and VGW can propagate routes automatically — verify no unwanted routes are injected.
 
 ## 4. VPC Peering vs Transit Gateway
 
-Peering: non-transitive, 125 VPCs max, no BGP, data-transfer cost only.
-TGW: transitive, thousands of VPCs, 50 Gbps/AZ, BGP support, per-hour + data cost.
+This is one of the highest-frequency ANS-C01 topics.
 
-**Exam tip (ANS-C01):** Know when each is appropriate and the cost implications.
+| Characteristic | VPC Peering | Transit Gateway |
+|---|---|---|
+| Routing model | Non-transitive | Transitive |
+| Max attachments | 125 per VPC | 5,000 per TGW |
+| Bandwidth | No limit | 50 Gbps per AZ |
+| Latency | Lower (direct) | Slightly higher |
+| Cost | Data transfer only | Per-hour + per-GB |
+| BGP support | No | Yes (via DXGW) |
+| Cross-region | Yes | Yes |
+| Cross-account | Yes | Yes |
+| Transitive routing | ❌ Not supported | ✅ Supported |
+
+**Decision matrix:**
+- **≤ 10 VPCs, no hybrid connectivity** → use peering
+- **> 10 VPCs OR Direct Connect OR VPN** → use Transit Gateway
+- **Cost-sensitive, simple topology** → peering
+- **Centralised inspection, shared services** → Transit Gateway
+
+> **Exam tip:** VPC peering is non-transitive. If VPC-A peers with VPC-B, and VPC-B peers with VPC-C, VPC-A **cannot** reach VPC-C through VPC-B. You need a direct peering or Transit Gateway.
+
+## 5. VPC Endpoints
+
+Endpoints allow private connectivity to AWS services without internet exposure.
+
+| Type | How it works | Use case |
+|---|---|---|
+| Gateway | Route table entry | S3, DynamoDB only |
+| Interface | ENI with private IP | 100+ AWS services |
+| Gateway Load Balancer | Transparent inspection | Firewall appliances |
+
+**Interface endpoint DNS:** Creates private DNS entries that override public endpoints when `enableDnsSupport` and `enableDnsHostnames` are enabled on the VPC.
+
+```bash
+# Verify endpoint connectivity
+aws s3 ls s3://my-bucket --endpoint-url https://s3.eu-west-1.amazonaws.com
+```

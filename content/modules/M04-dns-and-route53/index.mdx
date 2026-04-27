@@ -1,10 +1,90 @@
 ---
 id: "04"
+slug: "dns-and-route53"
 title: "DNS & Route 53"
 domain: "operations"
+difficulty: "specialty"
 estimatedHours: 5
 prerequisites: ["01"]
+topics: ["Route 53 routing policies","Private hosted zones","Route 53 Resolver","DNSSEC","Health checks"]
+objectives:
+  - id: o1
+    description: "Configure Route 53 health-check failover for a multi-region workload"
+    bloomsLevel: "apply"
+  - id: o2
+    description: "Design hybrid DNS resolution using Route 53 Resolver endpoints"
+    bloomsLevel: "create"
+personas: ["student","teacher","practitioner"]
 ---
-# Module 04: DNS & Route 53
-Content being authored in Phase 2 (June–July 2026).
-Topics: 7 routing policies, private hosted zones, Route 53 Resolver, DNSSEC.
+
+## 1. Route 53 Routing Policies
+
+| Policy | Use case | Health check? |
+|---|---|---|
+| Simple | Single resource, no logic | Optional |
+| Weighted | A/B testing, gradual migration | Optional |
+| Latency | Route to lowest-latency region | Optional |
+| Failover | Active-passive HA | Required (primary) |
+| Geolocation | Restrict by country/continent | Optional |
+| Geoproximity | Route by distance with bias | Optional |
+| Multivalue | Random selection, up to 8 | Optional |
+| IP-based | Route by CIDR | Optional |
+
+> **Exam tip:** Multivalue answer is **not** a load balancer. It returns up to 8 healthy records randomly. For load balancing, use ALB/NLB.
+
+## 2. Health Checks
+
+Route 53 health checkers operate from 15+ global locations. Check types:
+- **Endpoint**: HTTP(S), TCP to a specific IP/domain
+- **Calculated**: AND/OR logic across child health checks
+- **CloudWatch alarm**: Trigger on metric threshold
+
+**Failover pattern:**
+```
+Primary record (failover=PRIMARY)  ──health check──▶ us-east-1 ALB
+Secondary record (failover=SECONDARY)              ──▶ eu-west-1 ALB
+
+If primary health check fails: Route 53 returns secondary automatically
+```
+
+## 3. Private Hosted Zones
+
+Private hosted zones resolve DNS only within associated VPCs:
+
+```bash
+# Associate PHZ with VPC (CLI)
+aws route53 associate-vpc-with-hosted-zone \
+  --hosted-zone-id Z1234 \
+  --vpc VPCRegion=eu-west-1,VPCId=vpc-abc123
+```
+
+**Split-horizon DNS:** Use the same domain name in both a public and private hosted zone. VPC resources resolve to private IPs; external clients resolve to public IPs.
+
+## 4. Route 53 Resolver
+
+Enables DNS resolution between AWS and on-premises:
+
+| Endpoint type | Direction | Use case |
+|---|---|---|
+| Inbound | On-prem → AWS | On-prem resolves AWS private DNS |
+| Outbound | AWS → On-prem | EC2 resolves on-prem hostnames |
+
+**Resolver rules:**
+- Forward rules: send specific domains to on-premises DNS
+- System rules: .amazonaws.com always resolves via AWS
+- Recursive rules: catch-all resolver for everything else
+
+```
+EC2 in VPC queries "legacy-app.corp.internal"
+  → Outbound endpoint → on-prem DNS (10.1.1.53)
+  → Returns 192.168.10.20
+  → EC2 connects to on-prem host via DX
+```
+
+## 5. DNSSEC
+
+Route 53 supports DNSSEC signing for public hosted zones. Key concepts:
+- **KSK** (Key Signing Key): Signs the DNSKEY record set
+- **ZSK** (Zone Signing Key): Signs individual record sets
+- Route 53 manages ZSK automatically; you manage KSK in AWS KMS
+- Enable DNSSEC validation on Resolver to verify signatures for inbound queries

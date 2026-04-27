@@ -1,10 +1,97 @@
 ---
 id: "07"
+slug: "monitoring-and-troubleshooting"
 title: "Monitoring & Troubleshooting"
 domain: "operations"
+difficulty: "specialty"
 estimatedHours: 5
 prerequisites: ["01"]
+topics: ["VPC Flow Logs","Reachability Analyzer","Network Access Analyzer","CloudWatch","TGW Network Manager"]
+objectives:
+  - id: o1
+    description: "Use Reachability Analyzer to diagnose a connectivity failure"
+    bloomsLevel: "apply"
+  - id: o2
+    description: "Interpret VPC Flow Log records to identify blocked traffic"
+    bloomsLevel: "analyse"
+personas: ["student","teacher","practitioner"]
 ---
-# Module 07: Monitoring & Troubleshooting
-Content being authored in Phase 2 (June–July 2026).
-Topics: VPC Flow Logs, Reachability Analyzer, Network Access Analyzer, CloudWatch.
+
+## 1. VPC Flow Logs
+
+Flow logs capture IP traffic metadata at ENI, subnet, or VPC level.
+
+**Default fields:**
+```
+version account-id interface-id srcaddr dstaddr srcport dstport protocol
+packets bytes windowstart windowend action flowlogstatus
+```
+
+**Custom fields (v3+):** vpc-id, subnet-id, instance-id, tcp-flags, pkt-srcaddr, pkt-dstaddr, region, az-id, pkt-src-aws-service, flow-direction
+
+**ACCEPT vs REJECT:**
+- `ACCEPT` — traffic matched an allow rule (SG or NACL)
+- `REJECT` — traffic blocked by SG or NACL
+- `NODATA` — no traffic in the aggregation window
+
+**Querying with Athena:**
+```sql
+SELECT srcaddr, dstaddr, dstport, action, count(*) as flows
+FROM vpc_flow_logs
+WHERE action = 'REJECT'
+  AND day = '2026/04/27'
+GROUP BY srcaddr, dstaddr, dstport, action
+ORDER BY flows DESC
+LIMIT 20;
+```
+
+## 2. Reachability Analyzer
+
+Point-to-point network path analysis without sending actual traffic.
+
+**How it works:** Models the network configuration (route tables, SGs, NACLs, endpoints) and determines if a logical path exists.
+
+**Supported source/destination types:** EC2 instances, ENIs, IGW, VGW, TGW, VPC endpoints, VPC peering connections
+
+**Result states:**
+- `reachable` — path exists through current configuration
+- `not-reachable` — blocked; explains which component causes the block
+
+```bash
+aws ec2 start-network-insights-analysis \
+  --network-insights-path-id nip-0abc123 \
+  --query 'NetworkInsightsAnalysis.{Status:Status,Explanation:ExplanationCode}'
+```
+
+> **Exam tip:** Reachability Analyzer analyses configuration only — it cannot detect issues caused by OS-level firewalls (iptables, Windows Firewall) or application-layer problems.
+
+## 3. Network Access Analyzer
+
+Analyses entire network access paths to identify unintended access — for compliance and security posture assessment.
+
+**vs Reachability Analyzer:**
+- Reachability: "Can A reach B?" (point-to-point)
+- Network Access Analyzer: "What can reach my RDS database?" (broad scope)
+
+Use to find open paths from internet to private subnets, or from dev VPCs to production resources.
+
+## 4. CloudWatch Networking Metrics
+
+| Metric | Resource | Key threshold |
+|---|---|---|
+| ActiveFlowCount | NLB | Spike = DDoS or traffic surge |
+| ProcessedBytes | ALB/NLB | Billing and capacity planning |
+| HealthyHostCount | Target group | Should never reach 0 |
+| NATGateway BytesInFromDestination | NAT GW | Unexpected egress |
+| TunnelState | VPN | 0 = tunnel down |
+| PacketDropCountBlackhole | TGW | Blackhole routes present |
+
+## 5. TGW Network Manager
+
+Centralised dashboard for global network topology across Transit Gateways:
+- Visualise topology across regions and accounts
+- Monitor BGP routing state
+- Track on-premises connectivity via registered transit gateways
+- CloudWatch metrics for all TGW attachments in one view
+
+**Route Analyzer:** Trace specific flows across TGW route tables to verify routing intent matches configuration.

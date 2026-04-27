@@ -1,10 +1,110 @@
 ---
 id: "06"
+slug: "network-security"
 title: "Network Security"
 domain: "security"
+difficulty: "specialty"
 estimatedHours: 7
 prerequisites: ["01"]
+topics: ["Security Groups","NACLs","Network Firewall","WAF","Shield","DDoS architecture"]
+objectives:
+  - id: o1
+    description: "Design a defence-in-depth network security architecture"
+    bloomsLevel: "create"
+  - id: o2
+    description: "Configure AWS Network Firewall stateful rules for east-west inspection"
+    bloomsLevel: "apply"
+  - id: o3
+    description: "Differentiate the protection levels of Shield Standard vs Advanced"
+    bloomsLevel: "analyse"
+personas: ["student","teacher","practitioner"]
 ---
-# Module 06: Network Security
-Content being authored in Phase 2 (June–July 2026).
-Topics: Security Groups vs NACLs, AWS Network Firewall, WAF, AWS Shield.
+
+## 1. Security Groups vs NACLs
+
+| Attribute | Security Group | NACL |
+|---|---|---|
+| Level | Instance (ENI) | Subnet |
+| State | **Stateful** | **Stateless** |
+| Rules | Allow only | Allow and Deny |
+| Rule evaluation | All rules evaluated | Rules evaluated in order (lowest number first) |
+| Default | All outbound allowed, all inbound denied | All traffic allowed |
+| Scope | VPC-wide reference | Subnet boundary only |
+
+> **Exam tip:** NACLs are stateless — you must explicitly allow both inbound and outbound for each flow. Ephemeral ports (1024–65535) must be allowed outbound for inbound request responses.
+
+## 2. AWS Network Firewall
+
+Network Firewall is a managed stateful firewall deployed into a dedicated subnet.
+
+**Rule types (in evaluation order):**
+1. **Stateless rules**: Packet-level, fast, first evaluated
+2. **Stateful rules**: Connection-tracking, Suricata-compatible IDS/IPS
+3. **Managed rule groups**: AWS-maintained threat intel (botnet, malware C2)
+
+**Deployment pattern (centralised inspection):**
+```
+Spoke VPCs ──TGW──▶ Inspection VPC
+                      │  Firewall subnet
+                      │  (Network Firewall endpoint)
+                      ↓
+                   Egress VPC ──▶ Internet
+```
+
+All traffic flows through the firewall before reaching the internet or crossing to other VPCs.
+
+**Suricata rule example:**
+```
+alert http any any -> any any (
+  msg:"Block known malware domain";
+  http.host; content:"malware.example.com";
+  sid:1000001; rev:1;
+)
+```
+
+## 3. AWS WAF
+
+WAF operates at Layer 7, inspecting HTTP/S requests at CloudFront, ALB, API Gateway, AppSync, and Cognito.
+
+**Web ACL rule types:**
+- **AWS Managed Rules**: Pre-built rule groups (Core rule set, Known bad inputs, SQL injection, XSS)
+- **Rate-based rules**: Throttle IPs exceeding N requests/5 minutes
+- **Custom rules**: IP sets, geo match, string match, regex, size constraints
+- **Label matching**: Chain rules using labels for complex logic
+
+**Bot Control:** Managed rule group that categorises bots (scrapers, scanners, crawlers) and allows selective blocking with CAPTCHA challenges.
+
+## 4. AWS Shield
+
+| Feature | Standard | Advanced |
+|---|---|---|
+| Cost | Free | $3,000/month + data transfer |
+| L3/L4 protection | ✅ Always on | ✅ Enhanced |
+| L7 protection | ❌ | ✅ Via WAF |
+| DDoS Response Team | ❌ | ✅ 24/7 |
+| Cost protection | ❌ | ✅ Scaling cost credits |
+| Visibility | Basic metrics | Detailed attack metrics |
+
+**Shield Advanced resources:** Protect ALBs, CloudFront, Route 53, EIPs, and NLBs. Associate WAF web ACL with protected resources for L7 protection.
+
+## 5. Defence-in-Depth Architecture
+
+```
+Internet
+   │
+CloudFront + WAF (L7, edge)
+   │
+Shield Advanced (L3/L4)
+   │
+ALB (TLS termination)
+   │
+Security Groups (stateful, instance level)
+   │
+Network Firewall (stateful + IPS, subnet level)
+   │
+NACL (stateless, subnet boundary)
+   │
+Application instances
+```
+
+Each layer provides independent control and visibility.

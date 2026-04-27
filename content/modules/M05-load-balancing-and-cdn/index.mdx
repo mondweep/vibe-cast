@@ -1,10 +1,84 @@
 ---
 id: "05"
+slug: "load-balancing-and-cdn"
 title: "Load Balancing & CDN"
 domain: "design"
+difficulty: "specialty"
 estimatedHours: 6
 prerequisites: ["01"]
+topics: ["ALB","NLB","GWLB","CloudFront","Global Accelerator"]
+objectives:
+  - id: o1
+    description: "Select the appropriate load balancer type for a given workload"
+    bloomsLevel: "evaluate"
+  - id: o2
+    description: "Design a CloudFront distribution with origin failover"
+    bloomsLevel: "create"
+personas: ["student","teacher","practitioner"]
 ---
-# Module 05: Load Balancing & CDN
-Content being authored in Phase 2 (June–July 2026).
-Topics: ALB vs NLB vs GWLB, CloudFront, Global Accelerator.
+
+## 1. Load Balancer Comparison
+
+| Feature | ALB | NLB | GWLB |
+|---|---|---|---|
+| Layer | L7 (HTTP/HTTPS) | L4 (TCP/UDP/TLS) | L3 (IP) |
+| Targets | EC2, ECS, Lambda, IP | EC2, IP, ALB | IP appliances |
+| Protocols | HTTP, HTTPS, gRPC, WebSocket | TCP, UDP, TLS, TCP_UDP | IP |
+| Static IP | Via Global Accelerator | ✅ Yes (per AZ) | ✅ Yes |
+| Preserve client IP | X-Forwarded-For header | ✅ Native | ✅ Native |
+| Connection draining | ✅ | ✅ | ✅ |
+| SNI | ✅ Multi-cert | ✅ | — |
+| Sticky sessions | Duration / App cookie | ✅ | — |
+
+> **Exam tip:** NLB is required when you need static IPs, ultra-low latency, or non-HTTP protocols (MQTT, gRPC with passthrough). ALB is required for content-based routing, WAF integration, and Lambda targets.
+
+## 2. ALB Advanced Features
+
+**Listener rules** evaluate conditions in priority order:
+- Conditions: host header, path, HTTP header, source IP, query string
+- Actions: forward, redirect (301/302), fixed response, authenticate
+
+**Authentication:** ALB integrates with Cognito and OIDC providers. Redirect unauthenticated users to login before passing requests to targets.
+
+**Target group weighting:** Forward traffic across multiple target groups with weights — enables blue/green and canary deployments at the ALB layer.
+
+## 3. CloudFront
+
+CloudFront is AWS's global CDN with 450+ Points of Presence.
+
+### Distribution anatomy
+
+```
+Client → CloudFront Edge → Origin Shield (optional) → Origin
+              ↑ Cache hit returns here
+```
+
+**Origin types:** S3, ALB, NLB, API Gateway, EC2, custom HTTP
+
+**Cache key components (by default):** URL path only. Add headers, cookies, or query strings to the cache key via **Cache Policies** — but only add what's necessary to avoid cache fragmentation.
+
+**Origin failover:** Configure primary + secondary origins in an origin group. CloudFront automatically fails over on 5xx, 403, 404, or connection timeout.
+
+## 4. CloudFront Security
+
+| Feature | Purpose |
+|---|---|
+| Field-level encryption | Encrypt specific POST fields at edge |
+| Signed URLs / cookies | Time-limited access to private content |
+| OAC (Origin Access Control) | Restrict S3 to CloudFront only (replaces OAI) |
+| Geo restriction | Block or allow by country |
+| AWS WAF integration | Apply web ACLs at edge |
+
+## 5. Global Accelerator
+
+Global Accelerator routes TCP/UDP traffic through the AWS global network using anycast IPs:
+
+```
+Client → Nearest AWS Edge → AWS backbone → Target (ALB/NLB/EC2)
+```
+
+**vs CloudFront:**
+- CloudFront: HTTP caching CDN, content delivery
+- Global Accelerator: network-layer acceleration, non-HTTP, static IPs, fast failover (< 30s)
+
+**Use cases:** Gaming, IoT, VoIP, multi-region active-active with health-check failover.

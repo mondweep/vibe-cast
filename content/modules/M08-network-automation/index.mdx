@@ -1,10 +1,131 @@
 ---
 id: "08"
+slug: "network-automation"
 title: "Network Automation"
 domain: "automation"
+difficulty: "specialty"
 estimatedHours: 6
-prerequisites: ["01", "02"]
+prerequisites: ["01","02"]
+topics: ["CloudFormation","CDK networking","AWS SDK","EventBridge patterns","Config rules"]
+objectives:
+  - id: o1
+    description: "Deploy a complete VPC with subnets and route tables using CDK"
+    bloomsLevel: "apply"
+  - id: o2
+    description: "Design an event-driven remediation for non-compliant network resources"
+    bloomsLevel: "create"
+personas: ["student","teacher","practitioner"]
 ---
-# Module 08: Network Automation
-Content being authored in Phase 2 (June–July 2026).
-Topics: CloudFormation networking, CDK L2 constructs, EventBridge + Lambda patterns.
+
+## 1. CloudFormation Networking
+
+Core networking resources and their dependencies:
+
+```yaml
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.10.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.10.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  SubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet
+      RouteTableId: !Ref RouteTable
+```
+
+**Dependency order:** VPC → IGW → Subnet → Route Table → Route → Association → NAT GW → Routes
+
+## 2. AWS CDK — Networking L2 Constructs
+
+CDK provides high-level networking abstractions:
+
+```typescript
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+
+const vpc = new ec2.Vpc(this, 'CourseVpc', {
+  maxAzs: 3,
+  natGateways: 1,
+  subnetConfiguration: [
+    { name: 'Public', subnetType: ec2.SubnetType.PUBLIC, cidrMask: 24 },
+    { name: 'Private', subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS, cidrMask: 24 },
+    { name: 'Isolated', subnetType: ec2.SubnetType.PRIVATE_ISOLATED, cidrMask: 28 },
+  ],
+});
+
+// VPC endpoints
+vpc.addGatewayEndpoint('S3Endpoint', { service: ec2.GatewayVpcEndpointAwsService.S3 });
+vpc.addInterfaceEndpoint('SsmEndpoint', { service: ec2.InterfaceVpcEndpointAwsService.SSM });
+```
+
+One `Vpc` construct creates: VPC, subnets in each AZ, route tables, IGW, NAT Gateways, and all associations automatically.
+
+## 3. Event-Driven Network Remediation
+
+**Pattern:** AWS Config detects non-compliance → EventBridge rule → Lambda remediation
+
+```python
+# Lambda: auto-remediate open SSH security groups
+import boto3
+
+def handler(event, context):
+    ec2 = boto3.client('ec2')
+    config_item = event['detail']['configurationItem']
+    sg_id = config_item['resourceId']
+    rules = config_item['configuration']['ipPermissions']
+
+    for rule in rules:
+        if rule.get('fromPort') == 22 and rule.get('ipProtocol') == 'tcp':
+            for ip_range in rule.get('ipRanges', []):
+                if ip_range.get('cidrIp') == '0.0.0.0/0':
+                    ec2.revoke_security_group_ingress(
+                        GroupId=sg_id,
+                        IpPermissions=[rule]
+                    )
+                    print(f"Removed open SSH from {sg_id}")
+```
+
+## 4. AWS Config Network Rules
+
+Key managed rules for network compliance:
+
+| Rule | What it checks |
+|---|---|
+| `restricted-ssh` | No SG allows 0.0.0.0/0 on port 22 |
+| `restricted-common-ports` | No open 20,21,22,23,25,110,135,143,3389 |
+| `vpc-default-security-group-closed` | Default SG has no rules |
+| `vpc-flow-logs-enabled` | Flow logs enabled on all VPCs |
+| `vpc-sg-open-only-to-authorized-ports` | SGs allow only specific ports |
+| `no-unrestricted-route-to-igw` | No subnet route directly to IGW (bypass NAT) |
+
+## 5. Infrastructure Testing
+
+**Checkov** — static analysis for CloudFormation/CDK:
+```bash
+checkov -f template.yaml --check CKV_AWS_25,CKV_AWS_260
+```
+
+**CDK assertions:**
+```typescript
+const template = Template.fromStack(stack);
+template.hasResourceProperties('AWS::EC2::SecurityGroup', {
+  SecurityGroupIngress: Match.not(Match.arrayWith([
+    Match.objectLike({ CidrIp: '0.0.0.0/0', FromPort: 22 })
+  ]))
+});
+```

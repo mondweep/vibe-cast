@@ -1,10 +1,122 @@
 ---
 id: "10"
-title: "BGP & Exam Mastery"
+slug: "bgp-and-exam-mastery"
+title: "BGP Deep Dive & Exam Mastery"
 domain: "exam-prep"
+difficulty: "specialty"
 estimatedHours: 6
-prerequisites: ["02", "09"]
+prerequisites: ["02","09"]
+topics: ["BGP path selection","AS_PATH","Communities","MED","Local preference","ANS-C01 strategy"]
+objectives:
+  - id: o1
+    description: "Predict BGP path selection given a set of competing routes"
+    bloomsLevel: "analyse"
+  - id: o2
+    description: "Apply BGP attributes to engineer traffic flow for hybrid connectivity"
+    bloomsLevel: "apply"
+  - id: o3
+    description: "Develop an exam strategy for ANS-C01 scenario questions"
+    bloomsLevel: "create"
+personas: ["student","teacher","practitioner"]
 ---
-# Module 10: BGP Deep Dive & Exam Mastery
-Content being authored in Phase 2 (June–July 2026).
-Topics: BGP path selection, AS_PATH manipulation, MED, local preference, ANS-C01 exam strategy.
+
+## 1. BGP Path Selection — Full Algorithm
+
+When multiple paths exist to the same prefix, BGP selects one best path:
+
+| Step | Attribute | Prefer |
+|---|---|---|
+| 1 | Weight | Highest (Cisco, local only) |
+| 2 | Local Preference | Highest (iBGP, within AS) |
+| 3 | Locally originated | Prefer local |
+| 4 | AS_PATH length | Shortest |
+| 5 | Origin | IGP > EGP > Incomplete |
+| 6 | MED | Lowest (only between same AS peers) |
+| 7 | eBGP over iBGP | Prefer eBGP |
+| 8 | IGP metric to next-hop | Lowest |
+| 9 | Router ID | Lowest (tiebreaker) |
+
+> **Exam tip:** Memorise this order. ANS-C01 frequently asks "which path is preferred given these BGP attributes?"
+
+## 2. AS_PATH Manipulation
+
+**Prepending** (make your route less preferred):
+```
+# On-premises router — make VPN less preferred than DX
+route-map VPN-OUT permit 10
+  set as-path prepend 65000 65000 65000
+
+neighbor 169.254.1.1 route-map VPN-OUT out
+```
+
+AWS sees: DX path = `65000`, VPN path = `65000 65000 65000 65000` → prefers DX (shorter).
+
+**From AWS side:** AWS prepends its own ASN when advertising routes. You cannot control AWS's outbound path selection directly — use MED or more-specific prefixes instead.
+
+## 3. BGP Communities with Direct Connect
+
+AWS supports well-known BGP communities on public VIFs for traffic engineering:
+
+| Community | Effect on AWS routing |
+|---|---|
+| `7224:9100` | Local AWS Region only |
+| `7224:9200` | All AWS Regions in continent |
+| `7224:9300` | All AWS Regions globally |
+| `7224:8100` | Lower preference (deprioritise) |
+
+```
+# Tag routes to be used only in eu-west-1 region
+route-map DX-OUT permit 10
+  set community 7224:9100
+```
+
+## 4. MED (Multi-Exit Discriminator)
+
+MED tells remote AS which entry point you prefer when multiple paths exist:
+
+```
+Your AS has two DX connections to AWS:
+  DX-1 (Dublin): advertise with MED 100
+  DX-2 (Frankfurt): advertise with MED 200
+
+AWS prefers DX-1 (lower MED)
+```
+
+Note: AWS only compares MED between paths from the same neighbouring AS.
+
+## 5. ANS-C01 Exam Strategy
+
+**Exam format:**
+- 65 questions (multiple choice, multiple response, ordering)
+- 170 minutes
+- Passing score: ~750/1000
+
+**Domain weightings:**
+| Domain | Weight |
+|---|---|
+| Network Design | 30% |
+| Network Implementation | 26% |
+| Network Management & Operations | 20% |
+| Network Security, Compliance & Governance | 24% |
+
+**High-frequency topics to master:**
+1. VPC peering vs TGW (when to use each)
+2. Direct Connect redundancy models (99.9% vs 99.99%)
+3. BGP path selection and manipulation
+4. Route 53 routing policies and health checks
+5. ALB vs NLB selection criteria
+6. Security Groups (stateful) vs NACLs (stateless)
+7. VPC endpoint types (gateway vs interface)
+8. TGW route table segmentation
+
+**Approach for scenario questions:**
+1. Identify the constraint (cost, latency, security, compliance)
+2. Eliminate answers that don't meet the hard requirements
+3. Among remaining answers, select the most operationally simple option
+4. AWS generally prefers managed services over self-managed
+
+**Red flags in wrong answers:**
+- Violates a hard AWS limit (e.g., 125 peering connections, 5 secondary CIDRs)
+- Requires more complexity than necessary
+- Uses deprecated features (OAI instead of OAC)
+- Ignores the non-transitive nature of VPC peering

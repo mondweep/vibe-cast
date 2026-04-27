@@ -1,10 +1,115 @@
 ---
 id: "09"
+slug: "multi-account-architecture"
 title: "Multi-Account Architecture"
 domain: "design"
+difficulty: "specialty"
 estimatedHours: 7
-prerequisites: ["01", "03"]
+prerequisites: ["01","03"]
+topics: ["AWS Organizations","RAM","Hub-spoke topology","Multi-region","IPv6 at scale","Network segmentation"]
+objectives:
+  - id: o1
+    description: "Design a multi-account network architecture using AWS Organizations and RAM"
+    bloomsLevel: "create"
+  - id: o2
+    description: "Evaluate network segmentation strategies for compliance requirements"
+    bloomsLevel: "evaluate"
+personas: ["student","teacher","practitioner"]
 ---
-# Module 09: Multi-Account Architecture
-Content being authored in Phase 2 (June–July 2026).
-Topics: AWS Organizations, RAM, Hub-spoke, Multi-region patterns, IPv6 at scale.
+
+## 1. AWS Organizations for Networking
+
+AWS Organizations enables centralised management of multi-account environments.
+
+**Account structure for networking:**
+```
+Root
+├── Management account (billing only)
+├── Infrastructure OU
+│   ├── Network account (TGW, DX, DNS)
+│   ├── Security account (GuardDuty, Security Hub)
+│   └── Shared Services account (AD, patch management)
+├── Workload OU
+│   ├── Production account
+│   ├── Staging account
+│   └── Development account
+└── Sandbox OU
+    └── Developer accounts
+```
+
+**SCPs (Service Control Policies)** for networking:
+- Deny VPC peering without approval
+- Require VPC Flow Logs on all new VPCs
+- Prevent IGW creation in production OU
+- Restrict regions to approved list
+
+## 2. AWS Resource Access Manager (RAM)
+
+RAM enables sharing of AWS resources across accounts without duplication.
+
+**Shareable networking resources:**
+| Resource | Use case |
+|---|---|
+| TGW | Central hub shared to all VPC accounts |
+| TGW route tables | Segmented routing across accounts |
+| Subnet (VPC sharing) | Centrally managed VPC, workloads in separate accounts |
+| Route 53 resolver rules | Centralised DNS forwarding rules |
+| Network Firewall policy | Centralised inspection policy |
+
+**VPC sharing pattern:**
+```
+Network account owns VPC, creates subnets
+  → shares subnets via RAM to Workload accounts
+Workload accounts deploy EC2, RDS into shared subnets
+  → No VPC/subnet management by workload teams
+  → All networking stays in Network account
+```
+
+## 3. Transit Gateway Multi-Account Hub-Spoke
+
+```
+Network Account
+└── TGW (shared via RAM to all OUs)
+    ├── Prod VPC (Prod account) — prod route table
+    ├── Dev VPC (Dev account)  — dev route table
+    ├── Shared Services VPC    — shared route table
+    ├── Inspection VPC         — security route table
+    └── DX/VPN attachments     — on-prem connectivity
+```
+
+**TGW route table segmentation:**
+- Prod route table: reaches Shared Services only
+- Dev route table: reaches Shared Services, cannot reach Prod
+- Shared Services route table: can reach all (server-initiated blocked by SGs)
+
+## 4. Multi-Region Networking
+
+**TGW peering** (inter-region):
+- Static routes only (no BGP between regions)
+- Encrypted over AWS backbone
+- Bandwidth: up to 50 Gbps
+
+**Multi-region DNS:**
+- Route 53 latency routing → regional ALBs
+- Health checks fail over between regions automatically
+- Private hosted zones associated with VPCs in each region
+
+**Data residency:** Use SCPs to deny resource creation outside approved regions per OU.
+
+## 5. IPv6 at Scale
+
+AWS dual-stack (IPv4 + IPv6) deployment:
+
+```
+VPC CIDR:    10.0.0.0/16 (IPv4)
+             2600:1f18::/32 (IPv6 — AWS-assigned)
+
+Subnet:      10.0.1.0/24 (IPv4)
+             2600:1f18:0:1::/64 (IPv6 — /64 always)
+```
+
+**Key differences from IPv4:**
+- No NAT for IPv6 — all addresses are globally routable
+- Use Egress-Only IGW for outbound-only IPv6 (like NAT GW for IPv4)
+- Security Groups control access (NACLs must also allow IPv6)
+- Prefix lists for IPv6 CIDR management in route tables

@@ -1,10 +1,130 @@
 ---
 id: "02"
+slug: "hybrid-connectivity"
 title: "Hybrid Connectivity"
 domain: "design"
+difficulty: "specialty"
 estimatedHours: 8
 prerequisites: ["01"]
+topics: ["Direct Connect","BGP fundamentals","Site-to-Site VPN","VPN CloudHub","Redundancy patterns"]
+objectives:
+  - id: o1
+    description: "Design a redundant Direct Connect architecture meeting 99.99% SLA"
+    bloomsLevel: "create"
+  - id: o2
+    description: "Configure BGP with appropriate path selection for hybrid routing"
+    bloomsLevel: "apply"
+  - id: o3
+    description: "Compare Direct Connect and VPN on cost, latency, and reliability"
+    bloomsLevel: "analyse"
+personas: ["student","teacher","practitioner"]
 ---
-# Module 02: Hybrid Connectivity
-Content being authored in Phase 2 (June–July 2026).
-Topics: Direct Connect, BGP, Site-to-Site VPN, VPN CloudHub.
+
+## 1. AWS Direct Connect
+
+Direct Connect (DX) provides a dedicated private network connection between your premises and AWS, bypassing the public internet.
+
+### Connection types
+
+| Type | Bandwidth | Who provisions |
+|---|---|---|
+| Dedicated | 1, 10, or 100 Gbps | You (via DX location) |
+| Hosted | 50 Mbps – 10 Gbps | APN Partner |
+| LAG (Link Aggregation Group) | Up to 4×100 Gbps | You (LACP bundles) |
+
+### Virtual Interfaces (VIFs)
+
+| VIF Type | Connects to | Use case |
+|---|---|---|
+| Private VIF | Virtual Private Gateway or TGW | Access private VPC resources |
+| Public VIF | AWS public endpoints | S3, DynamoDB, public services |
+| Transit VIF | Direct Connect Gateway → TGW | Multi-VPC via TGW |
+
+> **Exam tip:** A Direct Connect Gateway (DXGW) allows one DX connection to reach VPCs in multiple AWS Regions and accounts. Associate up to 10 TGWs or 10 VGWs per DXGW.
+
+## 2. Direct Connect Redundancy Models
+
+AWS defines four SLA tiers:
+
+| Model | SLA | Config |
+|---|---|---|
+| Non-redundant | No SLA | Single connection, single location |
+| High (99.9%) | 99.9% | Two connections, one location |
+| Maximum (99.99%) | 99.99% | Two connections, two locations |
+| SiteLink | Global | Any-to-any between DX locations |
+
+**Maximum resiliency pattern:**
+```
+On-premises DC-1 ──DX Location A──▶ AWS
+On-premises DC-1 ──DX Location B──▶ AWS   ← different physical path
+On-premises DC-2 ──DX Location A──▶ AWS
+On-premises DC-2 ──DX Location B──▶ AWS
+```
+
+## 3. BGP Fundamentals for DX
+
+All Direct Connect connections use BGP. Key attributes:
+
+**Path selection order (highest priority first):**
+1. Weight (Cisco-specific, local to router)
+2. Local Preference (iBGP, higher = preferred)
+3. Locally originated routes
+4. AS_PATH length (shorter = preferred)
+5. Origin (IGP > EGP > incomplete)
+6. MED (lower = preferred, only compared within same AS)
+7. eBGP over iBGP
+8. Lowest IGP metric to next-hop
+9. Router ID (tiebreaker)
+
+**Influencing AWS → on-premises routing:**
+```
+# Make AWS prefer DX over VPN (shorter AS_PATH on DX)
+neighbor 169.254.0.1 route-map PREFER-DX out
+route-map PREFER-DX permit 10
+  # No AS_PATH prepend — shorter path preferred by AWS
+```
+
+**Influencing on-premises → AWS routing:**
+- Advertise more specific prefixes over preferred path
+- Use Local Preference in iBGP to prefer DX over VPN
+
+## 4. Site-to-Site VPN
+
+VPN provides encrypted IPSec tunnels over the public internet.
+
+| Attribute | Value |
+|---|---|
+| Encryption | AES-256 |
+| Integrity | SHA-2 |
+| Tunnels per connection | 2 (active/standby by default, active/active possible) |
+| Max throughput | ~1.25 Gbps per tunnel |
+| BGP or static | Both supported |
+
+**Accelerated VPN:** Routes VPN traffic through AWS Global Accelerator edge locations, reducing latency by up to 60% compared to internet-routed VPN.
+
+## 5. DX + VPN: Hybrid Redundancy Pattern
+
+The gold standard for enterprise hybrid connectivity:
+
+```
+Primary:  DX dedicated connection (10 Gbps)
+Failover: Site-to-Site VPN (BGP, AS_PATH prepended)
+
+BGP config on-premises:
+  DX path:  advertise prefixes, no prepend
+  VPN path: advertise same prefixes, prepend AS 3× to make less preferred
+```
+
+When DX fails, BGP reconverges and traffic shifts to VPN automatically.
+
+## 6. VPN CloudHub
+
+Enables hub-and-spoke VPN between multiple branch offices via a single VGW:
+
+```
+Branch A ──VPN──▶ VGW (hub) ◀──VPN── Branch B
+                     │
+                  AWS VPC
+```
+
+Branches communicate with each other through the VGW. Each branch uses a unique BGP ASN. Max 10 VPN connections per VGW.
