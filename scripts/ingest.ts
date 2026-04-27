@@ -105,7 +105,7 @@ async function embedTexts(texts: string[]): Promise<number[][]> {
     },
     body: JSON.stringify({
       input: texts,
-      model: "voyage-3-lite",   // 1024 dims, fast, free tier
+      model: "voyage-3",   // 1024 dims, fast, free tier
       input_type: "document",
     }),
   });
