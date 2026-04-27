@@ -33,8 +33,7 @@ export function ModuleViewer({ module: mod }: { module: ModuleData }) {
       {/* Client: progress + objectives + complete button */}
       <ModuleProgress
         moduleId={mod.id}
-        title={mod.title}
-        objectives={mod.objectives}
+objectives={mod.objectives}
       />
 
       {/* Server: MDX content */}

@@ -23,7 +23,6 @@ function selectBestPath(routes: BgpRoute[]): { winner: BgpRoute; reason: string 
   if (routes.length === 1) return { winner: routes[0], reason: "Only path available" };
 
   let candidates = [...routes];
-  let reason = "";
 
   // Step 1: Weight
   const maxWeight = Math.max(...candidates.map(r => r.weight));
@@ -89,7 +88,7 @@ export function BgpSimulator() {
       </div>
 
       <div className="space-y-4">
-        {routes.map((r, idx) => (
+        {routes.map((r) => (
           <div key={r.id} className={cn("rounded-lg border p-4 transition-all",
             result?.winner.id === r.id ? "border-primary bg-primary/5" : "border-border bg-card")}>
             <div className="flex items-center gap-2 mb-4">

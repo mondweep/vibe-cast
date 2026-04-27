@@ -5,13 +5,12 @@ import { useProgress } from "@/contexts/ProgressContext";
 
 interface ModuleProgressProps {
   moduleId: string;
-  title: string;
   objectives: { id: string; description: string }[];
 }
 
 const TOTAL_LESSONS = 5;
 
-export function ModuleProgress({ moduleId, title, objectives }: ModuleProgressProps) {
+export function ModuleProgress({ moduleId, objectives }: ModuleProgressProps) {
   const { completeLesson, getProgress, tracker } = useProgress();
   const progress = getProgress(moduleId, TOTAL_LESSONS);
   const score = tracker.moduleScores[moduleId];

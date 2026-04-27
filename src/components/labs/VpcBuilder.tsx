@@ -27,7 +27,6 @@ export function VpcBuilder() {
   const [validated, setValidated] = useState<null | { ok: boolean; messages: string[] }>(null);
 
   function addSubnet() {
-    const idx = subnets.filter(s => s.az === addAz).length + 1;
     const octets = vpcCidr.split(".").slice(0,2).join(".");
     const third = subnets.length + 1;
     const newSubnet: Subnet = {
