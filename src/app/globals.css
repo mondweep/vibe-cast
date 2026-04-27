@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 213 35% 7%;
+    --foreground: 210 40% 95%;
+    --card: 213 30% 12%;
+    --card-foreground: 210 40% 95%;
+    --popover: 213 30% 12%;
+    --popover-foreground: 210 40% 95%;
+    --primary: 35 100% 50%;
+    --primary-foreground: 213 35% 7%;
+    --secondary: 213 25% 17%;
+    --secondary-foreground: 210 40% 85%;
+    --muted: 213 25% 17%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 213 25% 20%;
+    --accent-foreground: 210 40% 95%;
+    --border: 213 20% 20%;
+    --input: 213 20% 20%;
+    --ring: 35 100% 50%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* IBM Plex Mono for code/mono elements */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap');

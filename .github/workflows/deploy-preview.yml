@@ -1,0 +1,30 @@
+name: Deploy Preview
+
+on:
+  pull_request:
+    branches: [aws-advanced-networking]
+
+jobs:
+  deploy:
+    name: Netlify Preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: ".next"
+          production-branch: aws-advanced-networking
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "PR Preview — ${{ github.event.pull_request.title }}"
+          enable-pull-request-comment: true
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

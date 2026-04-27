@@ -1,0 +1,46 @@
+---
+id: "01"
+slug: "vpc-deep-dive"
+title: "VPC Deep Dive"
+domain: "design"
+difficulty: "specialty"
+estimatedHours: 6
+prerequisites: []
+topics:
+  - "CIDR planning and subnetting"
+  - "Subnet design patterns"
+  - "Route table mastery"
+  - "Multi-VPC architectures"
+  - "VPC peering vs Transit Gateway"
+objectives:
+  - id: "o1"
+    description: "Design a VPC CIDR block allocation strategy for a multi-account environment"
+    bloomsLevel: "create"
+  - id: "o2"
+    description: "Explain the routing differences between VPC peering and Transit Gateway"
+    bloomsLevel: "understand"
+personas: ["student", "teacher", "practitioner"]
+---
+
+# Module 01: VPC Deep Dive
+
+> **Foundation module.** Every subsequent module builds on VPC primitives.
+
+## 1. CIDR Planning
+
+Valid range: /16 to /28. RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. Cannot overlap with peer CIDRs. Up to 4 secondary CIDRs can be added post-creation.
+
+## 2. Subnet Design Patterns
+
+Three-tier: Public (IGW route) → Private (NAT route) → Isolated (no internet). AWS reserves 5 IPs per subnet.
+
+## 3. Route Table Mastery
+
+Longest-prefix match wins. Blackholed routes (pointing to deleted resources) silently drop traffic.
+
+## 4. VPC Peering vs Transit Gateway
+
+Peering: non-transitive, 125 VPCs max, no BGP, data-transfer cost only.
+TGW: transitive, thousands of VPCs, 50 Gbps/AZ, BGP support, per-hour + data cost.
+
+**Exam tip (ANS-C01):** Know when each is appropriate and the cost implications.
