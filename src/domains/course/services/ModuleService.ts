@@ -1,4 +1,4 @@
-import { Module, createModule, publishModule } from "../entities/Module";
+import { Module, publishModule } from "../entities/Module";
 import { ModuleRepository } from "../repositories/ModuleRepository";
 import { Outcome, ok, fail } from "@/types";
 
@@ -10,10 +10,10 @@ export class ModuleService {
   }
 
   async publishModule(id: string): Promise<Outcome<Module>> {
-    const module = await this.moduleRepo.findById(id);
-    if (!module) return fail(`Module ${id} not found`);
+    const found = await this.moduleRepo.findById(id);
+    if (!found) return fail(`Module ${id} not found`);
     try {
-      const published = publishModule(module);
+      const published = publishModule(found);
       await this.moduleRepo.save(published);
       return ok(published);
     } catch (e: unknown) {
