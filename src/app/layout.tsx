@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ProgressProvider } from "@/contexts/ProgressContext";
 import { SkipLink } from "@/components/layout/SkipLink";
+import { CourseChat } from "@/components/chat/CourseChat";
 
 export const metadata: Metadata = {
   title: "AWS Advanced Networking Course",
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SkipLink />
         <ProgressProvider>
           {children}
+          <CourseChat />
         </ProgressProvider>
       </body>
     </html>
