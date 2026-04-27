@@ -6,13 +6,11 @@ const createJestConfig = nextJest({ dir: "./" });
 const config: Config = {
   coverageProvider: "v8",
   testEnvironment: "jsdom",
-  setupFilesAfterFramework: [],
-  setupFilesAfterFramework: undefined,
   setupFilesAfterEnv: ["<rootDir>/tests/unit/setup.ts"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
-  testPathPattern: "tests/unit",
+  testMatch: ["<rootDir>/tests/unit/**/*.test.{ts,tsx}"],
   collectCoverageFrom: [
     "src/domains/**/*.{ts,tsx}",
     "src/components/**/*.{ts,tsx}",

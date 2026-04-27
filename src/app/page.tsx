@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ModuleDomain } from "@/types";
 
-const MODULES = [
+const MODULES: { id: string; title: string; domain: ModuleDomain; hours: number; slug: string }[] = [
   { id: "01", title: "VPC Deep Dive", domain: "design", hours: 6, slug: "vpc-deep-dive" },
   { id: "02", title: "Hybrid Connectivity", domain: "design", hours: 8, slug: "hybrid-connectivity" },
   { id: "03", title: "Transit & PrivateLink", domain: "design", hours: 5, slug: "transit-and-privatelink" },
@@ -13,7 +14,7 @@ const MODULES = [
   { id: "08", title: "Network Automation", domain: "automation", hours: 6, slug: "network-automation" },
   { id: "09", title: "Multi-Account Architecture", domain: "design", hours: 7, slug: "multi-account-architecture" },
   { id: "10", title: "BGP & Exam Mastery", domain: "exam-prep", hours: 6, slug: "bgp-and-exam-mastery" },
-] as const;
+];
 
 const STATS = [
   { value: "10", label: "Modules" },
@@ -21,6 +22,14 @@ const STATS = [
   { value: "3", label: "Personas" },
   { value: "ANS-C01", label: "Aligned" },
 ];
+
+const domainVariantMap: Record<ModuleDomain, "design" | "operations" | "security" | "automation" | "exam-prep"> = {
+  design: "design",
+  operations: "operations",
+  security: "security",
+  automation: "automation",
+  "exam-prep": "exam-prep",
+};
 
 export default function HomePage() {
   return (
@@ -73,7 +82,7 @@ export default function HomePage() {
                     <span className="font-mono text-xs text-primary font-bold">M{m.id}</span>
                     <h3 className="font-semibold text-sm text-foreground mt-0.5">{m.title}</h3>
                   </div>
-                  <Badge variant={m.domain as never}>{m.domain}</Badge>
+                  <Badge variant={domainVariantMap[m.domain]}>{m.domain}</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground font-mono">{m.hours}h</p>
               </div>
@@ -85,9 +94,13 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-border px-6 py-8 text-center">
         <p className="text-xs text-muted-foreground font-mono">
-          AWS Advanced Networking Course · Built with Next.js, shadcn/ui, Tailwind · 
-          <a href="https://linear.app/mondweep/project/aws-advanced-networking-course-82c5d59087e7"
-            className="text-primary ml-1 hover:underline" target="_blank" rel="noopener noreferrer">
+          AWS Advanced Networking Course · Built with Next.js, shadcn/ui, Tailwind ·{" "}
+          <a
+            href="https://linear.app/mondweep/project/aws-advanced-networking-course-82c5d59087e7"
+            className="text-primary hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Tracked in Linear ↗
           </a>
         </p>
