@@ -97,26 +97,38 @@ function chunkModule(filePath: string): Chunk[] {
 // ── STEP 2: Voyage AI embedding ────────────────────────────────
 
 async function embedTexts(texts: string[]): Promise<number[][]> {
-  const response = await fetch("https://api.voyageai.com/v1/embeddings", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${VOYAGE_API_KEY}`,
-    },
-    body: JSON.stringify({
-      input: texts,
-      model: "voyage-3",   // 1024 dims, fast, free tier
-      input_type: "document",
-    }),
-  });
+  const MAX_RETRIES = 6;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const response = await fetch("https://api.voyageai.com/v1/embeddings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${VOYAGE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        input: texts,
+        model: "voyage-3",   // 1024 dims, fast, free tier
+        input_type: "document",
+      }),
+    });
 
-  if (!response.ok) {
+    if (response.ok) {
+      const data = await response.json() as { data: { embedding: number[] }[] };
+      return data.data.map(d => d.embedding);
+    }
+
+    if (response.status === 429) {
+      const retryAfterHdr = parseInt(response.headers.get("retry-after") ?? "0", 10);
+      const backoffMs = Math.max(retryAfterHdr * 1000, 30_000) + attempt * 5_000;
+      process.stdout.write(`\n  ⚠ Rate limited (429). Waiting ${Math.round(backoffMs/1000)}s before retry ${attempt+1}/${MAX_RETRIES}...`);
+      await new Promise(r => setTimeout(r, backoffMs));
+      continue;
+    }
+
     const err = await response.text();
-    throw new Error(`Voyage AI error: ${err}`);
+    throw new Error(`Voyage AI error (${response.status}): ${err}`);
   }
-
-  const data = await response.json() as { data: { embedding: number[] }[] };
-  return data.data.map(d => d.embedding);
+  throw new Error(`Voyage AI: exceeded ${MAX_RETRIES} retries on 429`);
 }
 
 // ── STEP 3: Insert knowledge graph ────────────────────────────
@@ -124,28 +136,49 @@ async function embedTexts(texts: string[]): Promise<number[][]> {
 async function ingestKnowledgeGraph() {
   console.log("\n🔷 Inserting knowledge graph nodes...");
 
-  // Insert nodes (upsert by label+type)
-  const { data: insertedNodes, error: nodeErr } = await supabase
+  // The kg_nodes uniqueness is enforced by a functional index on
+  // (lower(label), type), which PostgREST cannot target via onConflict.
+  // So we fetch existing rows, then insert only the missing ones.
+  const { data: existingNodes, error: selErr } = await supabase
     .from("kg_nodes")
-    .upsert(
-      NODES.map(n => ({
-        label: n.label,
-        type: n.type,
-        description: n.description,
-        module_ids: n.module_ids,
-        properties: n.properties ?? {},
-      })),
-      { onConflict: "label,type" }
-    )
-    .select("id, label");
+    .select("id, label, type");
+  if (selErr) throw selErr;
 
-  if (nodeErr) throw nodeErr;
-  console.log(`  ✓ ${insertedNodes?.length} nodes upserted`);
+  const key = (label: string, type: string) => `${type}::${label.toLowerCase()}`;
+  const keyToId = new Map<string, string>();
+  for (const row of existingNodes ?? []) {
+    keyToId.set(key(row.label, row.type), row.id);
+  }
 
-  // Build label → id map
+  const toInsert = NODES.filter(n => !keyToId.has(key(n.label, n.type)));
+
+  if (toInsert.length > 0) {
+    const { data: inserted, error: insErr } = await supabase
+      .from("kg_nodes")
+      .insert(
+        toInsert.map(n => ({
+          label: n.label,
+          type: n.type,
+          description: n.description,
+          module_ids: n.module_ids,
+          properties: n.properties ?? {},
+        }))
+      )
+      .select("id, label, type");
+    if (insErr) throw insErr;
+    for (const row of inserted ?? []) {
+      keyToId.set(key(row.label, row.type), row.id);
+    }
+    console.log(`  ✓ ${inserted?.length} new nodes inserted (${existingNodes?.length ?? 0} already existed)`);
+  } else {
+    console.log(`  ✓ all ${NODES.length} nodes already present`);
+  }
+
+  // Build label → id map for downstream steps
   const labelToId = new Map<string, string>();
-  for (const node of insertedNodes ?? []) {
-    labelToId.set(node.label, node.id);
+  for (const n of NODES) {
+    const id = keyToId.get(key(n.label, n.type));
+    if (id) labelToId.set(n.label, id);
   }
 
   console.log("🔷 Inserting knowledge graph edges...");
@@ -182,31 +215,65 @@ async function ingestKnowledgeGraph() {
 async function ingestContent(labelToId: Map<string, string>) {
   console.log("\n🔷 Ingesting content chunks...");
 
+  // Resume support: skip chunks already in the DB.
+  // content_chunks has no unique constraint on (module_id, chunk_index),
+  // so we deduplicate client-side.
+  const { data: existingChunks, error: selErr } = await supabase
+    .from("content_chunks")
+    .select("module_id, chunk_index");
+  if (selErr) throw selErr;
+  const alreadyIngested = new Set<string>();
+  for (const r of existingChunks ?? []) {
+    alreadyIngested.add(`${r.module_id}::${r.chunk_index}`);
+  }
+  if (alreadyIngested.size > 0) {
+    console.log(`  ↻ Resuming — ${alreadyIngested.size} chunks already ingested, skipping those`);
+  }
+
   const contentDir = path.join(process.cwd(), "content", "modules");
   const moduleDirs = fs.readdirSync(contentDir);
 
+  // Voyage free tier: 3 RPM, 10K TPM. Each chunk ≈ 500 tokens, so a
+  // batch of 4 ≈ 2000 tokens, paced at >20s/req keeps us under both.
+  const BATCH = 4;
+  const MIN_INTERVAL_MS = 22_000;
+
   let totalChunks = 0;
+  let lastRequestAt = 0;
 
   for (const dir of moduleDirs) {
     const mdxPath = path.join(contentDir, dir, "index.mdx");
     if (!fs.existsSync(mdxPath)) continue;
 
-    const chunks = chunkModule(mdxPath);
-    if (chunks.length === 0) continue;
+    const allChunks = chunkModule(mdxPath);
+    const chunks = allChunks.filter(
+      c => !alreadyIngested.has(`${c.module_id}::${c.chunk_index}`)
+    );
+    if (allChunks.length === 0) continue;
+    if (chunks.length === 0) {
+      console.log(`  ⏭  ${dir}: all ${allChunks.length} chunks already ingested`);
+      continue;
+    }
 
-    console.log(`  📄 ${dir}: ${chunks.length} chunks`);
+    console.log(`  📄 ${dir}: ${chunks.length} new chunks (of ${allChunks.length})`);
 
-    // Embed in batches of 8 (Voyage AI rate limit)
-    const BATCH = 8;
     for (let i = 0; i < chunks.length; i += BATCH) {
       const batch = chunks.slice(i, i + BATCH);
       const texts = batch.map(c =>
         `Module: ${c.module_title}\nSection: ${c.section}\n\n${c.content}`
       );
 
+      // Pace requests to respect Voyage free-tier RPM
+      const sinceLast = Date.now() - lastRequestAt;
+      if (lastRequestAt > 0 && sinceLast < MIN_INTERVAL_MS) {
+        const wait = MIN_INTERVAL_MS - sinceLast;
+        process.stdout.write(`\r    ⏳ Pacing for free tier: waiting ${Math.round(wait/1000)}s...`);
+        await new Promise(r => setTimeout(r, wait));
+      }
+      lastRequestAt = Date.now();
+
       const embeddings = await embedTexts(texts);
 
-      // Find which KG node IDs are mentioned in each chunk
       const rows = batch.map((chunk, idx) => {
         const mentionedNodeIds: string[] = [];
         for (const [label, id] of labelToId) {
@@ -227,19 +294,16 @@ async function ingestContent(labelToId: Map<string, string>) {
         };
       });
 
-      const { error } = await supabase.from("content_chunks").upsert(rows as never[]);
+      const { error } = await supabase.from("content_chunks").insert(rows as never[]);
       if (error) throw error;
 
       totalChunks += batch.length;
-      process.stdout.write(`\r    Embedded ${totalChunks} chunks...`);
-
-      // Rate limit: 100ms between batches
-      await new Promise(r => setTimeout(r, 100));
+      process.stdout.write(`\r    Embedded ${totalChunks} new chunks (${batch.length} this batch)`.padEnd(70));
     }
     console.log();
   }
 
-  console.log(`\n  ✓ ${totalChunks} chunks ingested with embeddings`);
+  console.log(`\n  ✓ ${totalChunks} new chunks ingested with embeddings`);
 }
 
 // ── MAIN ───────────────────────────────────────────────────────
