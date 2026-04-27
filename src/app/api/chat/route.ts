@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 import { hybridRetrieve, formatContext } from "@/lib/rag/retrieval";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
-
+// Force dynamic — prevents Next.js static analysis from running this at build time
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
@@ -19,7 +16,6 @@ Guidelines:
 - When comparing services (e.g. VPC peering vs TGW), give the decision criteria clearly
 - Flag ANS-C01 exam traps or high-frequency topics when relevant
 - If the answer spans multiple modules, reference them (e.g. "M01 covers this, M10 has the exam strategy")
-- For architecture questions, follow the DDD approach: identify the constraint first, then the pattern
 - Keep answers focused and scannable — use bullets and short sections, not walls of text
 - If you don't know something, say so clearly rather than hallucinating AWS behaviour`;
 
@@ -51,49 +47,36 @@ export async function POST(req: NextRequest) {
       console.warn("Retrieval failed, continuing without context:", err);
     }
 
-    // ── Build messages for Claude ─────────────────────────────
+    // ── Build system prompt with context ──────────────────────
     const personaNote = persona
-      ? `\nThe learner's persona is: **${persona}**. Tailor depth accordingly (student = more explanation, practitioner = concise reference, teacher = include teaching notes).`
+      ? `\nThe learner's persona is: **${persona}**. Tailor depth accordingly.`
       : "";
+    const systemWithContext = SYSTEM_PROMPT + personaNote +
+      (contextBlock ? `\n\nRelevant course context:\n\n${contextBlock}` : "");
 
-    const contextNote = contextBlock
-      ? `\n\nHere is the relevant course content and knowledge graph context:\n\n${contextBlock}`
-      : "";
+    // ── Stream from Anthropic (lazy import — no module-level init) ──
+    const Anthropic = (await import("@anthropic-ai/sdk")).default;
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
-    const systemWithContext = SYSTEM_PROMPT + personaNote + contextNote;
-
-    // ── Stream response from Claude ───────────────────────────
     const encoder = new TextEncoder();
-
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Send retrieval metadata first
           controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({ type: "meta", ...retrievalMeta })}\n\n`
-            )
+            encoder.encode(`data: ${JSON.stringify({ type: "meta", ...retrievalMeta })}\n\n`)
           );
 
           const anthropicStream = anthropic.messages.stream({
             model: "claude-sonnet-4-5-20251022",
             max_tokens: 1024,
             system: systemWithContext,
-            messages: messages.map(m => ({
-              role: m.role,
-              content: m.content,
-            })),
+            messages: messages.map(m => ({ role: m.role, content: m.content })),
           });
 
           for await (const chunk of anthropicStream) {
-            if (
-              chunk.type === "content_block_delta" &&
-              chunk.delta.type === "text_delta"
-            ) {
+            if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
               controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({ type: "text", text: chunk.delta.text })}\n\n`
-                )
+                encoder.encode(`data: ${JSON.stringify({ type: "text", text: chunk.delta.text })}\n\n`)
               );
             }
           }
@@ -102,9 +85,7 @@ export async function POST(req: NextRequest) {
           controller.close();
         } catch (err) {
           controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({ type: "error", error: String(err) })}\n\n`
-            )
+            encoder.encode(`data: ${JSON.stringify({ type: "error", error: String(err) })}\n\n`)
           );
           controller.close();
         }
