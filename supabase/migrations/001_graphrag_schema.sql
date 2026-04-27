@@ -112,7 +112,7 @@ LANGUAGE sql STABLE AS $$
     -- Base: start node
     SELECT
       n.id AS node_id, n.label, n.type, n.description,
-      NULL::TEXT AS relation, 0 AS hop, 1.0 AS weight
+      NULL::TEXT AS relation, 0 AS hop, 1.0::double precision AS weight
     FROM kg_nodes n WHERE n.id = start_node_id
 
     UNION ALL
