@@ -157,7 +157,12 @@ export function CourseChat({ moduleSlug, onClose }: CourseChatProps) {
             } else if (parsed.type === "meta") {
               metaData = { chunkCount: parsed.chunkCount ?? 0, nodeCount: parsed.nodeCount ?? 0 };
             } else if (parsed.type === "error") {
-              throw new Error(parsed.error);
+              // Show error in the message bubble so it's visible
+              setMessages(prev => prev.map(m =>
+                m.id === assistantId
+                  ? { ...m, content: `Error from AI: ${parsed.error}`, error: true }
+                  : m
+              ));
             }
           } catch { /* skip malformed SSE lines */ }
         }
