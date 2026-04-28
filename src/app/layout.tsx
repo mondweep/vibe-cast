@@ -3,6 +3,7 @@ import "./globals.css";
 import { ProgressProvider } from "@/contexts/ProgressContext";
 import { SkipLink } from "@/components/layout/SkipLink";
 import { CourseChat } from "@/components/chat/CourseChat";
+import { ConsentGate } from "@/components/layout/ConsentGate";
 
 export const metadata: Metadata = {
   title: "AWS Advanced Networking Course",
@@ -16,8 +17,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-background font-sans antialiased">
         <SkipLink />
         <ProgressProvider>
-          {children}
-          <CourseChat />
+          <ConsentGate>
+            {children}
+            <CourseChat />
+          </ConsentGate>
         </ProgressProvider>
       </body>
     </html>

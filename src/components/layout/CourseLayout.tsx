@@ -130,6 +130,12 @@ export function CourseLayout({ children }: { children: React.ReactNode }) {
                 </svg>
                 GitHub
               </a>
+              <Link
+                href="/privacy"
+                className="text-[11px] text-muted-foreground hover:text-primary transition-colors font-mono"
+              >
+                Privacy Policy
+              </Link>
             </div>
           </div>
         </footer>

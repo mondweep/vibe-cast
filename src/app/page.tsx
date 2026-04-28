@@ -168,6 +168,12 @@ export default function HomePage() {
             >
               Linear ↗
             </a>
+            <Link
+              href="/privacy"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono"
+            >
+              Privacy Policy
+            </Link>
           </div>
         </div>
       </footer>
