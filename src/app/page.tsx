@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CheatsheetGallery, type Cheatsheet } from "@/components/course/cheatsheet-gallery";
 import { ModuleDomain } from "@/types";
 
 const MODULES: { id: string; title: string; domain: ModuleDomain; hours: number; slug: string }[] = [
@@ -14,6 +15,21 @@ const MODULES: { id: string; title: string; domain: ModuleDomain; hours: number;
   { id: "08", title: "Network Automation", domain: "automation", hours: 6, slug: "network-automation" },
   { id: "09", title: "Multi-Account Architecture", domain: "design", hours: 7, slug: "multi-account-architecture" },
   { id: "10", title: "BGP & Exam Mastery", domain: "exam-prep", hours: 6, slug: "bgp-and-exam-mastery" },
+];
+
+const CHEATSHEETS: Cheatsheet[] = [
+  { id: "overview", title: "Advanced Networking Overview", image: "/cheatsheets/00-advanced-networking-overview.png" },
+  { id: "roadmap", title: "Curriculum Roadmap", image: "/cheatsheets/00-curriculum-roadmap.png" },
+  { id: "m01", title: "VPC Deep Dive", image: "/cheatsheets/01-vpc-deep-dive.png", moduleSlug: "vpc-deep-dive", moduleLabel: "M01" },
+  { id: "m02", title: "Hybrid Connectivity", image: "/cheatsheets/02-hybrid-connectivity.png", moduleSlug: "hybrid-connectivity", moduleLabel: "M02" },
+  { id: "m03", title: "Transit & PrivateLink", image: "/cheatsheets/03-transit-and-privatelink.png", moduleSlug: "transit-and-privatelink", moduleLabel: "M03" },
+  { id: "m04", title: "Route 53 & DNS Mastery", image: "/cheatsheets/04-dns-and-route53.png", moduleSlug: "dns-and-route53", moduleLabel: "M04" },
+  { id: "m05", title: "Load Balancing & CDN", image: "/cheatsheets/05-load-balancing-cdn.png", moduleSlug: "load-balancing-and-cdn", moduleLabel: "M05" },
+  { id: "m06", title: "Network Security", image: "/cheatsheets/06-network-security.png", moduleSlug: "network-security", moduleLabel: "M06" },
+  { id: "m07", title: "Monitoring & Troubleshooting", image: "/cheatsheets/07-monitoring-and-troubleshooting.png", moduleSlug: "monitoring-and-troubleshooting", moduleLabel: "M07" },
+  { id: "m08", title: "Network Automation & Compliance", image: "/cheatsheets/08-network-automation.png", moduleSlug: "network-automation", moduleLabel: "M08" },
+  { id: "m09", title: "Multi-Account Networking", image: "/cheatsheets/09-multi-account-architecture.png", moduleSlug: "multi-account-architecture", moduleLabel: "M09" },
+  { id: "m10", title: "BGP Deep Dive & Exam Mastery", image: "/cheatsheets/10-bgp-and-exam-mastery.png", moduleSlug: "bgp-and-exam-mastery", moduleLabel: "M10" },
 ];
 
 const STATS = [
@@ -88,6 +104,17 @@ export default function HomePage() {
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* Cheatsheets */}
+      <section className="border-t border-border bg-card/30 px-6 py-16">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-xl font-bold text-foreground mb-2">Cheatsheets</h2>
+          <p className="text-muted-foreground text-sm mb-8">
+            Visual references for each module · click to expand · ← → to navigate
+          </p>
+          <CheatsheetGallery cheatsheets={CHEATSHEETS} />
         </div>
       </section>
 
