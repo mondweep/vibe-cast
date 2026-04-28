@@ -180,7 +180,7 @@ export function CourseChat({ moduleSlug, onClose }: CourseChatProps) {
       setIsLoading(false);
       inputRef.current?.focus();
     }
-  }, [messages, isLoading, moduleSlug, persona]);
+  }, [messages, isLoading, moduleSlug, persona, sessionKey]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); }

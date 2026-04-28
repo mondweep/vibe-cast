@@ -187,25 +187,17 @@ export async function POST(req: NextRequest) {
               },
             });
 
-            // Update session totals
-            await sb.rpc("increment_session_totals", {
-              p_session_id:  sessionId,
-              p_cost:        costUsd,
-              p_msg_count:   2,
-            }).catch(() => {
-              // RPC may not exist yet — fall back to direct update
-              sb.from("chat_sessions")
-                .select("total_cost_usd, message_count")
-                .eq("id", sessionId)
-                .single()
-                .then(({ data }) => {
-                  sb.from("chat_sessions").update({
-                    total_cost_usd: (data?.total_cost_usd ?? 0) + costUsd,
-                    message_count:  (data?.message_count  ?? 0) + 2,
-                    updated_at:     new Date().toISOString(),
-                  }).eq("id", sessionId);
-                });
-            });
+            // Update session totals via direct read-modify-write
+            const { data: curr } = await sb
+              .from("chat_sessions")
+              .select("total_cost_usd, message_count")
+              .eq("id", sessionId)
+              .single();
+            await sb.from("chat_sessions").update({
+              total_cost_usd: (curr?.total_cost_usd ?? 0) + costUsd,
+              message_count:  (curr?.message_count  ?? 0) + 2,
+              updated_at:     new Date().toISOString(),
+            }).eq("id", sessionId);
 
             console.log(`[chat] Saved session ${sessionId} | cost: $${costUsd.toFixed(5)} | topics: ${topicLabels.join(", ")}`);
           }
