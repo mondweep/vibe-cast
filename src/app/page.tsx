@@ -18,18 +18,18 @@ const MODULES: { id: string; title: string; domain: ModuleDomain; hours: number;
 ];
 
 const CHEATSHEETS: Cheatsheet[] = [
-  { id: "overview", title: "Advanced Networking Overview", image: "/cheatsheets/00-advanced-networking-overview.png" },
-  { id: "roadmap", title: "Curriculum Roadmap", image: "/cheatsheets/00-curriculum-roadmap.png" },
-  { id: "m01", title: "VPC Deep Dive", image: "/cheatsheets/01-vpc-deep-dive.png", moduleSlug: "vpc-deep-dive", moduleLabel: "M01" },
-  { id: "m02", title: "Hybrid Connectivity", image: "/cheatsheets/02-hybrid-connectivity.png", moduleSlug: "hybrid-connectivity", moduleLabel: "M02" },
-  { id: "m03", title: "Transit & PrivateLink", image: "/cheatsheets/03-transit-and-privatelink.png", moduleSlug: "transit-and-privatelink", moduleLabel: "M03" },
-  { id: "m04", title: "Route 53 & DNS Mastery", image: "/cheatsheets/04-dns-and-route53.png", moduleSlug: "dns-and-route53", moduleLabel: "M04" },
-  { id: "m05", title: "Load Balancing & CDN", image: "/cheatsheets/05-load-balancing-cdn.png", moduleSlug: "load-balancing-and-cdn", moduleLabel: "M05" },
-  { id: "m06", title: "Network Security", image: "/cheatsheets/06-network-security.png", moduleSlug: "network-security", moduleLabel: "M06" },
-  { id: "m07", title: "Monitoring & Troubleshooting", image: "/cheatsheets/07-monitoring-and-troubleshooting.png", moduleSlug: "monitoring-and-troubleshooting", moduleLabel: "M07" },
-  { id: "m08", title: "Network Automation & Compliance", image: "/cheatsheets/08-network-automation.png", moduleSlug: "network-automation", moduleLabel: "M08" },
-  { id: "m09", title: "Multi-Account Networking", image: "/cheatsheets/09-multi-account-architecture.png", moduleSlug: "multi-account-architecture", moduleLabel: "M09" },
-  { id: "m10", title: "BGP Deep Dive & Exam Mastery", image: "/cheatsheets/10-bgp-and-exam-mastery.png", moduleSlug: "bgp-and-exam-mastery", moduleLabel: "M10" },
+  { id: "overview", title: "Advanced Networking Overview", image: "/images/cheatsheets/advanced-networking-overview.png" },
+  { id: "roadmap", title: "Curriculum Roadmap", image: "/images/cheatsheets/curriculum-roadmap.png" },
+  { id: "m01", title: "VPC Deep Dive", image: "/images/cheatsheets/M01/M01-vpc-deep-dive-cheatsheet.png", moduleSlug: "vpc-deep-dive", moduleLabel: "M01" },
+  { id: "m02", title: "Hybrid Connectivity", image: "/images/cheatsheets/M02/M02-hybrid-connectivity-cheatsheet.png", moduleSlug: "hybrid-connectivity", moduleLabel: "M02" },
+  { id: "m03", title: "Transit & PrivateLink", image: "/images/cheatsheets/M03/M03-transit-and-privatelink-cheatsheet.png", moduleSlug: "transit-and-privatelink", moduleLabel: "M03" },
+  { id: "m04", title: "Route 53 & DNS Mastery", image: "/images/cheatsheets/M04/M04-dns-and-route53-cheatsheet.png", moduleSlug: "dns-and-route53", moduleLabel: "M04" },
+  { id: "m05", title: "Load Balancing & CDN", image: "/images/cheatsheets/M05/M05-load-balancing-and-cdn-cheatsheet.png", moduleSlug: "load-balancing-and-cdn", moduleLabel: "M05" },
+  { id: "m06", title: "Network Security", image: "/images/cheatsheets/M06/M06-network-security-cheatsheet.png", moduleSlug: "network-security", moduleLabel: "M06" },
+  { id: "m07", title: "Monitoring & Troubleshooting", image: "/images/cheatsheets/M07/M07-monitoring-and-troubleshooting-cheatsheet.png", moduleSlug: "monitoring-and-troubleshooting", moduleLabel: "M07" },
+  { id: "m08", title: "Network Automation & Compliance", image: "/images/cheatsheets/M08/M08-network-automation-cheatsheet.png", moduleSlug: "network-automation", moduleLabel: "M08" },
+  { id: "m09", title: "Multi-Account Networking", image: "/images/cheatsheets/M09/M09-multi-account-architecture-cheatsheet.png", moduleSlug: "multi-account-architecture", moduleLabel: "M09" },
+  { id: "m10", title: "BGP Deep Dive & Exam Mastery", image: "/images/cheatsheets/M10/M10-bgp-and-exam-mastery-cheatsheet.png", moduleSlug: "bgp-and-exam-mastery", moduleLabel: "M10" },
 ];
 
 const STATS = [
