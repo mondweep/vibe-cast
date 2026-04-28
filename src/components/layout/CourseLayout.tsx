@@ -21,6 +21,7 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard", icon: "⊞" },
   { href: "/learn", label: "My Path", icon: "◈" },
   { href: "/labs", label: "Labs", icon: "⬡" },
+  { href: "/cheatsheets", label: "Cheatsheets", icon: "◫" },
 ];
 
 export function CourseLayout({ children }: { children: React.ReactNode }) {
