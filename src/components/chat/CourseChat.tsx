@@ -90,6 +90,15 @@ export function CourseChat({ moduleSlug, onClose }: CourseChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximised, setIsMaximised] = useState(false);
+  const [sessionKey] = useState(() => {
+    // Stable per-browser-session key for Supabase chat_sessions
+    if (typeof window === "undefined") return `ssr-${Date.now()}`;
+    const stored = sessionStorage.getItem("chat-session-key");
+    if (stored) return stored;
+    const fresh = `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem("chat-session-key", fresh);
+    return fresh;
+  });
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
