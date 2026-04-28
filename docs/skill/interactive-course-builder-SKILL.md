@@ -5,190 +5,169 @@ description: Build a comprehensive, interactive, production-grade online course 
 
 # Interactive Course Builder
 
-A comprehensive skill for creating production-grade interactive learning platforms with AI-powered tutoring, visual cheatsheets, and full deployment — from concept to live URL.
+A comprehensive skill for creating production-grade interactive learning platforms with AI-powered tutoring, visual cheatsheets, analytics, privacy compliance, and full deployment — from concept to live URL.
 
 ## What this skill produces
 
-A fully deployed web application with:
-- **10–12 content modules** authored in MDX with tables, code blocks, exam tips
+- **10–12 content modules** authored in MDX with GFM tables, code blocks, exam tips
 - **Interactive labs** — simulators, decision exercises, visual builders
-- **AI Tutor** — GraphRAG chat (vector search + knowledge graph) answering from course content
-- **Visual cheatsheets** — uploaded by the author, served as downloadable PNGs
+- **AI Tutor** — GraphRAG chat with full Supabase persistence (sessions, messages, cost, geo)
+- **Visual cheatsheets** — author-generated PNGs (Google NotebookLM recommended), gallery with lightbox
 - **Progress tracking** — persona-adaptive, localStorage-backed, per-module
-- **About + attribution** page with author LinkedIn and GitHub
-- **Persistent footer** credit on every page
-- Deployed to **Vercel** (free tier) from a **GitHub** orphan branch
+- **Analytics** — chat session tracking, topic frequency, cost per session, geo data
+- **Privacy & consent** — GDPR-compliant consent gate with optional learner profile capture
+- **About + attribution** page — author LinkedIn + GitHub, never employer unless confirmed
+- **Persistent footer** — name + LinkedIn + GitHub + Privacy Policy on every page including homepage
+- Deployed to **Vercel** from a **GitHub** orphan branch
 
 ---
 
-## Phase 0 — Scoping (do this before anything else)
+## Phase 0 — Scoping
 
-### 1. Gather the brief
+Ask the user for:
+- **Topic** — domain/subject
+- **Audience** — student / practitioner / teacher (or specific roles)
+- **Certification alignment** — exam to target? (ANS-C01, CKA, PMP etc.)
+- **Module count** — typically 8–12
+- **Estimated hours** — total learning time
+- **GitHub repo** — URL + PAT with `repo` and `workflow` scopes
+- **Vercel account** — personal access token
+- **Cheatsheet tool** — user generates PNGs externally (Google NotebookLM, Canva)
+- **Author identity** — name + LinkedIn URL + GitHub URL (never ask for employer)
 
-Ask the user for (or extract from context):
-- **Topic** — what domain/subject? (e.g. "AWS Advanced Networking", "Python for Data Science")
-- **Audience** — who are the learners? (students / practitioners / teachers, or specific roles)
-- **Certification alignment** — is there an exam to target? (e.g. ANS-C01, CKA, PMP)
-- **Module count** — typically 8–12; confirm with user
-- **Estimated hours** — total learning time (e.g. 60h)
-- **GitHub repo** — existing or new? Get URL + PAT with `repo` and `workflow` scopes
-- **Vercel account** — get personal access token for deployment
-- **Cheatsheet tool** — user typically generates PNGs from Google NotebookLM, Canva, or similar
+Create Linear project with 5 milestones if Linear MCP is connected.
 
-### 2. Create Linear project (if Linear MCP is connected)
-
-Create a Linear project with 5 milestones:
-- Phase 0: PRD & Architecture (2 weeks)
-- Phase 1: Platform Foundation (4 weeks)
-- Phase 2: Content Authoring (6 weeks)
-- Phase 3: Interactive Labs (6 weeks)
-- Phase 4: QA & Launch (4 weeks)
-
-Create issues for: PRD, ADRs, DDD model, GitHub scaffold, each phase.
-
-### 3. Create the PRD
-
-Produce a PRD covering:
-- Executive summary (problem, solution, metrics)
-- Learner personas with distinct paths (Student / Teacher / Practitioner is the default pattern)
-- Module map (id, title, domain, hours, prerequisites)
-- Tech stack decisions
-- DDD bounded contexts
-- TDD strategy (London School)
-- ADR list (framework, content format, styling, testing, deployment, state, DDD)
-- Phase plan with dates
-- Risk register
-
-Output as an interactive React artifact with sidebar navigation between sections.
+Produce PRD as interactive React artifact covering: personas, module map, DDD contexts, TDD strategy, ADRs, analytics strategy, privacy strategy, phase plan, risk register.
 
 ---
 
 ## Phase 1 — GitHub & Scaffold
 
+### PAT authentication — always use x-access-token format
+```bash
+git remote set-url origin "https://x-access-token:PAT@github.com/ORG/REPO.git"
+```
+If credential helper still intercepts, use GitHub Contents API to push individual files.
+
 ### Orphan branch setup
 ```bash
-git clone https://PAT@github.com/ORG/REPO.git
+git clone https://x-access-token:PAT@github.com/ORG/REPO.git
 cd REPO
-git checkout --orphan COURSE-NAME   # e.g. aws-advanced-networking
+git checkout --orphan COURSE-NAME
 git rm -rf .
-# Create README with course overview
-git add README.md
-git commit -m "chore: initialise COURSE-NAME orphan branch"
+git add README.md && git commit -m "chore: initialise COURSE-NAME orphan branch"
 git push origin COURSE-NAME
 ```
 
-### Next.js scaffold (manual — create-next-app often blocked)
-Create these files directly:
-- `package.json` with deps: next@14, react, tailwindcss, shadcn/ui primitives, next-mdx-remote@6, gray-matter, zustand, remark-gfm, rehype-slug, react-markdown, ai, @anthropic-ai/sdk, @supabase/supabase-js
-- `tsconfig.json` — exclude `scripts/` directory
-- `tailwind.config.ts` — include custom AWS/brand colour tokens
-- `next.config.mjs` — pageExtensions includes mdx
-- `postcss.config.mjs`
-- `.eslintrc.json`
-- `jest.config.ts` — testMatch points to `tests/unit/**`
-- `playwright.config.ts`
-- `components.json` (shadcn)
-- `.gitignore`
+### Key package.json rules
+- `next-mdx-remote@6.0.0` exactly — v4/v5 blocked by Vercel vulnerability gate
+- `tsconfig.json` must have `"exclude": ["node_modules", "scripts"]` — scripts/ contains ingestion CLI, causes build errors if included
 
 ### Directory structure
 ```
 src/
-  app/                    ← Next.js App Router pages
+  app/
+    layout.tsx              ← root layout: wraps ALL children in ConsentGate
+    page.tsx                ← homepage with persistent footer
+    dashboard/ learn/ modules/[slug]/ labs/ cheatsheets/ about/
+    privacy/page.tsx        ← accessible WITHOUT consent (user must read before accepting)
+    api/
+      chat/route.ts         ← GraphRAG + Claude + Supabase persistence
+      profile/route.ts      ← optional learner profile save
   components/
-    ui/                   ← shadcn primitives (Button, Badge, Progress)
-    course/               ← ModuleCard, ModuleViewer, ModuleProgress, LearnerPersonaSelector
-    course/mdx/           ← MdxComponents.tsx (tables, code, callouts)
-    labs/                 ← VpcBuilder, BgpSimulator, ScenarioExercise etc.
-    chat/                 ← CourseChat.tsx (maximisable, streaming)
-    layout/               ← CourseLayout.tsx (sidebar + persistent footer)
-  contexts/               ← ProgressContext.tsx
-  domains/
-    course/               ← Module, Lesson entities + repo + service
-    learner/              ← Learner entity + events
-    progress/             ← ProgressTracker entity (idempotent completion)
-    assessment/           ← Assessment, Attempt, scoreAttempt
+    ui/                     ← Button, Badge, Progress (shadcn)
+    course/
+      ModuleViewer.tsx      ← MDXRemote with remarkGfm + rehypeSlug
+      cheatsheet-gallery.tsx← lightbox, keyboard nav
+      mdx/MdxComponents.tsx ← MUST include thead/tbody/tr
+    chat/CourseChat.tsx     ← maximisable, sessionStorage key
+    layout/
+      CourseLayout.tsx      ← sidebar + persistent footer on all inner pages
+      ConsentGate.tsx       ← wraps entire app in root layout
   lib/
-    modules.ts            ← getModuleBySlug, getAllModules (reads MDX)
-    knowledge/            ← ontology.ts (nodes + edges)
-    rag/                  ← retrieval.ts (lazy Supabase init)
-    supabase.ts           ← lazy browser client
-  types/                  ← PersonaType, ModuleDomain, Outcome<T>
-content/modules/          ← M01-slug/ through M10-slug/ each with index.mdx
-docs/adr/                 ← ADR-001 through ADR-007
-supabase/migrations/      ← 001_graphrag_schema.sql
-scripts/                  ← ingest.ts (excluded from tsconfig)
-public/images/cheatsheets/← M01/ through M10/ + overview PNGs
-tests/unit/               ← Jest domain tests
-tests/e2e/                ← Playwright acceptance tests
-.github/workflows/        ← ci.yml + deploy-preview.yml
+    knowledge/ontology.ts   ← NODES[] + EDGES[] typed arrays
+    rag/retrieval.ts        ← lazy Supabase init (NEVER module-level)
+docs/
+  adr/                      ← ADR-001 to ADR-007
+  content/                  ← LinkedIn post + article
+  skill/                    ← this SKILL.md
+supabase/migrations/
+  001_graphrag_schema.sql
+  002_chat_analytics.sql
+  003_learner_profiles.sql
+scripts/ingest.ts           ← excluded from tsconfig
+public/images/cheatsheets/M01/ through M10/
 ```
-
-### GitHub Actions CI pipeline (ci.yml)
-```yaml
-on: [push, pull_request] to main course branch
-jobs: typecheck → lint → unit-tests (with 80% coverage gate) → build → e2e
-```
-
-**Critical:** PAT needs `workflow` scope to push `.github/workflows/`. If 401, use GitHub Contents API.
 
 ---
 
 ## Phase 2 — Design System & Layout
 
-### Colour tokens (globals.css CSS variables)
+### Colour tokens
 ```css
---primary: 35 100% 50%       ← amber/orange (course accent)
---background: 213 35% 7%     ← dark navy
+--primary: 35 100% 50%      /* amber/orange */
+--background: 213 35% 7%    /* dark navy */
 --card: 213 30% 12%
---muted-foreground: 215 20% 55%
 ```
 
-### shadcn components to create
-- `Button` — default + outline + ghost variants
-- `Badge` — variants: aws, design, operations, security, automation, exam-prep
-- `Progress` — radix primitive
+### Sidebar order
+Dashboard ⊞ → My Path ◈ → Labs ⬡ → Cheatsheets ◫ → About ◉
 
-### CourseLayout (sidebar)
-Sidebar items in order:
-1. Dashboard ⊞
-2. My Path ◈
-3. Labs ⬡
-4. Cheatsheets ◫
-5. About ◉
-
-**Persistent footer** on every inner page:
+### Persistent footer — EVERY page including homepage
 ```
-Created by [Author Name] (LinkedIn link) · LinkedIn icon · GitHub icon
+Created by [Author Name → LinkedIn] | LinkedIn icon | GitHub icon | Privacy Policy
 ```
+**Both** the homepage (`page.tsx`) and CourseLayout footer must have the Privacy Policy link.
 
-### MdxComponents — critical rules
-- **Always include** `thead`, `tbody`, `tr` in table components — without them GFM tables render as raw pipe text
-- Use `remarkGfm` in `MDXRemote` options: `{ mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeSlug] } }`
-- The `pre` component must wrap `code` blocks — split inline vs block code by `className.includes('language-')`
-- `Callout` component: types `info | tip | warning | exam` with distinct border colours
+### MdxComponents — critical table rule
+Without `thead`, `tbody`, `tr` components, GFM tables render as raw pipe text:
+```tsx
+table: (p) => <div className="overflow-x-auto ..."><table {...p} /></div>,
+thead: (p) => <thead className="bg-muted/60" {...p} />,
+tbody: (p) => <tbody className="divide-y divide-border" {...p} />,
+tr:    (p) => <tr className="hover:bg-muted/20" {...p} />,
+th:    (p) => <th className="px-4 py-2.5 font-semibold ..." {...p} />,
+td:    (p) => <td className="px-4 py-2.5 ..." {...p} />,
+```
+And in ModuleViewer pass options to MDXRemote:
+```tsx
+const MDX_OPTIONS = {
+  mdxOptions: {
+    remarkPlugins: [remarkGfm],
+    rehypePlugins: [rehypeSlug],
+  },
+};
+```
 
 ### Chat component (CourseChat.tsx)
-- **Maximise toggle** ⊞/⊡ in header — `isMaximised` state switches between `w-[440px] h-[620px]` and `inset-4`
-- **Dark theme**: panel `bg-[#111827]`, user messages `bg-primary text-[#0D1117]`, assistant `bg-[#1e2d3d] text-slate-100`
-- **react-markdown + remark-gfm** inside chat bubbles — critical for table rendering in AI responses
-- Error events must surface visibly in the bubble, not be swallowed
-- `X-Accel-Buffering: no` header on SSE response prevents proxy buffering
+```
+Maximise toggle: ⊞ / ⊡ in header
+Normal:    fixed bottom-6 right-6 w-[440px] h-[620px]
+Maximised: fixed inset-4 (fills viewport with 16px margin)
+
+Dark theme:
+  Panel:    bg-[#111827]
+  User msg: bg-primary text-[#0D1117]
+  AI msg:   bg-[#1e2d3d] border-[#2a3f55] text-slate-100
+
+react-markdown + remark-gfm inside chat bubbles — required for table rendering
+Error SSE events must render visibly, never silently swallowed
+sessionKey from sessionStorage passed in every fetch body
+```
 
 ---
 
 ## Phase 3 — Content Authoring
 
-### MDX frontmatter structure
+### MDX frontmatter
 ```yaml
 ---
 id: "01"
 slug: "module-slug"
 title: "Module Title"
 domain: design | operations | security | automation | exam-prep
-difficulty: specialty
 estimatedHours: 6
-prerequisites: []        # array of module ids
-topics: []               # array of topic strings
+prerequisites: []
 objectives:
   - id: o1
     description: "..."
@@ -197,76 +176,43 @@ personas: ["student", "teacher", "practitioner"]
 ---
 ```
 
-### Content structure per module
-1. Introduction paragraph (why this matters)
-2. Numbered sections (## 1. Title pattern)
-3. Comparison tables (GFM pipe syntax — will render if remark-gfm is enabled)
-4. Code blocks with shell commands
-5. Exam tip blockquotes: `> **Exam tip (CERT-CODE):** text`
-6. Decision matrix (when to use X vs Y)
+### Content rules
+- Section headings: `## N. Title` pattern — drives ingestion chunking
+- GFM comparison tables for all "X vs Y" topics
+- Exam tip: `> **Exam tip (CERT):** text`
+- Decision matrix: "when to use X vs Y"
 
-### Exam tip pattern
-```mdx
-> **Exam tip (ANS-C01):** Key fact that appears in exams. Keep to 2 sentences.
-```
+### Cheatsheets
+Generate with **Google NotebookLM** — upload module MDX as source, export as PNG.
+Claude does not generate cheatsheet images.
+Upload to `public/images/cheatsheets/M0X/M0X-title-cheatsheet.png`.
 
 ---
 
 ## Phase 4 — Interactive Labs
 
-Build at least 3 lab types:
+Three types minimum:
 
-### 1. Visual Builder Lab
-User adds/removes/configures components on a canvas. Validate the design against rules. Show a "route table preview" or equivalent configuration output.
-
-Pattern:
-```tsx
-const [items, setItems] = useState(DEFAULT_ITEMS)
-function addItem() { ... }
-function validate() { return messages[] }
-```
-
-### 2. Simulator / Algorithm Lab
-User adjusts numerical attributes and sees the algorithm output.
-
-Pattern:
-```tsx
-function runAlgorithm(inputs): { winner: Item; reason: string }
-```
-
-Show the decision step that was decisive. Allow resetting to defaults.
-
-### 3. Scenario Exercise
-Multi-step scenario with 4-option MCQ. Show explanation for both correct and incorrect answers. Track score across multiple scenarios.
-
-Pattern:
-```tsx
-interface Step { question; context; choices: { isCorrect; explanation }[] }
-```
-
-### Labs page
-- Tab selector across all labs
-- Each tab renders its lab component
-- Accessible via `/labs` with `CourseLayout`
+1. **Visual Builder** — user designs/configures, validate against rules, show output
+2. **Algorithm Simulator** — user adjusts inputs, sees which step determined winner
+3. **Scenario Exercise** — MCQ with explanations for ALL options (correct + incorrect)
 
 ---
 
 ## Phase 5 — AI Tutor (GraphRAG)
 
-### Supabase schema (001_graphrag_schema.sql)
-Tables (all idempotent with `IF NOT EXISTS`):
-- `kg_nodes` (id, label, type, description, module_ids, properties)
-- `kg_edges` (from_node_id, to_node_id, relation, weight) — unique on (from, to, relation)
-- `content_chunks` (module_id, slug, title, section, content, embedding vector(1024))
-- `chat_sessions`, `chat_messages`
+### Supabase migrations (run in SQL Editor in order)
 
-**Critical SQL fixes:**
+**001_graphrag_schema.sql:**
 ```sql
--- Recursive CTE weight type mismatch — always cast explicitly:
+CREATE EXTENSION IF NOT EXISTS vector;
+-- Tables: kg_nodes, kg_edges, content_chunks (vector(1024)), chat_sessions, chat_messages
+
+-- Critical: recursive CTE weight must be explicitly cast
 1.0::double precision AS weight
 (e.weight * gt.weight)::double precision
 
--- IVFFlat index — no IF NOT EXISTS syntax, use DO block:
+-- Critical: IVFFlat has no IF NOT EXISTS — use DO block
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_chunks_embedding') THEN
     CREATE INDEX idx_chunks_embedding ON content_chunks
@@ -274,141 +220,193 @@ DO $$ BEGIN
   END IF;
 END $$;
 
--- Policies — always DROP IF EXISTS before CREATE (idempotency):
-DO $$ BEGIN
-  DROP POLICY IF EXISTS "..." ON table_name;
-END $$;
-CREATE POLICY "..." ON table_name FOR SELECT USING (true);
+-- Critical: always DROP POLICY IF EXISTS before CREATE POLICY
+DO $$ BEGIN DROP POLICY IF EXISTS "..." ON t; END $$;
+CREATE POLICY "..." ON t FOR SELECT USING (true);
+```
+
+**002_chat_analytics.sql:**
+```sql
+ALTER TABLE chat_sessions
+  ADD COLUMN IF NOT EXISTS country TEXT,
+  ADD COLUMN IF NOT EXISTS city TEXT,
+  ADD COLUMN IF NOT EXISTS region TEXT,
+  ADD COLUMN IF NOT EXISTS total_cost_usd FLOAT DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS message_count INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+-- Create views: session_summary, topic_frequency, cost_by_country
+-- Views show UNRESTRICTED in Supabase dashboard — this is NORMAL
+-- Views inherit RLS from underlying tables; no action needed
+```
+
+**003_learner_profiles.sql:**
+```sql
+CREATE TABLE IF NOT EXISTS learner_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE, name TEXT, linkedin_url TEXT,
+  wants_updates BOOLEAN DEFAULT false,
+  country TEXT, source TEXT DEFAULT 'consent_gate',
+  consented_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- RLS: service_role full access, anon insert-only
+-- View: outreach_list WHERE wants_updates = true
 ```
 
 ### Ontology (ontology.ts)
-Define `NODES[]` and `EDGES[]` arrays covering:
-- AWSService nodes for each key service
-- Concept nodes (BGP, CIDR, DNS, etc.)
-- Pattern nodes (Hub-Spoke, Defence-in-Depth, etc.)
-- ExamTopic nodes
-- Module nodes (one per module)
-- Edges: USES, REQUIRES, ENABLES, COMPARED_TO, PART_OF, PREREQUISITE_OF, APPEARS_IN, CONFIGURES, SECURES, MONITORS
+Node types: `AWSService | Concept | Protocol | Pattern | ExamTopic | Module | Lesson`
+Edge relations: `USES | REQUIRES | ENABLES | COMPARED_TO | PART_OF | PREREQUISITE_OF | APPEARS_IN | CONFIGURES | SECURES | MONITORS`
 
-### retrieval.ts — lazy Supabase init
+### Lazy init — ALWAYS
 ```typescript
 let _supabase: SupabaseClient | null = null;
 function getSupabase() {
   if (!_supabase) _supabase = createClient(url, key);
   return _supabase;
 }
-```
-**Never initialise at module level** — Next.js static analysis runs modules at build time without env vars.
-
-### Chat API route (route.ts)
-```typescript
-export const dynamic = "force-dynamic";   // prevents static analysis
-// Lazy import Anthropic to avoid module-level init:
-const Anthropic = (await import("@anthropic-ai/sdk")).default;
+// NEVER at module level — Next.js static analysis runs modules at build without env vars
 ```
 
-Response headers:
+### Chat API route — CRITICAL architecture
+
+**Save BEFORE streaming, not after:**
 ```typescript
+// WRONG — Vercel terminates function once response sent; post-stream code never runs:
+for await (const chunk of stream) { ... }
+controller.close()
+await saveToSupabase()    // ← NEVER EXECUTES
+
+// CORRECT — non-streaming API, save first, then replay as SSE:
+const response = await client.messages.create({ ... })   // non-streaming
+await saveMessages(response)                              // save FIRST
+// Then stream response.content text to client in chunks
+```
+
+**Required route exports:**
+```typescript
+export const dynamic    = "force-dynamic";
+export const runtime    = "nodejs";
+export const maxDuration = 60;   // NOT 30 — allow retrieval + LLM + Supabase save
+
+// Response headers:
 "X-Accel-Buffering": "no"   // prevents Vercel proxy buffering SSE
 ```
 
-### Embedding model
-Use `voyage-3` (1024 dimensions) — matches `vector(1024)` in schema.
-`voyage-3-lite` outputs 512 dimensions — do NOT use with a 1024-dim column.
+**What to save:**
+```typescript
+// chat_sessions (upsert on session_key):
+{ session_key, persona, module_id, country, city, region, updated_at }
+// Geo: req.headers.get("x-vercel-ip-country/city/region")  — free on all Vercel plans
 
-### Ingestion script (scripts/ingest.ts)
-- Excluded from `tsconfig.json` (`"exclude": ["node_modules", "scripts"]`)
-- Chunks MDX by h2 heading, max ~1400 chars per chunk
-- Batch 5–8 chunks per Voyage AI call
-- Free tier: 3 RPM → 22s delay between calls
-- Upsert with `ignoreDuplicates: true` OR clear tables first (functional unique index on `lower(label)` cannot be used with `onConflict` column name)
+// chat_messages (insert × 2 — user + assistant):
+// context JSONB includes: topics[], chunk_count, graph_nodes, input_tokens, output_tokens, cost_usd
+
+// Cost (Haiku 4.5):
+const cost = (input_tokens / 1_000_000) + (output_tokens * 5 / 1_000_000)
+```
+
+### Session key (client side)
+```typescript
+const [sessionKey] = useState(() => {
+  const stored = sessionStorage.getItem("chat-session-key");
+  if (stored) return stored;
+  const key = `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  sessionStorage.setItem("chat-session-key", key);
+  return key;
+});
+// Pass sessionKey in every fetch body → stable per-browser-session Supabase row
+```
+
+### Embedding model
+`voyage-3` = 1024 dimensions ✓
+`voyage-3-lite` = 512 dimensions — will fail with `vector(1024)` column
+
+### Ingestion
+- Run locally only — Voyage AI DNS blocked in most sandbox environments
+- Clear tables before first run (functional unique index blocks naive upsert)
+- Rate limit: 22s delay between Voyage API calls on free tier (3 RPM)
+
+### Analytics queries
+```sql
+SELECT * FROM topic_frequency LIMIT 20;     -- most asked concepts
+SELECT * FROM cost_by_country;              -- spend by geo
+SELECT * FROM session_summary ORDER BY created_at DESC;
+SELECT * FROM outreach_list;                -- opted-in learners
+```
 
 ---
 
 ## Phase 6 — Cheatsheets
 
-### Folder structure
-```
-public/images/cheatsheets/
-├── README.md
-├── M01/  .gitkeep → user uploads PNG here
-├── M02/  ...
-└── M10/
-```
-
-Files in `public/` are served directly by Next.js/Vercel at `/images/cheatsheets/M01/filename.png`.
-
-### Cheatsheets page (/cheatsheets)
-- Use `CheatsheetGallery` component (lightbox, keyboard ← → navigation, Esc to close)
-- Each card: thumbnail, module badge, "Open" lightbox, "View module →" link
-- Sidebar link: `Cheatsheets ◫`
-
-**Cheatsheet generation note:** Authors typically generate cheatsheets using Google NotebookLM (export as PNG), Canva, or similar visual tools — Claude does not generate these.
+Structure: `public/images/cheatsheets/M01/` through `M10/` with `.gitkeep` placeholders.
+Gallery: lightbox, ← → keyboard nav, Esc to close, full-size download link.
+Sidebar: `Cheatsheets ◫` after Labs.
 
 ---
 
-## Phase 7 — About & Attribution
+## Phase 7 — Privacy, Consent & Learner Capture
 
-### About page sections (in order)
-1. Hero — what the course is about, who it's for
-2. How to use — numbered steps matching the UX journey
-3. Features — card grid (6 features max)
-4. Course scope — module list with domain badges, each linked
-5. Built with — tech stack tags + engineering approach (DDD/TDD/ADRs)
-6. About the author — name, LinkedIn, GitHub, Linear; NO employer unless explicitly requested
-7. Footer line — MIT licence + GitHub repo URL
+### ConsentGate
+Wraps entire app in `root layout.tsx` (not CourseLayout — must cover homepage too).
+localStorage key: `"aws-course-privacy-consent-v1"`
 
-**Never include employer/company** unless user explicitly confirms it's appropriate.
+Modal shows:
+- Data collection summary (what + why)
+- Collapsible "Stay in the loop" section — **hidden by default** for low friction
+- Optional fields: Name, Email, LinkedIn URL
+- Marketing checkbox: "Yes, notify me about new modules"
+- Profile save is non-blocking — consent proceeds even if /api/profile fails
+
+Re-test: clear `aws-course-privacy-consent-v1` from localStorage → modal reappears.
+
+### Privacy policy page (/privacy)
+Must be accessible WITHOUT consent.
+Cover: data collected, legal basis, third-party processors (Anthropic/Voyage AI/Supabase), 12-month retention, user rights (access/rectification/erasure/portability/objection), no tracking cookies, 16+ platform.
+Link to Privacy Policy from ALL footers.
+
+### Learner profile API (/api/profile)
+Upserts on email to prevent duplicates on re-consent.
+All fields nullable — non-blocking if Supabase unavailable.
+
+### Spend control — inform user
+Budget limits are **workspace-level**, not API key-level.
+**Anthropic Console → Workspaces → [workspace] → Limits tab → Change Limit**
+Recommend: $10–$25/month cap + 80% email notification.
 
 ---
 
-## Phase 8 — Deployment
+## Phase 8 — About & Attribution
 
-### Vercel deployment
-```bash
-VERCEL_TOKEN="vcp_..."
-TEAM_ID="team_..."   # from /v2/user if on team, else omit
-PROJECT_ID="prj_..."
+Sections: Hero → How to use → Features (max 6) → Course scope → Built with → Author credit
+Author card: name + LinkedIn + GitHub + community context.
+**NEVER include employer** unless user explicitly confirms it is appropriate.
 
-# Create project (once)
-curl -X POST "https://api.vercel.com/v1/projects?teamId=$TEAM_ID" \
-  -H "Authorization: Bearer $VERCEL_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"course-name","framework":"nextjs","gitRepository":{"type":"github","repo":"org/repo"}}'
+---
 
-# Trigger production deployment
-curl -X POST "https://api.vercel.com/v13/deployments?teamId=$TEAM_ID" \
-  -H "Authorization: Bearer $VERCEL_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"course-name","project":"PROJECT_ID","gitSource":{"type":"github","repo":"repo","org":"org","ref":"branch"},"target":"production"}'
+## Phase 9 — Deployment
 
-# Poll until READY
-curl "https://api.vercel.com/v13/deployments/DEPLOY_ID" \
-  -H "Authorization: Bearer $VERCEL_TOKEN"
-```
-
-**Production alias** — if deployment lands as `preview`, explicitly assign:
-```bash
-curl -X POST "https://api.vercel.com/v2/deployments/DEPLOY_ID/aliases?teamId=$TEAM_ID" \
-  -H "Authorization: Bearer $VERCEL_TOKEN" \
-  -d '{"alias":"course-name.vercel.app"}'
-```
-
-### GitHub push authentication
-Use `x-access-token` format:
-```bash
-git remote set-url origin "https://x-access-token:PAT@github.com/ORG/REPO.git"
-git push origin BRANCH
-```
-If credential helper intercepts, use GitHub Contents API directly for individual file pushes.
-
-### Vercel env vars required
+### Vercel env vars
 ```
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_SERVICE_ROLE_KEY      ← NEVER prefix with NEXT_PUBLIC_
 ANTHROPIC_API_KEY
-VOYAGE_API_KEY              ← NOT Vonage (telecom) — double check spelling
+VOYAGE_API_KEY                 ← NOT "VONAGE" — verify spelling every time
+```
+
+### Deployment commands
+```bash
+# Deploy to production
+curl -X POST "https://api.vercel.com/v13/deployments?teamId=$TEAM_ID" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
+  -d '{"name":"course-name","project":"PID","gitSource":{"type":"github","repo":"r","org":"o","ref":"branch"},"target":"production"}'
+
+# Poll (15s intervals)
+curl "https://api.vercel.com/v13/deployments/DEPLOY_ID" -H "Authorization: Bearer $VERCEL_TOKEN"
+
+# Force production alias if needed
+curl -X POST "https://api.vercel.com/v2/deployments/DEPLOY_ID/aliases?teamId=$TEAM_ID" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" -d '{"alias":"name.vercel.app"}'
 ```
 
 ---
@@ -418,35 +416,85 @@ VOYAGE_API_KEY              ← NOT Vonage (telecom) — double check spelling
 | Error | Cause | Fix |
 |---|---|---|
 | MDX tables render as pipe text | remark-gfm not in MDXRemote options | Add `remarkPlugins: [remarkGfm]` to `options.mdxOptions` |
-| Chat shows chunks/nodes but no text | Invalid model name | Use `claude-haiku-4-5-20251001` or `claude-sonnet-4-5-20251022` |
-| SSE stream empty in browser | Proxy buffering | Add `X-Accel-Buffering: no` response header |
-| Supabase build error | Module-level createClient | Use lazy init function pattern |
-| `voyage-3-lite` 512 dim mismatch | Wrong model | Use `voyage-3` (1024 dims) |
-| CTE type error in Postgres | `1.0` inferred as numeric | Cast: `1.0::double precision` |
-| Vercel build fails ESLint | Unused variables | Fix all `no-unused-vars` before pushing |
-| `workflow` scope 401 on push | PAT missing workflow scope | Regenerate PAT with repo + workflow scopes |
-| GitHub credentials prompt blocks push | Credential helper | Use `x-access-token:PAT@github.com` URL format |
+| Chat tables render as pipe text | react-markdown missing remark-gfm | `<ReactMarkdown remarkPlugins={[remarkGfm]}>` |
+| Chat shows chunks/nodes but empty response | Invalid Anthropic model name | Use `claude-haiku-4-5-20251001` |
+| SSE empty in browser | Proxy buffering | Add `"X-Accel-Buffering": "no"` header |
+| Supabase build error | Module-level createClient | Lazy init function pattern |
+| `voyage-3-lite` dim mismatch | 512 dims vs vector(1024) | Switch to `voyage-3` |
+| Postgres CTE type error | `1.0` inferred as numeric | Cast: `1.0::double precision` on both CTE weight columns |
+| **Supabase tables always empty** | **Vercel kills function after response sent** | **Save to Supabase BEFORE streaming, not after controller.close()** |
+| Unique constraint on upsert | Functional index not usable as onConflict | Clear tables first OR use `ignoreDuplicates: true` |
+| Build fails ESLint | Unused variables / catch(err) unused | Fix all `no-unused-vars`; `catch (err)` → `catch {` when err unused |
+| `workflow` scope 401 | PAT missing scope | Regenerate with `repo` + `workflow` scopes |
+| Git push blocked | Credential helper intercepts | `git remote set-url origin "https://x-access-token:PAT@github.com/..."` |
+| UNRESTRICTED in Supabase | Views don't have RLS policies | Normal — views inherit security from underlying tables |
+| next-mdx-remote version error | v4/v5 blocked by Vercel | Use `next-mdx-remote@6.0.0` |
+| Consent gate always shows | localStorage key mismatch | Verify key is `"aws-course-privacy-consent-v1"` |
+| Profile not saving | Table doesn't exist yet | Run migration 003 in Supabase SQL Editor |
+| Spend limit not found | Looking in wrong place | Workspace level not API key level: Console → Workspaces → Limits |
 
 ---
 
-## Content quality checklist (per module)
+## Launch checklist
 
+### Supabase
+- [ ] Migration 001 run (knowledge graph + vector store)
+- [ ] Migration 002 run (chat analytics columns + views)
+- [ ] Migration 003 run (learner profiles)
+- [ ] `npm run ingest` run locally to populate content_chunks
+- [ ] Verify: `SELECT COUNT(*) FROM kg_nodes` ~60-70, `SELECT COUNT(*) FROM content_chunks` ~60+
+
+### Vercel
+- [ ] All 5 env vars set (check VOYAGE not VONAGE)
+- [ ] SUPABASE_SERVICE_ROLE_KEY not prefixed NEXT_PUBLIC_
+- [ ] Workspace spend limit set in Anthropic Console
+- [ ] Spend notification at 80%
+
+### GitHub
+- [ ] `docs/skill/` contains SKILL.md
+- [ ] `docs/content/` contains LinkedIn post + article
+- [ ] `public/images/cheatsheets/M01–M10/` populated with PNGs
+
+### Privacy
+- [ ] `/privacy` accessible without consent
+- [ ] Privacy Policy link in homepage footer
+- [ ] Privacy Policy link in CourseLayout footer
+- [ ] ConsentGate in root layout (not CourseLayout)
+- [ ] Re-test consent gate by clearing localStorage key
+
+### Content (per module)
 - [ ] Frontmatter complete (id, slug, title, domain, hours, objectives, personas)
-- [ ] All learning objectives at correct Bloom's level
-- [ ] Comparison table present for any "X vs Y" topic
-- [ ] Exam tip blockquote on each high-frequency exam topic
-- [ ] Decision matrix: "when to use X vs Y" with clear criteria
-- [ ] Code block for at least one CLI/config example
-- [ ] Section headings follow `## N. Title` pattern (triggers GFM chunking in ingestion)
+- [ ] Comparison table for every X vs Y topic
+- [ ] Exam tip blockquote on high-frequency topics
+- [ ] Decision matrix with clear criteria
+- [ ] Section headings follow `## N. Title` pattern
 
 ---
 
-## Reference: module domain tags
+## Reference
 
+### Module domain tags
 | Domain | Use for |
 |---|---|
-| `design` | Architecture, connectivity, topology modules |
-| `operations` | DNS, monitoring, observability modules |
-| `security` | Firewalls, WAF, IAM, threat protection modules |
-| `automation` | IaC, CDK, CloudFormation, CI/CD modules |
-| `exam-prep` | Certification strategy, BGP deep-dive, capstone modules |
+| `design` | Architecture, connectivity, topology |
+| `operations` | DNS, monitoring, observability |
+| `security` | Firewalls, WAF, IAM, threat protection |
+| `automation` | IaC, CDK, CloudFormation, CI/CD |
+| `exam-prep` | Certification strategy, algorithm deep-dives, capstone |
+
+### Analytics views
+| View | Shows |
+|---|---|
+| `session_summary` | Per-session: persona, module, geo, cost, top topic |
+| `topic_frequency` | Ranked: most asked-about concepts across all sessions |
+| `cost_by_country` | Spend + session count by learner country |
+| `outreach_list` | Learners who opted into updates (name, email, LinkedIn) |
+
+### Cost reference (Claude Haiku 4.5)
+| | |
+|---|---|
+| Input | $1.00 / million tokens |
+| Output | $5.00 / million tokens |
+| Typical question | ~$0.004 (2,050 input + 400 output tokens) |
+| 300 questions/month | ~$1.23 |
+| 2,000 questions/month | ~$8.20 |
