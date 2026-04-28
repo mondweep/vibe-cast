@@ -125,6 +125,7 @@ export function CourseChat({ moduleSlug, onClose }: CourseChatProps) {
           messages: [...messages, userMsg].map(m => ({ role: m.role, content: m.content })),
           moduleContext: moduleSlug,
           persona,
+          sessionKey,
         }),
       });
 
