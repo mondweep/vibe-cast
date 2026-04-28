@@ -59,13 +59,35 @@ export default function PrivacyPolicyPage() {
               commercial development of the platform.
             </p>
 
-            <h3 className="text-base font-semibold text-foreground mt-5 mb-2">2b. Progress data</h3>
+            <h3 className="text-base font-semibold text-foreground mt-5 mb-2">2b. Learner profile (optional)</h3>
+            <p>
+              If you choose to share your details via the optional form on the consent screen, we collect:
+            </p>
+            <ul className="list-disc list-inside space-y-1 mt-2 ml-4">
+              <li>Your name</li>
+              <li>Email address</li>
+              <li>LinkedIn profile URL</li>
+              <li>Whether you want to receive updates about new modules and features</li>
+            </ul>
+            <p className="mt-3">
+              <strong className="text-foreground">Why:</strong> To notify interested learners about new content,
+              understand who our community is, and plan future offerings. All fields are optional — you
+              get full access to the course whether or not you share them.
+            </p>
+            <p className="mt-2">
+              <strong className="text-foreground">Marketing communications:</strong> We will only contact you if
+              you explicitly checked &ldquo;Yes, notify me&rdquo; in the consent form. You can unsubscribe
+              at any time by contacting us via LinkedIn. We do not use email marketing platforms —
+              any outreach will come directly from Mondweep Chakravorty.
+            </p>
+
+            <h3 className="text-base font-semibold text-foreground mt-5 mb-2">2c. Progress data</h3>
             <p>
               Your module completion progress, quiz scores, and learning time are stored locally in your
               browser (localStorage) only. This data never leaves your device and is not sent to our servers.
             </p>
 
-            <h3 className="text-base font-semibold text-foreground mt-5 mb-2">2c. Automatically collected data</h3>
+            <h3 className="text-base font-semibold text-foreground mt-5 mb-2">2d. Automatically collected data</h3>
             <p>
               Like most web services, our hosting provider (Vercel) automatically collects standard server
               logs including IP addresses, browser type, pages visited, and timestamps. This is standard
