@@ -1,215 +1,184 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hybridRetrieve, formatContext } from "@/lib/rag/retrieval";
 import { createClient } from "@supabase/supabase-js";
+import { hybridRetrieve, formatContext } from "@/lib/rag/retrieval";
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-export const maxDuration = 30;
+export const dynamic    = "force-dynamic";
+export const runtime    = "nodejs";
+export const maxDuration = 60;   // raised to 60s to allow for save after stream
 
-// Haiku 4.5 pricing (per token)
-const COST_INPUT_PER_TOKEN  = 1.00 / 1_000_000;   // $1.00 / MTok
-const COST_OUTPUT_PER_TOKEN = 5.00 / 1_000_000;   // $5.00 / MTok
+const INPUT_COST_PER_TOKEN  = 1.00 / 1_000_000;   // $1.00/MTok  (Haiku 4.5)
+const OUTPUT_COST_PER_TOKEN = 5.00 / 1_000_000;   // $5.00/MTok
 
-function getServiceSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Supabase env vars missing");
+function getDb() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   return createClient(url, key);
 }
 
 const SYSTEM_PROMPT = `You are the AWS Advanced Networking Course assistant — a knowledgeable, precise tutor helping students, teachers, and cloud practitioners master AWS networking for real-world work and the ANS-C01 certification.
 
-You have access to 10 modules covering: VPC deep dive, hybrid connectivity, Transit Gateway, DNS, load balancing, network security, monitoring, automation, multi-account architecture, and BGP mastery.
+You have access to 10 modules: VPC deep dive, hybrid connectivity, Transit Gateway, DNS, load balancing, network security, monitoring, automation, multi-account architecture, and BGP mastery.
 
 Guidelines:
-- Answer based primarily on the provided course content context
-- Be precise — AWS networking has exact behaviours that matter in production and exams  
-- When comparing services (e.g. VPC peering vs TGW), give clear decision criteria
-- Flag ANS-C01 exam traps or high-frequency topics when relevant
-- Reference modules when relevant (e.g. "M05 covers this in detail")
+- Answer based on the provided course content context
+- Be precise — AWS networking has exact behaviours that matter in production and exams
+- When comparing services, give clear decision criteria
+- Flag ANS-C01 exam traps when relevant
 - Keep answers focused and scannable — use bullets and short sections
-- If you genuinely don't know, say so rather than hallucinating AWS behaviour`;
+- If you genuinely don't know, say so rather than hallucinating`;
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as {
-      messages: { role: "user" | "assistant"; content: string }[];
+    const { messages, moduleContext, persona, sessionKey } = await req.json() as {
+      messages:      { role: "user" | "assistant"; content: string }[];
       moduleContext?: string;
-      persona?: string;
-      sessionKey?: string;
+      persona?:      string;
+      sessionKey?:   string;
     };
 
-    const { messages, moduleContext, persona, sessionKey } = body;
     const lastUserMessage = messages.findLast(m => m.role === "user")?.content ?? "";
-
-    if (!lastUserMessage) {
-      return NextResponse.json({ error: "No user message" }, { status: 400 });
-    }
+    if (!lastUserMessage) return NextResponse.json({ error: "No user message" }, { status: 400 });
 
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) {
-      return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
-    }
+    if (!anthropicKey) return NextResponse.json({ error: "ANTHROPIC_API_KEY missing" }, { status: 500 });
 
-    // ── Geo headers from Vercel ───────────────────────────────
-    const country = req.headers.get("x-vercel-ip-country") ?? null;
+    // ── Vercel geo headers ────────────────────────────────────
+    const country = req.headers.get("x-vercel-ip-country") ?? "Unknown";
     const city    = req.headers.get("x-vercel-ip-city")    ?? null;
     const region  = req.headers.get("x-vercel-ip-region")  ?? null;
 
     // ── GraphRAG retrieval ────────────────────────────────────
-    let contextBlock = "";
-    let retrievalMeta = { chunkCount: 0, nodeCount: 0 };
+    let contextBlock   = "";
+    let chunkCount     = 0;
+    let nodeCount      = 0;
     let topicLabels: string[] = [];
 
     try {
       const result = await hybridRetrieve(lastUserMessage, moduleContext);
       contextBlock = formatContext(result);
-      retrievalMeta = {
-        chunkCount: result.chunks.length,
-        nodeCount:  result.graphNodes.length,
-      };
-      topicLabels = result.graphNodes.map(n => n.label).slice(0, 10);
-      console.log(`[chat] Retrieved ${result.chunks.length} chunks, ${result.graphNodes.length} graph nodes`);
+      chunkCount   = result.chunks.length;
+      nodeCount    = result.graphNodes.length;
+      topicLabels  = result.graphNodes.map(n => n.label).slice(0, 10);
     } catch (err) {
-      console.warn("[chat] Retrieval failed, proceeding without context:", err);
+      console.warn("[chat] Retrieval failed:", err);
     }
 
-    // ── Build system prompt ───────────────────────────────────
-    const personaNote = persona
-      ? `\nLearner persona: **${persona}**. Adjust accordingly.`
-      : "";
-    const contextNote = contextBlock
-      ? `\n\nRelevant course content:\n\n${contextBlock}`
-      : "";
-    const systemWithContext = SYSTEM_PROMPT + personaNote + contextNote;
+    const systemWithContext = SYSTEM_PROMPT
+      + (persona ? `\nLearner persona: ${persona}. Adjust depth accordingly.` : "")
+      + (contextBlock ? `\n\nCourse context:\n\n${contextBlock}` : "");
 
-    // ── Upsert session in Supabase ────────────────────────────
-    let sessionId: string | null = null;
+    // ── Upsert session (before streaming) ────────────────────
+    const db  = getDb();
     const key = sessionKey ?? `anon-${Date.now()}`;
+    let sessionId: string | null = null;
 
     try {
-      const sb = getServiceSupabase();
-      const { data: session, error: sessionErr } = await sb
+      const { data, error } = await db
         .from("chat_sessions")
-        .upsert(
-          {
-            session_key: key,
-            persona: persona ?? null,
-            module_id: moduleContext ?? null,
-            country,
-            city,
-            region,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "session_key" }
-        )
+        .upsert({
+          session_key:   key,
+          persona:       persona ?? null,
+          module_id:     moduleContext ?? null,
+          country,
+          city,
+          region,
+          updated_at:    new Date().toISOString(),
+        }, { onConflict: "session_key" })
         .select("id")
         .single();
 
-      if (sessionErr) console.warn("[chat] Session upsert error:", sessionErr.message);
-      else sessionId = session?.id ?? null;
-    } catch (err) {
-      console.warn("[chat] Session save failed:", err);
+      if (error) console.error("[chat] Session upsert error:", error.message);
+      else       sessionId = data?.id ?? null;
+    } catch (e) {
+      console.error("[chat] Session save threw:", e);
     }
 
-    // ── Stream from Anthropic ─────────────────────────────────
+    // ── Collect full response + token counts ─────────────────
     const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const anthropic  = new Anthropic({ apiKey: anthropicKey });
-    const encoder    = new TextEncoder();
-    let   fullResponse = "";
-    let   inputTokens  = 0;
-    let   outputTokens = 0;
+    const client    = new Anthropic({ apiKey: anthropicKey });
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ type: "meta", ...retrievalMeta })}\n\n`)
-          );
+    // Use non-streaming to get token counts reliably, then stream to client
+    const response = await client.messages.create({
+      model:      "claude-haiku-4-5-20251001",
+      max_tokens: 1024,
+      system:     systemWithContext,
+      messages:   messages.map(m => ({ role: m.role, content: m.content })),
+    });
 
-          const anthropicStream = anthropic.messages.stream({
-            model:      "claude-haiku-4-5-20251001",
-            max_tokens: 1024,
-            system:     systemWithContext,
-            messages:   messages.map(m => ({ role: m.role, content: m.content })),
-          });
+    const fullText    = response.content.filter(b => b.type === "text").map(b => (b as {type:"text";text:string}).text).join("");
+    const inputTokens  = response.usage.input_tokens;
+    const outputTokens = response.usage.output_tokens;
+    const costUsd      = (inputTokens * INPUT_COST_PER_TOKEN) + (outputTokens * OUTPUT_COST_PER_TOKEN);
 
-          for await (const chunk of anthropicStream) {
-            if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
-              fullResponse += chunk.delta.text;
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ type: "text", text: chunk.delta.text })}\n\n`)
-              );
-            }
-            // Capture final token counts
-            if (chunk.type === "message_delta" && chunk.usage) {
-              outputTokens = chunk.usage.output_tokens ?? 0;
-            }
-            if (chunk.type === "message_start" && chunk.message?.usage) {
-              inputTokens = chunk.message.usage.input_tokens ?? 0;
-            }
-          }
+    // ── Save messages to Supabase ─────────────────────────────
+    if (sessionId) {
+      try {
+        await db.from("chat_messages").insert([
+          {
+            session_id: sessionId,
+            role:       "user",
+            content:    lastUserMessage,
+            context: {
+              topics:         topicLabels,
+              chunk_count:    chunkCount,
+              graph_nodes:    nodeCount,
+              module_context: moduleContext ?? null,
+            },
+          },
+          {
+            session_id: sessionId,
+            role:       "assistant",
+            content:    fullText,
+            context: {
+              input_tokens:   inputTokens,
+              output_tokens:  outputTokens,
+              cost_usd:       costUsd,
+              topics:         topicLabels,
+              chunks_used:    chunkCount,
+              graph_nodes:    nodeCount,
+              module_context: moduleContext ?? null,
+            },
+          },
+        ]);
 
-          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-          controller.close();
+        // Update session running totals
+        const { data: curr } = await db
+          .from("chat_sessions")
+          .select("total_cost_usd, message_count")
+          .eq("id", sessionId)
+          .single();
 
-          // ── Save messages to Supabase (after stream completes) ──
-          if (sessionId) {
-            const costUsd = (inputTokens * COST_INPUT_PER_TOKEN) + (outputTokens * COST_OUTPUT_PER_TOKEN);
-            const sb      = getServiceSupabase();
+        await db.from("chat_sessions").update({
+          total_cost_usd: (curr?.total_cost_usd ?? 0) + costUsd,
+          message_count:  (curr?.message_count  ?? 0) + 2,
+          updated_at:     new Date().toISOString(),
+        }).eq("id", sessionId);
 
-            // Save user message
-            await sb.from("chat_messages").insert({
-              session_id: sessionId,
-              role:       "user",
-              content:    lastUserMessage,
-              context: {
-                chunk_count:   retrievalMeta.chunkCount,
-                graph_nodes:   retrievalMeta.nodeCount,
-                topics:        topicLabels,
-                module_context: moduleContext ?? null,
-              },
-            });
+        console.log(`[chat] Saved | session=${sessionId} | cost=$${costUsd.toFixed(5)} | topics=${topicLabels.join(",")}`);
+      } catch (e) {
+        console.error("[chat] Message save error:", e);
+      }
+    }
 
-            // Save assistant message with cost
-            await sb.from("chat_messages").insert({
-              session_id: sessionId,
-              role:       "assistant",
-              content:    fullResponse,
-              context: {
-                input_tokens:  inputTokens,
-                output_tokens: outputTokens,
-                cost_usd:      costUsd,
-                topics:        topicLabels,
-                chunks_used:   retrievalMeta.chunkCount,
-                graph_nodes:   retrievalMeta.nodeCount,
-                module_context: moduleContext ?? null,
-              },
-            });
+    // ── Stream the collected response to the client ───────────
+    const encoder = new TextEncoder();
+    const stream  = new ReadableStream({
+      start(controller) {
+        // Send retrieval metadata
+        controller.enqueue(encoder.encode(
+          `data: ${JSON.stringify({ type: "meta", chunkCount, nodeCount })}\n\n`
+        ));
 
-            // Update session totals via direct read-modify-write
-            const { data: curr } = await sb
-              .from("chat_sessions")
-              .select("total_cost_usd, message_count")
-              .eq("id", sessionId)
-              .single();
-            await sb.from("chat_sessions").update({
-              total_cost_usd: (curr?.total_cost_usd ?? 0) + costUsd,
-              message_count:  (curr?.message_count  ?? 0) + 2,
-              updated_at:     new Date().toISOString(),
-            }).eq("id", sessionId);
-
-            console.log(`[chat] Saved session ${sessionId} | cost: $${costUsd.toFixed(5)} | topics: ${topicLabels.join(", ")}`);
-          }
-
-        } catch (err) {
-          console.error("[chat] Streaming error:", err);
-          const errMsg = err instanceof Error ? err.message : String(err);
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ type: "error", error: errMsg })}\n\n`)
-          );
-          controller.close();
+        // Stream the full response word by word (~20 chars per chunk for smooth UX)
+        const CHUNK_SIZE = 20;
+        for (let i = 0; i < fullText.length; i += CHUNK_SIZE) {
+          controller.enqueue(encoder.encode(
+            `data: ${JSON.stringify({ type: "text", text: fullText.slice(i, i + CHUNK_SIZE) })}\n\n`
+          ));
         }
+
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
       },
     });
 
@@ -223,7 +192,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (err) {
-    console.error("[chat] Request error:", err);
+    console.error("[chat] Fatal error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
