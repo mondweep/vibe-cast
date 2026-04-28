@@ -23,7 +23,7 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-bold text-foreground mb-3">1. Who we are</h2>
             <p>
               This platform — <strong className="text-foreground">AWS Advanced Networking Course</strong> — is operated
-              by <strong className="text-foreground">Mondweep Chakravorty</strong> ("we", "us", "our").
+              by <strong className="text-foreground">Mondweep Chakravorty</strong> (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;).
               It is an open-source educational platform available at{" "}
               <a href="https://aws-advanced-networking.vercel.app" className="text-primary hover:underline">
                 aws-advanced-networking.vercel.app
@@ -71,7 +71,7 @@ export default function PrivacyPolicyPage() {
               logs including IP addresses, browser type, pages visited, and timestamps. This is standard
               infrastructure logging and is governed by{" "}
               <a href="https://vercel.com/legal/privacy-policy" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                Vercel's Privacy Policy
+                Vercel&apos;s Privacy Policy
               </a>.
               We do not run advertising tracking scripts, analytics platforms (Google Analytics, etc.), or
               third-party cookies.
@@ -97,7 +97,7 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-bold text-foreground mb-3">4. Location data</h2>
             <p>
               When you use the AI Tutor, we record your approximate location (country, region, and city)
-              derived from your IP address using Vercel's built-in geolocation headers. This gives us
+              derived from your IP address using Vercel&apos;s built-in geolocation headers. This gives us
               city-level accuracy — not your street address or precise coordinates. We use this to
               understand where our learners are based and to plan localised content in the future.
             </p>
@@ -114,23 +114,23 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc list-inside space-y-2 mt-2 ml-4">
               <li>
                 <strong className="text-foreground">Anthropic (Claude API)</strong> — processes your questions to generate AI responses.
-                Your messages are sent to Anthropic's servers. See{" "}
+                Your messages are sent to Anthropic&apos;s servers. See{" "}
                 <a href="https://www.anthropic.com/legal/privacy" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                  Anthropic's Privacy Policy
+                  Anthropic&apos;s Privacy Policy
                 </a>.
               </li>
               <li>
                 <strong className="text-foreground">Voyage AI</strong> — converts your question into a numerical vector for semantic search.
                 See{" "}
                 <a href="https://www.voyageai.com/privacy" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                  Voyage AI's Privacy Policy
+                  Voyage AI&apos;s Privacy Policy
                 </a>.
               </li>
               <li>
                 <strong className="text-foreground">Supabase</strong> — stores chat sessions and messages in a hosted PostgreSQL database
                 (EU region). See{" "}
                 <a href="https://supabase.com/privacy" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                  Supabase's Privacy Policy
+                  Supabase&apos;s Privacy Policy
                 </a>.
               </li>
             </ul>
@@ -145,7 +145,7 @@ export default function PrivacyPolicyPage() {
             <p>
               Chat session and message data is retained for <strong className="text-foreground">12 months</strong> from
               the date of the session, after which it is deleted. Aggregated, anonymised analytics derived
-              from the data (e.g. "Transit Gateway was the most asked-about topic in Q1 2026") may be
+              from the data (e.g. Transit Gateway was the most asked-about topic in Q1 2026) may be
               retained indefinitely as they cannot identify individuals.
             </p>
           </section>
@@ -157,7 +157,7 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc list-inside space-y-1 mt-2 ml-4">
               <li><strong className="text-foreground">Access</strong> — request a copy of data we hold about you</li>
               <li><strong className="text-foreground">Rectification</strong> — ask us to correct inaccurate data</li>
-              <li><strong className="text-foreground">Erasure</strong> — ask us to delete your data ("right to be forgotten")</li>
+              <li><strong className="text-foreground">Erasure</strong> — ask us to delete your data (&ldquo;right to be forgotten&rdquo;)</li>
               <li><strong className="text-foreground">Portability</strong> — receive your data in a portable format</li>
               <li><strong className="text-foreground">Objection</strong> — object to processing based on legitimate interests</li>
               <li><strong className="text-foreground">Withdraw consent</strong> — at any time, without affecting prior processing</li>
@@ -166,7 +166,7 @@ export default function PrivacyPolicyPage() {
               To exercise any of these rights, contact us via LinkedIn. We will respond within 30 days.
               If you are in the UK, you may also lodge a complaint with the{" "}
               <a href="https://ico.org.uk" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                Information Commissioner's Office (ICO)
+                Information Commissioner&apos;s Office (ICO)
               </a>.
             </p>
           </section>
