@@ -1,6 +1,14 @@
 ---
 name: interactive-course-builder
-description: Build a comprehensive, interactive, production-grade online course from a topic brief. Use this skill whenever the user wants to create a course, learning platform, training curriculum, educational app, or any structured learning experience — even if they don't use the word "course". Triggers on: "build a course", "create training material", "make an interactive learning platform", "I want to teach X online", "create a curriculum", "build an educational tool", "I need to train people on X", or anything implying structured knowledge delivery with quizzes, labs, or progress tracking. Always use this skill before designing any educational platform architecture or starting any course content planning.
+description: >
+  Build a comprehensive, interactive, production-grade online course from a topic brief.
+  Use this skill whenever the user wants to create a course, learning platform, training
+  curriculum, educational app, or any structured learning experience — even if they do not
+  use the word "course". Triggers on: build a course, create training material, make an
+  interactive learning platform, I want to teach X online, create a curriculum, build an
+  educational tool, I need to train people on X, or anything implying structured knowledge
+  delivery with quizzes, labs, or progress tracking. Always use this skill before designing
+  any educational platform architecture or starting any course content planning.
 ---
 
 # Interactive Course Builder
