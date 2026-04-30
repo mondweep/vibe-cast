@@ -79,7 +79,7 @@ export function KnowledgeGraph() {
 
     // ── Arrow marker ───────────────────────────────────────────
     const defs = svg.append("defs");
-    const types = [...new Set(edges.map(e => e.relation))];
+    const types = Array.from(new Set(edges.map(e => e.relation)));
     types.forEach(rel => {
       defs.append("marker")
         .attr("id", `arrow-${rel}`)
