@@ -1,0 +1,11 @@
+# RuView is tracked as a submodule — its own contents are not the parent's concern,
+# but we still ignore parent-side scaffolding dirs that the sensing-server creates.
+data/
+backup/
+
+# Build artefacts (Rust target/ dirs anywhere in the parent — submodule has its own .gitignore)
+target/
+*.log
+
+# OS
+.DS_Store

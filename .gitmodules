@@ -1,0 +1,3 @@
+[submodule "RuView"]
+	path = RuView
+	url = https://github.com/ruvnet/RuView.git
