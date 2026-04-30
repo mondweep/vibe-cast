@@ -16,15 +16,15 @@ interface GNode {
   fy?: number | null;
 }
 
-interface GEdge {
+interface GEdge extends d3.SimulationLinkDatum<GNode> {
   id: string;
   from_node_id: string;
   to_node_id: string;
   relation: string;
   weight: number;
-  // D3 replaces string ids with node refs:
-  source?: GNode | string;
-  target?: GNode | string;
+  // D3 mutates source/target from string ids to node objects during simulation
+  source: string | GNode;
+  target: string | GNode;
 }
 
 // ── Colour map by node type ───────────────────────────────────
@@ -52,7 +52,7 @@ const NODE_RADIUS: Record<string, number> = {
 export function KnowledgeGraph() {
   const svgRef    = useRef<SVGSVGElement>(null);
   const wrapRef   = useRef<HTMLDivElement>(null);
-  const simRef    = useRef<d3.Simulation<GNode, GEdge> | null>(null);
+  const simRef    = useRef<d3.Simulation<GNode, d3.SimulationLinkDatum<GNode>> | null>(null);
 
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState<string | null>(null);
