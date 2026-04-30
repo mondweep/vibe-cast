@@ -23,6 +23,7 @@ const NAV_LINKS = [
   { href: "/labs", label: "Labs", icon: "⬡" },
   { href: "/cheatsheets", label: "Cheatsheets", icon: "◫" },
   { href: "/about", label: "About", icon: "◉" },
+  { href: "/graph", label: "Knowledge Graph", icon: "⬡" },
 ];
 
 export function CourseLayout({ children }: { children: React.ReactNode }) {
