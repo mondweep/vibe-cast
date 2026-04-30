@@ -243,8 +243,14 @@ export function KnowledgeGraph() {
       .then(r => r.json())
       .then(({ nodes, edges, error: apiErr }) => {
         if (apiErr) throw new Error(apiErr);
-        setStats({ nodes: nodes.length, edges: edges.length });
-        buildGraph(nodes, edges);
+        // D3 forceLink needs source/target — map from Supabase column names
+        const mappedEdges = edges.map((e: GEdge) => ({
+          ...e,
+          source: e.from_node_id,
+          target: e.to_node_id,
+        }));
+        setStats({ nodes: nodes.length, edges: mappedEdges.length });
+        buildGraph(nodes, mappedEdges);
         setLoading(false);
       })
       .catch(e => {
