@@ -1,0 +1,22 @@
+diff --git a/ui/components/SensingTab.js b/ui/components/SensingTab.js
+index 33387ee..77ce8ee 100644
+--- a/ui/components/SensingTab.js
++++ b/ui/components/SensingTab.js
+@@ -248,7 +248,7 @@ export class SensingTab {
+     if (countEl) countEl.textContent = String(nodeCount);
+ 
+     // RSSI
+-    this._setText('sensingRssi', `${(f.mean_rssi || -80).toFixed(1)} dBm`);
++    this._setText('sensingRssi', f.mean_rssi ? `${f.mean_rssi.toFixed(1)} dBm` : '— dBm');
+     this._setText('sensingSource', data.source || '');
+ 
+     // Bars (scale to 0-100%)
+@@ -359,7 +359,7 @@ export class SensingTab {
+ 
+       const metricsCol = document.createElement('div');
+       metricsCol.style.cssText = 'flex:1;font-size:10px;color:#aaa;';
+-      metricsCol.textContent = (nf.rssi_dbm || -80).toFixed(0) + ' dBm · var ' + (nf.features?.variance || 0).toFixed(1);
++      metricsCol.textContent = (nf.rssi_dbm ? nf.rssi_dbm.toFixed(0) + ' dBm' : '— dBm') + ' · var ' + (nf.features?.variance || 0).toFixed(1);
+ 
+       const classCol = document.createElement('div');
+       classCol.style.cssText = 'font-size:10px;font-weight:600;color:#ccc;';

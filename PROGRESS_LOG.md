@@ -207,3 +207,153 @@ Header is 20 bytes; remaining 128 bytes = 1 antenna × 64 subcarriers × 2 bytes
 - Consider relocating the ESP32 (wall adapter, across the room) to get more useful CSI multipath geometry. Currently it sits adjacent to the laptop, which provides the worst possible sensing baseline.
 - Future: explore writing a custom WASM module (Rust → wasm32) and uploading via `:8032/wasm/upload` for on-device sensing logic — fits the user's preference for Rust on the device side.
 - Future: a second ESP32-S3 node would unlock multistatic features (pose estimation, through-wall sensing per RuView's docs).
+
+---
+
+## 10. Session: 2026-05-01 — v0.6.3 upgrade + edge_tier sweep + UI bug hunt
+
+Picked up from §8 final state. Mentor pointed at two upstream releases:
+- [`ruvllm-esp32 v0.3.0-rc2`](https://github.com/ruvnet/RuVector/releases/tag/ruvllm-esp32-v0.3.0-rc2) — tiny on-device agents (vector search, RAG, anomaly, MicroLoRA). **Different firmware**, would replace RuView. Not flashed; deferred until a multi-chip cluster is on the bench.
+- [`RuView v0.6.3-esp32`](https://github.com/ruvnet/RuView/releases/tag/v0.6.3-esp32) — direct upgrade for the SPI cache crash + defensive copies. **Targeted this one.**
+
+### 10.1 OTA attempt → rollback (the safety net works)
+
+OTA endpoint at `:8032/ota` accepts firmware uploads (POST, `application/octet-stream`, max 900 KB).
+
+Procedure:
+1. `GET /ota/status` confirmed v0.4.3.1 on `ota_0`, next slot `ota_1`.
+2. POST'd `esp32-csi-node.bin` (865,776 B). Curl saw connection-reset-by-peer — that's the signature of `esp_restart()` killing the TCP socket mid-flush of the OK response.
+3. Waited for reboot. New `/ota/status` came back **still** reporting v0.4.3.1 on ota_0.
+
+**Diagnosis**: ESP-IDF bootloader rolled back. The new app booted into `ota_1`, didn't mark itself valid (the firmware doesn't call `esp_ota_mark_app_valid_cancel_rollback()` on a health-check), bootloader counted failed boots and reverted. **No harm done — board kept streaming on the known-good slot.**
+
+### 10.2 Surprise from inspecting the v0.6.3 release asset
+
+Dumped the `esp_app_desc_t` directly from `esp32-csi-node.bin` at offset `0x20`:
+```
+version:    0.6.2          ← release tagged v0.6.3 ships a 0.6.2 binary
+project:    esp32-csi-node
+date:       Apr 28 2026 08:31:43
+idf_ver:    -128-NOTFOUND  ← CI git context missing during build
+```
+
+Two flags worth raising upstream: tag/binary version mismatch, and the `-128-NOTFOUND` idf_ver suggests the build environment was incomplete. Validation in the release notes was on a different MAC (`3c:0f:02:e9:b5:f8` vs ours `ac:a7:04:15:01:2c`).
+
+### 10.3 Full USB flash succeeds where OTA failed
+
+OTA only swaps the app partition. The new app needed v0.6.3's new bootloader + partition table. Full flash via `python3 -m esptool` at offsets `0x0` / `0x8000` / `0xf000` / `0x20000` (8 MB layout — same as before). Took 5.7s @ 1208 kbit/s, all four regions hash-verified. After hard reset, `/ota/status` correctly reported `0.6.2`, `running_partition: ota_0`. NVS preserved (Wi-Fi, target IP, node_id, edge_tier all survived).
+
+### 10.4 v0.6.3's MGMT-only filter starves CSI in low-traffic environments
+
+The release notes' headline fix is `WIFI_PROMIS_FILTER_MASK_MGMT` — narrowing CSI capture from "all frames" (100–500 Hz with DATA included) to just management frames (~10 Hz beacons). Combined with `CSI_MIN_PROCESS_INTERVAL_US` (50 Hz callback-rate gate) this prevents the SPI cache crash on busy APs.
+
+**Side-effect on this LAN**: capture rate dropped to roughly **1 frame per 30+ seconds** in some rooms. Server's `last_seen_ms` climbed past 25 minutes between packets. The pipeline never had enough samples to compute coherent vitals.
+
+### 10.5 Edge-tier sweep
+
+Re-provisioned NVS multiple times via `provision.py` (NVS partition write at `0x9000`, full-replace semantics — must pass entire WiFi trio every time):
+
+| Config | Result |
+|---|---|
+| `edge_tier=1` + `filter-mac d8:07:b6:5f:45:c2` (AP BSSID) | 1 packet captured at boot, then **silent**. The narrow filter is too restrictive for our environment. |
+| `edge_tier=1` no filter-mac | Better — periodic packets — but capture stayed sparse with capture-RSSI ~ -86 dBm. |
+| `edge_tier=0` no filter-mac (raw passthrough) | **Continuous live data flowing.** No on-device gating; every captured frame fired to UDP. Server tick advancing, variance & motion-band updating in real time. |
+| `edge_tier=1` no filter-mac, `vital_int=200`, `vital_win=300`, `pres_thresh=5` | **Best** — vitals packets every 200 ms, RSSI surfaced live in `/api/v1/edge-vitals`, breathing & heart-rate FFTs running on-device. |
+
+### 10.6 The "n_persons: 4" coincidence
+
+Edge-vitals packets always reported `n_persons: 4`, exactly matching the room. **Coincidence**. From `firmware/esp32-csi-node/main/edge_processing.c:481`:
+
+```c
+uint8_t n_persons = s_top_k_count / 2;   // 32 / 2 = 16
+if (n_persons > EDGE_MAX_PERSONS) n_persons = EDGE_MAX_PERSONS;  // clamp to 4
+```
+
+`n_persons` is just the firmware's pre-allocated person-slot count, clamped to `EDGE_MAX_PERSONS` (=4). It will report 4 whether the room has 1 person or 12. **Not a real headcount.** The system has no per-individual identification.
+
+### 10.7 UI bugs found and patched (in `RuView/` submodule — local only)
+
+The dashboard at `localhost:3000` masked diagnosis on three separate occasions. Fixes applied to the local working tree but **not committed upstream** — submodule pinned to `9a078e4`.
+
+#### a) `RuView/ui/components/SensingTab.js:251`
+```diff
+- this._setText('sensingRssi', `${(f.mean_rssi || -80).toFixed(1)} dBm`);
++ this._setText('sensingRssi', f.mean_rssi ? `${f.mean_rssi.toFixed(1)} dBm` : '— dBm');
+```
+The `||` operator falls through on `0` (which is what the server sends when no RSSI is aggregated, e.g. at edge_tier=0). Original code rendered the **constant -80** as if it were a measurement. Fooled diagnosis for ~30 minutes during the room-relocation experiment. Same bug appears in line 362 for per-node RSSI; same fix.
+
+#### b) `RuView/ui/services/sensing.service.js:_handleData`
+At edge_tier=1 the websocket emits two message types: `sensing_update` (bulk, but `mean_rssi=0`) and `edge_vitals` (small, but with real `rssi`). Patched to cache the latest `edge_vitals.rssi` and inject it into `features.mean_rssi` of subsequent `sensing_update` messages, so the dashboard's existing reader gets a real value:
+
+```js
+if (data.type === 'edge_vitals' && typeof data.rssi === 'number') {
+  this._latestEdgeRssi = data.rssi;
+}
+if (data.type === 'sensing_update' && this._latestEdgeRssi != null) {
+  if (!data.features) data.features = {};
+  if (!data.features.mean_rssi) data.features.mean_rssi = this._latestEdgeRssi;
+}
+```
+
+#### c) `RuView/ui/observatory/js/main.js:484`
+The observatory page's `_ws.onclose` was silently overwriting `settings.dataSource = 'demo'` whenever the WebSocket cycled — quietly hijacking the user's "Live WebSocket" choice and reverting to demo data. Patched to leave the user's choice alone:
+
+```diff
+- this.settings.dataSource = 'demo';
+- this._hud.updateSourceBadge('demo', null);
++ // Keep settings.dataSource as-is — don't silently override the user's choice.
++ this._hud.updateSourceBadge(this.settings.dataSource, null);
+```
+
+#### d) `RuView/ui/observatory/js/main.js:483`
+Same file: `onmessage` was stuffing **both** `sensing_update` and `edge_vitals` messages into `_liveData`, so the visualizer received malformed objects when an `edge_vitals` arrived (no `nodes`, no `features`). Filtered to only accept `sensing_update`:
+
+```js
+if (msg && msg.type === 'sensing_update') this._liveData = msg;
+```
+
+Worth contributing these upstream as a small PR; preserved here as patches against pinned commit `9a078e4`.
+
+### 10.8 Stale-cache trap from `/api/v1/edge-vitals`
+
+When the device went silent for 25+ minutes, the server kept returning the **last** edge-vitals packet ever received as if fresh. The dashboard had no way to tell. Workaround: restarted `sensing-server` (`kill 67224; nohup ./target/release/sensing-server …`) which purged in-memory state. Worth a small server-side fix to expose `last_seen_ms` and let the UI render "STALE" when it exceeds a threshold.
+
+### 10.9 60-second live capture (see `detection.md` for raw data)
+
+After settling on `edge_tier=1, vital_int=200, no filter-mac` and ensuring the device was in a room reachable by the AP:
+
+| Metric | Value |
+|---|---|
+| Unique device packets in 60s | **60 / 60** (one fresh per second) |
+| RSSI | -83 to -58 dBm (mean -80.85, stdev 4.23) |
+| Presence | True for **60/60** samples |
+| Motion | True for **60/60** samples; energy 2.3 → 34.4 (mean 7.94) |
+| Falls | 0 |
+| Breathing rate | 6.7 – 30.5 bpm, mean **17.07 bpm**, stdev 8.05 |
+| Heart rate | 43.0 – 51.4 bpm, mean **46.37 bpm**, stdev 2.09 |
+
+**Interpretation:**
+- **Presence + motion**: solid. The system genuinely sees humans.
+- **Breathing rate**: mean is biologically plausible (12–20 bpm normal range). Per-sample variance is too high for clinical use — with multiple people moving, the FFT picks the strongest peak in the breathing band each window, which can be a different person's breathing each second. Single-occupant monitoring would be much cleaner.
+- **Heart rate**: ~46 bpm mean is implausibly low for awake adults. Most likely the FFT is locking on a sub-harmonic of breathing or multipath wobble in the cardiac band — the actual ~1 mm chest-wall vibration from a heartbeat is too small to extract through 4 moving bodies at -80 dBm capture signal.
+- **`n_persons`**: ignore; firmware constant.
+
+### 10.10 Final state (this session)
+
+| Component | State |
+|---|---|
+| ESP32 firmware | RuView **v0.6.3** (binary embedded version `0.6.2`), `running_partition: ota_0` |
+| NVS provisioning | `edge_tier=1`, `vital_int=200`, `vital_win=300`, `pres_thresh=5`, no `filter_mac`, target_ip `192.168.68.127`, node_id 1 |
+| ESP32 IP | `192.168.68.131` (DHCP) |
+| Capture RSSI | -78 to -83 dBm typical, occasional -58 dBm bursts |
+| Sensing server | Restarted PID 2217, fresh state |
+| Dashboard | `localhost:3000/ui/index.html` — live, "— dBm" patch applied |
+| Observatory | `localhost:3000/ui/observatory.html` — live-WebSocket fix applied, badge correctly shows LIVE |
+| Detection capture | `detection.md` — 60s, 60/60 unique device packets |
+
+### 10.11 Open items added by this session
+
+- Submit upstream PR for the four UI patches (cache them locally as `.patch` files against commit `9a078e4`).
+- Server-side: surface `last_seen_ms` in `/api/v1/edge-vitals` and have the dashboard render "STALE" when stale, instead of frozen-cache replay.
+- Heart-rate detection at this signal strength is not viable. Either (a) move ESP much closer to AP and isolate one still subject, or (b) a second multistatic node would help disambiguate.
+- The v0.6.3 release packaging quirks (binary version `0.6.2`, `idf_ver=-128-NOTFOUND`) are worth filing upstream.

@@ -1,0 +1,21 @@
+diff --git a/ui/services/sensing.service.js b/ui/services/sensing.service.js
+index 0992483..f95a4e4 100644
+--- a/ui/services/sensing.service.js
++++ b/ui/services/sensing.service.js
+@@ -315,6 +315,16 @@ class SensingService {
+   _handleData(data) {
+     this._lastMessage = data;
+ 
++    // Cache RSSI from edge_vitals packets (tier 1+); inject into sensing_update
++    // so the dashboard's mean_rssi readers get a real value.
++    if (data.type === 'edge_vitals' && typeof data.rssi === 'number') {
++      this._latestEdgeRssi = data.rssi;
++    }
++    if (data.type === 'sensing_update' && this._latestEdgeRssi != null) {
++      if (!data.features) data.features = {};
++      if (!data.features.mean_rssi) data.features.mean_rssi = this._latestEdgeRssi;
++    }
++
+     // Track the server's source field from each frame so the UI
+     // can react if the server switches between esp32 ↔ simulated at runtime.
+     if (data.source && this._state === 'connected') {

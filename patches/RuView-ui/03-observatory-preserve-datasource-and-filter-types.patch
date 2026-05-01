@@ -1,0 +1,29 @@
+diff --git a/ui/observatory/js/main.js b/ui/observatory/js/main.js
+index 26abbe2..b3f507f 100644
+--- a/ui/observatory/js/main.js
++++ b/ui/observatory/js/main.js
+@@ -480,12 +480,20 @@ class Observatory {
+         console.log('[Observatory] WebSocket connected');
+         this._hud.updateSourceBadge('ws', this._ws);
+       };
+-      this._ws.onmessage = (evt) => { try { this._liveData = JSON.parse(evt.data); } catch {} };
++      this._ws.onmessage = (evt) => {
++        try {
++          const msg = JSON.parse(evt.data);
++          // Only sensing_update has nodes/features/signal_field for the visualizer.
++          // edge_vitals is a separate, smaller message; skip it here.
++          if (msg && msg.type === 'sensing_update') this._liveData = msg;
++        } catch {}
++      };
+       this._ws.onclose = () => {
+-        console.log('[Observatory] WebSocket closed, falling back to demo');
++        console.log('[Observatory] WebSocket closed');
+         this._ws = null;
+-        this.settings.dataSource = 'demo';
+-        this._hud.updateSourceBadge('demo', null);
++        // Keep settings.dataSource as-is — don't silently override the user's choice.
++        // The animate loop will fall through to demo data while _liveData is null.
++        this._hud.updateSourceBadge(this.settings.dataSource, null);
+       };
+       this._ws.onerror = () => {};
+     } catch {}
