@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          await supabase.from("chat_messages").insert({
+          await supabase.from("defi_learning_as_chat_messages").insert({
             user_id: session.user.id,
             role: "user",
             content: message,
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
               const fullContent = stream.finalMessage();
-              await supabase.from("chat_messages").insert({
+              await supabase.from("defi_learning_as_chat_messages").insert({
                 user_id: session.user.id,
                 role: "assistant",
                 content: fullContent.content

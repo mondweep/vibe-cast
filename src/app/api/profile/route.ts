@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { error } = await supabase.from("learner_profiles").upsert(
+    const { error } = await supabase.from("defi_learning_as_learner_profiles").upsert(
       {
         user_id: session.user.id,
         data: profile,
@@ -84,7 +84,7 @@ export async function GET() {
     }
 
     const { data, error } = await supabase
-      .from("learner_profiles")
+      .from("defi_learning_as_learner_profiles")
       .select("data")
       .eq("user_id", session.user.id)
       .single();
