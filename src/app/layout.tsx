@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ConsentGate from "@/components/ConsentGate";
 import { Navigation } from "@/components/Navigation";
 import { FloatingTutorBubble } from "@/components/FloatingTutorBubble";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "DeFi Learning Journey",
