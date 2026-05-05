@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ConsentGate from "@/components/ConsentGate";
 import { Navigation } from "@/components/Navigation";
+import { FloatingTutorBubble } from "@/components/FloatingTutorBubble";
 
 export const metadata: Metadata = {
   title: "DeFi Learning Journey",
@@ -33,6 +34,7 @@ export default function RootLayout({
         <ConsentGate>
           <Navigation />
           {children}
+          <FloatingTutorBubble />
         </ConsentGate>
       </body>
     </html>

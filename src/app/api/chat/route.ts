@@ -1,6 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk";
 import { PHASES, RESOURCES } from "@/lib/constants";
 import { getSupabase } from "@/lib/supabase";
+import { getNodesByType } from "@/lib/knowledge/defi-ontology";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -32,9 +33,29 @@ ${category.items.map((item) => `- ${item.name}: ${item.desc}`).join("\n")}
 `
   ).join("\n");
 
+  // Build knowledge graph context
+  const protocols = getNodesByType("Protocol");
+  const concepts = getNodesByType("Concept");
+  const strategies = getNodesByType("Strategy");
+  const risks = getNodesByType("Risk");
+
+  const kgContext = `
+KEY DeFi PROTOCOLS:
+${protocols.map(p => `- ${p.label}: ${p.description}`).join("\n")}
+
+CORE CONCEPTS:
+${concepts.map(c => `- ${c.label}: ${c.description}`).join("\n")}
+
+STRATEGIES:
+${strategies.map(s => `- ${s.label}: ${s.description}`).join("\n")}
+
+RISK TYPES:
+${risks.map(r => `- ${r.label}: ${r.description}`).join("\n")}
+`;
+
   return `
 You are a specialized DeFi learning tutor helping someone navigate a 8-week intensive program.
-Your role is to answer questions about DeFi protocols, strategies, and learning resources.
+Your role is to answer questions about DeFi protocols, strategies, and learning resources using the provided knowledge graph.
 
 LEARNING PHASES:
 ${phaseDescriptions}
@@ -42,14 +63,18 @@ ${phaseDescriptions}
 RECOMMENDED RESOURCES:
 ${resourceDescriptions}
 
+DeFi KNOWLEDGE GRAPH:
+${kgContext}
+
 Guidelines:
-1. Answer questions about any phase of the learning program
-2. Explain concepts clearly, using examples from the linked resources
-3. When relevant, suggest which phase or resource is most appropriate
-4. Be encouraging and supportive of the learner's journey
-5. If you don't know something, admit it and suggest where to find the answer
-6. Keep responses concise (2-3 paragraphs unless asked for more detail)
-7. Use the learner's own phase data to provide personalized guidance
+1. Use the knowledge graph to provide accurate, contextual answers about DeFi concepts and protocols
+2. When answering, reference related concepts from the graph to deepen understanding
+3. Explain complex relationships (e.g., how strategies relate to risks, or prerequisites between concepts)
+4. Suggest which phase of the learning program covers each topic
+5. Be encouraging and supportive of the learner's journey
+6. If a concept is in the knowledge graph, provide its definition and how it relates to other concepts
+7. Keep responses concise (2-3 paragraphs unless asked for more detail)
+8. When relevant, explain trade-offs between strategies and risks
 `;
 }
 
