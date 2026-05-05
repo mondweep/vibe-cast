@@ -122,12 +122,12 @@ export function KnowledgeGraphViewer() {
         d3
           .forceLink(filteredLinks)
           .id((d: any) => d.id)
-          .distance(100)
-          .strength(0.1)
+          .distance(150)
+          .strength(0.05)
       )
-      .force("charge", d3.forceManyBody().strength(-300))
+      .force("charge", d3.forceManyBody().strength(-500))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collide", d3.forceCollide().radius(40));
+      .force("collide", d3.forceCollide().radius(50));
 
     // Render links
     const link = g
@@ -178,6 +178,21 @@ export function KnowledgeGraphViewer() {
         _event.stopPropagation();
       });
 
+    // Add label backgrounds
+    const labelBackgrounds = g
+      .append("g")
+      .selectAll("rect")
+      .data(filteredNodes)
+      .enter()
+      .append("rect")
+      .attr("text-anchor", "middle")
+      .attr("dy", "-1.5em")
+      .attr("fill", "rgba(15, 23, 42, 0.8)")
+      .attr("stroke", "#475569")
+      .attr("stroke-width", 1)
+      .attr("rx", 4)
+      .attr("pointer-events", "none");
+
     // Add labels
     const labels = g
       .append("g")
@@ -186,8 +201,8 @@ export function KnowledgeGraphViewer() {
       .enter()
       .append("text")
       .attr("text-anchor", "middle")
-      .attr("dy", "-1.5em")
-      .attr("font-size", "11px")
+      .attr("dy", "-1.3em")
+      .attr("font-size", "12px")
       .attr("fill", "#e5e7eb")
       .attr("pointer-events", "none")
       .text((d) => d.label)
@@ -208,6 +223,12 @@ export function KnowledgeGraphViewer() {
       labels
         .attr("x", (d) => d.x || 0)
         .attr("y", (d) => (d.y || 0) - NODE_SIZES[d.type] - 5);
+
+      labelBackgrounds
+        .attr("x", (d) => (d.x || 0) - 35)
+        .attr("y", (d) => (d.y || 0) - NODE_SIZES[d.type] - 16)
+        .attr("width", 70)
+        .attr("height", 14);
     });
 
     // Cleanup

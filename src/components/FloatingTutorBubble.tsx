@@ -122,7 +122,7 @@ export function FloatingTutorBubble() {
             await supabase.from("defi_learning_as_chat_messages").insert({
               user_id: session.user.id,
               role: "user",
-              content: input,
+              content: userMessage.content,
               created_at: new Date().toISOString(),
             });
           }
@@ -143,7 +143,7 @@ export function FloatingTutorBubble() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: userMessage.content }),
       });
 
       if (!response.ok) {
