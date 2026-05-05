@@ -17,9 +17,6 @@ export function Navigation() {
       <Link href="/" style={{ color: "#C8D6E5", textDecoration: "none" }}>
         LEARNING PLAN
       </Link>
-      <Link href="/tutor" style={{ color: "#C8D6E5", textDecoration: "none" }}>
-        AI TUTOR
-      </Link>
       <Link href="/graph" style={{ color: "#C8D6E5", textDecoration: "none" }}>
         KNOWLEDGE GRAPH
       </Link>
