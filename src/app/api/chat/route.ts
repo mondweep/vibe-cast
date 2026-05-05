@@ -94,50 +94,54 @@ export async function POST(request: Request) {
     }
 
     // Create streaming response
+    const encoder = new TextEncoder();
+    let fullResponse = "";
+
     const response = new Response(
-      (async function* () {
-        const stream = anthropic.messages.stream({
-          model: "claude-3-5-sonnet-20241022",
-          max_tokens: 1024,
-          system: systemPrompt,
-          messages: [
-            {
-              role: "user",
-              content: message,
-            },
-          ],
-        });
+      new ReadableStream({
+        async start(controller) {
+          const stream = anthropic.messages.stream({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 1024,
+            system: systemPrompt,
+            messages: [
+              {
+                role: "user",
+                content: message,
+              },
+            ],
+          });
 
-        for await (const chunk of stream) {
-          if (
-            chunk.type === "content_block_delta" &&
-            chunk.delta.type === "text_delta"
-          ) {
-            yield chunk.delta.text;
-          }
-        }
-
-        // Save assistant response to Supabase if available
-        if (supabase) {
-          try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-              const fullContent = stream.finalMessage();
-              await supabase.from("defi_learning_as_chat_messages").insert({
-                user_id: session.user.id,
-                role: "assistant",
-                content: fullContent.content
-                  .filter((block) => block.type === "text")
-                  .map((block) => (block as any).text)
-                  .join(""),
-                created_at: new Date().toISOString(),
-              });
+          for await (const chunk of stream) {
+            if (
+              chunk.type === "content_block_delta" &&
+              chunk.delta.type === "text_delta"
+            ) {
+              fullResponse += chunk.delta.text;
+              controller.enqueue(encoder.encode(chunk.delta.text));
             }
-          } catch (dbError) {
-            console.warn("Failed to save assistant response to Supabase:", dbError);
           }
-        }
-      })(),
+
+          // Save assistant response to Supabase if available
+          if (supabase) {
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session) {
+                await supabase.from("defi_learning_as_chat_messages").insert({
+                  user_id: session.user.id,
+                  role: "assistant",
+                  content: fullResponse,
+                  created_at: new Date().toISOString(),
+                });
+              }
+            } catch (dbError) {
+              console.warn("Failed to save assistant response to Supabase:", dbError);
+            }
+          }
+
+          controller.close();
+        },
+      }),
       {
         headers: {
           "Content-Type": "text/event-stream",
