@@ -55,7 +55,7 @@ Guidelines:
 
 export async function POST(request: Request) {
   try {
-    const { message, context } = await request.json();
+    const { message } = await request.json();
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return new Response(
