@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ConsentGate from "@/components/ConsentGate";
+import { Navigation } from "@/components/Navigation";
 
 export const metadata: Metadata = {
   title: "DeFi Learning Journey",
@@ -29,7 +30,10 @@ export default function RootLayout({
           fontFamily: "'IBM Plex Mono', monospace",
         }}
       >
-        <ConsentGate>{children}</ConsentGate>
+        <ConsentGate>
+          <Navigation />
+          {children}
+        </ConsentGate>
       </body>
     </html>
   );
