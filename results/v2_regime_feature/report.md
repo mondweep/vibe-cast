@@ -21,7 +21,7 @@ mean of neighbor forward returns → **long/flat only** signal (threshold 5 bps)
 | Insufficient-neighbors bars | 15 | — |
 | Avg SPY neighbors / query | 9.85 | — |
 
-![equity curve](equity_curve_v2_regime.png)
+![equity curve](equity_curve.png)
 
 ## Position distribution
 

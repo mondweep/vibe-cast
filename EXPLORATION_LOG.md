@@ -196,7 +196,7 @@ The strategy lost ~13% over the period while SPY tripled. Five concrete reasons:
 4. **Hit rate ≈ coin flip.** 49% says the per-bar signal has no usable edge.
 5. **Always in the market.** 1812/1824 bars had a position — no defensive flat regime.
 
-![v1 equity curve](equity_curve.png)
+> *(v1 equity-curve image is not in the repo — the file was evicted by macOS Optimized Storage during the session and could not be recovered. The numbers above are authoritative.)*
 
 ---
 
@@ -225,7 +225,7 @@ The strategy lost ~13% over the period while SPY tripled. Five concrete reasons:
 
 Confirmed the diagnosis. Two simple changes flipped the strategy from losing money to producing a small but real positive Sharpe. Drawdown almost halved (−48% → −25%). Hit rate moved from coin-flip to a modest 53.6% — small per-bar edge, large compounding effect when not paying noise costs.
 
-![v1.5 equity curve](equity_curve_long_only.png)
+![v1.5 equity curve](results/v1_5_long_only/equity_curve.png)
 
 **But:** still well below SPY buy & hold (+16% CAGR). Sitting in cash 52% of the time during the strongest bull market of our lifetimes is the cap on this.
 
@@ -290,7 +290,7 @@ Apples-to-apples on the same window:
 
 The regime dim is highly autocorrelated, so its z-scored value barely moves day-to-day. In cosine space, that means kNN started preferring **time-adjacent neighbors** (similar regime stretch) over **pattern-similar neighbors across decades** — which is exactly what kNN was supposed to be good at.
 
-![v2 equity curve](equity_curve_v2_regime.png)
+![v2 equity curve](results/v2_regime_feature/equity_curve.png)
 
 ---
 
@@ -340,7 +340,7 @@ The regime dim is highly autocorrelated, so its z-scored value barely moves day-
 | Bars long | 878 | 694 | — |
 | Gate vetoed | — | 184 (21% of kNN longs) | — |
 
-![v3 equity curve](equity_curve_v3_gate.png)
+![v3 equity curve](results/v3_regime_gate/equity_curve.png)
 
 **Surprise — also worse on return.**
 
@@ -518,17 +518,18 @@ This list is intentionally written for non-experts.
 
 | File | What it is |
 |---|---|
-| `backtest.py` | Original v1 (long/flat/short, 0 bps threshold) |
-| `backtest_long_only.py` | v1.5 (long-only, 5 bps threshold) |
-| `backtest_v2_regime.py` | v2 (regime feature inside cosine) |
-| `backtest_v3_gate.py` | v3 (regime as decision gate) |
-| `embedding.py` | Feature definitions and z-scoring |
-| `store_client.py` | HTTP client for the seed's RVF store |
-| `yfinance_loader.py` | SPY data loader (cached to `spy_daily.csv`) |
-| `equity*.csv` | Per-bar equity curve and position log for each variant |
-| `equity_curve*.png` | Equity-curve plots vs SPY buy & hold |
-| `report*.md` | Auto-generated headline reports per run |
+| `src/v1_baseline.py` | Original v1 (long/flat/short, 0 bps threshold) |
+| `src/v1_5_long_only.py` | v1.5 (long-only, 5 bps threshold) |
+| `src/v2_regime_feature.py` | v2 (regime feature inside cosine) |
+| `src/v3_regime_gate.py` | v3 (regime as decision gate) |
+| `src/embedding.py` | Feature definitions and z-scoring |
+| `src/store_client.py` | HTTP client for the seed's RVF store |
+| `src/yfinance_loader.py` | SPY data loader (cached to `spy_daily.csv`) |
+| `results/<variant>/equity.csv` | Per-bar equity curve and position log |
+| `results/<variant>/equity_curve.png` | Equity-curve plot vs SPY buy & hold |
+| `results/<variant>/report.md` | Auto-generated headline report |
 | `EXPLORATION_LOG.md` | This document |
+| `README.md` | Top-level project overview and quickstart |
 
 ---
 
@@ -536,10 +537,10 @@ This list is intentionally written for non-experts.
 
 For full per-run detail (including position distributions, neighbor counts, and slippage accounting), see:
 
-- `report.md` — v1
-- `report_long_only.md` — v1.5
-- `report_v2_regime.md` — v2
-- `report_v3_gate.md` — v3
+- [`results/v1_baseline/report.md`](results/v1_baseline/report.md) — v1
+- [`results/v1_5_long_only/report.md`](results/v1_5_long_only/report.md) — v1.5
+- [`results/v2_regime_feature/report.md`](results/v2_regime_feature/report.md) — v2
+- [`results/v3_regime_gate/report.md`](results/v3_regime_gate/report.md) — v3
 
 ## Appendix B: Reproducing a run
 
@@ -550,12 +551,13 @@ ssh -fN -L 9080:127.0.0.1:80 genesis@169.254.42.1
 # 2. Stop the neural-trader cog so it doesn't pollute the store
 #    (via MCP tool seed_cogs_stop, or seed admin UI)
 
-# 3. Run the variant
-.venv/bin/python backtest_long_only.py     # or backtest_v2_regime.py / backtest_v3_gate.py
+# 3. Run the variant (run from project root so PYTHONPATH picks up src/)
+PYTHONPATH=src .venv/bin/python src/v1_5_long_only.py
+# or src/v2_regime_feature.py / src/v3_regime_gate.py / src/v1_baseline.py
 
 # 4. Inspect outputs
-open equity_curve_long_only.png
-cat  report_long_only.md
+open results/v1_5_long_only/equity_curve.png
+cat  results/v1_5_long_only/report.md
 ```
 
 ---

@@ -24,7 +24,7 @@ mean of neighbor 1-day forward returns → kNN long signal (threshold 5 bps);
 | Times kNN signaled long | 878 | — |
 | Times gate vetoed long | 184 (21.0% of kNN longs) | — |
 
-![equity curve](equity_curve_v3_gate.png)
+![equity curve](equity_curve.png)
 
 ## Position distribution
 

@@ -2,18 +2,15 @@
 SPY walk-forward paper-trading backtest using the Cognitum Seed
 RVF vector store as the kNN backend.
 
-Variant v2: LONG-ONLY + 5 bps threshold + 200-DAY REGIME FEATURE.
-
-Compared to backtest_long_only.py, this variant:
-  - Replaces the constant `bias` slot (d8) with a z-scored 200-day regime
-    feature: (close - SMA_200) / SMA_200. This gives kNN a way to match
-    "bull dip" to "bull dip" rather than "any dip".
-  - Keeps total embedding dim at 8 (matches seed RVF store).
-  - Uses a fresh SPY_ID_BASE to avoid colliding with v1/v2_long_only vectors.
-  - Writes to separate output files so prior runs are preserved.
+Variant: LONG-ONLY with a 5 bps signal threshold.
+Compared to backtest.py, this variant:
+  - Drops the short branch entirely (desired in {0, +1})
+  - Raises SIGNAL_THRESHOLD_BPS from 0 to 5 to filter noise trades
+  - Uses a fresh SPY_ID_BASE to avoid colliding with the v1 run's vectors
+  - Writes to separate output files so v1 results are preserved.
 
 Run from this dir with the venv:
-    .venv/bin/python backtest_v2_regime.py
+    .venv/bin/python backtest_long_only.py
 """
 
 from __future__ import annotations
@@ -28,29 +25,25 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from embedding import FEATURE_COLS, compute_raw_features
+from embedding import DIM, FEATURE_COLS, apply_scaler, compute_raw_features, fit_scaler
 from store_client import StoreClient
 from yfinance_loader import load_spy
 
 # ------------------------------------------------------------------ config
 
-SPY_ID_BASE = 12_000_000_000        # fresh range for this variant
+SPY_ID_BASE = 11_000_000_000        # fresh range for this variant (v1 used 10B)
 WARMUP_BARS = 252                   # ~1 trading year before the strategy starts
-K_NEIGHBORS = 10
-QUERY_K = 2_000
-MIN_NEIGHBORS = 3
-SIGNAL_THRESHOLD_BPS = 5
-SLIPPAGE_BPS = 1
+K_NEIGHBORS = 10                    # k for signal aggregation
+QUERY_K = 2_000                     # over-sample to filter past sensor noise
+MIN_NEIGHBORS = 3                   # require at least this many SPY hits
+SIGNAL_THRESHOLD_BPS = 5            # mean-pred threshold (bps) for entering long
+SLIPPAGE_BPS = 1                    # per-side
 START_DATE = "2018-01-01"
 
-# 8-dim layout: 7 original features + 1 regime feature (no bias slot)
-EXT_FEATURE_COLS = FEATURE_COLS + ["regime_200ma"]
-assert len(EXT_FEATURE_COLS) == 8
-
-OUT_DIR = Path(__file__).parent
-EQUITY_CSV = OUT_DIR / "equity_v2_regime.csv"
-EQUITY_PNG = OUT_DIR / "equity_curve_v2_regime.png"
-REPORT_MD = OUT_DIR / "report_v2_regime.md"
+OUT_DIR = Path(__file__).resolve().parent.parent / "results" / "v1_5_long_only"
+EQUITY_CSV = OUT_DIR / "equity.csv"
+EQUITY_PNG = OUT_DIR / "equity_curve.png"
+REPORT_MD = OUT_DIR / "report.md"
 
 
 # ------------------------------------------------------------------ main
@@ -60,22 +53,17 @@ def main() -> None:
     bars = load_spy(start=START_DATE)
     print(f"      bars: {len(bars)}, range: {bars.index[0].date()} → {bars.index[-1].date()}")
 
-    print("[2/6] Computing features (7 base + 1 regime)…")
-    raw = compute_raw_features(bars)
-    sma_200 = bars["Close"].rolling(200).mean()
-    raw["regime_200ma"] = (bars["Close"] - sma_200) / sma_200
-    raw = raw.dropna()
+    print("[2/6] Computing features…")
+    raw = compute_raw_features(bars).dropna()
     bars = bars.loc[raw.index]
-    print(f"      after dropna: {len(raw)} bars (200-day MA needs 200-bar warmup)")
+    print(f"      after dropna: {len(raw)} bars")
 
     if len(raw) < WARMUP_BARS + 30:
         raise SystemExit("Not enough data for warmup + meaningful test")
 
     print(f"[3/6] Fitting scaler on warmup window (first {WARMUP_BARS} bars)…")
-    scaler_mean = raw[EXT_FEATURE_COLS].iloc[:WARMUP_BARS].mean()
-    scaler_std = raw[EXT_FEATURE_COLS].iloc[:WARMUP_BARS].std()
-    scaled = raw.copy()
-    scaled[EXT_FEATURE_COLS] = (raw[EXT_FEATURE_COLS] - scaler_mean) / scaler_std
+    scaler = fit_scaler(raw.iloc[:WARMUP_BARS])
+    scaled = apply_scaler(raw, scaler)
 
     forward_ret = np.log(bars["Close"]).diff().shift(-1)
 
@@ -87,7 +75,7 @@ def main() -> None:
     print(f"[4/6] Backfilling {WARMUP_BARS} warmup vectors into the seed…")
     backfill: list[tuple[int, list[float]]] = []
     for i in range(WARMUP_BARS):
-        vec = scaled.iloc[i][EXT_FEATURE_COLS].to_numpy(dtype=float).tolist()
+        vec = scaled.iloc[i][FEATURE_COLS + ["bias"]].to_numpy(dtype=float).tolist()
         if any(np.isnan(v) for v in vec):
             continue
         bar_id = SPY_ID_BASE + i
@@ -111,14 +99,14 @@ def main() -> None:
     records: list[dict] = []
     t0 = time.time()
 
-    last_idx = len(scaled) - 1
+    last_idx = len(scaled) - 1  # need bar i+1 for P&L
     for i in range(WARMUP_BARS, last_idx):
         bar_id = SPY_ID_BASE + i
-        vec = scaled.iloc[i][EXT_FEATURE_COLS].to_numpy(dtype=float).tolist()
+        vec = scaled.iloc[i][FEATURE_COLS + ["bias"]].to_numpy(dtype=float).tolist()
         if any(np.isnan(v) for v in vec):
             records.append(
                 {"date": scaled.index[i], "equity": equity, "position": position,
-                 "mean_pred": np.nan, "spy_neighbors": 0, "regime": np.nan}
+                 "mean_pred": np.nan, "spy_neighbors": 0}
             )
             continue
 
@@ -135,7 +123,7 @@ def main() -> None:
             mean_pred = 0.0
             insufficient_neighbors += 1
 
-        # LONG-ONLY (carry-over from v1 long-only)
+        # LONG-ONLY: only +1 or 0 (no shorting)
         if mean_pred > threshold:
             desired = +1
         else:
@@ -156,8 +144,7 @@ def main() -> None:
 
         records.append(
             {"date": scaled.index[i], "equity": equity, "position": position,
-             "mean_pred": mean_pred, "spy_neighbors": len(spy_neighbors),
-             "regime": float(raw["regime_200ma"].iloc[i])}
+             "mean_pred": mean_pred, "spy_neighbors": len(spy_neighbors)}
         )
 
         client.ingest([(bar_id, vec)], dedup=False)
@@ -168,7 +155,7 @@ def main() -> None:
             elapsed = time.time() - t0
             print(f"      bar {i}  date={scaled.index[i].date()}  "
                   f"eq={equity:.4f}  pos={position:+d}  knn_hits={len(spy_neighbors)}  "
-                  f"reg={raw['regime_200ma'].iloc[i]:+.3f}  ({elapsed:.1f}s)")
+                  f"({elapsed:.1f}s)")
 
     print(f"[6/6] Generating report…")
     eq = pd.DataFrame(records).set_index("date")
@@ -191,9 +178,9 @@ def main() -> None:
     bh_dd = float(((bh - bh.cummax()) / bh.cummax()).min())
 
     fig, ax = plt.subplots(figsize=(11, 5.5))
-    ax.plot(eq.index, eq["equity"], label=f"long-only kNN +regime (k={K_NEIGHBORS}, thr={SIGNAL_THRESHOLD_BPS}bps)", linewidth=1.6)
+    ax.plot(eq.index, eq["equity"], label=f"long-only kNN (k={K_NEIGHBORS}, thr={SIGNAL_THRESHOLD_BPS}bps)", linewidth=1.6)
     ax.plot(eq.index, bh, label="SPY buy & hold", alpha=0.65, linewidth=1.2)
-    ax.set_title("SPY long-only paper trader + 200d regime — Cognitum Seed kNN backend")
+    ax.set_title("SPY long-only paper trader — Cognitum Seed kNN backend")
     ax.set_ylabel("Equity (start = 1.0)")
     ax.legend()
     ax.grid(True, alpha=0.3)
@@ -204,11 +191,11 @@ def main() -> None:
     pos_dist = eq["position"].value_counts().sort_index().to_dict()
     avg_neighbors = float(eq["spy_neighbors"].mean())
 
-    report = f"""# Neural Trader — SPY Walk-Forward Backtest (v2: long-only + 200d regime)
+    report = f"""# Neural Trader — SPY Walk-Forward Backtest (LONG-ONLY variant)
 
 **Backend:** Cognitum Seed `0.21.12`, RVF vector store via SSH tunnel
 **Data:** SPY daily bars, {bars.index[0].date()} → {bars.index[-1].date()} ({len(bars)} bars)
-**Embedding:** 8-dim feature vector — 7 base ({', '.join(FEATURE_COLS)}) + **regime_200ma** = (close − SMA_200)/SMA_200, all z-scored on warmup window. Bias slot dropped to fit dim=8.
+**Embedding:** 8-dim feature vector ({', '.join(FEATURE_COLS)}, bias=1.0), z-scored on warmup window
 **Method:** walk-forward, k={K_NEIGHBORS} cosine-NN over historical SPY embeddings only;
 mean of neighbor forward returns → **long/flat only** signal (threshold {SIGNAL_THRESHOLD_BPS} bps);
 1-day hold; {SLIPPAGE_BPS} bps/side slippage.
@@ -227,7 +214,7 @@ mean of neighbor forward returns → **long/flat only** signal (threshold {SIGNA
 | Insufficient-neighbors bars | {insufficient_neighbors} | — |
 | Avg SPY neighbors / query | {avg_neighbors:.2f} | — |
 
-![equity curve](equity_curve_v2_regime.png)
+![equity curve](equity_curve.png)
 
 ## Position distribution
 
@@ -238,11 +225,12 @@ mean of neighbor forward returns → **long/flat only** signal (threshold {SIGNA
 ## Notes
 
 - Vectors written to seed under id range `[{SPY_ID_BASE:_}, {SPY_ID_BASE + len(scaled):_})`.
-- The neural-trader cog was stopped during this run.
-- Pre-existing seed vectors (sensor + v1 SPY at 10B + v1.5 long-only SPY at 11B) excluded by id-range filter.
+- The neural-trader cog was stopped during this run to keep the store quiet.
+- Pre-existing seed vectors (sensor data + v1 SPY range at 10_000_000_000) excluded by post-filtering on id range.
 - Query oversampling: k={QUERY_K} from store, then filter to SPY range, then take top {K_NEIGHBORS}.
-- The regime feature is dimensionless (% deviation from 200-day MA), then z-scored on the 252-bar warmup window.
-- This is a backtest. No money at risk.
+- This is a backtest. No money at risk. Standard caveats: in-sample scaler fit on first 252 bars,
+  no transaction cost beyond {SLIPPAGE_BPS} bps slippage, no shorting (long-only), no dividend handling
+  (close prices are auto-adjusted by yfinance).
 """
     REPORT_MD.write_text(report)
 
