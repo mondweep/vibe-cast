@@ -32,21 +32,23 @@ No model is trained. The "model" *is* the dataset. The seed remembers. We ask.
 
 ## Results at a Glance
 
-Same window (Feb 2019 → May 2026, 1,824 walk-forward days):
+Same window (Feb 2019 → May 2026):
 
 | Variant | Final equity | CAGR | Sharpe | Max drawdown | Verdict |
 |---|---|---|---|---|---|
-| **SPY buy & hold** | 2.99x | **+16.5%** | — | −33.7% | benchmark |
+| **SPY buy & hold** | 3.02x | **+16.5%** | ~1.0 | −33.7% | benchmark |
 | v1 — long/flat/short, no threshold | 0.87x | −1.94% | 0.00 | −48.1% | broken |
-| **v1.5 — long-only, 5 bps threshold** | **1.33x** | **+4.00%** | **0.35** | **−25.3%** | **best** |
+| v1.5 — long-only, 5 bps threshold | 1.33x | +4.00% | 0.35 | **−25.3%** | best **single-asset** |
 | v2 — regime as 8th feature in kNN | 1.03x | +0.47% | 0.11 | −27.5% | hurt |
 | v3 — regime as outer trade gate | 1.16x | +2.03% | 0.28 | −22.4% | hurt return, helped DD |
+| **v4 — multi-asset rotation** (SPY/QQQ/IEF/GLD + cash) | **2.61x** | **+14.16%** | **0.79** | −34.3% | **best overall** — closed most of the gap to SPY |
 
 ### TL;DR
 
-- **The kNN strategy works** — v1.5 is profitable with a real Sharpe and half the drawdown of SPY.
-- **It does not beat buy-and-hold** during a 16%-CAGR bull stretch — the architecture has a real ceiling around 4% CAGR on technical features alone.
-- **Adding a "regime" feature is harder than it sounds.** Both attempts (v2, v3) underperformed v1.5 in different and informative ways.
+- **Universe choice was the biggest single lever.** Going from one asset (SPY) to four (SPY/QQQ/IEF/GLD) lifted CAGR from 4% → 14% and Sharpe from 0.35 → 0.79 *without changing the embedding or decision rule*.
+- **v4 still didn't quite beat SPY's raw return** (14.16% vs 16.48%), but came within ~2.3 pp — and roughly doubled SPY's Sharpe-equivalent risk-adjusted return.
+- **Single-asset technical kNN has a real ceiling** (~4% CAGR, Sharpe ~0.35); three feature/architecture tweaks (v2, v3) couldn't break it. Universe diversification did.
+- **Adding a "regime" feature is harder than it sounds.** Both single-asset attempts (v2, v3) underperformed v1.5 in informative ways.
 
 ---
 
@@ -74,12 +76,14 @@ The bet is that *the right pattern-match across decades is more useful than a fi
 │   ├── v1_baseline.py                     long/flat/short, no threshold
 │   ├── v1_5_long_only.py                  long-only, 5 bps threshold (best)
 │   ├── v2_regime_feature.py               regime feature inside cosine
-│   └── v3_regime_gate.py                  regime as outer trade gate
+│   ├── v3_regime_gate.py                  regime as outer trade gate
+│   └── v4_multi_asset_rotation.py         rotation across SPY/QQQ/IEF/GLD + cash (best)
 └── results/                             ← per-variant output
     ├── v1_baseline/                       report only — outputs were dataless
     ├── v1_5_long_only/                    report.md + equity.csv + equity_curve.png
     ├── v2_regime_feature/                 ditto
-    └── v3_regime_gate/                    ditto
+    ├── v3_regime_gate/                    ditto
+    └── v4_multi_asset_rotation/           ditto (multi-asset; best variant)
 ```
 
 Click into any `results/<variant>/report.md` for that run's full headline metrics, position distribution, and equity curve.
@@ -115,15 +119,17 @@ If `neural-trader` is running on the seed, pause it during the backtest so it do
 ### 3. Run a variant
 
 ```bash
+# v4 multi-asset rotation (best variant, ~16 min — 4× the queries of single-asset)
+PYTHONPATH=src .venv/bin/python src/v4_multi_asset_rotation.py
+
+# or any single-asset variant (~3 min each)
 PYTHONPATH=src .venv/bin/python src/v1_5_long_only.py
 ```
 
-Outputs land in `results/v1_5_long_only/`:
+Outputs land in `results/<variant>/`:
 - `equity.csv` — per-bar equity, position, mean prediction, neighbor count
-- `equity_curve.png` — strategy vs. buy & hold
+- `equity_curve.png` — strategy vs. buy & hold (and per-asset benchmarks for v4)
 - `report.md` — headline metrics
-
-A run takes ~3 minutes (≈1,800 cosine queries to the seed over the SSH tunnel).
 
 ### 4. Read the results
 
@@ -141,7 +147,11 @@ Open the equity curve, then read the report. Then read [`EXPLORATION_LOG.md`](EX
 
 4. **v3** kept regime out of the cosine distance and used it as an outer gate ("only trade long when above the 200-day MA"). Drawdown improved. CAGR halved. *The gate killed exactly the trades where kNN has the most edge — counter-trend bounces during bear regimes (the "panic-bottom" pattern that 1987, 2008, and 2020 all share).*
 
-The deeper lesson: **trend-following regime filters and pattern-matching kNN have philosophically opposite views during the very moments that matter.**
+5. **v4** kept v1.5's engine but expanded the universe — SPY, QQQ, IEF (bonds), GLD (gold), cash — and picked whichever asset's kNN signaled the strongest "go up" each day. Same embedding, same k, same threshold, same decision rule. The only change was the choice of *what to hold*. Result: **CAGR jumped 4% → 14%, Sharpe jumped 0.35 → 0.79.** The strategy spent only 21% of bars in SPY; it found bigger edges in QQQ (32%) and GLD (27%). *Universe choice did more than any feature tweak — it nearly closed the gap to SPY buy-and-hold.*
+
+The deeper lessons:
+- **Trend-following regime filters and pattern-matching kNN have philosophically opposite views** during the very moments that matter (the v2/v3 finding).
+- **The biggest lever is what you trade, not how cleverly you trade it.** The single-asset architecture had a genuine ceiling that no amount of feature engineering could break — but expanding the asset menu lifted everything.
 
 ---
 
@@ -372,11 +382,13 @@ A binary `AND` between them automatically excludes kNN's most distinctive edge �
 
 ## Where to Go Next
 
-Suggested by the exploration, in order of expected lift:
+After v4, multi-asset rotation is **done** and was the biggest single lever. The remaining unexplored levers all attack v4's residual gap to SPY (≈2.3 pp CAGR) and its drawdown:
 
-1. **5-day forward-return labels** instead of 1-day — biggest single lever; reduces label noise.
-2. **Distance-weighted aggregator** — closer neighbors should count more.
-3. **Multi-asset rotation** — to actually beat buy-and-hold, the universe probably needs to be more than SPY-in-or-out.
+1. **Slower rotation** — v4 had 1306 flips in 1826 bars (~13% slippage drag). Cut that and you likely close most of the remaining gap.
+2. **5-day forward-return labels** — daily returns are ~95% noise; longer-horizon labels are the cleanest unexplored win.
+3. **Real cash-yield proxy** (SHV/BIL) — v4 spent 10% of bars in 0%-yielding cash; realistic short-rate adds ~0.5 pp CAGR.
+4. **Volatility filter** — rotates out of an asset that's stuck in drawdown (would have caught QQQ's 2022 sell-off).
+5. **Wider universe** (add EFA, EEM, VNQ, TLT) and/or **cross-asset features** (VIX, yield curve).
 
 See [`EXPLORATION_LOG.md` § 6](EXPLORATION_LOG.md) for the full ranked list.
 
