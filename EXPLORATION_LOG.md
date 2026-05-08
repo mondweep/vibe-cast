@@ -688,7 +688,7 @@ cat  results/v4_multi_asset_rotation/report.md
 
 This appendix answers a deceptively simple question that the v1–v4 backtests sweep under the rug: *"When the strategy says 'go long', where does the money actually come from?"* The answer reveals an important abstraction the backtest is hiding, leads naturally to a DCA-friendly variant (v5), and forces an honest conversation about UK tax wrappers and what a real retail investor would realistically make.
 
-### D.1 What the backtest actually models
+### C.1 What the backtest actually models
 
 In the code, equity is **a single number**. Look at what happens when v4 flips from QQQ to SPY:
 
@@ -713,7 +713,7 @@ So when v4 says "go long QQQ today," in real-world terms it's saying:
 
 It is **not** saying "go buy more QQQ on top of what you already have." Every "long" is a redeployment of existing capital, not a new capital injection.
 
-### D.2 This is rotation — not "buy and never sell"
+### C.2 This is rotation — not "buy and never sell"
 
 What people usually picture by "always long" — *"I buy an asset and never sell it; if I get a buy signal I deposit more money to buy more"* — is a fundamentally different strategy:
 
@@ -722,7 +722,7 @@ What people usually picture by "always long" — *"I buy an asset and never sell
 
 v1–v4 are *neither*. They're **rotation** strategies — always 100% of existing capital deployed in *something*, changing which something on every rebalance. There are no permanent positions.
 
-### D.3 Real-world frictions the backtest hides
+### C.3 Real-world frictions the backtest hides
 
 Even within the single-pool abstraction, several real-world costs aren't modelled:
 
@@ -730,11 +730,11 @@ Even within the single-pool abstraction, several real-world costs aren't modelle
 |---|---|---|
 | **Per-trade commissions** | Some UK brokers charge ~£3–10 per trade | **Catastrophic at small portfolio sizes.** A £5 commission on a £100 trade is 5%. Mitigation: use commission-free brokers — Trading 212, Vanguard, InvestEngine, Freetrade. |
 | **Bid-ask spread on retail orders** | Usually 1–3 bps for liquid ETFs | Approximately what we model with `SLIPPAGE_BPS=1` (per flip; real-world is closer to 1 bp/side = 2 bps/flip). |
-| **FX cost** | Spread of 15–45 bps when converting GBP to USD | Material. Mitigation: use **UCITS-equivalent** ETFs listed in GBP on the LSE (see D.6). |
+| **FX cost** | Spread of 15–45 bps when converting GBP to USD | Material. Mitigation: use **UCITS-equivalent** ETFs listed in GBP on the LSE (see C.6). |
 | **Stamp duty (UK)** | 0.5% on UK *stock* purchases | **Doesn't apply** to ETFs (UCITS or otherwise). ✓ |
-| **Tax on every flip** | UK CGT on realised gains in a non-sheltered account | **Significant.** v4's 1306 daily flips = 1306 taxable events. Mitigation: hold inside an **ISA** — see D.5. |
+| **Tax on every flip** | UK CGT on realised gains in a non-sheltered account | **Significant.** v4's 1306 daily flips = 1306 taxable events. Mitigation: hold inside an **ISA** — see C.5. |
 
-### D.4 v5 — the DCA-friendly variant
+### C.4 v5 — the DCA-friendly variant
 
 Designed for a real UK retail investor depositing a fixed £ amount every month into a Stocks & Shares ISA. **Same kNN engine as v4** (4 assets, winner-take-all, 5 bps threshold) but with one critical change:
 
@@ -792,7 +792,7 @@ For the contribution levels you mentioned:
 
 (Linear scaling holds because slippage is percentage-based and we're well inside commission-free brokerage thresholds.)
 
-### D.5 UK tax-efficient wrappers — the choice that matters more than the strategy
+### C.5 UK tax-efficient wrappers — the choice that matters more than the strategy
 
 For a retail investor making £100–£500/month deposits, **the choice of tax wrapper matters more than the choice of strategy**. The tax savings often dwarf the alpha any strategy is realistically going to produce.
 
@@ -805,7 +805,44 @@ Four wrappers to know:
 | **SIPP** (pension) | £40,000/year (or earned income) | 25% tax relief on contributions (more if higher-rate); tax-free growth; 25% tax-free at retirement, rest taxed as income | Locked until age 57+ | Higher-rate taxpayers, retirement-only money |
 | **GIA** (general account) | None | Subject to **CGT** (£3,000/yr tax-free in 2024/25, scheduled to drop), and **dividend tax** above £500/yr | None | After ISA + LISA + SIPP allowances are used, or for short-term needs |
 
-**For your three contribution levels, the answer is unambiguous: open a Stocks & Shares ISA.**
+#### When the niche cases for LISA / SIPP / GIA actually matter
+
+I said earlier that for someone starting out at £100–£500/month, the answer is "Stocks & Shares ISA, full stop." That's true for the central case — but here's when each of the others can be genuinely better:
+
+**Lifetime ISA (LISA)** — better than a regular S&S ISA *only if* both these are true:
+- You're aged 18–39 to open it (you can keep contributing until 50, withdraw penalty-free from 60 or for a first home).
+- AND one of:
+  - You're saving toward a **first-home deposit**. The 25% government bonus is essentially a 25% guaranteed return on every £1 you put in (up to £4,000/year → £1,000 free per year). Hard to beat.
+  - You're a long-horizon **retirement saver who's confident you won't need the money before age 60**. Same 25% bonus, but it's locked.
+- Watch-out: the 25% **early-withdrawal penalty** wipes out the bonus *and takes ~6.25% of your own contributions* on top. So it's not "free money with downside" — it's "free money if you wait, real loss if you change your mind."
+- Practical play: contribute the £4K LISA limit *first* (for the £1K bonus), then put the next £16K into a regular Stocks & Shares ISA. Both share the £20K overall ISA cap.
+
+**SIPP (Self-Invested Personal Pension)** — better than a regular S&S ISA *only if* one of these is true:
+- You're a **higher-rate (40%) or additional-rate (45%) taxpayer**. A basic-rate taxpayer gets the same effective tax shelter from an ISA as from a SIPP, but the ISA is more flexible. Higher-rate taxpayers get a *much* better deal from a SIPP (the relief comes off the highest band of your tax). For an ISA, your £100 stays £100; for a SIPP at 40% relief, your £100 becomes £166.67 in the pension.
+- You're **self-employed without a workplace pension** and want the tax relief.
+- You've **already maxed your £20K ISA** for the year and have more to save for retirement.
+- Watch-out: locked until age 57 (rising). Once you're in, you can't take it out until then. 25% of withdrawals are tax-free at retirement; the rest is taxed as income. Net effect: SIPP is usually marginally better than ISA for retirement-only money *if* you'll be a basic-rate taxpayer in retirement (very common), and substantially better if you're getting higher-rate relief now and basic-rate tax later.
+
+**GIA (General Investment Account)** — useful *only when*:
+- You've already maxed your **£20K ISA** for the year.
+- You've already maxed your **SIPP** allowance if applicable (£60K including employer for most people).
+- AND you have *more* to invest.
+- For someone saving £100–£500/month (£1.2K–£6K/year), this almost never applies. You're nowhere near the limits.
+- The exception: if you specifically need access to a fund/asset that's **not available** in any sheltered account (rare for ETFs, occasionally relevant for individual shares or specialist trusts).
+- Watch-out: every sale is a **CGT event**. The annual tax-free allowance has been cut to £3,000 (and is scheduled to drop further). Dividend tax kicks in above £500/year. For an active strategy like v5, the CGT cost on every flip would be material — see [Appendix B Limitation B1 in `LIMITATIONS.md`](LIMITATIONS.md) for the analogous problem in the seed store.
+
+**Decision tree for someone starting out:**
+
+```
+   Saving for a first home and aged under 40?
+   ├── YES → put first £4K/year into a LISA (capture the 25% bonus)
+   │         then put the next £16K (if you have it) into a S&S ISA
+   └── NO ─→ Are you a higher-rate (40%+) taxpayer?
+             ├── YES → put first into S&S ISA (£20K) then SIPP for the rest
+             └── NO ─→ S&S ISA only. Don't worry about SIPP/LISA/GIA at this scale.
+```
+
+For your three contribution levels (£100/£300/£500/month = £1.2K/£3.6K/£6K/year), **the right answer is Stocks & Shares ISA — unless the LISA bonus applies to you and you're saving for a first home, in which case put the first £4K into a LISA and any surplus into a regular ISA.**
 
 | Monthly | Annual | Fits ISA? | Recommended wrapper |
 |---|---|---|---|
@@ -831,7 +868,7 @@ Brokers offering Stocks & Shares ISAs that suit small monthly contributions and 
 
 For a £100/month strategy, **Trading 212 ISA** or **InvestEngine** are the simplest, cheapest options. For £500/month, **Vanguard ISA** with their LifeStrategy fund family is hard to beat for cost-efficiency.
 
-### D.6 UK-friendly UCITS equivalents to the v5 universe
+### C.6 UK-friendly UCITS equivalents to the v5 universe
 
 The US ETFs in our backtest (SPY, QQQ, IEF, GLD) **are not directly available to UK retail investors** due to MiFID/PRIIPs documentation requirements. Use these UCITS-compliant LSE-listed equivalents instead:
 
@@ -846,7 +883,7 @@ The TERs (Total Expense Ratios) are the *additional* annual cost of holding each
 
 Hedged versions (e.g., `IGTM` for hedged 7–10y USTs) eliminate FX swings on the bond positions but add ~10 bps/year. For long-horizon DCA, the unhedged versions are usually fine since FX impact averages out.
 
-### D.7 Practical recommendation for a new investor
+### C.7 Practical recommendation for a new investor
 
 If this is your first systematic investment plan, here's the honest **simple** answer the data supports:
 
@@ -862,7 +899,78 @@ Over the most recent 5 years that simple plan would have turned:
 
 **This beat the more sophisticated v5 strategy by ~12% across all contribution levels in our backtest.**
 
-### D.8 If you still want to use a strategy like v5
+### C.8 What you might realistically make — a compounding sanity check
+
+The backtest tells you what the *recent past* would have produced. To plan responsibly, you need a **range** of plausible outcomes, not a single number.
+
+#### The future-value formula
+
+For monthly contributions of £P at an annualized return of r% over n months, the standard ordinary-annuity future value is:
+
+```
+   FV = P × [(1 + r/12)^n − 1] / (r/12)
+```
+
+(Each month's contribution earns the next n−1 months of compounding; we sum it across all n contributions.)
+
+#### Outcomes at different annualized returns over 60 months
+
+The table below shows the **nominal final portfolio value** (before inflation) for each combination of monthly contribution and average annualized return. Every cell assumes the return is constant — real markets are bumpy, but on average a "10% return" path lands roughly here.
+
+| Annualized return | Total contributed | Multiplier | £100 / month | £300 / month | £500 / month |
+|---|---|---|---|---|---|
+| **0%** (just contributions) | full | 1.000× | £6,000 | £18,000 | £30,000 |
+| **5%** (cautious / mediocre markets) | full | 1.133× | **£6,801** | **£20,402** | **£34,003** |
+| **8%** (long-term US-equity real average ≈) | full | 1.222× | **£7,348** | **£22,043** | **£36,738** |
+| **10%** (long-term US-equity nominal average) | full | 1.291× | **£7,744** | **£23,231** | **£38,719** |
+| **12%** (good decade) | full | 1.366× | **£8,194** | **£24,581** | **£40,968** |
+| **15%** (exceptional / recent decade) | full | 1.476× | **£8,857** | **£26,572** | **£44,287** |
+
+#### What annualized return did our backtest imply?
+
+The SPY-only DCA result (£9,105 from £6,000 over 60 months) corresponds to roughly **+16% annualized** — slightly above even the 15% row above. That's broadly consistent with SPY's +16.5% CAGR over the same window. **The recent 5 years were unusually good for US equities.** Don't anchor your expectations to that.
+
+The v5 rotation result (£8,120 from £6,000) corresponds to roughly **+12.4% annualized** — a touch below the 12% row above. Still a strong number historically, just not as strong as buying SPY directly during this specific window.
+
+#### Realistic planning range — base case + bear case + bull case
+
+If you ask "what should I expect over the next 5 years?", here's the honest framing:
+
+| Scenario | Annualized | £100/mo → final | £300/mo → final | £500/mo → final | Likelihood (rough) |
+|---|---|---|---|---|---|
+| **Bear** (sustained selloff or stagflation) | 0–3% | £6,000 – £6,476 | £18,000 – £19,427 | £30,000 – £32,378 | ~15–25% |
+| **Base** (long-run average) | 6–9% | £6,989 – £7,542 | £20,968 – £22,627 | £34,946 – £37,712 | ~50% |
+| **Bull** (strong run) | 10–14% | £7,744 – £8,610 | £23,231 – £25,830 | £38,719 – £43,050 | ~25% |
+| **Exceptional** (matches recent 5 years) | 15–18% | £8,857 – £9,651 | £26,572 – £28,953 | £44,287 – £48,256 | ~5–10% |
+
+Translation: at £100/month for 60 months, the most plausible single-number outcome is **somewhere around £6,500–£8,500** — meaning you'd contribute £6,000 and end with **£500–£2,500 in profit**. Anything higher or lower is not impossible but is statistically less likely. The £9,105 figure from our backtest is at the optimistic end of this range — possible but not the central case.
+
+For £500/month: most likely outcome is **£32,000–£42,500** (profit of £2,000–£12,500 on £30,000 contributed). The backtest's £45,525 is again at the optimistic end.
+
+#### One more thing — sequence-of-returns risk works *for* DCA, *against* lump-sum
+
+This is the most counter-intuitive (and most reassuring) thing to know about DCA:
+
+- If markets **crash early in your investing journey** and recover later → **DCA does *better* than the average return suggests**. You buy lots of cheap shares during the crash; they're worth more later.
+- If markets **soar early and crash near the end** → **DCA does *worse* than the average return suggests**. Most of your contributions buy expensive shares; the late crash hits the now-large pile.
+
+For a 5-year DCA plan starting today, this means:
+- A scary early bear market would actually be **good news** for you. You'd accumulate shares cheaply.
+- The genuinely worrying scenario is starting at a market peak and watching prices grind sideways or down for the entire 5 years (the 2000–2005 / 2007–2012 type pattern).
+
+The "constant-rate" outcomes in the tables above are a clean simplification. Real outcomes vary based on the *shape* of the next 5 years, not just the average. A path that delivers 10% on average via "down 30% then up 20%/yr" vs "up 10%/yr steadily" gives DCA investors **different** results.
+
+#### The takeaway you can bank on (literally)
+
+Three things are robustly true regardless of which scenario plays out:
+
+1. **You will have at least as much as you contributed**, plus or minus market noise — assuming you stay invested in a broad index. Permanent loss of capital from holding the S&P 500 over a 5-year window has happened ~5% of the time historically, mostly when starting at a major bubble peak (1929, 2000).
+2. **Inflation will erode your real return** by roughly 2–4% per year. A 10% nominal return is more like 6–8% real. Plan for nominal numbers but spend them as if they were 70–80% as large in today's purchasing power.
+3. **The biggest determinant of your outcome is whether you stick with the plan** — not which strategy you pick. Behavioural mistakes (panic-selling at the bottom of a crash, abandoning the plan after a flat year) destroy more wealth than any strategy difference.
+
+A defensible internal model: **plan for the base case (£7K–£8K from £6K, scaled), be pleasantly surprised by the bull case, and prepare emotionally for the bear case.**
+
+### C.9 If you still want to use a strategy like v5
 
 It's a perfectly reasonable next step *once you've got the simple DCA habit established*. Reasonable scenarios where v5 might (might) outperform:
 
@@ -872,7 +980,7 @@ It's a perfectly reasonable next step *once you've got the simple DCA habit esta
 
 But for the first 3–5 years of investing, **simplicity wins**. The discipline of monthly auto-invest into a single low-cost equity ETF inside an ISA is, for almost everyone, more valuable than any kNN rotation algorithm.
 
-### D.9 Honest caveats on these projections
+### C.10 Honest caveats on these projections
 
 - **Past performance is not future performance.** The 2021–2026 window was unusually good for US equities (post-COVID stimulus + AI rally). The next 60 months could equally be a sustained bear market — in which case SPY DCA might return *less* than v5.
 - **The £9,105 / £27,315 / £45,525 figures are not predictions.** They're the result of one specific historical window. A 60-month window starting in 2000 (dot-com bust) or 2007 (GFC) would look very different.
@@ -880,7 +988,7 @@ But for the first 3–5 years of investing, **simplicity wins**. The discipline 
 - **All returns ignore inflation.** UK CPI averaged ~3.5%/year over this window — real returns are correspondingly lower.
 - **All this assumes commission-free brokerage and an ISA.** Outside those assumptions the math gets meaningfully worse.
 
-### D.10 Files & where to look
+### C.11 Files & where to look
 
 - [`src/v5_dca_monthly.py`](src/v5_dca_monthly.py) — the v5 implementation
 - [`results/v5_dca_monthly/report.md`](results/v5_dca_monthly/report.md) — auto-generated headline report
@@ -893,7 +1001,7 @@ But for the first 3–5 years of investing, **simplicity wins**. The discipline 
 
 This appendix walks through *exactly* what happens inside one trading day of v4, then compares operational composition against v1.5 and v3.
 
-### C.1 One day in the life of v4
+### D.1 One day in the life of v4
 
 ```
    Today is, say, 2024-08-15. The strategy needs to decide what to hold.
@@ -986,7 +1094,7 @@ This appendix walks through *exactly* what happens inside one trading day of v4,
    we filter neighbors to id < today's_id).
 ```
 
-### C.2 The fundamental shift
+### D.2 The fundamental shift
 
 ```
 v1.5 / v3:  "Should I be in the market RIGHT NOW?"  (1 yes/no decision)
@@ -996,7 +1104,7 @@ v4:         "Of these four options, which is the BEST place to be?"  (4-way comp
 
 That's the conceptual change. Everything else flows from it.
 
-### C.3 Side-by-side composition table
+### D.3 Side-by-side composition table
 
 | Aspect | v1.5 long-only | v3 regime gate | **v4 multi-asset rotation** |
 |---|---|---|---|
@@ -1017,7 +1125,7 @@ That's the conceptual change. Everything else flows from it.
 | **Bars in market** | 878 / 1824 (48%) | 694 / 1825 (38%) | **1,636 / 1826 (90%)** |
 | **Bars in cash** | 946 (52%) | 1131 (62%) | **190 (10%)** |
 
-### C.4 Why v4 lifts performance so much
+### D.4 Why v4 lifts performance so much
 
 Two compounding reasons:
 
@@ -1027,13 +1135,13 @@ Two compounding reasons:
 
 The seed is doing **the same kNN work in both cases** — the engine doesn't change. But asking the engine *four parallel questions* (one per asset) and acting on the strongest answer turned out to be a fundamentally more powerful pattern than asking it *one question repeatedly* about a single asset.
 
-### C.5 The cost of all this
+### D.5 The cost of all this
 
 - **4× more queries** = 4× the seed load. Manageable on a Pi-class device but noticeable.
 - **4× more ingests** = 4× the witness-chain growth. The seed's chain length grew faster during this run.
 - **More flips** (1306 vs 870 in v1.5) = more slippage drag (~12.2% vs 8.3% cumulative). This is the biggest residual cost, and the #1 thing to fix to push v4 closer to (or past) SPY — see [§ 6](#6-recommended-next-steps-ordered-by-expected-lift--effort-ratio).
 
-### C.6 What "1 bps slippage per flip" really models
+### D.6 What "1 bps slippage per flip" really models
 
 Real slippage has three sources:
 

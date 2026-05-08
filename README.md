@@ -55,6 +55,17 @@ If you actually save £100/month into a Stocks & Shares ISA, what would you have
 
 Scale linearly to £300/mo (£18,000 contributed → £27,315 SPY DCA) or £500/mo (£30,000 → £45,525 SPY DCA).
 
+**But that £9,105 is the *recent past*, not a prediction.** A defensible planning range for the next 5 years:
+
+| Scenario | Annualized | £100/mo final | £500/mo final |
+|---|---|---|---|
+| Bear (sustained selloff) | 0–3% | £6,000–£6,476 | £30,000–£32,378 |
+| **Base** (long-run average) | **6–9%** | **£6,989–£7,542** | **£34,946–£37,712** |
+| Bull | 10–14% | £7,744–£8,610 | £38,719–£43,050 |
+| Exceptional (matches recent 5y) | 15–18% | £8,857–£9,651 | £44,287–£48,256 |
+
+**Plan for the base case, be pleasantly surprised by the bull case, prepare emotionally for the bear case.** Full compounding maths, sequence-of-returns risk explanation, and decision tree for UK tax wrappers (LISA/SIPP/GIA niche cases) in [`EXPLORATION_LOG.md` Appendix C](EXPLORATION_LOG.md).
+
 ### TL;DR
 
 - **For DCA, simple beats clever.** Plain "buy SPY every month inside a Stocks & Shares ISA" beat our v5 kNN rotation by ~£1,000 per £6,000 contributed over 5 years. See [`EXPLORATION_LOG.md` Appendix C](EXPLORATION_LOG.md) for full UK tax / broker analysis.
