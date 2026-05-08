@@ -11,7 +11,7 @@
 
 We set out to backtest the **Neural Trader** strategy that runs on a Cognitum Seed device. The strategy uses the seed's on-device vector store as a **k-Nearest-Neighbors (kNN) memory** of past market days, predicting what tomorrow will do by averaging what happened *after* the historical days that "looked most similar" to today.
 
-Across **five variants** we walked from "lost money" → "profitable but mediocre on one asset" → "rotate across an asset universe and almost beat buy-and-hold." The architectural lessons compound; v4 was the breakthrough.
+Across **six variants** we walked from "lost money" → "profitable but mediocre on one asset" → "rotate across an asset universe and almost beat buy-and-hold" → "drop daily flipping for monthly rebalancing to make it realistic for a retail UK investor — and discover that the simplest possible plain-DCA strategy still beat us." The architectural lessons compound; the practical lesson at the end is humbling.
 
 ```
         STRATEGY EQUITY CURVES (1.0 = start)
@@ -34,22 +34,35 @@ Across **five variants** we walked from "lost money" → "profitable but mediocr
           2019    2021   2023   2025   2026
 ```
 
-### Headline result
+### Headline result — single lump sum invested for ~7 years
 
 | Variant | Final | CAGR | Sharpe | MaxDD | Verdict |
 |---|---|---|---|---|---|
 | **SPY buy & hold** | 3.02 | **+16.48%** | ~1.0 | −33.7% | benchmark |
 | v1: long/flat/short, no threshold | 0.87 | −1.94% | 0.00 | −48.1% | **broken** — forced shorts in bull market |
-| v1.5: long-only, 5 bps threshold | 1.33 | +4.00% | 0.35 | **−25.3%** | best **single-asset** variant |
+| v1.5: long-only, 5 bps threshold | 1.33 | +4.00% | 0.35 | **−25.3%** | best single-asset rotation variant |
 | v2: regime as 8th cosine dimension | 1.03 | +0.47% | 0.11 | −27.5% | hurt — broke kNN geometry |
 | v3: regime as decision gate | 1.16 | +2.03% | 0.28 | −22.4% | hurt return, helped drawdown |
-| **v4: multi-asset rotation** | **2.61** | **+14.16%** | **0.79** | −34.3% | **best variant** — closed most of the gap to SPY |
+| **v4: multi-asset rotation** (daily) | **2.61** | **+14.16%** | **0.79** | −34.3% | **best non-DCA variant** — closed most of the gap to SPY |
 
-### Three things we learned
+### Headline result — £100/month DCA for 60 months (most recent 5 years)
+
+For a realistic UK retail investor depositing £100/month into a Stocks & Shares ISA — full UK-tax / commissions analysis in [Appendix C](#appendix-c-the-single-pool-abstraction-dca-and-a-uk-friendly-v5).
+
+| Strategy | Total contributed | Final | Profit | Verdict |
+|---|---|---|---|---|
+| **SPY-only DCA** (buy each month, never sell) | £6,000 | **£9,105** | **+£3,105** | **wins** — simplicity beats complexity |
+| v5: DCA into kNN winner each month | £6,000 | £8,120 | +£2,120 | underperforms |
+| 60/40 SPY+IEF DCA (no rebalance) | £6,000 | £7,947 | +£1,947 | underperforms both |
+
+(Linear-scale to £300/month → totals are 3×; £500/month → 5×.)
+
+### Four things we learned
 
 1. **The naive kNN strategy works as a single-asset signal but cannot beat buy & hold on raw return** when restricted to one ETF during a 16%-CAGR bull stretch. That's a structural limit, not a tuning failure.
 2. **Adding a "regime" feature is harder than it sounds.** Putting it inside the cosine distance (v2) corrupts neighbor selection. Using it as an outer gate (v3) throws out kNN's best work — its panic-bottom pattern matches.
 3. **Universe choice matters more than feature choice.** Going from one asset (SPY) to four (SPY/QQQ/IEF/GLD) lifted CAGR from 4% → 14% and Sharpe from 0.35 → 0.79 *without changing the embedding or decision rule*. The biggest open lever is no longer "what features?" but "what assets and what aggregator?"
+4. **For a real DCA investor, simple beats clever.** v5 (the same kNN engine on a monthly cadence to fit retail DCA) underperformed plain "buy SPY every month and never sell" by ~£1,000 per £6,000 contributed over 5 years. Once you account for UK ISA wrappers and commission-free brokers, the discipline of monthly auto-invest into one low-cost ETF beats almost every active strategy at small portfolio sizes. (Full analysis in [Appendix C](#appendix-c-the-single-pool-abstraction-dca-and-a-uk-friendly-v5).)
 
 ---
 
@@ -625,7 +638,8 @@ This list is intentionally written for non-experts.
 | `src/v1_5_long_only.py` | v1.5 (long-only, 5 bps threshold) |
 | `src/v2_regime_feature.py` | v2 (regime feature inside cosine) |
 | `src/v3_regime_gate.py` | v3 (regime as decision gate) |
-| `src/v4_multi_asset_rotation.py` | v4 (rotation across SPY/QQQ/IEF/GLD + cash; **best variant**) |
+| `src/v4_multi_asset_rotation.py` | v4 (rotation across SPY/QQQ/IEF/GLD + cash) |
+| `src/v5_dca_monthly.py` | v5 (DCA-friendly monthly rotation; designed for UK retail ISA) |
 | `src/embedding.py` | Feature definitions and z-scoring |
 | `src/store_client.py` | HTTP client for the seed's RVF store |
 | `src/yfinance_loader.py` | SPY data loader (cached to `spy_daily.csv`) |
@@ -646,7 +660,8 @@ For full per-run detail (including position distributions, neighbor counts, and 
 - [`results/v1_5_long_only/report.md`](results/v1_5_long_only/report.md) — v1.5
 - [`results/v2_regime_feature/report.md`](results/v2_regime_feature/report.md) — v2
 - [`results/v3_regime_gate/report.md`](results/v3_regime_gate/report.md) — v3
-- [`results/v4_multi_asset_rotation/report.md`](results/v4_multi_asset_rotation/report.md) — v4 (multi-asset rotation; **best variant**)
+- [`results/v4_multi_asset_rotation/report.md`](results/v4_multi_asset_rotation/report.md) — v4 (multi-asset rotation; best non-DCA variant)
+- [`results/v5_dca_monthly/report.md`](results/v5_dca_monthly/report.md) — v5 (DCA-friendly monthly variant — most realistic for retail UK investors)
 
 ## Appendix B: Reproducing a run
 
@@ -669,7 +684,212 @@ cat  results/v4_multi_asset_rotation/report.md
 
 ---
 
-## Appendix C: How v4 actually executes (day-by-day mechanics)
+## Appendix C: The single-pool abstraction, DCA, and a UK-friendly v5
+
+This appendix answers a deceptively simple question that the v1–v4 backtests sweep under the rug: *"When the strategy says 'go long', where does the money actually come from?"* The answer reveals an important abstraction the backtest is hiding, leads naturally to a DCA-friendly variant (v5), and forces an honest conversation about UK tax wrappers and what a real retail investor would realistically make.
+
+### D.1 What the backtest actually models
+
+In the code, equity is **a single number**. Look at what happens when v4 flips from QQQ to SPY:
+
+```python
+if hold != yesterday's hold:
+    equity *= (1 − 0.0001)        # pay slippage
+    flip_count += 1
+# ... then later:
+equity *= (1 + actual_forward_return[hold])
+```
+
+That's it. There is no "buy", no "sell", no "cash account", no "open positions". The backtest never asks *where is the money*. It assumes:
+
+1. **You start with some capital, fully deployable.** The number `1.0` at the start represents whatever wealth you brought (£100, £10,000, £1M — the math is the same).
+2. **Whatever you hold today gets that asset's return.** No need to "buy" it; you just are it.
+3. **Rotating means swapping** — sell what you have, buy what you want, with no surplus or shortfall in cash.
+4. **No new money ever arrives.** Equity only changes by the strategy's actions and market moves.
+
+So when v4 says "go long QQQ today," in real-world terms it's saying:
+
+> *"Take 100% of whatever you currently hold, convert it to QQQ, and let it ride for one day."*
+
+It is **not** saying "go buy more QQQ on top of what you already have." Every "long" is a redeployment of existing capital, not a new capital injection.
+
+### D.2 This is rotation — not "buy and never sell"
+
+What people usually picture by "always long" — *"I buy an asset and never sell it; if I get a buy signal I deposit more money to buy more"* — is a fundamentally different strategy:
+
+- **Buy and hold** — buy once at the start, never sell. (This is the `SPY buy & hold` benchmark in our results table — equity = SPY's price ratio. No flips, no slippage, +16.5% CAGR.)
+- **Dollar-cost averaging (DCA)** — keep adding new money to the same asset(s), never sell. Each contribution compounds at the asset's return from its own deposit date.
+
+v1–v4 are *neither*. They're **rotation** strategies — always 100% of existing capital deployed in *something*, changing which something on every rebalance. There are no permanent positions.
+
+### D.3 Real-world frictions the backtest hides
+
+Even within the single-pool abstraction, several real-world costs aren't modelled:
+
+| Friction | What it is | Severity for retail UK investor |
+|---|---|---|
+| **Per-trade commissions** | Some UK brokers charge ~£3–10 per trade | **Catastrophic at small portfolio sizes.** A £5 commission on a £100 trade is 5%. Mitigation: use commission-free brokers — Trading 212, Vanguard, InvestEngine, Freetrade. |
+| **Bid-ask spread on retail orders** | Usually 1–3 bps for liquid ETFs | Approximately what we model with `SLIPPAGE_BPS=1` (per flip; real-world is closer to 1 bp/side = 2 bps/flip). |
+| **FX cost** | Spread of 15–45 bps when converting GBP to USD | Material. Mitigation: use **UCITS-equivalent** ETFs listed in GBP on the LSE (see D.6). |
+| **Stamp duty (UK)** | 0.5% on UK *stock* purchases | **Doesn't apply** to ETFs (UCITS or otherwise). ✓ |
+| **Tax on every flip** | UK CGT on realised gains in a non-sheltered account | **Significant.** v4's 1306 daily flips = 1306 taxable events. Mitigation: hold inside an **ISA** — see D.5. |
+
+### D.4 v5 — the DCA-friendly variant
+
+Designed for a real UK retail investor depositing a fixed £ amount every month into a Stocks & Shares ISA. **Same kNN engine as v4** (4 assets, winner-take-all, 5 bps threshold) but with one critical change:
+
+> **Rebalance once per month, not every day.**
+
+This drops position flips from 1306 (v4) to **61** (v5, over the 87-month run) — cutting cumulative slippage drag from ~12% to ~0.6%.
+
+#### Day-of-month-1 mechanics
+
+```
+   Day 1 of each month:
+   1. Add £X cash contribution to portfolio
+   2. Run kNN signal across all 4 assets → pick winner (or cash)
+   3. If winner != held:
+        Sell held + cash → buy winner with the full new total
+        Slippage: 1 bps on full portfolio value
+   4. If winner == held:
+        Buy more of held with the new £X
+        Slippage: 1 bps on the contribution amount only
+   5. Hold for the next ~21 trading days, then repeat
+```
+
+For the rest of the month, you do *nothing*. No daily checking, no flipping. That's the DCA-friendly part.
+
+#### v5 results — most recent 60 months (5 years), £100/month base
+
+| Metric | **v5 rotation** | **SPY-only DCA** | 60/40 DCA |
+|---|---|---|---|
+| Months | 60 | 60 | 60 |
+| Total contributed | £6,000 | £6,000 | £6,000 |
+| Final portfolio | £8,120 | **£9,105** | £7,947 |
+| Total profit | +£2,120 | **+£3,105** | +£1,947 |
+| Profit / contributed | 35.3% | **51.7%** | 32.5% |
+
+**Key finding: v5 underperformed plain SPY-only DCA by ~£1,000 per £6,000 contributed.** Even with the full kNN multi-asset machinery, the simplest possible strategy — *"buy a bit of SPY every month and never sell"* — beat us.
+
+#### Why? Because the 60-month window was an extreme bull market for US equities
+
+The 5-year window (May 2021 → May 2026) included:
+- The post-COVID liquidity-fuelled rally
+- The 2022 bear market (which v5 partially escaped via IEF/GLD — small advantage)
+- The 2023–2026 AI rally (massive gains in QQQ; v5 was sometimes in QQQ, often not; SPY DCA captured almost all of it via SPY's tech weighting)
+
+Over this specific window, *almost any sensible long-only US equity strategy* gave back to SPY's compounding. The rotation's "advantage" of escaping bear markets in IEF/GLD was outweighed by missing some of the equity rallies.
+
+#### Scaled scenarios (5-year window)
+
+For the contribution levels you mentioned:
+
+| Monthly £ | Total contributed (60 mo) | v5 final | SPY-only DCA | 60/40 DCA | v5 profit |
+|---|---|---|---|---|---|
+| **£100** | £6,000 | £8,120 | **£9,105** | £7,947 | +£2,120 |
+| **£300** | £18,000 | £24,359 | **£27,315** | £23,842 | +£6,359 |
+| **£500** | £30,000 | £40,598 | **£45,525** | £39,736 | +£10,598 |
+
+(Linear scaling holds because slippage is percentage-based and we're well inside commission-free brokerage thresholds.)
+
+### D.5 UK tax-efficient wrappers — the choice that matters more than the strategy
+
+For a retail investor making £100–£500/month deposits, **the choice of tax wrapper matters more than the choice of strategy**. The tax savings often dwarf the alpha any strategy is realistically going to produce.
+
+Four wrappers to know:
+
+| Wrapper | Annual limit | Tax treatment | Lock-up | Best for |
+|---|---|---|---|---|
+| **Stocks & Shares ISA** | £20,000/year | All gains and dividends **fully tax-free** | None — withdraw anytime | **Almost every retail investor.** £6K/£18K/£30K/yr fits comfortably under £20K. |
+| **Lifetime ISA (LISA)** | £4,000/year | 25% government bonus on contributions; tax-free gains | Locked until age 60 (or first home, no penalty) | First-home buyers, very long-horizon retirement savers |
+| **SIPP** (pension) | £40,000/year (or earned income) | 25% tax relief on contributions (more if higher-rate); tax-free growth; 25% tax-free at retirement, rest taxed as income | Locked until age 57+ | Higher-rate taxpayers, retirement-only money |
+| **GIA** (general account) | None | Subject to **CGT** (£3,000/yr tax-free in 2024/25, scheduled to drop), and **dividend tax** above £500/yr | None | After ISA + LISA + SIPP allowances are used, or for short-term needs |
+
+**For your three contribution levels, the answer is unambiguous: open a Stocks & Shares ISA.**
+
+| Monthly | Annual | Fits ISA? | Recommended wrapper |
+|---|---|---|---|
+| £100 | £1,200 | ✓ way under £20K | Stocks & Shares ISA |
+| £300 | £3,600 | ✓ under £20K | Stocks & Shares ISA |
+| £500 | £6,000 | ✓ under £20K | Stocks & Shares ISA |
+
+Inside an ISA:
+- **Zero capital gains tax** on profits — even if you trade weekly, every flip is tax-free.
+- **Zero dividend tax** on distributions.
+- **No reporting required** on your tax return.
+
+This is so important that it changes the calculus of strategies like v5: outside an ISA, v5's 61 monthly flips would each be a taxable disposal, and you'd lose roughly 18–20% of each gain to CGT. Inside an ISA, all 61 flips are tax-free. **An ISA effectively makes any active strategy ~20% more efficient than it would be in a GIA.**
+
+Brokers offering Stocks & Shares ISAs that suit small monthly contributions and stock the UCITS-equivalent ETFs we use:
+
+| Broker | Account fee | Trade fee | FX cost | Notes |
+|---|---|---|---|---|
+| **Trading 212** | £0 | £0 | 0.15% | Easiest UI; auto-invest available |
+| **Vanguard UK** | 0.15% (capped £375/yr) | £0 (Vanguard funds) | 0% (GBP fund classes) | Cheapest at scale; limited to Vanguard products |
+| **InvestEngine** | 0% (DIY); 0.25% (managed) | £0 | 0% (UCITS only) | Auto-invest is excellent; supports the assets we discuss |
+| **Freetrade** | £0 (basic); £4.99/mo (standard ISA) | £0 | 0.45% (basic) – 0.39% (standard) | Higher FX cost; otherwise capable |
+
+For a £100/month strategy, **Trading 212 ISA** or **InvestEngine** are the simplest, cheapest options. For £500/month, **Vanguard ISA** with their LifeStrategy fund family is hard to beat for cost-efficiency.
+
+### D.6 UK-friendly UCITS equivalents to the v5 universe
+
+The US ETFs in our backtest (SPY, QQQ, IEF, GLD) **are not directly available to UK retail investors** due to MiFID/PRIIPs documentation requirements. Use these UCITS-compliant LSE-listed equivalents instead:
+
+| Backtest ticker | UK-listed equivalent | Description | TER |
+|---|---|---|---|
+| SPY | **VUSA** (Vanguard S&P 500 UCITS ETF) | S&P 500 tracker | 0.07% |
+| QQQ | **EQQQ** (Invesco Nasdaq-100 UCITS ETF) or **CNDX** (iShares) | Nasdaq-100 tracker | 0.30% / 0.33% |
+| IEF | **IDTM** (iShares $ Treasury 7–10y UCITS ETF) | US 7–10y treasuries (USD) | 0.07% |
+| GLD | **SGLN** (iShares Physical Gold ETC) | Physical gold | 0.12% |
+
+The TERs (Total Expense Ratios) are the *additional* annual cost of holding each fund — typically 7–33 bps/year. Subtract this from the backtest's reported return to get a more realistic figure.
+
+Hedged versions (e.g., `IGTM` for hedged 7–10y USTs) eliminate FX swings on the bond positions but add ~10 bps/year. For long-horizon DCA, the unhedged versions are usually fine since FX impact averages out.
+
+### D.7 Practical recommendation for a new investor
+
+If this is your first systematic investment plan, here's the honest **simple** answer the data supports:
+
+1. **Open a Stocks & Shares ISA** with Trading 212, InvestEngine, or Vanguard.
+2. **Set up a monthly direct debit** for £100 / £300 / £500.
+3. **Buy VUSA (S&P 500) every month** with the deposit. Set it to auto-invest if your broker supports it.
+4. **Don't sell. Don't time the market. Don't check it daily.**
+
+Over the most recent 5 years that simple plan would have turned:
+- £6,000 contributed → £9,105 (~£3,100 profit)
+- £18,000 contributed → £27,315 (~£9,300 profit)
+- £30,000 contributed → £45,525 (~£15,500 profit)
+
+**This beat the more sophisticated v5 strategy by ~12% across all contribution levels in our backtest.**
+
+### D.8 If you still want to use a strategy like v5
+
+It's a perfectly reasonable next step *once you've got the simple DCA habit established*. Reasonable scenarios where v5 might (might) outperform:
+
+- **Sustained equity bear market.** v5's ability to rotate into IEF/GLD shines when SPY underperforms for years. Our 60-month window was almost the opposite environment.
+- **High-inflation regime.** Gold (GLD) typically outperforms equities in stagflation; v5 holds it ~27% of the time.
+- **You have ≥£10K already invested.** Slippage and FX costs scale better at larger sizes.
+
+But for the first 3–5 years of investing, **simplicity wins**. The discipline of monthly auto-invest into a single low-cost equity ETF inside an ISA is, for almost everyone, more valuable than any kNN rotation algorithm.
+
+### D.9 Honest caveats on these projections
+
+- **Past performance is not future performance.** The 2021–2026 window was unusually good for US equities (post-COVID stimulus + AI rally). The next 60 months could equally be a sustained bear market — in which case SPY DCA might return *less* than v5.
+- **The £9,105 / £27,315 / £45,525 figures are not predictions.** They're the result of one specific historical window. A 60-month window starting in 2000 (dot-com bust) or 2007 (GFC) would look very different.
+- **Sequence-of-returns risk** matters with DCA. If the market crashes in months 1–12 of your plan, you accumulate more shares cheaply and tend to do *better* over the long run than someone who started during a bull market top.
+- **All returns ignore inflation.** UK CPI averaged ~3.5%/year over this window — real returns are correspondingly lower.
+- **All this assumes commission-free brokerage and an ISA.** Outside those assumptions the math gets meaningfully worse.
+
+### D.10 Files & where to look
+
+- [`src/v5_dca_monthly.py`](src/v5_dca_monthly.py) — the v5 implementation
+- [`results/v5_dca_monthly/report.md`](results/v5_dca_monthly/report.md) — auto-generated headline report
+- [`results/v5_dca_monthly/equity_curve.png`](results/v5_dca_monthly/equity_curve.png) — full-history equity curves vs benchmarks
+- [`results/v5_dca_monthly/equity.csv`](results/v5_dca_monthly/equity.csv) — month-by-month data
+
+---
+
+## Appendix D: How v4 actually executes (day-by-day mechanics)
 
 This appendix walks through *exactly* what happens inside one trading day of v4, then compares operational composition against v1.5 and v3.
 

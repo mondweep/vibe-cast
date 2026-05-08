@@ -41,11 +41,24 @@ Same window (Feb 2019 → May 2026):
 | v1.5 — long-only, 5 bps threshold | 1.33x | +4.00% | 0.35 | **−25.3%** | best **single-asset** |
 | v2 — regime as 8th feature in kNN | 1.03x | +0.47% | 0.11 | −27.5% | hurt |
 | v3 — regime as outer trade gate | 1.16x | +2.03% | 0.28 | −22.4% | hurt return, helped DD |
-| **v4 — multi-asset rotation** (SPY/QQQ/IEF/GLD + cash) | **2.61x** | **+14.16%** | **0.79** | −34.3% | **best overall** — closed most of the gap to SPY |
+| **v4 — multi-asset rotation** (SPY/QQQ/IEF/GLD + cash) | **2.61x** | **+14.16%** | **0.79** | −34.3% | **best non-DCA variant** |
+
+### And — the realistic test for a UK retail investor
+
+If you actually save £100/month into a Stocks & Shares ISA, what would you have after 5 years?
+
+| Strategy | Contributed | Final | Profit |
+|---|---|---|---|
+| **SPY-only DCA** (just buy a bit each month, never sell) | £6,000 | **£9,105** | **+£3,105** |
+| v5: DCA into kNN winner (same engine as v4, monthly cadence) | £6,000 | £8,120 | +£2,120 |
+| 60/40 SPY+IEF DCA (no rebalance) | £6,000 | £7,947 | +£1,947 |
+
+Scale linearly to £300/mo (£18,000 contributed → £27,315 SPY DCA) or £500/mo (£30,000 → £45,525 SPY DCA).
 
 ### TL;DR
 
-- **Universe choice was the biggest single lever.** Going from one asset (SPY) to four (SPY/QQQ/IEF/GLD) lifted CAGR from 4% → 14% and Sharpe from 0.35 → 0.79 *without changing the embedding or decision rule*.
+- **For DCA, simple beats clever.** Plain "buy SPY every month inside a Stocks & Shares ISA" beat our v5 kNN rotation by ~£1,000 per £6,000 contributed over 5 years. See [`EXPLORATION_LOG.md` Appendix C](EXPLORATION_LOG.md) for full UK tax / broker analysis.
+- **For a one-time lump sum**, universe choice was the biggest lever. Going from one asset (SPY) to four (SPY/QQQ/IEF/GLD) in v4 lifted CAGR from 4% → 14% and Sharpe from 0.35 → 0.79 *without changing the embedding or decision rule*.
 - **v4 still didn't quite beat SPY's raw return** (14.16% vs 16.48%), but came within ~2.3 pp — and roughly doubled SPY's Sharpe-equivalent risk-adjusted return.
 - **Single-asset technical kNN has a real ceiling** (~4% CAGR, Sharpe ~0.35); three feature/architecture tweaks (v2, v3) couldn't break it. Universe diversification did.
 - **Adding a "regime" feature is harder than it sounds.** Both single-asset attempts (v2, v3) underperformed v1.5 in informative ways.
@@ -77,13 +90,15 @@ The bet is that *the right pattern-match across decades is more useful than a fi
 │   ├── v1_5_long_only.py                  long-only, 5 bps threshold (best)
 │   ├── v2_regime_feature.py               regime feature inside cosine
 │   ├── v3_regime_gate.py                  regime as outer trade gate
-│   └── v4_multi_asset_rotation.py         rotation across SPY/QQQ/IEF/GLD + cash (best)
+│   ├── v4_multi_asset_rotation.py         daily rotation across SPY/QQQ/IEF/GLD + cash
+│   └── v5_dca_monthly.py                  monthly-cadence DCA-friendly variant for UK ISA investors
 └── results/                             ← per-variant output
     ├── v1_baseline/                       report only — outputs were dataless
     ├── v1_5_long_only/                    report.md + equity.csv + equity_curve.png
     ├── v2_regime_feature/                 ditto
     ├── v3_regime_gate/                    ditto
-    └── v4_multi_asset_rotation/           ditto (multi-asset; best variant)
+    ├── v4_multi_asset_rotation/           ditto (multi-asset rotation, daily)
+    └── v5_dca_monthly/                    ditto (DCA-friendly monthly rotation)
 ```
 
 Click into any `results/<variant>/report.md` for that run's full headline metrics, position distribution, and equity curve.
@@ -149,9 +164,12 @@ Open the equity curve, then read the report. Then read [`EXPLORATION_LOG.md`](EX
 
 5. **v4** kept v1.5's engine but expanded the universe — SPY, QQQ, IEF (bonds), GLD (gold), cash — and picked whichever asset's kNN signaled the strongest "go up" each day. Same embedding, same k, same threshold, same decision rule. The only change was the choice of *what to hold*. Result: **CAGR jumped 4% → 14%, Sharpe jumped 0.35 → 0.79.** The strategy spent only 21% of bars in SPY; it found bigger edges in QQQ (32%) and GLD (27%). *Universe choice did more than any feature tweak — it nearly closed the gap to SPY buy-and-hold.*
 
+6. **v5** dropped the daily flipping in favour of a once-a-month rebalance — the cadence a real UK retail DCA investor would actually use. Same engine as v4, but you only check the signal on the day you deposit your monthly contribution. This cut position flips from 1306 to 61 and slippage drag from ~12% to ~0.6%. Result over the most recent 5 years: **v5 still lost to plain monthly DCA into SPY** (£8,120 vs £9,105 on £6,000 contributed). The simplest strategy you can imagine — buy a bit of SPY every month inside an ISA and never sell — beat the kNN rotation. *The deepest finding of the whole exploration: at retail scale, in tax-advantaged accounts, simple compounding wins.*
+
 The deeper lessons:
 - **Trend-following regime filters and pattern-matching kNN have philosophically opposite views** during the very moments that matter (the v2/v3 finding).
-- **The biggest lever is what you trade, not how cleverly you trade it.** The single-asset architecture had a genuine ceiling that no amount of feature engineering could break — but expanding the asset menu lifted everything.
+- **For a one-time deployment, universe choice matters more than feature engineering** (the v4 finding).
+- **For ongoing DCA, simplicity matters more than universe choice** (the v5 finding). For a UK retail investor: open a Stocks & Shares ISA, set up a monthly direct debit into a low-cost S&P 500 tracker like VUSA, and don't touch it.
 
 ---
 
