@@ -578,7 +578,8 @@ This list is intentionally written for non-experts.
 - **Sharpe ratio** — Annualized return divided by annualized volatility. Roughly: how many units of return you got per unit of risk taken. Above 1 is genuinely good; 0.3 is mediocre; 0 means you took risk for no reward.
 - **Maximum drawdown (MaxDD)** — The largest peak-to-trough loss the strategy ever suffered. The number that decides whether you'd actually live with it.
 - **Hit rate** — Fraction of bets that won. 50% is a coin flip; 53–55% with positive expected value is a meaningful edge.
-- **Slippage / bps (basis points)** — Cost of trading. 1 bps = 0.01%. `1 bps/side` means 1 bps each time you buy AND each time you sell.
+- **Slippage / bps (basis points)** — Cost of trading. 1 bps = 0.01%. Three components in real life: (1) the bid-ask spread (the gap between what buyers offer and what sellers want — you give it up on every trade); (2) market impact (large orders move the price against you); (3) fees and commissions. In our backtest we approximate all of these with `SLIPPAGE_BPS = 1` — a single basis point applied every time the position changes.
+- **Slippage drag** — The *cumulative* cost of slippage across the whole strategy run. Math: `equity × (1 − 0.0001)^N` for N flips. v4 had 1306 flips → `(0.9999)^1306 ≈ 0.878` → ~12.2% of equity quietly given up to trading costs. This is why "trade less" is almost always an improvement — every flip you can avoid is a free 1 bp added back to performance.
 - **Position flip** — A change in position (from flat to long, long to flat, etc.). Each flip incurs slippage.
 - **Forward return** — The return *after* a given day. `forward_ret[today] = log(close[tomorrow]) − log(close[today])`. The thing the kNN tries to predict.
 - **Buy-and-hold** — see "Buy & hold" above.
@@ -665,6 +666,164 @@ PYTHONPATH=src .venv/bin/python src/v4_multi_asset_rotation.py
 open results/v4_multi_asset_rotation/equity_curve.png
 cat  results/v4_multi_asset_rotation/report.md
 ```
+
+---
+
+## Appendix C: How v4 actually executes (day-by-day mechanics)
+
+This appendix walks through *exactly* what happens inside one trading day of v4, then compares operational composition against v1.5 and v3.
+
+### C.1 One day in the life of v4
+
+```
+   Today is, say, 2024-08-15. The strategy needs to decide what to hold.
+   ─────────────────────────────────────────────────────────────────────
+
+   STEP 1: For EACH asset (4 in parallel), compute today's feature vector
+   ────────────────────────────────────────────────────────────────────
+
+   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
+   │   SPY    │  │   QQQ    │  │   IEF    │  │   GLD    │
+   │ OHLCV    │  │ OHLCV    │  │ OHLCV    │  │ OHLCV    │
+   │ today    │  │ today    │  │ today    │  │ today    │
+   └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
+        │             │             │             │
+        ▼             ▼             ▼             ▼
+   Compute the same 7 features per asset:
+   [log_ret_1, log_ret_5, log_ret_20, vol, ATR, vol_z, MA_dist] + bias
+        │             │             │             │
+        ▼             ▼             ▼             ▼
+   Z-score each (using THAT asset's own warmup-window stats)
+        │             │             │             │
+        ▼             ▼             ▼             ▼
+   8-dim vector   8-dim vector   8-dim vector   8-dim vector
+   for SPY today  for QQQ today  for IEF today  for GLD today
+
+   STEP 2: Send 4 SEPARATE kNN queries to the seed
+   ───────────────────────────────────────────────
+
+         POST /store/query  (one per asset)
+         ──────────────────────────────────
+         {
+           "k": 2000,                ──────────►   The seed returns the 2000
+           "vector": [today's        ◄──────────   most-similar past vectors,
+                      8 numbers]                   from ALL stored data
+         }
+
+   STEP 3: Filter each result to that asset's own history
+   ──────────────────────────────────────────────────────
+
+   For SPY:  keep only neighbors with id in [13B, 13B+today_idx)
+   For QQQ:  keep only neighbors with id in [14B, 14B+today_idx)
+   For IEF:  keep only neighbors with id in [15B, 15B+today_idx)
+   For GLD:  keep only neighbors with id in [16B, 16B+today_idx)
+
+   This is the multi-store trick — each asset's vectors live in its own
+   ID range, so id-range filtering acts like a separate "memory room" per asset.
+
+   STEP 4: For each asset, take the top 10 of its own kind, look up
+           what the day AFTER each of those neighbors did, and average
+   ─────────────────────────────────────────────────────────────────
+
+   For SPY: mean_pred_SPY = mean(forward_return[neighbor.id]
+                                  for neighbor in top_10_SPY_neighbors)
+   For QQQ: mean_pred_QQQ = ...
+   For IEF: mean_pred_IEF = ...
+   For GLD: mean_pred_GLD = ...
+
+   STEP 5: Pick the winner
+   ───────────────────────
+
+   winner = argmax(mean_pred)         # which asset's pattern says
+                                      # "go up most strongly tomorrow"?
+
+   if mean_pred[winner] > 5 bps:
+       hold = winner
+   else:
+       hold = cash                    # all four options look weak
+
+   STEP 6: Flip if needed (incurs 1 bps slippage)
+   ──────────────────────────────────────────────
+
+   if hold != yesterday's hold:
+       equity *= (1 − 0.0001)
+       flip_count += 1
+
+   STEP 7: Realize tomorrow's P&L
+   ──────────────────────────────
+
+   if hold is not cash:
+       equity *= (1 + actual_forward_return[hold])
+
+   STEP 8: Append today's vector to each asset's store
+   ───────────────────────────────────────────────────
+
+   For each asset:
+       seed.ingest((id_base[asset] + today_idx, today's_vector))
+
+   So the seed grows by 4 vectors today. Tomorrow's queries will see
+   today as a candidate neighbor (without circular reasoning, because
+   we filter neighbors to id < today's_id).
+```
+
+### C.2 The fundamental shift
+
+```
+v1.5 / v3:  "Should I be in the market RIGHT NOW?"  (1 yes/no decision)
+
+v4:         "Of these four options, which is the BEST place to be?"  (4-way comparison)
+```
+
+That's the conceptual change. Everything else flows from it.
+
+### C.3 Side-by-side composition table
+
+| Aspect | v1.5 long-only | v3 regime gate | **v4 multi-asset rotation** |
+|---|---|---|---|
+| **Universe** | SPY only | SPY only | SPY, QQQ, IEF, GLD |
+| **Possible positions** | long SPY, cash | long SPY, cash | long SPY, long QQQ, long IEF, long GLD, cash |
+| **Position states** | 2 | 2 | 5 |
+| **Embedding** | 7 features + bias | 7 features + bias | 7 features + bias (same) |
+| **Embedding dim** | 8 | 8 | 8 (per asset) |
+| **Decision rule** | `mean_pred > 5 bps → long` | `mean_pred > 5 bps AND regime > 0 → long` | `winner = argmax(mean_pred); winner > 5 bps → long winner` |
+| **Inputs to decision** | 1 number | 2 numbers | 4 numbers |
+| **kNN queries per day** | 1 | 1 | **4** |
+| **Vector ingests per day** | 1 | 0 (reuses v1.5's vectors) | **4** |
+| **ID ranges in seed** | 11B (one) | 11B (reused from v1.5) | 13B, 14B, 15B, 16B (four separate) |
+| **Total vectors written** | ~2,000 | 0 (reused) | **~8,300** |
+| **Wall-clock runtime** | ~3 min | ~3 min | **~16 min** |
+| **Position flips** | 870 | 702 | **1,306** |
+| **Slippage drag (cumulative)** | ~8.3% | ~6.8% | **~12.2%** |
+| **Bars in market** | 878 / 1824 (48%) | 694 / 1825 (38%) | **1,636 / 1826 (90%)** |
+| **Bars in cash** | 946 (52%) | 1131 (62%) | **190 (10%)** |
+
+### C.4 Why v4 lifts performance so much
+
+Two compounding reasons:
+
+1. **More time invested.** v1.5 was in cash 52% of the time, earning 0%. v4 is in cash only 10% of the time — the other 90% it's collecting return from *some* asset. Even if v4's per-day return is slightly worse than v1.5's per-day return when invested, v4 wins by sheer time-in-market.
+
+2. **Better selection within the time invested.** When SPY is grinding sideways but QQQ is rallying (e.g., 2024 AI boom), v1.5 sits in cash earning nothing while v4 catches the QQQ move. When stocks are crashing but gold is rallying (e.g., 2020 COVID + inflation onset), v1.5 sits in cash; v4 holds GLD.
+
+The seed is doing **the same kNN work in both cases** — the engine doesn't change. But asking the engine *four parallel questions* (one per asset) and acting on the strongest answer turned out to be a fundamentally more powerful pattern than asking it *one question repeatedly* about a single asset.
+
+### C.5 The cost of all this
+
+- **4× more queries** = 4× the seed load. Manageable on a Pi-class device but noticeable.
+- **4× more ingests** = 4× the witness-chain growth. The seed's chain length grew faster during this run.
+- **More flips** (1306 vs 870 in v1.5) = more slippage drag (~12.2% vs 8.3% cumulative). This is the biggest residual cost, and the #1 thing to fix to push v4 closer to (or past) SPY — see [§ 6](#6-recommended-next-steps-ordered-by-expected-lift--effort-ratio).
+
+### C.6 What "1 bps slippage per flip" really models
+
+Real slippage has three sources:
+
+| Source | What it is |
+|---|---|
+| **Bid-ask spread** | When you "buy" you pay the *ask*; when you "sell" you receive the *bid*. The gap is yours to cover. For SPY, ~1 bp; for less liquid assets it's wider. |
+| **Market impact** | Large orders move the price against you. Retail-sized: negligible. Institutional: significant. |
+| **Fees & commissions** | Exchange fees, broker commissions, regulatory fees. |
+
+The backtest's `SLIPPAGE_BPS = 1` is a deliberately conservative single number that subsumes all three sources, applied once per flip. In real life you'd typically pay ~1 bp *per side* (so 2 bps per flip — both selling the old asset and buying the new). The 1 bps per flip we used is on the optimistic end; expect real-world drag to be ~2× our reported numbers.
 
 ---
 
