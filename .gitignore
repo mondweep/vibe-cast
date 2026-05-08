@@ -1,0 +1,19 @@
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Local cache (regeneratable from yfinance)
+spy_daily.csv
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Local helper artifacts (kept out of source control)
+_compare_window.py
+
+# Backtest run logs (use the report*.md files instead)
+*.log
