@@ -66,6 +66,7 @@ The bet is that *the right pattern-match across decades is more useful than a fi
 .
 ├── README.md                            ← you are here
 ├── EXPLORATION_LOG.md                   ← deep dive: diagrams, journey, glossary
+├── LIMITATIONS.md                       ← issue-ready catalog for the seed/cog devs
 ├── src/                                 ← Python source
 │   ├── embedding.py                       feature definitions, z-scoring
 │   ├── store_client.py                    HTTP client for the seed's RVF store
@@ -153,6 +154,15 @@ Suggested by the exploration, in order of expected lift:
 3. **Multi-asset rotation** — to actually beat buy-and-hold, the universe probably needs to be more than SPY-in-or-out.
 
 See [`EXPLORATION_LOG.md` § 6](EXPLORATION_LOG.md) for the full ranked list.
+
+## Limitations We Hit
+
+During the exploration we identified a number of limitations, footguns, and missing features in the seed / RVF store / `neural-trader` cog. These are catalogued in [`LIMITATIONS.md`](LIMITATIONS.md) as **ready-to-paste GitHub issues** — one bug, nine enhancements, two doc gaps, two open questions. Highlights:
+
+- 🐛 **`dedup=false` silently allows duplicate vector IDs** (high-severity footgun for backtest reruns)
+- ⚙️ **No tag / namespace filtering on kNN queries** — forced massive client-side oversampling
+- ⚙️ **Cog has no metrics / observability endpoint** — predictions, neighbors, hit rate are a black box
+- ⚙️ **No way to delete vectors** from the store; ours are now permanent residents
 
 ---
 

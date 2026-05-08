@@ -458,6 +458,8 @@ A pragmatic order: do **#1 first**, then revisit the goal. If the answer becomes
 3. **Vector hygiene** — across v1/v1.5/v2/v3 we've ingested ~6,000 SPY vectors at ID bases 10B / 11B / 12B. None deleted. May want to clean up before next experiments.
 4. **Environmental issue noted** — several project files (`yfinance_loader.py`, `spy_daily.csv`, `embedding.py`, `store_client.py`) are currently in macOS *dataless* state (size metadata correct but on-disk content evicted by Optimized Storage). Worked around by inlining the SPY loader. Worth manually re-hydrating via Finder if iCloud Drive is enabled.
 
+> **For a structured, issue-ready catalog of all the limitations, bugs, and enhancement requests we identified — formatted as ready-to-paste GitHub issues — see [`LIMITATIONS.md`](LIMITATIONS.md).**
+
 ---
 
 ## 8. Glossary
@@ -530,6 +532,7 @@ This list is intentionally written for non-experts.
 | `results/<variant>/report.md` | Auto-generated headline report |
 | `EXPLORATION_LOG.md` | This document |
 | `README.md` | Top-level project overview and quickstart |
+| `LIMITATIONS.md` | Issue-ready catalog of bugs, enhancement requests, and open questions for the seed/cog developers |
 
 ---
 
