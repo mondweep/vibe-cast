@@ -27,7 +27,19 @@ If you stumbled here looking for one specific thing, jump straight to **[MASTER-
 
 ---
 
-## Highlights — Some Things You'll Find Here
+## Flagship Showcase Projects (External Repositories)
+
+A few projects live in separate private repositories but are part of the same journey. Full writeups in [MASTER-README.md](./MASTER-README.md#showcase-projects-external-repositories).
+
+| Project | What it is | Live demo |
+|---|---|---|
+| **Rugby Line-Out Intelligence** | AI rugby analysis — turns match footage into tactical scouting reports using Google Gemini vision, on Azure Container Apps. v2.2.0, Azure migration complete. | [staging](https://lineout-frontend-staging.delightfulflower-38f4c743.uksouth.azurecontainerapps.io/) |
+| **MAESTRO — Securing the Agentic Frontier** | Agentic-AI security research presented to ~150 CISOs at Rela8 Group's CISO London Summit 2025. 23 vulns across 7 layers; 3 zero-day live demos. | [demo](https://maestro-agentic-ai-security-demo-mon.netlify.app/) |
+| **Driftwise** | Serendipitous local-history PoC built with Claude Agent SDK. | [demo](https://driftwise-mmp.vercel.app/) |
+
+---
+
+## Highlights — Some Things You'll Find In This Repository
 
 | Area | Pick-a-project starting point |
 |---|---|
