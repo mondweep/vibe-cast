@@ -46,6 +46,55 @@ Each branch has its own README, dependencies, and run instructions. Some branche
 
 ---
 
+## Showcase Projects (External Repositories)
+
+A few flagship projects live in separate, private repositories. They are catalogued here because the work, the writeups, and the live demos are part of the same build-in-public journey.
+
+### Rugby Line-Out Intelligence
+**AI-powered rugby analysis platform** — turns raw match footage into tactical scouting reports using Google Gemini vision models, hosted on Azure Container Apps.
+
+- **Problem**: coaches lose hours manually scrubbing match footage to analyse line-out set-pieces. There is no fast, repeatable way to turn raw video into actionable tactical intelligence on opposition formations, throw depth, and outcomes.
+- **What it does**:
+  - **Two-phase AI analysis** — Phase 1 scans frames for candidate line-out events; Phase 2 classifies each clip with formation, throw depth, result, and pitch zone.
+  - **Interactive dashboard** — pitch heatmap, zone radar chart, formation breakdown, and an auto-generated scouting report.
+  - **AI chat** — query match data in natural language, or trigger video re-analysis for deeper tactical questions; false positives can be removed via function-calling in the chat.
+  - **Self-learning memory** — human corrections are stored as vector embeddings in pgvector and used to improve accuracy over time.
+  - **Flexible video ingest** — drag-and-drop upload or YouTube URL (with yt-dlp + cookie passthrough to bypass bot verification).
+- **Tech**: Google Gemini vision models (4 user-selectable), pgvector for self-learning memory, Azure Container Apps, Azure Blob Storage, GitHub Actions CI/CD, yt-dlp.
+- **Status**: v2.2.0 — Azure migration complete; staging and production infrastructure provisioned (May 2026). Mobile-responsive dashboard, custom prompt support.
+- **Staging demo**: <https://lineout-frontend-staging.delightfulflower-38f4c743.uksouth.azurecontainerapps.io/>
+
+---
+
+### Securing the Agentic Frontier — MAESTRO Framework
+**AI security research and live demo**, presented to ~150 CISOs at the **Rela8 Group CISO London Summit 2025**.
+
+- **Problem**: ElizaOS — a widely-deployed open-source AI agent framework — has critical security gaps. *"73% of production deployments have zero authentication"*; agents execute untrusted code with full system privileges, exposing enterprises to material financial and operational risk.
+- **What was achieved**:
+  - Identified **23 exploitable vulnerabilities across 7 architectural layers**.
+  - Developed **MAESTRO** (Multi-Agent Environment Security Threat & Risk Operations) — a layered security model for evaluating agentic AI systems.
+  - Demonstrated **three zero-day attack scenarios** live in under 5 minutes each: RAG memory poisoning, malicious plugin supply-chain attack, and authentication bypass.
+  - Quantified **$12M annual risk exposure** (range $5.55M – $34.7M per incident) with a phased hardening roadmap delivering **12:1 ROI**.
+  - Delivered to ~150 senior security executives at the CISO London Summit 2025.
+- **Tech / concepts**: MAESTRO framework, ElizaOS internals, RAG / vector-database threat modelling, plugin-ecosystem supply-chain security, LLM integration patterns (Anthropic Claude referenced).
+- **Live demo**: <https://maestro-agentic-ai-security-demo-mon.netlify.app/>
+
+---
+
+### Driftwise — Serendipitous Local History
+**Location-aware discovery PoC** that surfaces historical narratives about a user's immediate surroundings, built with Anthropic's Claude Agent SDK.
+
+- **Problem**: most history apps require directed search — you have to already know what you're looking for. Driftwise inverts that: it surfaces the history *around you*, serendipitously.
+- **What it does**:
+  - Mobile-friendly, location-permission-aware interface.
+  - Discovers and presents place-based historical narratives based on the user's current location.
+  - Proof-of-concept demonstrating how a Claude Agent SDK pipeline can power a real-world consumer experience.
+- **Tech**: Anthropic Claude Agent SDK; deployed on Vercel.
+- **Status**: v0.1.0, co-created.
+- **Live demo**: <https://driftwise-mmp.vercel.app/>
+
+---
+
 ## Project Categories
 
 ### Real-Time Communication & Collaborative Apps
