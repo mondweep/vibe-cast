@@ -36,6 +36,8 @@ A few projects live in separate private repositories but are part of the same jo
 | **Rugby Line-Out Intelligence** | AI rugby analysis — turns match footage into tactical scouting reports using Google Gemini vision, on Azure Container Apps. v2.2.0, Azure migration complete. | [staging](https://lineout-frontend-staging.delightfulflower-38f4c743.uksouth.azurecontainerapps.io/) |
 | **MAESTRO — Securing the Agentic Frontier** | Agentic-AI security research presented to ~150 CISOs at Rela8 Group's CISO London Summit 2025. 23 vulns across 7 layers; 3 zero-day live demos. | [demo](https://maestro-agentic-ai-security-demo-mon.netlify.app/) |
 | **Driftwise** | Serendipitous local-history PoC built with Claude Agent SDK. | [demo](https://driftwise-mmp.vercel.app/) |
+| **Agentic Deal-Team Workforce (UK PE)** | Multi-tenant SaaS for mid-market private-equity DD — six memory-sharing agents, Gemini tool-use, Supabase + pgvector + RLS, Azure Container Apps; integrates Lexius (1,456 articles / 8,123 facts) and a 128-bit Corp Finance engine. Boutique-consultancy sales-enablement build. | (private) |
+| **Intelligent Automation — UK Water Utility** | Social-tariff onboarding pipeline reducing application processing from hours to minutes for ~4,000 customers — SFTP ingestion, validation, schema transformation, Gemini-driven error analysis, Gmail/Slack notifications. | (private) |
 
 ---
 
