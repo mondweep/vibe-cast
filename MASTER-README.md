@@ -95,6 +95,44 @@ A few flagship projects live in separate, private repositories. They are catalog
 
 ---
 
+### Agentic Deal-Team Workforce for Mid-Market Private Equity
+**Consulting engagement for a boutique FinOps & Agentic-AI consultancy**, targeting UK mid-market PE firms. Designed and built end-to-end as a sales-enablement showcase and working platform.
+
+- **Problem**: mid-market PE firms face structural bottlenecks — DD costs of **£250k–£750k per deal**, **8–14 week cycles** (with ~4 weeks of triage alone), exploding regulatory complexity (**20 regulations, 1,456 articles, 8,123 verified facts** in the Lexius corpus), brittle financial-modelling precision, portfolio insight decay between deals, and ad-hoc, unauditable AI adoption.
+- **The opportunity targeted**:
+  - Compress DD weeks 1–4 by **50–70%**.
+  - Cut third-party DD spend by **20–35%**.
+  - Run **2–3× more targets per partner per quarter**.
+  - **100% governance** — every tool call traced to a source article or fact.
+  - Compound knowledge across deals via pgvector memory.
+  - Operate on £0/month demo infrastructure.
+- **What was built**:
+  - **Phase 1 (complete)** — 9-tab password-gated presentation portal on Netlify: discussion paper, approach, maturity grids, use cases, and an isometric *Deal Operations Centre* visualisation with seven animated agents.
+  - **Phase 2 (infrastructure complete)** — multi-tenant SaaS platform: Express Gateway, **Gemini tool-use orchestration**, Supabase (auth, RLS, **pgvector**, audit trails), deployed to **Azure Container Apps**. Integrates two proprietary engines:
+    - **Lexius** — 1,456 regulatory articles / 8,123 verified facts across 20 regulations.
+    - **Corp Finance** — 128-bit decimal calculations (DCF, LBO, waterfall, IRR/MOIC).
+  - **Six agents** sharing memory across a deal lifecycle: DD Analyst, Financial Modeller, Market Intelligence, Document Review, Portfolio Ops, Program Manager.
+- **Tech**: Express, Google Gemini (tool-use), Supabase (Postgres + pgvector + RLS), Azure Container Apps, Netlify (presentation), TypeScript/Node.
+
+---
+
+### Intelligent Automation for a UK Water Utility — Social-Tariff Onboarding Pipeline
+**Consulting engagement for a boutique FinOps & Agentic-AI consultancy**, educating a UK water utility on intelligent-automation tooling to overcome operational bottlenecks in social-tariff application processing.
+
+- **Problem**: manual processing of social-tariff applications creates bottlenecks around the annual renewal deadline. With **~4,000 customers in the pipeline and growing daily**, the utility needed automated data flow between its third-party administrator and a newly-adopted customer-management system, with full audit compliance.
+- **What was built**:
+  - End-to-end workflow demonstrating automated ingestion, validation, transformation, and confirmation — reducing processing time from **hours to minutes** while maintaining data quality and audit compliance.
+  - Architecture: **SFTP source → workflow processing & validation → target customer DB → multi-channel notifications**, with error handling and audit logs feeding an LLM for dynamic error analysis.
+- **Key features**:
+  - Real-time SFTP polling every 2 minutes; CSV parsing with comprehensive business-rule validation; schema transformation; automated discount calculation against income thresholds.
+  - Validations: income vs ~£23,500 social-tariff threshold, 10-digit account-number format, required-field checks, manual-review flagging for edge cases.
+  - Customer segmentation by income and vulnerability; processing statistics; annual-savings calculations; compliance reporting with full audit trails.
+  - High-error-rate alerting (>10%); **Google Gemini-powered dynamic error reports**; Gmail + Slack multi-channel notifications for different stakeholder groups; priority flagging for customers requiring urgent attention.
+- **Tech**: low-code workflow orchestration platform, Google Gemini, Gmail API, Slack API, SFTP, CSV, audit logging.
+- **Status**: educational / sales-enablement engagement showcasing intelligent automation to the utility's operations team.
+
+---
+
 ## Project Categories
 
 ### Real-Time Communication & Collaborative Apps
