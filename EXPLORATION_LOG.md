@@ -1155,4 +1155,124 @@ The backtest's `SLIPPAGE_BPS = 1` is a deliberately conservative single number t
 
 ---
 
+## Appendix E: External Knowledge via learner-rv (2026-05-12)
+
+### E.0 Motivation
+
+Our v1–v5 experiments leaned entirely on price history. The strategies don't know what *experts* have already said about regime detection, walk-forward validation, or position sizing for ML-driven trading. To close that gap without paying for proprietary research, we wanted a way to **turn YouTube trading content into a queryable, cited knowledge base** that Claude (in Code or Desktop) could draw on while we design new variants.
+
+A colleague (Stuart Kerr) built exactly that — [`learner-rv`](https://github.com/stuinfla/learner-rv), a pure-Rust CLI that ingests videos, embeds them with BGE-large, indexes them in RuVector's RVF format, and exposes the KB as an MCP server. We forked it as [`mondweep/learner-rv`](https://github.com/mondweep/learner-rv) and set it up on this Mac. This appendix records what we did, what broke, and how to reproduce.
+
+### E.1 Architecture
+
+```
+YouTube videos                        Local pipeline                          Where it ends up
+─────────────────────────────         ───────────────────────────             ─────────────────────────────
+ytsearch10:<query>            →       yt-dlp → auto-captions       →         ~/Docs/KB/<topic>.rvf
+                                      chunk (transcript spans)                + .meta.json (sidecar)
+                                      BGE-large-en-v1.5 → 1024-dim            + .emb.bin (embeddings)
+                                      RuVector HNSW + BM25 hybrid index       + .witness.json (Blake3 audit)
+                                              ↓
+                                      learn serve <topic>          →         MCP server (stdio JSON-RPC)
+                                              ↓                               kb_query / kb_synthesize / kb_list_videos
+                                      Claude Desktop / Code (Max)  →         cited answers, no Anthropic API spend
+```
+
+### E.2 What we built
+
+| Item | Value |
+|---|---|
+| Topic | `neural-trading` |
+| Discovery query | `ytsearch10:neural network algorithmic trading strategy` |
+| Successful videos | 8 of 10 (1 dropped: no auto-captions; 1: transient yt-dlp connection error) |
+| Total chunks | 273 |
+| Total source duration | ~5h 33m |
+| Embedding model | BAAI/bge-large-en-v1.5 (ONNX, 1024-dim, 1.34 GB) |
+| Coherence (per `learn status`) | integrated=0.62, workspace=1.00 → **[Coherent]** |
+| KB size on disk | ~2.7 MB (rvf + emb + meta + witness) |
+
+Top videos by chunk count:
+
+| video_id | duration | chunks | rough subject |
+|---|---|---|---|
+| `9Y3yaoi9rUQ` | 2:59:21 | 121 | GARCH volatility forecasting, ML return-sign prediction, intraday simulation |
+| `iWSDY8_5N3U` | 1:54:15 | 67 | (long-form lecture) |
+| `NLBXgSmRBgU` | 0:21:43 | 24 | (talking head, captions-only) |
+| `Kqs8TR2HJEk` | 0:21:14 | 22 | neural-network strategy framed via SPX CAGR/MaxDD ratio |
+| `jCBnbQ1PUkE` | 0:16:50 | 18 | (talking head) |
+| `G9ojno-4OaA` | 0:11:21 | 12 | (talking head) |
+| `nW4EtYIya9c` | 0:06:18 | 7 | (talking head) |
+| `KxGO7dKBBWM` | 0:01:59 | 2 | (short) |
+
+### E.3 Friction we hit in v0.2.9 (and how we got around it)
+
+| Issue | Fix |
+|---|---|
+| `learn config set seed.address …` referenced in README doesn't exist as a subcommand | Use `--seed <ip>` flag on `learn push` instead. README/binary drift in v0.2.9. |
+| `acquire failed: raw_dir must be under kb_root` on every video | KB root `~/Docs/KB` didn't exist. `mkdir -p ~/Docs/KB` *before* first ingest. |
+| `embed failed: load model: ... model.onnx does not exist` | `learn doctor` claims auto-download — it doesn't. Manually pull BGE-large from HF (see setup script). |
+| `summary skipped: ANTHROPIC_API_KEY not set` | Cosmetic: the post-ingest takeaways summary needs the API, but the KB itself ingests fine. |
+| `learn push` requires an Anthropic API key (independent of synthesis) | Documented but undesirable for Max-only users. Push to Seed deferred — see §E.6. |
+| Videos without YouTube auto-captions get silently dropped | Whisper fallback is "Phase-2D work — skipping transcription" per binary output. ~1 in 10 videos for our query were affected. |
+
+### E.4 Setup reproduction
+
+The full setup is captured in `scripts/setup-learn-rv.sh`. It:
+
+1. Downloads the `learn` v0.2.9 prebuilt for `aarch64-apple-darwin` into `/tmp` and runs the bundled `install.sh` (symlinks `learn` into `~/.cargo/bin/`, installs the Claude Code skill at `~/.claude/skills/learn-rv/`).
+2. Creates `~/Docs/KB` (so the `raw_dir` preflight passes).
+3. Downloads `BAAI/bge-large-en-v1.5/onnx/model.onnx` + tokenizer/config files into `~/Library/Caches/learn-rs/models/bge-large-en-v15/`.
+4. Runs `learn doctor` to verify.
+
+After running the script, build the KB with:
+
+```bash
+learn ingest "ytsearch10:neural network algorithmic trading strategy" --topic neural-trading
+learn status neural-trading
+learn list neural-trading
+```
+
+### E.5 Wiring into Claude clients
+
+**Claude Desktop** (under Max subscription, no Anthropic API spend):
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` under `mcpServers`:
+
+```json
+"learn-rv": {
+  "command": "/Users/<you>/.cargo/bin/learn",
+  "args": ["serve", "neural-trading"],
+  "env": {}
+}
+```
+
+Quit (Cmd+Q) and reopen Desktop. The tools panel will show `kb_query`, `kb_synthesize`, `kb_list_videos`. Ask things like *"Use the learn-rv neural-trading KB to find what speakers say about walk-forward validation; call kb_query, then summarise with citations linking to youtu.be timestamps."* Desktop drives the synthesis.
+
+**Claude Code** (this CLI): the install script auto-registers the global skill at `~/.claude/skills/learn-rv/SKILL.md`. Any Claude Code session can call `learn` directly — no MCP entry needed.
+
+### E.6 Open items — Seed push
+
+We chose the **DIY-via-MCP** path for pushing the KB to the Cognitum Seed (avoiding `learn push`'s Anthropic API requirement). On investigation the current Seed firmware exposes a **read-only** RVF/memory surface via MCP — there is no `seed_rvf_add`, `seed_memory_store`, or equivalent write tool. Even reads are intermittent (see `Cognitum.One/seed-defect-triage-2026-05-12.md`, defect D-6).
+
+Push is therefore deferred until one of:
+
+- Seed firmware exposes an RVF write surface via MCP (or a documented HTTP endpoint).
+- We acquire an Anthropic API key just for `learn push`'s attestation flow (cents per push).
+- We reverse-engineer the Seed's undocumented HTTP API.
+
+The KB is fully queryable from Code + Desktop without push — push is purely about portability/custody onto the Seed device.
+
+### E.7 How this connects to the v1–v5 neural-trader work
+
+The KB is a **prior** that future variants (v6+) can draw on. Concrete uses:
+
+1. **Walk-forward design.** Ask: *"From my neural-trading KB, what window sizes and gap sizes do practitioners recommend for walk-forward validation of daily-bar strategies?"* Cross-check against our current `_compare_window.py` choices.
+2. **Regime taxonomy.** Currently we use a single boolean regime gate (v2/v3). Ask: *"What multi-regime classifications do speakers use, and what features drive them?"* — may inspire a richer feature in v6.
+3. **Position sizing.** v4 currently equal-weights the winner. Ask: *"What position-sizing rules are recommended when the predicted next-day return is small but positive?"* — relevant to the slippage drag problem (§D.5).
+4. **Sanity-checking results.** When a backtest produces a surprising number, look up what the literature/practitioner consensus says before publishing.
+
+The KB is not a substitute for our own data work — but it is a faster way to surface prior art than ad-hoc YouTube watching, and every answer comes back with a clickable `youtu.be/<id>?t=<seconds>` citation.
+
+---
+
 *End of log.*
