@@ -17,6 +17,30 @@ const PORT = parseInt(process.env.PORT || '3000', 10)
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 
+// Write the YouTube cookies file once at startup.
+//
+// YouTube aggressively bot-blocks data-center IPs (Railway, AWS, GCP, etc.)
+// with "Sign in to confirm you're not a bot" challenges. Passing a logged-in
+// browser's cookies via --cookies bypasses this. Set YOUTUBE_COOKIES on
+// Railway to the entire Netscape-format cookies.txt content (export with the
+// 'Get cookies.txt LOCALLY' Chrome extension from a logged-in youtube.com tab).
+const COOKIES_FILE = '/tmp/yt-cookies.txt'
+let COOKIES_AVAILABLE = false
+if (process.env.YOUTUBE_COOKIES) {
+  try {
+    fs.writeFileSync(COOKIES_FILE, process.env.YOUTUBE_COOKIES, { mode: 0o600 })
+    COOKIES_AVAILABLE = true
+    console.log(`Wrote YouTube cookies file (${process.env.YOUTUBE_COOKIES.length} bytes) to ${COOKIES_FILE}`)
+  } catch (e) {
+    console.error('Failed to write YouTube cookies file:', e)
+  }
+} else {
+  console.warn(
+    'YOUTUBE_COOKIES env var not set — yt-dlp will likely be bot-blocked on cloud hosts. ' +
+    'Export cookies from a logged-in youtube.com session and set the env var to enable transcription.'
+  )
+}
+
 // Hand-curated lyrics that bypass the transcribe pipeline. Add entries here
 // only when you have verified Devanagari + accurate timestamps for the full
 // song from a trusted source. Sparse fallbacks (a handful of lines covering
@@ -171,9 +195,12 @@ app.post('/api/transcribe', async (req, res) => {
     // Extract audio using yt-dlp.
     // player-client=android currently bypasses the n-challenge / PO-Token requirement
     // that blocks the mweb/web clients. Format 18 (mp4 360p with AAC audio) is small
-    // and reliably available; -x extracts it to mp3.
+    // and reliably available; -x extracts it to mp3. --cookies authenticates against
+    // YouTube's "Sign in to confirm you're not a bot" check that fires on
+    // data-center IPs (Railway, AWS, etc.) — when YOUTUBE_COOKIES is set we pass it.
     const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    const ytDlpCmd = `yt-dlp --user-agent "${userAgent}" --referer "https://www.google.com/" --extractor-args "youtube:player-client=android" -f 18 -x --audio-format mp3 --max-filesize 12M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`
+    const cookiesArg = COOKIES_AVAILABLE ? `--cookies "${COOKIES_FILE}"` : ''
+    const ytDlpCmd = `yt-dlp ${cookiesArg} --user-agent "${userAgent}" --referer "https://www.google.com/" --extractor-args "youtube:player-client=android" -f 18 -x --audio-format mp3 --max-filesize 12M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`
 
     console.log(`Executing yt-dlp for ${actualVideoId}...`)
     await execPromise(ytDlpCmd)
