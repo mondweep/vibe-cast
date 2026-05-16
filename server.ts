@@ -210,7 +210,12 @@ app.post('/api/transcribe', async (req, res) => {
     const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     const cookiesArg = COOKIES_AVAILABLE ? `--cookies "${COOKIES_FILE}"` : ''
     const playerClient = COOKIES_AVAILABLE ? 'web,web_safari' : 'android'
-    const ytDlpCmd = `yt-dlp ${cookiesArg} --user-agent "${userAgent}" --referer "https://www.google.com/" --extractor-args "youtube:player-client=${playerClient}" -f 18 -x --audio-format mp3 --max-filesize 12M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`
+    // --max-filesize caps the source download (format 18 mp4). Groq Whisper
+    // accepts uploads up to 25 MB; format 18's ~189 kbps bitrate means a
+    // 25 MB cap covers recordings up to roughly 18 minutes — adequate for
+    // multi-shloka prayer compilations. After extraction to mp3 the file
+    // typically halves in size.
+    const ytDlpCmd = `yt-dlp ${cookiesArg} --user-agent "${userAgent}" --referer "https://www.google.com/" --extractor-args "youtube:player-client=${playerClient}" -f 18 -x --audio-format mp3 --max-filesize 25M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`
 
     console.log(`Executing yt-dlp for ${actualVideoId}...`)
     await execPromise(ytDlpCmd)
