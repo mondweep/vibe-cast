@@ -41,6 +41,39 @@ function urlVariants(videoId: string): string[] {
   ];
 }
 
+/**
+ * Pull the canonical (word_id, line_number) mapping from `song_words` for this
+ * song, join to `words` for the devanagari/iast/meaning, group by line_number,
+ * and inject into each line's `words[]` array. Result: LyricsPanel renders
+ * clickable spans + the word-tap popup works for verified-library songs.
+ */
+async function hydrateLineWords(songId: string, lines: LyricsLine[]): Promise<LyricsLine[]> {
+  const { data, error } = await (supabase
+    .from('song_words')
+    .select('line_number, words(devanagari, iast, meaning_short, root_dhatu)')
+    .eq('song_id', songId) as any);
+
+  if (error || !Array.isArray(data)) return lines;
+
+  // Bucket by line_number.
+  const byLine = new Map<number, Array<{ devanagari: string; iast: string; meaning: string }>>();
+  for (const row of data as Array<{ line_number: number; words: any }>) {
+    const w = row.words;
+    if (!w?.devanagari || !w?.iast) continue;
+    if (!byLine.has(row.line_number)) byLine.set(row.line_number, []);
+    byLine.get(row.line_number)!.push({
+      devanagari: w.devanagari,
+      iast: w.iast,
+      meaning: w.meaning_short || '',
+    });
+  }
+
+  return lines.map((line, i) => ({
+    ...line,
+    words: byLine.get(i) ?? (line as any).words ?? [],
+  }));
+}
+
 export function useTranslation(videoId: string | null, currentTime: number) {
   const [state, setState] = useState<TranslationState>(initialState);
   const linesRef = useRef<LyricsLine[]>([]);
@@ -81,7 +114,13 @@ export function useTranslation(videoId: string | null, currentTime: number) {
         if (cancelled) return;
 
         if (verified?.lyrics_json) {
-          setLines(verified.lyrics_json, {
+          // Hydrate per-line words[] from the canonical song_words ↔ words
+          // join so LyricsPanel can render clickable spans + word popups.
+          // verify_song writes the line-level metadata but not per-line word
+          // arrays; we reconstruct them here from the song_words link table.
+          const hydrated = await hydrateLineWords(verified.id, verified.lyrics_json);
+          if (cancelled) return;
+          setLines(hydrated, {
             isVerified: true,
             songId: verified.id,
             transcriptionLanguage: verified.transcription_language ?? null,

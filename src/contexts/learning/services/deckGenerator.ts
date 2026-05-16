@@ -35,7 +35,9 @@ export async function generateDeck(userId: string, deckType: DeckType): Promise<
       break
   }
 
-  const { data } = await (query.order('familiarity', { ascending: true }).limit(50) as any)
+  // PostgREST default page size is 1000. Set explicitly high so we don't
+  // silently cap a multi-hundred-word library deck.
+  const { data } = await (query.order('familiarity', { ascending: true }).limit(1000) as any)
 
   return (data || []).map((entry: any) => {
     const word = entry.words as any
