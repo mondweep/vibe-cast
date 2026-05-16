@@ -515,9 +515,11 @@ Low-confidence candidates (songs whose source can't be identified with certainty
 
 ### Cost / safety notes
 
-- Hard cap is the prompt's `CANDIDATES_PER_NIGHT = 2`. Raise once auto-add quality is consistent.
+- Hard cap is the prompt's `CANDIDATES_PER_NIGHT = 1` (lowered from 2 after the initial run hit Cowork's context limit). Raise once the flow consistently completes inside the model's context budget.
 - The prompt explicitly forbids hallucination — Claude is instructed to queue songs for review rather than generate uncertain canonical text.
 - All writes are auditable: `songs.verified_by` records the curator's user_id; `pending_candidates.created_at` and `decided_at` track the review lifecycle.
+- **Word extraction is deliberately NOT done in the nightly task** (it was eating too much context). Auto-added songs land with full `lyrics_json` but empty `words`/`song_words`. Vocabulary populates when the curator clicks Verify & Save on `/play` (which re-runs the backend's `sanskrit/split`), or via a future weekly task. Until then, auto-added songs play correctly but don't yet contribute to the canonical revise deck.
+- **Context-budget contingency**: if even 1 candidate/night overruns context in Cowork (likely if you have many MCPs connected), switch to running this prompt in Claude Code with a minimal `.mcp.json` that loads only the Supabase MCP + WebFetch. Same prompt, same model, just much less tooling overhead.
 
 ## Requesting a song
 
