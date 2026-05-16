@@ -265,11 +265,62 @@ The app will be available at `http://localhost:3000`.
 2. Connect your GitHub repository
 3. Add environment variables in the Railway dashboard:
    - `ANTHROPIC_API_KEY`
+   - `GROQ_API_KEY`
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
    - `VITE_YOUTUBE_API_KEY` (optional)
+   - `YOUTUBE_COOKIES` (required if you want audio transcription to work; see env section above)
 4. Railway auto-detects `railway.toml` + `nixpacks.toml`, builds, and deploys
 5. Your app will be live at the generated Railway URL
+
+## Enabling "Sign in with Google"
+
+The Google OAuth button on the sign-in page comes from Supabase Auth. To make it work:
+
+1. **In Google Cloud Console**:
+   - Open APIs & Services → Credentials → Create OAuth Client → **Web application**
+   - **Authorized redirect URI**: paste your Supabase project's auth callback URL — it's
+     `https://<your-supabase-ref>.supabase.co/auth/v1/callback`
+     (Supabase shows you the exact URL when you open the Google provider panel in step 2)
+   - Copy the resulting **Client ID** and **Client Secret**
+2. **In Supabase Dashboard** → Authentication → Providers → Google:
+   - Toggle **Enable Sign in with Google**
+   - Paste the Client ID and Client Secret from step 1, save
+3. No code change is required. The existing "Continue with Google" button on `/signin` will start working immediately.
+
+## Public access without sign-in
+
+Three routes are open to anonymous visitors (no account needed):
+- `/library` — browse all verified songs
+- `/play` (read-only) — load any verified song, watch the video, see lyrics scroll, tap words to view their canonical meaning. Vocabulary tracking is skipped (the visitor has no user_id to attach progress to).
+- `/privacy` — privacy notice
+
+These are gated to signed-in users only:
+- `/revise` — flashcards, matching game (writes to user_vocabulary)
+- `/progress` — personal stats (reads from user_vocabulary)
+- The "Verify & Save" / "Unverify" curator buttons on `/play` (also email-allowlisted)
+
+## Privacy and consent
+
+Every visitor (anonymous or signed-in) sees a bottom-fixed consent banner linked to `/privacy` on first visit. Clicking "I agree":
+- Stores `consent_version` in `localStorage` so the banner doesn't reappear until the policy is updated
+- Generates a random `visitor_id` UUID in `localStorage`
+- POSTs to `/api/consent` which writes a row to `consent_log` (visitor_id, optional user_id, IP, user-agent, version)
+
+On sign-in, the client fires `POST /api/profile/track` which:
+- Reads the request's IP (`x-forwarded-for` honoured behind Railway's proxy)
+- Looks up country/region/city via ipapi.co's free tier (1000 req/day, no API key needed)
+- Writes `ip_address`, `geo_country`, `geo_region`, `geo_city` onto the user's `profiles` row
+
+Bumping the privacy text? Increment `CONSENT_VERSION` in `src/shared/components/ConsentBanner.tsx` — existing users will see the banner again on their next visit and re-consent.
+
+To inspect captured data as the curator, query Supabase directly:
+```sql
+SELECT email, display_name, geo_country, geo_city, consent_at, consent_version
+FROM auth.users u
+JOIN public.profiles p ON p.id = u.id
+ORDER BY u.created_at DESC;
+```
 
 ## NPM Scripts
 
@@ -328,11 +379,16 @@ The Play flow has two tiers:
 - **`max_tokens` fix for sandhi split** — bumped from 1024 to 4096 in `splitSanskrit` so long verses (Śāntākāram, Guru Mantra, etc.) no longer truncate JSON output mid-array and fall through to the empty-meaning fallback
 - **Words clickable on verified lyrics** — `useTranslation` hydrates each line's `words[]` from the `song_words` ↔ `words` join after loading a verified row, so `LyricsPanel` renders clickable spans and the word popup opens with the canonical meaning, dhātu, and grammar
 - **50-word deck cap removed** — `deckGenerator` was capping the revise flashcards at 50 even when the library deck held 251+ words; bumped to 1000 (PostgREST's default page ceiling) so the whole deck is reviewable
+- **Word popup wired up** — `WordPopup` was a built-but-unmounted component. Tapping a word in the lyrics panel now opens the popup with the canonical Devanagari, IAST, meaning, root (dhātu), and grammar.
+- **Anonymous public access** — `/library`, `/play`, and `/privacy` no longer require sign-in. Anonymous visitors can browse the library, play any verified song, see lyrics in sync, and tap words for meanings. Personal SRS pages (`/revise`, `/progress`) and curator actions remain auth-gated.
+- **Privacy + consent capture** — bottom-fixed consent banner persists until dismissed, with link to `/privacy`. Records consent events (visitor_id + optional user_id + IP + user-agent + version) in a new `consent_log` table. On sign-in, the server captures the user's IP-derived geolocation (country, region, city) via ipapi.co's free tier and writes it to the `profiles` row.
+- **Auto-create profiles row on signup** — `handle_new_user()` trigger on `auth.users` INSERT creates a corresponding `profiles` row with `display_name` from OAuth metadata or email. Closes the previous "missing profiles row" gap.
+- **Migration 008** (`supabase/migrations/008_consent_and_profile.sql`) — adds `linkedin_url`, `geo_*`, `ip_address`, `consent_at`, `consent_version` to `profiles`; creates `consent_log`; installs the new-user trigger.
 
 ### Remaining / known issues
 
 - **IAST anusvāra/nasal normalization (`ṃ` vs `m`)** — Sanskrit transliteration tolerates both `rājīvalocanaṃ` (with anusvāra) and `rājīvalocanam` (with plain `m`) for the same word; literal string-match treats them as different. Affects vocabulary lookup highlighting on lyric lines when the lyric IAST and the dictionary entry disagree. Clean fix is a small canonicalisation helper applied at both read and write time, plus a one-time migration to rewrite existing rows. Not yet implemented.
-- **Frontend signup flow not yet wired to the new RLS schema** — sign-up still works but newly-created users don't get a `profiles` row automatically. May surface when a new user first signs in.
+- **Mark-revision and mark-learned buttons in WordPopup are stubs** — the buttons render but currently no-op for both signed-in and anonymous users. They need `vocabulary.markRevision(word)` / `vocabulary.markLearned(word)` helpers in `useVocabulary` that flip the corresponding flags on the `user_vocabulary` row. Stubbed in `PlayPage.tsx` with `TODO` comments.
 - **No "draft songs" curator queue** — the curator currently has to remember which URLs they've started transcribing but not yet verified. A `/curate` page listing all unverified drafts would help.
 - **No edit history** — once a verified song is edited and re-saved, the prior lyrics are overwritten with no audit trail. Acceptable for now; revisit if multiple curators or community editing is added.
 - **No `revision_sessions` writes yet** — the table exists but `/revise` doesn't currently log sessions. Progress page shows real-time numbers from `user_vocabulary` directly.
