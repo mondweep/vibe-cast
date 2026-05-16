@@ -1,5 +1,5 @@
-import { Outlet, NavLink } from 'react-router-dom';
-import { Play, BookOpen, BarChart3, LogOut } from 'lucide-react';
+import { Outlet, NavLink, Link } from 'react-router-dom';
+import { Play, BookOpen, BarChart3, LogOut, Library } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/hooks/useAuth';
 
 export function Layout() {
@@ -8,18 +8,29 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       <header className="border-b border-gray-800 px-6 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-amber-400 tracking-wide">
+        <Link to="/library" className="text-xl font-bold text-amber-400 tracking-wide">
           SanskritSync
-        </h1>
+        </Link>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-400">{user?.email}</span>
-          <button
-            onClick={signOut}
-            className="text-gray-400 hover:text-gray-200 transition-colors"
-            title="Sign out"
-          >
-            <LogOut size={18} />
-          </button>
+          {user ? (
+            <>
+              <span className="text-sm text-gray-400">{user.email}</span>
+              <button
+                onClick={signOut}
+                className="text-gray-400 hover:text-gray-200 transition-colors"
+                title="Sign out"
+              >
+                <LogOut size={18} />
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/signin"
+              className="text-sm text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              Sign in
+            </Link>
+          )}
         </div>
       </header>
 
@@ -30,7 +41,18 @@ export function Layout() {
       </div>
 
       <nav className="border-t border-gray-800 px-6 py-2">
-        <div className="flex justify-center gap-12">
+        <div className="flex justify-center gap-10">
+          <NavLink
+            to="/library"
+            className={({ isActive }) =>
+              `flex flex-col items-center gap-1 text-xs transition-colors ${
+                isActive ? 'text-amber-400' : 'text-gray-500 hover:text-gray-300'
+              }`
+            }
+          >
+            <Library size={20} />
+            Library
+          </NavLink>
           <NavLink
             to="/play"
             className={({ isActive }) =>

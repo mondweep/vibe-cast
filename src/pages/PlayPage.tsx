@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { YouTubePlayer } from '../contexts/player/components/YouTubePlayer'
 import { URLInput } from '../contexts/player/components/URLInput'
 import { LyricsPanel } from '../contexts/translation/components/LyricsPanel'
@@ -10,9 +11,29 @@ import { useVocabulary } from '../contexts/learning/hooks/useVocabulary'
 import type { TranslationMode } from '../shared/types/database.types'
 
 export function PlayPage() {
-  const [videoId, setVideoId] = useState<string | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [videoId, setVideoIdState] = useState<string | null>(searchParams.get('v'))
   const [translationMode, setTranslationMode] = useState<TranslationMode>('poetic')
   const [showSummary, setShowSummary] = useState(false)
+
+  // Wrapping setter keeps URL ?v=… and state in sync, so Library deep-links
+  // remain shareable and back-button works.
+  const setVideoId = useCallback(
+    (id: string | null) => {
+      setVideoIdState(id)
+      const next = new URLSearchParams(searchParams)
+      if (id) next.set('v', id)
+      else next.delete('v')
+      setSearchParams(next, { replace: true })
+    },
+    [searchParams, setSearchParams]
+  )
+
+  // Pick up changes to ?v= from external navigation (e.g. browser back).
+  useEffect(() => {
+    const v = searchParams.get('v')
+    if (v !== videoId) setVideoIdState(v)
+  }, [searchParams, videoId])
 
   const sync = useSync(videoId)
   const translation = useTranslation(videoId, sync.currentTime)
