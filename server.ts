@@ -8,6 +8,7 @@ import { promisify } from 'util'
 
 import { transcribeAudio } from './api/routes/transcribe.js'
 import { translateSanskritLyrics, translateSingleLine, splitSanskrit } from './api/routes/translate.js'
+import { verifySong, unverifySong } from './api/routes/songs.js'
 
 const execPromise = promisify(exec)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -248,6 +249,46 @@ app.post('/api/transcribe', async (req, res) => {
     console.error('Transcription error:', err)
     if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile)
     res.status(500).json({ error: err instanceof Error ? err.message : 'Transcription failed' })
+  }
+})
+
+// --- Verified Library curation routes ---
+// Both require an Authorization: Bearer <Supabase JWT> header. The curator
+// allowlist + RLS enforce that only mondweep@gmail.com / mondweep@dxsure.uk
+// can mutate. Anonymous reads of verified songs go directly to Supabase from
+// the frontend (using the anon key), bypassing this server entirely.
+
+function getJwt(req: express.Request): string | null {
+  const h = req.headers.authorization
+  if (!h || !h.startsWith('Bearer ')) return null
+  return h.slice(7)
+}
+
+app.post('/api/songs/verify', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await verifySong(jwt, req.body)
+    res.json(result)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Verify failed'
+    const code = msg.includes('not authorised') || msg.includes('Invalid auth') ? 403 : 500
+    res.status(code).json({ error: msg })
+  }
+})
+
+app.post('/api/songs/unverify', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const { videoId } = req.body || {}
+    if (!videoId) return res.status(400).json({ error: 'videoId required' })
+    const result = await unverifySong(jwt, videoId)
+    res.json(result)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Unverify failed'
+    const code = msg.includes('not authorised') || msg.includes('Invalid auth') ? 403 : 500
+    res.status(code).json({ error: msg })
   }
 })
 
