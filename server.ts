@@ -9,6 +9,7 @@ import { promisify } from 'util'
 import { transcribeAudio } from './api/routes/transcribe.js'
 import { translateSanskritLyrics, translateSingleLine, splitSanskrit } from './api/routes/translate.js'
 import { verifySong, unverifySong } from './api/routes/songs.js'
+import { recordConsent, trackProfile } from './api/routes/consent.js'
 
 const execPromise = promisify(exec)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -288,6 +289,45 @@ app.post('/api/songs/unverify', async (req, res) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unverify failed'
     const code = msg.includes('not authorised') || msg.includes('Invalid auth') ? 403 : 500
+    res.status(code).json({ error: msg })
+  }
+})
+
+// --- Consent + profile tracking ---
+// Behind a trust proxy so x-forwarded-for is honoured on Railway.
+app.set('trust proxy', true)
+
+function clientIp(req: express.Request): string | null {
+  const fwd = (req.headers['x-forwarded-for'] || '').toString()
+  if (fwd) return fwd.split(',')[0].trim()
+  return req.ip || null
+}
+
+// Open to anonymous visitors — anyone can record their consent click.
+app.post('/api/consent', async (req, res) => {
+  try {
+    const result = await recordConsent({
+      jwt: getJwt(req),
+      body: req.body || {},
+      ip: clientIp(req),
+      userAgent: req.headers['user-agent']?.toString() || null,
+    })
+    res.json(result)
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : 'Consent failed' })
+  }
+})
+
+// Auth required. Looks up the caller's IP, captures geo, writes onto profile.
+app.post('/api/profile/track', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await trackProfile({ jwt, ip: clientIp(req) })
+    res.json(result)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Profile track failed'
+    const code = msg.includes('Invalid auth') ? 403 : 500
     res.status(code).json({ error: msg })
   }
 })
