@@ -196,22 +196,27 @@ app.post('/api/transcribe', async (req, res) => {
 
     // Extract audio using yt-dlp.
     //
-    // Two regimes:
-    //  - With cookies (YOUTUBE_COOKIES set, typical on cloud hosts): use the
-    //    `web` / `web_safari` clients, which DO accept cookies. Cookies
-    //    authenticate the session and bypass the "Sign in to confirm you're
-    //    not a bot" challenge that fires on data-center IPs, and they also
-    //    bypass the n-challenge / PO-Token requirement that originally pushed
-    //    us to the android client. The android client SILENTLY IGNORES
-    //    cookies, so combining the two cancels both out.
-    //  - Without cookies (local dev, residential IP): use the android client
-    //    to skip the n-challenge / PO-Token entirely.
+    // Choice of player-client is a moving target — YouTube periodically
+    // changes which clients are scrapeable. Current state:
     //
-    // Format 18 (mp4 360p with AAC audio) is small and reliably available on
-    // both clients; -x extracts it to mp3.
+    //  - With cookies (YOUTUBE_COOKIES set, typical on cloud hosts):
+    //    `web` and `web_safari` USED to work but as of late 2024/early 2025
+    //    YouTube is forcing SABR streaming on these clients, which strips
+    //    the direct media URL (HTTP 403 on download). `tv_embedded` and
+    //    `web_creator` are current favourites that accept cookies AND still
+    //    yield direct URLs. We list both as fallbacks so yt-dlp tries them
+    //    in order.
+    //  - Without cookies (local dev, residential IP): the `android` client
+    //    avoids the n-challenge / PO-Token requirement, though it silently
+    //    ignores any cookies that might be present.
+    //
+    // Format 18 (mp4 360p with AAC audio) is small and reliably available;
+    // -x extracts it to mp3.
     const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     const cookiesArg = COOKIES_AVAILABLE ? `--cookies "${COOKIES_FILE}"` : ''
-    const playerClient = COOKIES_AVAILABLE ? 'web,web_safari' : 'android'
+    const playerClient = COOKIES_AVAILABLE
+      ? 'tv_embedded,web_creator,web_safari,web'
+      : 'android'
     // --max-filesize caps the source download (format 18 mp4). Groq Whisper
     // accepts uploads up to 25 MB; format 18's ~189 kbps bitrate means a
     // 25 MB cap covers recordings up to roughly 18 minutes — adequate for
