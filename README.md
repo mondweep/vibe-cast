@@ -26,11 +26,20 @@ Learn Sanskrit through music. Paste a YouTube URL, watch the video, and follow a
 - Recent songs list
 - Export vocabulary as CSV
 
+### Library (curated verified songs — public)
+- **Public browse** at `/library` — anonymous visitors see every verified song without signing in
+- **Verified badge** — the green check signals lyrics that have been hand-reviewed against canonical sources
+- **One-click play** — clicking a card opens `/play?v=<id>` with the song pre-loaded from cached, trusted lyrics (no transcribe call fires)
+- **Curator-only editing** — `mondweep@gmail.com` / `mondweep@dxsure.uk` can edit lyrics line-by-line inline on `/play` and click **Verify & Save** to publish, or **Unverify** to remove a song from public view
+- **Canonical vocabulary extraction** — when a song is verified, the server runs sandhi-split on every line and feeds the resulting words into a shared dictionary that powers everyone's flashcard deck
+
 ### Under the Hood
-- **Claude API** (Sonnet) for Sanskrit-to-English translation, sandhi splitting, and word analysis
+- **Claude API** (Haiku 4.5) for Sanskrit-to-English translation, sandhi splitting, and word analysis
+- **Audio transcription pipeline** — yt-dlp pulls audio for videos without captions, Groq Whisper-large-v3-turbo transcribes (Sanskrit or Hindi hint), a multi-stage filter (regex + English stopword/noise list + Claude validator) rejects hallucinations before translation
+- **Strict no-hallucination guard** — bulk translation refuses noisy input rather than inventing lyrics
 - **SM-2 spaced repetition algorithm** for long-term retention
 - **YouTube caption extraction** with Sanskrit/Hindi fallback
-- **Supabase** for auth, user profiles, vocabulary persistence, and translation caching
+- **Supabase** for auth, user profiles, vocabulary persistence, and the verified-library schema
 - **Railway** deployment — single Express server serving both the API and the static frontend
 
 ## Tech Stack
@@ -49,21 +58,32 @@ Learn Sanskrit through music. Paste a YouTube URL, watch the video, and follow a
 ```
 ├── server.ts                        # Express server (API + static serving)
 ├── railway.toml                     # Railway deployment config
-├── nixpacks.toml                    # Nixpacks build config
+├── nixpacks.toml                    # Nixpacks build config (Node 22 + yt-dlp + ffmpeg)
 ├── tsconfig.server.json             # Server TypeScript config
+├── api/
+│   └── routes/
+│       ├── translate.ts             # Claude-powered translate + sandhi split
+│       ├── transcribe.ts            # Groq Whisper + hallucination guard
+│       └── songs.ts                 # /api/songs/verify and /unverify
+├── supabase/
+│   └── migrations/                  # 001–007: schema + RLS migrations
 ├── src/
-│   ├── App.tsx                      # Routes: /play, /revise, /progress
+│   ├── App.tsx                      # Routes: /library (public), /play, /revise, /progress
 │   ├── main.tsx                     # Entry point
 │   ├── index.css                    # Tailwind imports
 │   ├── pages/
-│   │   ├── PlayPage.tsx             # YouTube player + live translation
-│   │   ├── RevisePage.tsx           # Flashcards, matching game
+│   │   ├── LibraryPage.tsx          # Public grid of verified songs
+│   │   ├── PlayPage.tsx             # YouTube player + live translation + curator verify UI
+│   │   ├── RevisePage.tsx           # Flashcards, matching game, lazy library deck sync
 │   │   └── ProgressPage.tsx         # Stats, vocabulary breakdown
 │   ├── contexts/
 │   │   ├── auth/                    # Supabase auth (sign in/up, protected routes)
 │   │   ├── player/                  # YouTube player, playback sync, URL input
-│   │   ├── translation/            # Lyrics panel, translation panel, word popup
-│   │   └── learning/               # Vocabulary tracking, SRS, flashcards, decks
+│   │   ├── translation/
+│   │   │   ├── components/          # LyricsPanel, EditableLyricsPanel, VerifyBar, TranslationPanel, WordPopup
+│   │   │   ├── hooks/               # useTranslation (verified-first, no auto-cache)
+│   │   │   └── services/            # transcriber, translator, libraryClient
+│   │   └── learning/                # Vocabulary tracking, SRS, flashcards, libraryDeckSync
 │   └── shared/
 │       ├── components/              # Layout, ErrorBoundary
 │       ├── lib/                     # Constants, Supabase client
@@ -102,8 +122,19 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 # Claude API (server-side only)
 ANTHROPIC_API_KEY=sk-ant-...
 
+# Groq API — used for Whisper-large-v3-turbo audio transcription
+GROQ_API_KEY=gsk_...
+
 # YouTube Data API (optional — for playlist features)
 VITE_YOUTUBE_API_KEY=your-key
+
+# YouTube cookies (REQUIRED on cloud hosts like Railway/AWS/GCP).
+# Export from a logged-in browser using the "Get cookies.txt LOCALLY"
+# Chrome extension, then paste the entire Netscape-format file content
+# as the env value. Without this, YouTube will bot-block transcription
+# requests with HTTP 429 / "Sign in to confirm you're not a bot".
+# Cookies expire after a few weeks — refresh when transcription starts failing.
+YOUTUBE_COOKIES=
 
 # Server port
 PORT=3000
@@ -111,7 +142,9 @@ PORT=3000
 
 ### 3. Set up Supabase database
 
-Create the following tables in your Supabase project (SQL editor):
+Run the migration files in `supabase/migrations/` in order in the Supabase SQL editor. Migrations `001`–`006` create the base schema; migration `007` adds the verified-library schema (`verified` columns on `songs`, the `song_words` link table, the `library_words` view, and updated RLS policies for public-read of verified content + curator-only writes).
+
+For reference, here's the resulting schema (do not run this SQL directly — use the migrations):
 
 ```sql
 -- User profiles (auto-created on signup)
@@ -214,13 +247,17 @@ The app will be available at `http://localhost:3000`.
 
 ## API Endpoints
 
-| Method | Path                              | Description                           |
-| ------ | --------------------------------- | ------------------------------------- |
-| POST   | `/api/translate`                  | Translate full song lyrics            |
-| POST   | `/api/translate/line`             | Translate a single Sanskrit line      |
-| POST   | `/api/sanskrit/split`             | Sandhi splitting (word segmentation)  |
-| GET    | `/api/youtube/captions/:videoId`  | Fetch YouTube captions (sa/hi)        |
-| GET    | `/api/health`                     | Health check                          |
+| Method | Path                              | Description                                                          |
+| ------ | --------------------------------- | -------------------------------------------------------------------- |
+| GET    | `/api/health`                     | Health check                                                         |
+| GET    | `/api/youtube/captions/:videoId`  | Fetch YouTube captions (sa/hi)                                       |
+| POST   | `/api/transcribe`                 | yt-dlp + Whisper audio transcription with hallucination filtering    |
+| POST   | `/api/translate`                  | Translate full song lyrics (strict no-hallucination guard)           |
+| POST   | `/api/translate/song`             | Translate a pre-segmented set of timestamped lines                   |
+| POST   | `/api/translate/line`             | Translate a single Sanskrit line (softer, best-effort prompt)        |
+| POST   | `/api/sanskrit/split`             | Sandhi splitting (word segmentation + grammar)                       |
+| POST   | `/api/songs/verify`               | Curator-only: persist edited lyrics as a verified library entry      |
+| POST   | `/api/songs/unverify`             | Curator-only: revert a song to draft (remove from public library)    |
 
 ## Deploying to Railway
 
@@ -249,15 +286,69 @@ The app will be available at `http://localhost:3000`.
 
 ## How It Works
 
+The Play flow has two tiers:
+
+**Verified-library path (fast, trusted):**
+
 1. **Paste a YouTube URL** — the app extracts the video ID and loads the embedded player
-2. **Captions are fetched** — the server proxies YouTube's timed text API (Sanskrit first, Hindi fallback)
-3. **Claude translates** — each line is sent to Claude Sonnet for translation, producing Devanagari, IAST, literal translation, poetic translation, explanation, and word-by-word breakdown
-4. **Translations are cached** — results are stored in Supabase's `songs` table so repeat plays are instant
-5. **Lyrics scroll in sync** — the frontend polls the YouTube player's current time and highlights the active line
-6. **Vocabulary builds passively** — every word you see is logged as an encounter; tapping a word counts as a lookup
-7. **Familiarity grows** — a logarithmic familiarity score increases with encounters (with a penalty for lookups)
-8. **SRS schedules reviews** — the SM-2 algorithm calculates optimal review intervals for each word
-9. **Revise to retain** — flashcards and matching games use your vocabulary deck, filtered by familiarity level
+2. **Lookup in Supabase** — if a row exists with `verified = true`, render those lyrics immediately. No external API calls fire.
+3. **Lyrics scroll in sync** with the player's current time
+
+**Live transcription path (slower, only for unverified songs):**
+
+1. **Try YouTube captions** — the server proxies YouTube's timed text API (Sanskrit → Hindi fallback)
+2. **Fall through to audio transcription** when no captions exist — yt-dlp pulls the audio with cookie-authenticated YouTube access, Groq Whisper-large-v3-turbo transcribes with a configurable language hint (`sa` or `hi`)
+3. **Filter Whisper output** — heuristics drop foreign-script drift, English stopwords/noise words, single-letter tokens; a follow-up Claude validator pass classifies each remaining segment as Sanskrit-or-not
+4. **Translate per line** — each segment goes through Claude Haiku for Devanagari + IAST + literal + poetic + explanation + word breakdown. The bulk endpoint refuses to translate noisy input (returns `[]` rather than hallucinate); per-line is softer for best-effort
+5. **Honest failure** — if too few usable segments survive, the server returns HTTP 422 with a clear error instead of inventing lyrics
+6. **No auto-caching of drafts** — unverified plays don't write to Supabase; repeat plays re-run the pipeline (predictable, but slow). Only explicit *Verify & Save* persists into the library.
+
+**Vocabulary builds:**
+
+7. **Library-wide canonical deck** — when a curator verifies a song, the server splits every line with sandhi analysis and upserts each unique word into the shared `words` table plus a `song_words` link table
+8. **Lazy pre-populate** — on first visit to `/revise`, missing library words are copied into the user's personal SRS deck with default scheduling
+9. **Familiarity grows** — a logarithmic score increases with encounters (with a penalty for lookups); SM-2 schedules reviews
+10. **Revise to retain** — flashcards and matching games use the user's deck, filtered by familiarity level
+
+## Project Status (as of 2026-05-16)
+
+### Completed
+
+- **Audio-first transcription pipeline** — yt-dlp + Groq Whisper end-to-end, working on Railway with cookie-authenticated YouTube access (essential for cloud-host IPs)
+- **Multi-stage hallucination guard** — heuristic regex filter + English stopword/noise rejection + Claude Haiku classifier, all preserving the "no invented lyrics" constraint
+- **Configurable language hint** — `language: 'sa'` or `'hi'` per request; Hindi often yields cleaner Devanagari for stotras
+- **Honest-failure path** — 422 when too few segments survive, no silent fabrication
+- **Model upgrade** — replaced retired `claude-3-haiku-20240307` with `claude-haiku-4-5-20251001` across all three call sites
+- **Verified Library** — `/library` public page lists hand-verified songs with thumbnail/title cards; `verified=true` rows are publicly readable via RLS, drafts are curator-only
+- **Inline edit + verify UI** — pencil icons on `/play` let the curator edit each line's Devanagari, IAST, poetic & literal English, and context; **Verify & Save** publishes to the library and runs sandhi-split on every line in throttled batches (4 lines × 5s spacing to stay under Anthropic's 50 req/min cap)
+- **Canonical vocabulary** — verified-song words land in a shared `words` table; `song_words` link table maps words to their source line; `library_words` view exposes the deduplicated canonical list
+- **Lazy deck sync** — `/revise` pre-populates each user's `user_vocabulary` from `library_words` on every visit (idempotent diff-and-insert)
+- **Migration 007** (`supabase/migrations/007_verified_library.sql`) — schema additions + new RLS policies (public read on verified, curator-only writes via JWT email claim) + `song_words` table + `library_words` view
+- **First verified song in production** — `9-kflUV2FvQ` ("24 Sanskrit Slokas of Daily Prayer") with 187 unique canonical words across 24 of 29 lines
+
+### Remaining / known issues
+
+- **5 of 29 lines on the first verified song still need vocabulary backfill** (lines 15, 18, 22, 23, 27 — Guru Mantra, Śāntākāram, Oṃkāra-bindu, Tulasī-stuti, Gītā 18.78). Cause was `splitSanskrit`'s `max_tokens: 1024` truncating JSON on long verses; fixed in commit `36ca43a` (bumped to 4096) — pending re-run after the next Railway deploy.
+- **Frontend signup flow not yet wired to the new RLS schema** — sign-up still works but newly-created users don't get a `profiles` row automatically. May surface when a new user first signs in.
+- **No "draft songs" curator queue** — the curator currently has to remember which URLs they've started transcribing but not yet verified. A `/curate` page listing all unverified drafts would help.
+- **No edit history** — once a verified song is edited and re-saved, the prior lyrics are overwritten with no audit trail. Acceptable for now; revisit if multiple curators or community editing is added.
+- **No `revision_sessions` writes yet** — the table exists but `/revise` doesn't currently log sessions. Progress page shows real-time numbers from `user_vocabulary` directly.
+- **Three optional UI follow-ups** — search/filter on `/library`, category tags on songs (stotras vs. mantras vs. bhajans), and a "Word browser" page that lists all library words with their source songs.
+- **Cleanup of legacy songs RLS policies** — five overlapping policies are stacked from the migration history (snake_case curator + space-named auth policies). Functional but noisy; a future migration should reconcile.
+
+### Known limitations of the live transcription path
+
+These constraints come from the underlying components — not bugs, just edges to be aware of:
+
+- **YouTube bot-blocking on cloud hosts.** Railway, AWS, GCP, etc. all share data-center IP ranges that YouTube rate-limits aggressively. Without the `YOUTUBE_COOKIES` env var (Netscape-format cookies.txt content from a logged-in browser session), most transcription attempts will hit "Sign in to confirm you're not a bot" or HTTP 429. **Cookies must be refreshed every few weeks** when they expire.
+- **Whisper Sanskrit accuracy is mediocre.** Whisper-large-v3-turbo was trained on relatively little Sanskrit audio. On clean enunciated chants (e.g., temple shloka recordings), it produces ~70–85% recognizable Devanagari or romanized Sanskrit. On modern arrangements with heavy instrumentation (rock, fusion, EDM), it drifts into hallucinated English/Chinese/German fragments — most of which the heuristic + Claude filter strip out, but coverage will be sparse.
+- **Whisper misspellings stop bulk translation.** Even when surviving segments are recognizable as a known stotra, minor character-level errors (e.g., `याथा` instead of `यथा`) cause Claude's strict bulk translator to refuse, returning `[]`. Per-line translation works around this with a softer prompt; bulk requires curator edits before re-running.
+- **Long videos get clipped.** Audio download caps at `--max-filesize 25M`, which covers ~18 minutes at format-18 bitrate. Recordings longer than that fail with "Audio extraction failed."
+- **Audio formats are limited to mp4/360p.** The android/web player-client paths used to bypass YouTube's signature challenge only reliably serve format-18 (a single combined mp4 stream). If YouTube changes this, the pipeline may need a fresh `player-client` config.
+- **Sandhi-split rate limits.** Anthropic enforces 50 req/min per organization on Haiku. The verify endpoint processes lines in batches of 4 with 5s spacing to stay under this. A 50-line song takes ~60 seconds. Songs longer than ~150 lines may need either a larger Anthropic tier or further throttling.
+- **`splitSanskrit` occasionally falls back.** If Claude's structured-JSON response can't be parsed, the function returns bare tokens with empty meanings. The downstream filter discards these (correctly — empty meanings have nothing to learn), but the affected lines won't contribute to the library vocab. Re-running usually succeeds.
+- **No CDN or rate-limiting on the public `/library` view.** Anonymous visitors hit Supabase directly via the anon key + RLS. If traffic spikes, you may want to put a CDN in front or move library reads to a static-generated page.
+- **JWT-based curator auth has a ~60-minute window per session.** Internal scripts (like one-off batch imports) need to refresh the JWT every hour. The browser-based `/play` UI handles refresh automatically.
 
 ## License
 
