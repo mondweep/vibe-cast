@@ -1,5 +1,5 @@
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { Play, BookOpen, BarChart3, LogOut, Library, Github, Linkedin } from 'lucide-react';
+import { Play, BookOpen, BarChart3, LogOut, Library, Github, Linkedin, Heart } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/hooks/useAuth';
 import { ConsentBanner } from './ConsentBanner';
 
@@ -110,6 +110,15 @@ export function Layout() {
           className="inline-flex items-center gap-1 text-amber-500/80 transition-colors hover:text-amber-400"
         >
           <Github size={11} /> Source &amp; contributions
+        </a>
+        <span className="mx-2 text-gray-700">·</span>
+        <a
+          href="https://paypal.me/mondweep"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-amber-500/80 transition-colors hover:text-amber-400"
+        >
+          <Heart size={11} /> Support this work
         </a>
         <span className="mx-2 text-gray-700">·</span>
         <Link to="/privacy" className="text-gray-500 transition-colors hover:text-gray-300">

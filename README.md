@@ -518,6 +518,18 @@ Built and maintained by **Mondweep Chakravorty**.
 
 For data-deletion requests, song suggestions, bug reports, or collaboration — please reach out via LinkedIn DM or open a GitHub issue.
 
+## Support this work
+
+The project is free and ad-free. If you find the library useful, please consider supporting it: **https://paypal.me/mondweep** ❤️
+
+Contributions go toward:
+
+- **Server costs** — Railway hosting + Supabase storage
+- **AI API tokens** — Claude (Sanskrit translation + sandhi split) and Groq (Whisper transcription) charges for every newly verified song
+- **Curation time** — each new song in the verified library takes ~1–3 hours of careful work to transcribe, identify the source text, prepare canonical Devanagari + IAST + translations, and review
+
+Any amount helps. If you'd rather contribute in kind (verifying songs you know well, fixing a bug, building a feature), see the "Contributing" section above.
+
 ## License
 
 MIT

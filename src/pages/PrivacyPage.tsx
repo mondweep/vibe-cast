@@ -122,6 +122,19 @@ export function PrivacyPage() {
           sentence translation), accessibility fixes, or porting the verified
           library to other devotional traditions.
         </p>
+        <p className="text-sm leading-relaxed">
+          If you find this work useful and would like to support it,{' '}
+          <a
+            href="https://paypal.me/mondweep"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-amber-400 underline decoration-amber-500/50 hover:text-amber-300"
+          >
+            you can chip in via PayPal
+          </a>
+          . The project is free and ad-free; contributions cover server costs,
+          Claude API tokens, and the time that goes into verifying new songs.
+        </p>
       </section>
     </div>
   );

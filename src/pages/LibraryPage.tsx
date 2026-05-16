@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../shared/lib/supabaseClient';
-import { CheckCircle2, Music } from 'lucide-react';
+import { CheckCircle2, Music, Heart } from 'lucide-react';
 
 interface LibrarySong {
   id: string;
@@ -92,6 +92,23 @@ export function LibraryPage() {
         <span className="text-sm text-gray-500">
           {songs.length} verified {songs.length === 1 ? 'song' : 'songs'}
         </span>
+      </div>
+
+      {/* Subtle support strip — sits above the grid on the most-visited public
+          page. Skippable; never blocks content. */}
+      <div className="mb-5 flex flex-col gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2.5 text-sm text-gray-300 sm:flex-row sm:items-center sm:justify-between">
+        <span className="leading-snug">
+          Enjoying the library? Each verified song takes a few hours of careful curation.
+          If this is useful to you, please consider supporting it.
+        </span>
+        <a
+          href="https://paypal.me/mondweep"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-amber-500/20 px-3 py-1.5 text-xs font-medium text-amber-300 transition-colors hover:bg-amber-500/30"
+        >
+          <Heart size={12} /> Support this work
+        </a>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
