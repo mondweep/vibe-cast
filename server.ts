@@ -191,10 +191,24 @@ app.post('/api/sanskrit/split', async (req, res) => {
   }
 })
 
-// Transcription route using yt-dlp and Whisper
+// Transcription route using yt-dlp and Whisper.
+// Speech-to-text first: this route is what the frontend uses when a YouTube
+// video has no usable captions. We deliberately do NOT hallucinate lyrics —
+// the transcribeAudio() helper filters Whisper output, and if too little
+// survives we return 422 so the UI can surface an honest error rather than
+// invented Sanskrit.
+const MIN_USABLE_SEGMENTS = 2
+
 app.post('/api/transcribe', async (req, res) => {
-  const { videoId } = req.get('content-type')?.includes('application/json') ? req.body : req.query
+  const isJson = req.get('content-type')?.includes('application/json')
+  const { videoId, language } = isJson ? req.body : req.query
   const actualVideoId = videoId || req.body?.videoId
+  // Whisper language hint. Defaults to 'sa' (Sanskrit). Pass 'hi' to coax
+  // Whisper into emitting Devanagari for Sanskrit stotras — it tends to do
+  // better on the Hindi bucket because that's where its training data lives.
+  const whisperLanguage = (typeof language === 'string' && language.length === 2)
+    ? language
+    : 'sa'
 
   if (!actualVideoId) {
     return res.status(400).json({ error: 'videoId required' })
@@ -208,23 +222,39 @@ app.post('/api/transcribe', async (req, res) => {
       return res.json(FALLBACK_LYRICS[actualVideoId])
     }
 
-    // Extract audio using yt-dlp
+    // Extract audio using yt-dlp.
+    // player-client=android currently bypasses the n-challenge / PO-Token requirement
+    // that blocks the mweb/web clients. Format 18 (mp4 360p with AAC audio) is small
+    // and reliably available; -x extracts it to mp3.
     const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    const ytDlpCmd = `yt-dlp --user-agent "${userAgent}" --referer "https://www.google.com/" --extractor-args "youtube:player-client=mweb,web" -x --audio-format mp3 --max-filesize 12M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`
-    
+    const ytDlpCmd = `yt-dlp --user-agent "${userAgent}" --referer "https://www.google.com/" --extractor-args "youtube:player-client=android" -f 18 -x --audio-format mp3 --max-filesize 12M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`
+
     console.log(`Executing yt-dlp for ${actualVideoId}...`)
     await execPromise(ytDlpCmd)
-    
+
     if (!fs.existsSync(tempFile)) {
       throw new Error('Audio extraction failed: File not found')
     }
 
     const audioBuffer = fs.readFileSync(tempFile)
-    const result = await transcribeAudio(audioBuffer)
-    
+    const result = await transcribeAudio(audioBuffer, whisperLanguage)
+
     // Cleanup
     if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile)
-    
+
+    // Honest-failure path: if Whisper + filter produced almost nothing usable,
+    // refuse rather than send the downstream translator a near-empty payload.
+    if (!result.segments || result.segments.length < MIN_USABLE_SEGMENTS) {
+      return res.status(422).json({
+        error:
+          'Could not reliably transcribe this audio. ' +
+          'Try a clearer recording, a different video, or call /api/transcribe ' +
+          `again with {"language":"${whisperLanguage === 'sa' ? 'hi' : 'sa'}"}.`,
+        usableSegments: result.segments?.length ?? 0,
+        language: result.language,
+      })
+    }
+
     res.json(result)
   } catch (err) {
     console.error('Transcription error:', err)

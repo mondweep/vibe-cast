@@ -52,7 +52,7 @@ export async function translateSanskritLyrics(
   timestamps?: { start: number; end: number }[]
 ): Promise<LyricsLine[]> {
   const message = await anthropic.messages.create({
-    model: 'claude-3-haiku-20240307',
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 4096,
     system: TRANSLATION_SYSTEM_PROMPT,
     messages: [
@@ -82,7 +82,7 @@ export async function translateSingleLine(
   mode: 'literal' | 'poetic'
 ): Promise<string> {
   const message = await anthropic.messages.create({
-    model: 'claude-3-haiku-20240307',
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 256,
     messages: [
       {
@@ -104,7 +104,7 @@ Sanskrit: ${text}`,
  */
 export async function splitSanskrit(text: string): Promise<any[]> {
   const message = await anthropic.messages.create({
-    model: 'claude-3-haiku-20240307',
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 1024,
     messages: [
       {
