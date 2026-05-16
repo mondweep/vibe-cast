@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom'
 import { YouTubePlayer } from '../contexts/player/components/YouTubePlayer'
 import { URLInput } from '../contexts/player/components/URLInput'
 import { LyricsPanel } from '../contexts/translation/components/LyricsPanel'
+import { EditableLyricsPanel } from '../contexts/translation/components/EditableLyricsPanel'
 import { TranslationPanel } from '../contexts/translation/components/TranslationPanel'
+import { VerifyBar } from '../contexts/translation/components/VerifyBar'
 import { SessionSummary } from '../contexts/learning/components/SessionSummary'
 import { useSync } from '../contexts/player/hooks/useSync'
 import { useTranslation } from '../contexts/translation/hooks/useTranslation'
@@ -15,6 +17,12 @@ export function PlayPage() {
   const [videoId, setVideoIdState] = useState<string | null>(searchParams.get('v'))
   const [translationMode, setTranslationMode] = useState<TranslationMode>('poetic')
   const [showSummary, setShowSummary] = useState(false)
+  const [editing, setEditing] = useState(false)
+  // Optimistic override after a successful Verify or Unverify so the UI
+  // reflects the new state without refetching the song from Supabase.
+  // Reset to null whenever the video changes.
+  const [localVerifiedOverride, setLocalVerifiedOverride] = useState<boolean | null>(null)
+  useEffect(() => setLocalVerifiedOverride(null), [videoId])
 
   // Wrapping setter keeps URL ?v=… and state in sync, so Library deep-links
   // remain shareable and back-button works.
@@ -42,6 +50,9 @@ export function PlayPage() {
   const handleVideoEnd = useCallback(() => {
     setShowSummary(true)
   }, [])
+
+  const isVerified =
+    localVerifiedOverride !== null ? localVerifiedOverride : translation.isVerified
 
   return (
     <div className="space-y-6">
@@ -83,12 +94,35 @@ export function PlayPage() {
           </div>
 
           <div className="space-y-4">
-            <LyricsPanel
+            <VerifyBar
+              videoId={videoId}
               lines={translation.lines}
-              currentLineIndex={translation.currentLineIndex}
-              vocabulary={vocabulary.words}
-              onWordTap={(word) => vocabulary.handleWordTap({ ...word, meaning: word.iast }, translation.currentLineIndex)}
+              isVerified={isVerified}
+              transcriptionLanguage={translation.transcriptionLanguage}
+              editing={editing}
+              onToggleEdit={() => setEditing((v) => !v)}
+              onVerified={() => {
+                setLocalVerifiedOverride(true)
+                setEditing(false)
+              }}
+              onUnverified={() => setLocalVerifiedOverride(false)}
             />
+
+            {editing ? (
+              <EditableLyricsPanel
+                lines={translation.lines}
+                currentLineIndex={translation.currentLineIndex}
+                onChange={translation.updateLine}
+              />
+            ) : (
+              <LyricsPanel
+                lines={translation.lines}
+                currentLineIndex={translation.currentLineIndex}
+                vocabulary={vocabulary.words}
+                onWordTap={(word) => vocabulary.handleWordTap({ ...word, meaning: word.iast }, translation.currentLineIndex)}
+              />
+            )}
+
             <TranslationPanel
               currentLine={translation.currentLine}
               mode={translationMode}
