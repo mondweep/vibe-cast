@@ -487,9 +487,37 @@ Songs are also added to the library via a nightly automation: a Cowork scheduled
 Low-confidence candidates (songs whose source can't be identified with certainty) are queued in the `pending_candidates` table and a Telegram alert is sent to the curator for manual review.
 
 - **Prompt** lives at [`docs/nightly-curator-prompt.md`](./docs/nightly-curator-prompt.md)
-- **Schema** is in [`supabase/migrations/009_curator_review_queue.sql`](./supabase/migrations/009_curator_review_queue.sql)
+- **Schema** is in [`supabase/migrations/009_curator_review_queue.sql`](./supabase/migrations/009_curator_review_queue.sql) and [`010_songs_rls_reconcile.sql`](./supabase/migrations/010_songs_rls_reconcile.sql)
 - **Architecture**: free-path — Claude does the work via Supabase MCP under the Claude Max subscription. No backend `/api/discovery/*` endpoints exist; the prompt is the entire automation.
 - **Cost**: ~$0/night for known stotras (Claude Max covers it); marginal Groq Whisper cost only if a song needs audio transcription (unusual at 2 candidates/night).
+
+### Setting up the nightly task (one-time)
+
+1. **Apply migrations 009 + 010** in the Supabase SQL editor (both are idempotent).
+2. **Confirm RLS policies on `songs`** — there should be exactly three:
+   - `Public can read verified songs` (SELECT — `verified=true AND pending_curator_review=false`)
+   - `Curator can manage songs` (FOR ALL — `auth.jwt()->>'email' IN ('mondweep@gmail.com','mondweep@dxsure.uk')`)
+   - `Service role can manage songs` (FOR ALL — `auth.role()='service_role'`)
+3. **Verify Supabase MCP write access** in your Cowork environment: try a sentinel `INSERT INTO pending_candidates (video_id, status) VALUES ('__test__','pending')` via the MCP, then `DELETE`. If both succeed, the MCP has the elevated privileges needed (it executes raw SQL via Supabase's Management API, bypassing PostgREST RLS).
+4. **Create the scheduled task in Cowork**:
+   - Name: `SanskritSongSync`
+   - Frequency: Daily at e.g. 01:00
+   - Project: vibe-cast (or whichever you connected)
+   - Prompt: copy from `docs/nightly-curator-prompt.md`, filling in `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `YOUTUBE_API_KEY` placeholders with real values
+5. **Manually trigger once** from Cowork to validate end-to-end before relying on the schedule. Check Telegram for the summary message; check `/library` (signed in as curator) for any auto-added songs in the 24-hour review window.
+
+### Expected behaviour after first run
+
+- **Anonymous visitor** at `/library`: sees only fully-public verified songs. Any newly auto-added song stays hidden for 24 hours.
+- **Curator** at `/library`: sees the same public set. To see auto-added songs in review, navigate to `/play?v=<videoId>` directly (the link Telegram sent), review/edit if needed, leave as-is to auto-promote at the 24-hour mark, or click "Unverify" to remove.
+- **24 hours later**: the next nightly run's Step 4 flips `pending_curator_review=false` on aged rows, and they become public.
+- **Failed candidates** (low confidence): live in `pending_candidates` with `status='pending'`. Triage via Telegram message or by querying the table directly.
+
+### Cost / safety notes
+
+- Hard cap is the prompt's `CANDIDATES_PER_NIGHT = 2`. Raise once auto-add quality is consistent.
+- The prompt explicitly forbids hallucination — Claude is instructed to queue songs for review rather than generate uncertain canonical text.
+- All writes are auditable: `songs.verified_by` records the curator's user_id; `pending_candidates.created_at` and `decided_at` track the review lifecycle.
 
 ## Requesting a song
 
