@@ -324,11 +324,14 @@ The Play flow has two tiers:
 - **Canonical vocabulary** — verified-song words land in a shared `words` table; `song_words` link table maps words to their source line; `library_words` view exposes the deduplicated canonical list
 - **Lazy deck sync** — `/revise` pre-populates each user's `user_vocabulary` from `library_words` on every visit (idempotent diff-and-insert)
 - **Migration 007** (`supabase/migrations/007_verified_library.sql`) — schema additions + new RLS policies (public read on verified, curator-only writes via JWT email claim) + `song_words` table + `library_words` view
-- **First verified song in production** — `9-kflUV2FvQ` ("24 Sanskrit Slokas of Daily Prayer") with 187 unique canonical words across 24 of 29 lines
+- **First verified song in production** — `9-kflUV2FvQ` ("24 Sanskrit Slokas of Daily Prayer") fully populated: 251 unique canonical words across **all 29 of 29 lines**, 289 word→line links
+- **`max_tokens` fix for sandhi split** — bumped from 1024 to 4096 in `splitSanskrit` so long verses (Śāntākāram, Guru Mantra, etc.) no longer truncate JSON output mid-array and fall through to the empty-meaning fallback
+- **Words clickable on verified lyrics** — `useTranslation` hydrates each line's `words[]` from the `song_words` ↔ `words` join after loading a verified row, so `LyricsPanel` renders clickable spans and the word popup opens with the canonical meaning, dhātu, and grammar
+- **50-word deck cap removed** — `deckGenerator` was capping the revise flashcards at 50 even when the library deck held 251+ words; bumped to 1000 (PostgREST's default page ceiling) so the whole deck is reviewable
 
 ### Remaining / known issues
 
-- **5 of 29 lines on the first verified song still need vocabulary backfill** (lines 15, 18, 22, 23, 27 — Guru Mantra, Śāntākāram, Oṃkāra-bindu, Tulasī-stuti, Gītā 18.78). Cause was `splitSanskrit`'s `max_tokens: 1024` truncating JSON on long verses; fixed in commit `36ca43a` (bumped to 4096) — pending re-run after the next Railway deploy.
+- **IAST anusvāra/nasal normalization (`ṃ` vs `m`)** — Sanskrit transliteration tolerates both `rājīvalocanaṃ` (with anusvāra) and `rājīvalocanam` (with plain `m`) for the same word; literal string-match treats them as different. Affects vocabulary lookup highlighting on lyric lines when the lyric IAST and the dictionary entry disagree. Clean fix is a small canonicalisation helper applied at both read and write time, plus a one-time migration to rewrite existing rows. Not yet implemented.
 - **Frontend signup flow not yet wired to the new RLS schema** — sign-up still works but newly-created users don't get a `profiles` row automatically. May surface when a new user first signs in.
 - **No "draft songs" curator queue** — the curator currently has to remember which URLs they've started transcribing but not yet verified. A `/curate` page listing all unverified drafts would help.
 - **No edit history** — once a verified song is edited and re-saved, the prior lyrics are overwritten with no audit trail. Acceptable for now; revisit if multiple curators or community editing is added.
