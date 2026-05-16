@@ -54,6 +54,7 @@ create policy "Curator can manage songs" on public.songs
 drop policy if exists "Authenticated users can read words" on public.words;
 drop policy if exists "Public can read words"              on public.words;
 drop policy if exists "Curator can manage words"           on public.words;
+drop policy if exists "Service role can manage words"      on public.words;
 
 create policy "Public can read words" on public.words
   for select
