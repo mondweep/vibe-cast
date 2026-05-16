@@ -129,8 +129,18 @@ export async function verifySong(
   // is idempotent and reflects edits).
   await sb.from('song_words').delete().eq('song_id', (songRow as any).id)
 
-  // Extract words per line, in parallel.
-  const extractionPromises = body.lines.map(async (line, idx) => {
+  // Extract words per line. Throttled to stay under Anthropic's 50 req/min
+  // org rate limit: process at most BATCH_SIZE lines concurrently, then sleep
+  // BATCH_DELAY_MS before the next batch. With BATCH_SIZE=4 and DELAY=5s the
+  // effective rate is ~48 req/min, leaving headroom.
+  const BATCH_SIZE = 4
+  const BATCH_DELAY_MS = 5000
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+  const extractOne = async (
+    line: VerifyLine,
+    idx: number
+  ): Promise<{ line_number: number; words?: number; error?: string }> => {
     const text = (line.devanagari || line.text || '').trim()
     if (!text) return { line_number: idx, error: 'empty line' }
     try {
@@ -138,7 +148,6 @@ export async function verifySong(
       let inserted = 0
       for (const w of words) {
         if (!w?.devanagari || !w?.iast || !w?.meaning) continue
-        // Upsert into words
         const { data: wordRow, error: wErr } = await sb
           .from('words')
           .upsert(
@@ -153,22 +162,39 @@ export async function verifySong(
           )
           .select()
           .single()
-        if (wErr || !wordRow) continue
-        // Link into song_words
-        await sb.from('song_words').insert({
+        if (wErr || !wordRow) {
+          console.warn(`[verify] words upsert failed for ${w.devanagari}: ${wErr?.message}`)
+          continue
+        }
+        const { error: linkErr } = await sb.from('song_words').insert({
           song_id: (songRow as any).id,
           word_id: (wordRow as any).id,
           line_number: idx,
         })
+        if (linkErr) {
+          console.warn(`[verify] song_words insert failed: ${linkErr.message}`)
+          continue
+        }
         inserted++
       }
       return { line_number: idx, words: inserted }
     } catch (err) {
       return { line_number: idx, error: err instanceof Error ? err.message : String(err) }
     }
-  })
+  }
 
-  const wordExtraction = await Promise.all(extractionPromises)
+  const wordExtraction: { line_number: number; words?: number; error?: string }[] = []
+  for (let i = 0; i < body.lines.length; i += BATCH_SIZE) {
+    const batch = body.lines.slice(i, i + BATCH_SIZE)
+    const results = await Promise.all(
+      batch.map((line, j) => extractOne(line, i + j))
+    )
+    wordExtraction.push(...results)
+    if (i + BATCH_SIZE < body.lines.length) {
+      await sleep(BATCH_DELAY_MS)
+    }
+  }
+
   return { song: songRow, wordExtraction }
 }
 
