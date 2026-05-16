@@ -1,6 +1,7 @@
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { Play, BookOpen, BarChart3, LogOut, Library } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/hooks/useAuth';
+import { ConsentBanner } from './ConsentBanner';
 
 export function Layout() {
   const { signOut, user } = useAuth();
@@ -39,6 +40,8 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
+
+      <ConsentBanner />
 
       <nav className="border-t border-gray-800 px-6 py-2">
         <div className="flex justify-center gap-10">

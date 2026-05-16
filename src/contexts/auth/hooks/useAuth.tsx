@@ -31,6 +31,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // After sign-in, fire-and-forget a profile-track call so the server
+      // can capture the user's IP + IP-derived geo into the profiles row.
+      // Idempotent on subsequent sign-ins — just updates the same fields.
+      if (session?.access_token) {
+        fetch('/api/profile/track', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        }).catch(() => {
+          // Best-effort. Geo tracking never blocks sign-in.
+        });
+      }
     });
 
     return () => subscription.unsubscribe();

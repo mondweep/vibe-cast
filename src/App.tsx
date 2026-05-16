@@ -7,6 +7,7 @@ import { PlayPage } from './pages/PlayPage'
 import { RevisePage } from './pages/RevisePage'
 import { ProgressPage } from './pages/ProgressPage'
 import { LibraryPage } from './pages/LibraryPage'
+import { PrivacyPage } from './pages/PrivacyPage'
 
 export default function App() {
   return (
@@ -14,12 +15,17 @@ export default function App() {
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
 
-      {/* /library is PUBLIC — anonymous visitors can browse verified songs. */}
+      {/* Public routes — accessible without signing in.
+          /library, /play (read-only), and /privacy are open.
+          /play hides curator UI + vocabulary tracking when the user is
+          anonymous; signed-in users get the full experience. */}
       <Route element={<Layout />}>
         <Route path="/library" element={<LibraryPage />} />
+        <Route path="/play" element={<PlayPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
       </Route>
 
-      {/* Everything else still requires sign-in. */}
+      {/* Personal SRS pages still require sign-in. */}
       <Route
         element={
           <ProtectedRoute>
@@ -27,7 +33,6 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/play" element={<PlayPage />} />
         <Route path="/revise" element={<RevisePage />} />
         <Route path="/progress" element={<ProgressPage />} />
       </Route>

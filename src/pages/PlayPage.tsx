@@ -2,14 +2,16 @@ import { useState, useCallback, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { YouTubePlayer } from '../contexts/player/components/YouTubePlayer'
 import { URLInput } from '../contexts/player/components/URLInput'
-import { LyricsPanel } from '../contexts/translation/components/LyricsPanel'
+import { LyricsPanel, type TappedWord } from '../contexts/translation/components/LyricsPanel'
 import { EditableLyricsPanel } from '../contexts/translation/components/EditableLyricsPanel'
 import { TranslationPanel } from '../contexts/translation/components/TranslationPanel'
 import { VerifyBar } from '../contexts/translation/components/VerifyBar'
+import { WordPopup } from '../contexts/translation/components/WordPopup'
 import { SessionSummary } from '../contexts/learning/components/SessionSummary'
 import { useSync } from '../contexts/player/hooks/useSync'
 import { useTranslation } from '../contexts/translation/hooks/useTranslation'
 import { useVocabulary } from '../contexts/learning/hooks/useVocabulary'
+import { useAuth } from '../contexts/auth/hooks/useAuth'
 import type { TranslationMode } from '../shared/types/database.types'
 
 export function PlayPage() {
@@ -18,6 +20,8 @@ export function PlayPage() {
   const [translationMode, setTranslationMode] = useState<TranslationMode>('poetic')
   const [showSummary, setShowSummary] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [tappedWord, setTappedWord] = useState<TappedWord | null>(null)
+  const { user } = useAuth()
   // Optimistic override after a successful Verify or Unverify so the UI
   // reflects the new state without refetching the song from Supabase.
   // Reset to null whenever the video changes.
@@ -94,19 +98,23 @@ export function PlayPage() {
           </div>
 
           <div className="space-y-4">
-            <VerifyBar
-              videoId={videoId}
-              lines={translation.lines}
-              isVerified={isVerified}
-              transcriptionLanguage={translation.transcriptionLanguage}
-              editing={editing}
-              onToggleEdit={() => setEditing((v) => !v)}
-              onVerified={() => {
-                setLocalVerifiedOverride(true)
-                setEditing(false)
-              }}
-              onUnverified={() => setLocalVerifiedOverride(false)}
-            />
+            {/* VerifyBar is curator-only and self-gates on email allowlist;
+                it returns null for anonymous and non-curator users. */}
+            {user && (
+              <VerifyBar
+                videoId={videoId}
+                lines={translation.lines}
+                isVerified={isVerified}
+                transcriptionLanguage={translation.transcriptionLanguage}
+                editing={editing}
+                onToggleEdit={() => setEditing((v) => !v)}
+                onVerified={() => {
+                  setLocalVerifiedOverride(true)
+                  setEditing(false)
+                }}
+                onUnverified={() => setLocalVerifiedOverride(false)}
+              />
+            )}
 
             {editing ? (
               <EditableLyricsPanel
@@ -119,7 +127,16 @@ export function PlayPage() {
                 lines={translation.lines}
                 currentLineIndex={translation.currentLineIndex}
                 vocabulary={vocabulary.words}
-                onWordTap={(word) => vocabulary.handleWordTap({ ...word, meaning: word.iast }, translation.currentLineIndex)}
+                onWordTap={(word) => {
+                  // Always open the popup so anonymous visitors can see the
+                  // meaning. Vocabulary write only happens when signed in
+                  // (handleWordTap guards on !user internally).
+                  setTappedWord(word)
+                  vocabulary.handleWordTap(
+                    { ...word, meaning: word.meaning || word.iast },
+                    translation.currentLineIndex
+                  )
+                }}
               />
             )}
 
@@ -149,6 +166,33 @@ export function PlayPage() {
         <SessionSummary
           stats={vocabulary.sessionStats}
           onClose={() => setShowSummary(false)}
+        />
+      )}
+
+      {tappedWord && (
+        <WordPopup
+          word={{
+            devanagari: tappedWord.devanagari,
+            iast: tappedWord.iast,
+            meaning: tappedWord.meaning || '(no meaning recorded)',
+            root_dhatu: tappedWord.root_dhatu,
+            grammar: tappedWord.grammar,
+          }}
+          onClose={() => setTappedWord(null)}
+          // Mark-revision / mark-learned only do anything for signed-in users.
+          // For anonymous users the buttons stay in place but show a sign-in
+          // nudge instead of writing to the DB. (WordPopup currently always
+          // renders both buttons; we no-op them here.)
+          onMarkRevision={() => {
+            if (!user) return
+            // TODO: wire to vocabulary.markRevision once that helper exists
+            setTappedWord(null)
+          }}
+          onMarkLearned={() => {
+            if (!user) return
+            // TODO: wire to vocabulary.markLearned once that helper exists
+            setTappedWord(null)
+          }}
         />
       )}
     </div>

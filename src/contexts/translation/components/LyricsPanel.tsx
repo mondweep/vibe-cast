@@ -2,11 +2,19 @@ import { useRef, useEffect } from 'react';
 import type { LyricsLine } from '../../../shared/types/database.types';
 import { FAMILIARITY_THRESHOLDS } from '../../../shared/lib/constants';
 
+export interface TappedWord {
+  devanagari: string;
+  iast: string;
+  meaning?: string;
+  root_dhatu?: string;
+  grammar?: string;
+}
+
 interface LyricsPanelProps {
   lines: LyricsLine[];
   currentLineIndex: number;
   vocabulary: Map<string, number>; // word iast -> familiarity score
-  onWordTap: (word: { devanagari: string; iast: string }) => void;
+  onWordTap: (word: TappedWord) => void;
 }
 
 export function LyricsPanel({ lines, currentLineIndex, vocabulary, onWordTap }: LyricsPanelProps) {
