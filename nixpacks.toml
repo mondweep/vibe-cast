@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_23", "yt-dlp", "ffmpeg"]
+nixPkgs = ["nodejs_22", "yt-dlp", "ffmpeg"]
 [phases.install]
 cmds = ["rm -rf node_modules package-lock.json", "npm install"]
 
