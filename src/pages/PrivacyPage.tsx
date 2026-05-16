@@ -79,10 +79,48 @@ export function PrivacyPage() {
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold text-gray-100">Contact</h2>
+        <h2 className="text-lg font-semibold text-gray-100">Contact &amp; contributions</h2>
         <p className="text-sm leading-relaxed">
-          Questions or data requests: send an email to the project owner at the
-          address listed in the GitHub repository.
+          This project is built and curated by{' '}
+          <a
+            href="https://www.linkedin.com/in/mondweepchakravorty/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-amber-400 underline decoration-amber-500/50 hover:text-amber-300"
+          >
+            Mondweep Chakravorty
+          </a>
+          . For data-deletion requests, suggestions for songs to add to the
+          library, bug reports, or collaboration — please reach out via
+          LinkedIn, or open an issue / pull request in the public repository:
+        </p>
+        <ul className="list-disc space-y-1 pl-5 text-sm">
+          <li>
+            <a
+              href="https://www.linkedin.com/in/mondweepchakravorty/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-400 underline decoration-amber-500/50 hover:text-amber-300"
+            >
+              LinkedIn — Mondweep Chakravorty
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/mondweep/vibe-cast/tree/claude/sanskrit-english-songs-8IhOE"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-400 underline decoration-amber-500/50 hover:text-amber-300"
+            >
+              GitHub — vibe-cast (branch: claude/sanskrit-english-songs-8IhOE)
+            </a>
+          </li>
+        </ul>
+        <p className="text-sm leading-relaxed">
+          Contributions are welcome — additional verified songs, improvements
+          to the Sanskrit translation prompts, new revise modes (audio,
+          sentence translation), accessibility fixes, or porting the verified
+          library to other devotional traditions.
         </p>
       </section>
     </div>

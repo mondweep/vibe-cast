@@ -2,6 +2,10 @@
 
 Learn Sanskrit through music. Paste a YouTube URL, watch the video, and follow along with real-time line-by-line translations — Devanagari, IAST transliteration, word-by-word breakdowns, and poetic English. Every word you encounter is tracked with spaced repetition so you build lasting vocabulary over time.
 
+**Live demo:** https://sanskrit-sync-service-production.up.railway.app
+**Source / contributions:** https://github.com/mondweep/vibe-cast/tree/claude/sanskrit-english-songs-8IhOE
+**Built by:** [Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty/)
+
 ## Features
 
 ### Play
@@ -408,6 +412,111 @@ These constraints come from the underlying components — not bugs, just edges t
 - **`splitSanskrit` occasionally falls back.** If Claude's structured-JSON response can't be parsed, the function returns bare tokens with empty meanings. The downstream filter discards these (correctly — empty meanings have nothing to learn), but the affected lines won't contribute to the library vocab. Re-running usually succeeds.
 - **No CDN or rate-limiting on the public `/library` view.** Anonymous visitors hit Supabase directly via the anon key + RLS. If traffic spikes, you may want to put a CDN in front or move library reads to a static-generated page.
 - **JWT-based curator auth has a ~60-minute window per session.** Internal scripts (like one-off batch imports) need to refresh the JWT every hour. The browser-based `/play` UI handles refresh automatically.
+- **YouTube's SABR streaming rollout.** As of late 2025/early 2026, YouTube is forcing Server-side Adaptive Bitrate streaming on the `web` and `web_safari` clients, which removes scrapeable media URLs and yields HTTP 403 even with valid cookies. The current workaround in `server.ts` is a fallback chain `tv_embedded,web_creator,web_safari,web` — yt-dlp tries each in order. This list will need updating as YouTube tightens further. Symptom: `/api/transcribe` log shows "YouTube is forcing SABR streaming". When that happens, search the [yt-dlp issue tracker](https://github.com/yt-dlp/yt-dlp/issues) for the latest known-good client name and prepend it to the list, or bump yt-dlp to a newer version via `nixpacks.toml`.
+
+## Adding a song to the verified library
+
+This is the curator workflow — only the email allowlist (`mondweep@gmail.com` / `mondweep@dxsure.uk`) can perform these steps. Two paths depending on whether live transcription is currently working:
+
+### Path A — Live transcription (when yt-dlp + YouTube are cooperating)
+
+1. Sign in to the deployed app with your curator email
+2. Visit `/play` and paste the YouTube URL of the song you want to add
+3. Wait ~15–60 seconds for the pipeline to run (yt-dlp downloads audio → Whisper transcribes → Claude validates segments → bulk translate fills in Devanagari + IAST + translations)
+4. The lyrics panel shows a "Draft" badge (curator-only). Click **Edit lines**
+5. Read each line carefully — Whisper isn't perfect on Sanskrit, especially modern arrangements. Fix:
+   - Devanagari spelling errors
+   - Wrong IAST transliterations
+   - Imprecise translations
+   - Missing context in the explanation field
+6. Click **Verify & Save**. The server runs sandhi-split on every line (throttled to stay under Anthropic's 50 req/min), upserts unique words into the `words` table, and links them to the song via `song_words`. Wall time roughly 15–60 seconds depending on song length.
+7. The badge flips to "Verified ✓". The song appears on `/library` immediately for everyone.
+
+### Path B — Manual canonical text (when yt-dlp is blocked or Whisper output is too noisy)
+
+This is what we used for the Turīya and 24-shlokas songs when live transcription was either blocked or producing poor output.
+
+1. Identify the song's source text. Well-known stotras and shlokas have published canonical Devanagari in standard collections (Sanskrit Documents Org, Wisdom Library, GRD Reading Room, Adyar, etc.). Pull the verses with verified IAST + meanings.
+2. Prepare a JSON payload with the line schema used by `/api/songs/verify`:
+   ```json
+   {
+     "videoId": "<youtube-video-id>",
+     "title": "Song title",
+     "language": "sa",
+     "lines": [
+       {
+         "start_time": 0,
+         "end_time": 30,
+         "devanagari": "शुभं करोति कल्याणम् …",
+         "iast": "śubhaṃ karoti kalyāṇam …",
+         "english_poetic": "…",
+         "english_literal": "…",
+         "explanation": "Source citation + context"
+       }
+     ]
+   }
+   ```
+3. Get a fresh curator JWT (sign in to the app, paste this in DevTools Console to extract):
+   ```js
+   (() => {
+     const find = (s) => Object.entries(s).find(([k]) => k.startsWith('sb-') && k.endsWith('-auth-token'));
+     const e = find(localStorage) || find(sessionStorage);
+     return e ? JSON.parse(e[1]).access_token : 'NO TOKEN';
+   })()
+   ```
+4. POST to the verify endpoint:
+   ```bash
+   curl -X POST https://sanskrit-sync-service-production.up.railway.app/api/songs/verify \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer <JWT>" \
+     --data-binary @your-song.json
+   ```
+5. The server returns `{song, wordExtraction}`. Inspect `wordExtraction` for any lines that errored (rate limit, parse failure) and re-run for just those lines if needed.
+
+### Tips from real usage
+
+- **Don't pad with content you're not sure about.** Coverage gaps are honest; invented lyrics aren't. The curator UI on `/play` will let visitors see "no lyric for this window" cleanly.
+- **Bulk translate (`/api/translate/song`) refuses noisy input.** If Whisper produces text with character-level misspellings, the strict prompt returns `[]` rather than hallucinate. Either edit the lines first or call `/api/translate/line` (softer prompt) per-line.
+- **Verify is idempotent.** Calling it again with the same `videoId` upserts the song row and re-runs word extraction. Use this if you want to update lyrics later — no need to unverify first.
+- **Unverify keeps the data.** `/api/songs/unverify` just flips the flag, doesn't delete `song_words`. Re-verifying later restores the library entry instantly.
+
+## Requesting a song
+
+If you'd like a particular Sanskrit song added to the library, reach out via either:
+
+- **LinkedIn:** [Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty/) — DM with the YouTube URL and any context you can give (source text, traditional verses, who sings it)
+- **GitHub:** Open an issue at [vibe-cast](https://github.com/mondweep/vibe-cast/tree/claude/sanskrit-english-songs-8IhOE) describing the song and ideally linking to a canonical text source
+
+For songs where the lyrics are standard published verses (the daily-prayer shlokas, well-known stotras, Vedic mantras, Bhagavad-Gītā chapters, Upaniṣad passages), curation is fast — typically ~30 minutes from request to verified library entry.
+
+## Contributing
+
+This is a personal project that's grown into something potentially useful for a broader community of Sanskrit learners. Contributions are very welcome.
+
+**Repository:** [github.com/mondweep/vibe-cast](https://github.com/mondweep/vibe-cast/tree/claude/sanskrit-english-songs-8IhOE) (current development branch: `claude/sanskrit-english-songs-8IhOE`)
+
+**Areas where help would be especially valuable:**
+
+- **Verified library expansion** — adding well-known stotras, daily prayers, Upaniṣadic mantras, Gītā chapters, etc. with canonical text from trusted published sources
+- **Translation quality** — improving the prompts in `api/routes/translate.ts` so generated translations are more poetic, more accurate, or include more context (alternate readings, philosophical schools)
+- **Revise modes** — the existing `/revise` page has stubs for "audio" and "sentence" flashcard modes that need implementation
+- **IAST normalization helper** — the `ṃ` vs `m` issue called out in the limitations section needs a small canonicalisation function applied at word read/write time
+- **Accessibility** — keyboard navigation, screen-reader labels, WCAG colour-contrast review
+- **Mobile-specific UX polish** — the layout works on mobile but a few panels could be more compact
+- **Devanagari font hosting** — current rendering uses system fonts; a curated Devanagari font would be more legible across platforms
+- **Other devotional traditions** — the verified-library + canonical-vocab schema is text-agnostic; the same plumbing could power Pāli (Buddhist), Tamil (Śaiva-Vaiṣṇava), Arabic (Sufi/Qur'anic), or Latin (liturgical) traditions
+
+Open a PR or DM via LinkedIn before starting a large change so we can align on approach. Smaller fixes (typos, minor RLS adjustments, frontend tweaks) — just open a PR directly.
+
+## Credits & contact
+
+Built and maintained by **Mondweep Chakravorty**.
+
+- **LinkedIn:** https://www.linkedin.com/in/mondweepchakravorty/
+- **GitHub repository:** https://github.com/mondweep/vibe-cast
+- **Current branch:** [claude/sanskrit-english-songs-8IhOE](https://github.com/mondweep/vibe-cast/tree/claude/sanskrit-english-songs-8IhOE)
+
+For data-deletion requests, song suggestions, bug reports, or collaboration — please reach out via LinkedIn DM or open a GitHub issue.
 
 ## License
 

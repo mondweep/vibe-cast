@@ -1,5 +1,5 @@
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { Play, BookOpen, BarChart3, LogOut, Library } from 'lucide-react';
+import { Play, BookOpen, BarChart3, LogOut, Library, Github, Linkedin } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/hooks/useAuth';
 import { ConsentBanner } from './ConsentBanner';
 
@@ -91,6 +91,31 @@ export function Layout() {
           </NavLink>
         </div>
       </nav>
+
+      <footer className="border-t border-gray-900 bg-gray-950 px-6 py-3 text-center text-xs text-gray-500">
+        <span>Built by </span>
+        <a
+          href="https://www.linkedin.com/in/mondweepchakravorty/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-amber-500/80 transition-colors hover:text-amber-400"
+        >
+          <Linkedin size={11} /> Mondweep Chakravorty
+        </a>
+        <span className="mx-2 text-gray-700">·</span>
+        <a
+          href="https://github.com/mondweep/vibe-cast/tree/claude/sanskrit-english-songs-8IhOE"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-amber-500/80 transition-colors hover:text-amber-400"
+        >
+          <Github size={11} /> Source &amp; contributions
+        </a>
+        <span className="mx-2 text-gray-700">·</span>
+        <Link to="/privacy" className="text-gray-500 transition-colors hover:text-gray-300">
+          Privacy
+        </Link>
+      </footer>
     </div>
   );
 }
