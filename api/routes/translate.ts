@@ -105,7 +105,11 @@ Sanskrit: ${text}`,
 export async function splitSanskrit(text: string): Promise<any[]> {
   const message = await anthropic.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1024,
+    // Long verses (Śāntākāram, Saha-Nāvavatu, multi-clause shlokas) need
+    // ~3000+ tokens for the full grammar breakdown. The previous 1024 cap
+    // truncated JSON mid-output, dropping the function into the bare-token
+    // fallback path which inserts words with empty meanings.
+    max_tokens: 4096,
     messages: [
       {
         role: 'user',
