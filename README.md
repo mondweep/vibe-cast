@@ -480,6 +480,17 @@ This is what we used for the Turīya and 24-shlokas songs when live transcriptio
 - **Verify is idempotent.** Calling it again with the same `videoId` upserts the song row and re-runs word extraction. Use this if you want to update lyrics later — no need to unverify first.
 - **Unverify keeps the data.** `/api/songs/unverify` just flips the flag, doesn't delete `song_words`. Re-verifying later restores the library entry instantly.
 
+## Nightly auto-curation (Claude scheduled task)
+
+Songs are also added to the library via a nightly automation: a Cowork scheduled Claude task discovers new Sanskrit devotional songs on YouTube, generates canonical Devanagari + IAST + translations for the ones it can identify (well-known stotras), and writes them to Supabase. Songs land with a 24-hour `pending_curator_review` flag — they're hidden from the public `/library` view until the curator approves or 24 hours elapse.
+
+Low-confidence candidates (songs whose source can't be identified with certainty) are queued in the `pending_candidates` table and a Telegram alert is sent to the curator for manual review.
+
+- **Prompt** lives at [`docs/nightly-curator-prompt.md`](./docs/nightly-curator-prompt.md)
+- **Schema** is in [`supabase/migrations/009_curator_review_queue.sql`](./supabase/migrations/009_curator_review_queue.sql)
+- **Architecture**: free-path — Claude does the work via Supabase MCP under the Claude Max subscription. No backend `/api/discovery/*` endpoints exist; the prompt is the entire automation.
+- **Cost**: ~$0/night for known stotras (Claude Max covers it); marginal Groq Whisper cost only if a song needs audio transcription (unusual at 2 candidates/night).
+
 ## Requesting a song
 
 If you'd like a particular Sanskrit song added to the library, reach out via either:
