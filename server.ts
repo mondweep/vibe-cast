@@ -17,66 +17,12 @@ const PORT = parseInt(process.env.PORT || '3000', 10)
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 
-const FALLBACK_LYRICS: Record<string, any> = {
-  'wHaL1d4opTM': {
-    text: "Shanih mukti michasit... Shuddho'si buddho'si niranjano'si...",
-    segments: [
-      { 
-        "text": "शान्ति मुक्ति मिचासीत", 
-        "start_time": 6.64, 
-        "end_time": 14.0,
-        "start": 6.64,
-        "end": 14.0,
-        "devanagari": "शान्ति मुक्ति मिचासीत",
-        "iast": "śānti mukti micāsīta",
-        "english_poetic": "May you attain peace and liberation.",
-        "english_literal": "Peace liberation may-it-be-attained",
-        "explanation": "Opening prayer for liberation.",
-        "words": []
-      },
-      { 
-        "text": "शुद्धोऽसि बुद्धोऽसि निरञ्जनोऽसि", 
-        "start_time": 37.48, 
-        "end_time": 45.12,
-        "start": 37.48,
-        "end": 45.12,
-        "devanagari": "शुद्धोऽसि बुद्धोऽसि निरञ्जनोऽसि",
-        "iast": "śuddho'si buddho'si nirañjano'si",
-        "english_poetic": "You are pure, you are enlightened, you are untainted.",
-        "english_literal": "Pure-you-are enlightened-you-are untainted-you-are",
-        "explanation": "The core mantra of self-realization.",
-        "words": []
-      },
-      { 
-        "text": "संसारमाया परिवर्जितोऽसि", 
-        "start_time": 45.12, 
-        "end_time": 50.7,
-        "start": 45.12,
-        "end": 50.7,
-        "devanagari": "संसारमाया परिवर्जितोऽसि",
-        "iast": "saṃsāramāyā parivarjito'si",
-        "english_poetic": "You are free from the illusion of the world.",
-        "english_literal": "Worldly-illusion free-from-you-are",
-        "explanation": "Emphasizing detachment from cosmic illusion.",
-        "words": []
-      },
-      { 
-        "text": "निरपेक्षो भव स्वस्मिन", 
-        "start_time": 182.28, 
-        "end_time": 190.68,
-        "start": 182.28,
-        "end": 190.68,
-        "devanagari": "निरपेक्षो भव स्वस्मिन",
-        "iast": "nirapekṣo bhava svasmin",
-        "english_poetic": "Be independent and centered in your true self.",
-        "english_literal": "Indifferent/Disinterested be in-yourself",
-        "explanation": "Final instruction for self-abidance.",
-        "words": []
-      }
-    ],
-    language: 'sa'
-  }
-}
+// Hand-curated lyrics that bypass the transcribe pipeline. Add entries here
+// only when you have verified Devanagari + accurate timestamps for the full
+// song from a trusted source. Sparse fallbacks (a handful of lines covering
+// 20% of the runtime) are worse than letting the live pipeline transcribe,
+// because they produce a working-but-sync-broken UX.
+const FALLBACK_LYRICS: Record<string, any> = {}
 
 // --- API Routes ---
 
