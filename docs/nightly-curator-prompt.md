@@ -182,7 +182,7 @@ WORKFLOW
          'Candidate for review: <title>
           URL: https://youtube.com/watch?v=<id>
           Reason: <one-line>
-          To approve: open /play, transcribe live, edit, Verify & Save.'
+          To approve: https://sanskrit-sync-service-production.up.railway.app/play?v=<id>'
 
 4. Promote songs older than 24 hours.
    UPDATE songs SET pending_curator_review = false
