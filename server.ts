@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
@@ -7,7 +8,13 @@ import { exec } from 'child_process'
 import { promisify } from 'util'
 
 import { transcribeAudio } from './api/routes/transcribe.js'
-import { translateSanskritLyrics, translateSingleLine, splitSanskrit } from './api/routes/translate.js'
+import {
+  translateSanskritLyrics,
+  translateSanskritLyricsWithConfidence,
+  translateSingleLine,
+  translateSingleLyricsLine,
+  splitSanskrit,
+} from './api/routes/translate.js'
 import { verifySong, unverifySong } from './api/routes/songs.js'
 import { recordConsent, trackProfile } from './api/routes/consent.js'
 
@@ -128,16 +135,47 @@ app.post('/api/translate/song', async (req, res) => {
     if (!lines || !Array.isArray(lines)) {
       return res.status(400).json({ error: 'lines required' })
     }
-    
-    const lyricsString = lines.map((l: any) => l.text).join('\n')
-    const timestamps = lines.map((l: any) => ({ start: l.start_time, end: l.end_time }))
-    
+
+    // Confidence-aware: passes high+medium to Claude, leaves low untranslated
+    // with translation_pending=true so the UI can offer "Translate anyway?".
+    // If the caller (older clients, captions branch) didn't send confidence
+    // fields, every line defaults to 'high' and behaviour matches the
+    // pre-confidence pipeline.
     console.log(`Translating song ${title || 'unknown'} with ${lines.length} lines...`)
-    const result = await translateSanskritLyrics(lyricsString, timestamps)
+    const result = await translateSanskritLyricsWithConfidence(
+      lines.map((l: any) => ({
+        text: l.text,
+        start_time: l.start_time,
+        end_time: l.end_time,
+        confidence: l.confidence,
+        confidence_reason: l.confidence_reason,
+      }))
+    )
     res.json(result)
   } catch (err) {
     console.error('Song translation error:', err)
     res.status(500).json({ error: 'Song translation failed' })
+  }
+})
+
+// On-demand translate of a single low-confidence line. Used by the UI's
+// "Translate anyway" button on the TranslationPanel when the auto-pipeline
+// skipped this line because of low confidence.
+app.post('/api/translate/single-line', async (req, res) => {
+  try {
+    const { text, start_time, end_time } = req.body
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'text required' })
+    }
+    const line = await translateSingleLyricsLine(
+      text,
+      typeof start_time === 'number' ? start_time : 0,
+      typeof end_time === 'number' ? end_time : 5
+    )
+    res.json(line)
+  } catch (err) {
+    console.error('Single-line translation error:', err)
+    res.status(500).json({ error: 'Single-line translation failed' })
   }
 })
 
@@ -237,15 +275,22 @@ app.post('/api/transcribe', async (req, res) => {
     // Cleanup
     if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile)
 
-    // Honest-failure path: if Whisper + filter produced almost nothing usable,
-    // refuse rather than send the downstream translator a near-empty payload.
-    if (!result.segments || result.segments.length < MIN_USABLE_SEGMENTS) {
+    // Honest-failure path: if Whisper + filter produced almost nothing
+    // *trustable* (high or medium confidence), refuse rather than send the
+    // downstream translator a payload that's mostly low-confidence noise.
+    // We still want a few solid lines as anchors even if the rest of the
+    // transcript is flagged low.
+    const trustable = (result.segments || []).filter(
+      (s) => s.confidence === 'high' || s.confidence === 'medium'
+    )
+    if (trustable.length < MIN_USABLE_SEGMENTS) {
       return res.status(422).json({
         error:
           'Could not reliably transcribe this audio. ' +
           'Try a clearer recording, a different video, or call /api/transcribe ' +
           `again with {"language":"${whisperLanguage === 'sa' ? 'hi' : 'sa'}"}.`,
-        usableSegments: result.segments?.length ?? 0,
+        usableSegments: trustable.length,
+        totalSegments: result.segments?.length ?? 0,
         language: result.language,
       })
     }

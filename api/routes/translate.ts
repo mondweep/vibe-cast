@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { LyricsLine } from '../../src/shared/types/database.types.js'
+import type { LyricsLine, TranscriptConfidence } from '../../src/shared/types/database.types.js'
 
 const anthropic = new Anthropic()
 
@@ -77,6 +77,71 @@ ${timestamps ? `Timestamps (seconds): ${JSON.stringify(timestamps)}` : 'Estimate
   return extractAndParseJSON(content.text) as LyricsLine[]
 }
 
+/**
+ * Confidence-aware variant of translateSanskritLyrics.
+ *
+ * Translates only the high + medium confidence lines (which is where we trust
+ * the transcript enough to spend Anthropic tokens on translation). Low-confidence
+ * lines are returned in the output but with empty translation fields and
+ * `translation_pending: true` so the UI can render them with a "Translate this
+ * anyway?" affordance. This keeps cost roughly where it was before for clean
+ * songs while letting the user see every line that Whisper produced.
+ */
+export interface ConfidenceLine {
+  text: string
+  start_time: number
+  end_time: number
+  confidence?: TranscriptConfidence
+  confidence_reason?: string
+}
+
+export async function translateSanskritLyricsWithConfidence(
+  lines: ConfidenceLine[]
+): Promise<LyricsLine[]> {
+  // Drop low-confidence segments entirely. They turned out to be too noisy in
+  // practice — Whisper hallucinations like "In almost a world-condessous kingdom"
+  // are not useful to surface to the user even with a warning chip, because
+  // they look enough like real sentences that they're misleading. Medium-
+  // confidence lines stay in (with an amber disclaimer) because those are
+  // usually real Sanskrit that Whisper mis-heard slightly.
+  const toTranslate = lines.filter((l) => (l.confidence ?? 'high') !== 'low')
+  const droppedLow = lines.length - toTranslate.length
+
+  if (toTranslate.length === 0) return []
+
+  const translated: LyricsLine[] = await translateSanskritLyrics(
+    toTranslate.map((l) => l.text).join('\n'),
+    toTranslate.map((l) => ({ start: l.start_time, end: l.end_time }))
+  )
+
+  // Align translated rows back to the source by closest start_time and attach
+  // the confidence label so the UI can render the medium-confidence amber
+  // warning band. Claude generally preserves order, but the index-by-time map
+  // is defensive.
+  const translatedByTime = new Map<number, LyricsLine>()
+  for (const t of translated) translatedByTime.set(Math.round(t.start_time * 1000), t)
+
+  const result: LyricsLine[] = []
+  for (const l of toTranslate) {
+    const key = Math.round(l.start_time * 1000)
+    const t = translatedByTime.get(key)
+    if (!t) continue // translator dropped this row — skip rather than render empty
+    result.push({
+      ...t,
+      confidence: l.confidence ?? 'high',
+      confidence_reason: l.confidence_reason,
+      translation_pending: false,
+    })
+  }
+
+  if (droppedLow > 0) {
+    console.log(
+      `[translate] dropped ${droppedLow} low-confidence line(s) — too noisy to surface to the user`
+    )
+  }
+  return result
+}
+
 export async function translateSingleLine(
   text: string,
   mode: 'literal' | 'poetic'
@@ -97,6 +162,23 @@ Sanskrit: ${text}`,
   const content = message.content[0]
   if (content.type !== 'text') throw new Error('Unexpected response')
   return content.text.trim()
+}
+
+/**
+ * Full line translation for a single low-confidence row that the user has
+ * opted in to translate. Returns the same shape as translateSanskritLyrics
+ * produces per-line so the frontend can patch it in.
+ */
+export async function translateSingleLyricsLine(
+  text: string,
+  start_time: number,
+  end_time: number
+): Promise<LyricsLine> {
+  const arr = await translateSanskritLyrics(text, [{ start: start_time, end: end_time }])
+  if (arr.length === 0) {
+    throw new Error('Translator returned no lines')
+  }
+  return arr[0]
 }
 
 /**

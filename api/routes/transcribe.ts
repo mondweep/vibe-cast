@@ -8,13 +8,27 @@ const WHISPER_API_URL = process.env.WHISPER_API_URL || 'https://api.groq.com/ope
 const anthropic = new Anthropic()
 const VALIDATOR_MODEL = 'claude-haiku-4-5-20251001'
 
+export type TranscriptConfidence = 'high' | 'medium' | 'low'
+
+export interface TranscriptSegment {
+  start: number
+  end: number
+  text: string
+  /**
+   * How confident we are that this segment is genuine Sanskrit content vs.
+   * Whisper noise. We surface this to the UI so users see every transcribed
+   * line but understand which ones to trust.
+   */
+  confidence: TranscriptConfidence
+  /** Short human-readable explanation of how the tier was assigned. */
+  confidence_reason: string
+  /** Whisper's own per-segment average log-prob, if available (negative; closer to 0 = more confident). */
+  avg_logprob?: number
+}
+
 export interface TranscriptionResult {
   text: string
-  segments: {
-    start: number
-    end: number
-    text: string
-  }[]
+  segments: TranscriptSegment[]
   language: string
 }
 
@@ -72,6 +86,48 @@ const ENGLISH_STOPWORDS = new Set([
   'except','time','arrange','catch','tag','quiet','tube','watch',
 ])
 
+// High-frequency Sanskrit particles, pronouns, deity names, and devotional terms.
+//
+// These are short or share letter patterns with English words ("me", "no", "tu",
+// "ca", "hi", "ram") and were getting mis-scored as English noise. Anything in
+// this allowlist is:
+//   1. Never counted as a "suspicious" token (cannot demote a line to medium/low).
+//   2. Counted as a POSITIVE Sanskrit signal, so a short line like "om iti tu"
+//      can pass at high confidence even without long compound tokens.
+//
+// Lowercased + diacritic-free is intentional — Whisper romanization is
+// inconsistent about diacritics, so we match on the bare letters and on the
+// IAST form. Add liberally; false positives here are far cheaper than the
+// false negatives we got before (real Sanskrit demoted because "om" looked
+// suspicious).
+const SANSKRIT_ALLOWLIST = new Set([
+  // The sacred sound and its variants
+  'om', 'oṃ', 'oṁ', 'aum',
+  // Common particles
+  'iti', 'tu', 'ca', 'vai', 'hi', 'nu', 'ha', 'eva', 'api', 'atha', 'atho',
+  'bho', 'he', 'kim', 'kiṃ', 'na', 'no', 'vā',
+  // Demonstratives / pronouns
+  'sa', 'sā', 'saḥ', 'tat', 'tad', 'tasya', 'tāni', 'yad', 'yat', 'yasya',
+  'te', 'me', 'naḥ', 'vaḥ', 'mama', 'tava', 'aham', 'ahaṃ', 'tvam', 'tvaṃ',
+  'asau', 'ayam', 'idam', 'eṣa', 'eṣaḥ',
+  // Devotional bowing / invocation
+  'namo', 'namaḥ', 'namaha', 'namaste', 'svāhā', 'svaha', 'śrī', 'shri', 'sri',
+  'jaya', 'jay', 'śivāya', 'shivaya', 'gurave',
+  // Common deity / cosmic names (often appear short or repeated in stotras)
+  'hari', 'rāma', 'rama', 'ram', 'kṛṣṇa', 'krishna', 'kṛṣṇāya',
+  'śiva', 'shiva', 'shiv', 'śaṅkara', 'shankara', 'durgā', 'durga',
+  'gaṇeśa', 'ganesha', 'lakṣmī', 'lakshmi', 'sarasvatī', 'saraswati',
+  'viṣṇu', 'vishnu', 'brahmā', 'brahma', 'devī', 'devi',
+  'nārāyaṇa', 'narayana', 'nārāyaṇāya', 'narayanaya',
+  // Frequently sung devotional terms
+  'bhaje', 'bhajāmi', 'bhajami', 'bhajeham', 'bhajaami',
+  'pāhi', 'pahi', 'rakṣa', 'raksha', 'śaraṇam', 'sharanam', 'śaraṇaṃ',
+  'guru', 'gurudev', 'guruve', 'svāmī', 'swami',
+  'bhagavān', 'bhagavan', 'bhagavate', 'mahā', 'maha',
+  // Vedic/Sanskrit auxiliaries
+  'asti', 'bhavati', 'bhavanti', 'bhūta', 'bhuta',
+])
+
 // Common English content words that Whisper emits as noise on instrumental /
 // noisy audio. These almost never appear in a legitimate Sanskrit transliteration.
 const ENGLISH_NOISE_WORDS = new Set([
@@ -91,61 +147,161 @@ const ENGLISH_NOISE_WORDS = new Set([
 ])
 
 function tokensOf(t: string): string[] {
-  return (t.toLowerCase().match(/[a-zÀ-ɏ]+/g) || [])
-}
-
-function looksLikeSanskritOrHindi(text: string): boolean {
-  const t = (text || '').trim()
-  if (t.length < 3) return false
-  if (FOREIGN_SCRIPT_RE.test(t)) return false
-  for (const pat of HALLUCINATION_PATTERNS) {
-    if (pat.test(t)) return false
-  }
-  // Require at least 4 alphabetic characters (Latin OR Devanagari).
-  // Otherwise it's just punctuation, digits, or whitespace.
-  const alpha = t.replace(/[^a-zA-Zऀ-ॿÀ-ɏ]/g, '')
-  if (alpha.length < 4) return false
-  if (alpha.length / t.length < 0.4) return false
-
-  // Segments containing Devanagari are unconditionally accepted — that's the
-  // shape we want, and Whisper isn't going to invent Devanagari glyphs.
-  if (DEVANAGARI_RE.test(t)) return true
-
-  // Pure-romanized branch — be strict. We want Sanskrit-shaped tokens, not
-  // English prose. Any English function word or known noise word is a hard
-  // reject; we'd rather drop a real Sanskrit line than translate "Speaker 2".
-  const tokens = tokensOf(t)
-  if (tokens.length === 0) return false
-  for (const tok of tokens) {
-    if (tok.length === 1) return false // "T trumpets cancer together." → reject
-    if (ENGLISH_STOPWORDS.has(tok)) return false
-    if (ENGLISH_NOISE_WORDS.has(tok)) return false
-  }
-  // Require at least one long-ish token (Sanskrit transliterations are
-  // typically compound and run 5+ letters).
-  const longTokens = tokens.filter((x) => x.length >= 5)
-  if (longTokens.length === 0) return false
-
-  return true
+  // Latin a-z + Latin Extended-A/B (À-ɏ) + Latin Extended Additional (ḁ-ỿ).
+  // The last range covers IAST diacritics like ṃ ṛ ṅ ṇ ṭ ḍ ḥ ṣ that romanized
+  // Sanskrit relies on — without it the tokenizer clips them off mid-word.
+  return (t.toLowerCase().match(/[a-zÀ-ɏḁ-ỿ]+/g) || [])
 }
 
 /**
- * Second-pass validator: ask Claude to classify each segment as Sanskrit-or-not.
+ * Score a Whisper segment for "is this Sanskrit?" confidence.
  *
- * Heuristics above catch the obvious garbage (foreign scripts, English stopwords,
- * single-letter tokens). Whisper still occasionally drifts into English content
- * words we haven't enumerated ("Public promotion", "Highway 3"). Claude knows what
- * romanized Sanskrit looks like and can keep/reject without inventing content.
+ * Returns a verdict object:
+ *   - `verdict: 'reject'` — drop this segment entirely. Used only for things
+ *     that are obviously not Sanskrit content at all (foreign scripts,
+ *     boilerplate "Subtitles by", punctuation-only segments).
+ *   - `verdict: 'keep'` — keep the segment with a confidence tier so the UI
+ *     can render it with appropriate visual treatment.
  *
- * IMPORTANT: This function only KEEPS or DROPS segments. It does not edit,
- * transliterate, or correct text — that would risk hallucination.
+ * This is the "score, don't drop" half of the option-2 design: borderline
+ * segments are kept and flagged, not silently discarded.
  */
-async function classifySegmentsWithClaude(
-  segments: { start: number; end: number; text: string }[]
-): Promise<{ start: number; end: number; text: string }[]> {
+type HeuristicVerdict =
+  | { verdict: 'reject'; reason: string }
+  | { verdict: 'keep'; confidence: TranscriptConfidence; reason: string }
+
+function scoreSegmentHeuristic(text: string): HeuristicVerdict {
+  const t = (text || '').trim()
+  if (t.length < 3) return { verdict: 'reject', reason: 'too short (< 3 chars)' }
+  if (FOREIGN_SCRIPT_RE.test(t)) {
+    return {
+      verdict: 'reject',
+      reason: 'contains CJK / Hangul / Cyrillic / Arabic — Whisper language-drift hallucination',
+    }
+  }
+  for (const pat of HALLUCINATION_PATTERNS) {
+    if (pat.test(t)) {
+      return {
+        verdict: 'reject',
+        reason: `matches Whisper boilerplate pattern "${pat.source}"`,
+      }
+    }
+  }
+
+  // Require at least 4 alphabetic characters (Latin OR Devanagari OR IAST diacritics).
+  const alpha = t.replace(/[^a-zA-Zऀ-ॿÀ-ɏḀ-ỿ]/g, '')
+  if (alpha.length < 4) return { verdict: 'reject', reason: 'fewer than 4 alphabetic characters' }
+  if (alpha.length / t.length < 0.4) {
+    return { verdict: 'reject', reason: 'mostly punctuation / digits' }
+  }
+
+  // Segments containing Devanagari are HIGH confidence — Whisper doesn't
+  // invent Devanagari glyphs, so if we got them, the text is real.
+  if (DEVANAGARI_RE.test(t)) {
+    return { verdict: 'keep', confidence: 'high', reason: 'contains Devanagari script' }
+  }
+
+  // Pure-romanized branch — score rather than reject.
+  const tokens = tokensOf(t)
+  if (tokens.length === 0) {
+    return { verdict: 'reject', reason: 'no tokenizable words' }
+  }
+
+  // Strip diacritics for an extra allowlist lookup pass — Whisper is
+  // inconsistent about ṃ vs m, ā vs a, ś vs sh, etc. e.g. "narayan" should
+  // match "nārāyaṇa" in the allowlist via this normalization.
+  const stripDiacritics = (s: string) =>
+    s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[ṃṁṅṇṭḍḥṛṝḷśṣ]/g, (m) => ({
+      ṃ: 'm', ṁ: 'm', ṅ: 'n', ṇ: 'n', ṭ: 't', ḍ: 'd', ḥ: '', ṛ: 'r', ṝ: 'r', ḷ: 'l',
+      ś: 's', ṣ: 's',
+    } as Record<string, string>)[m] ?? m)
+
+  // Count "suspicious" tokens — English stopwords, known noise words, single
+  // letters — and "Sanskrit-signal" tokens — allowlist hits + long compounds.
+  // Allowlist tokens NEVER count as suspicious, even if they happen to overlap
+  // with an English stopword ("me", "no", "tu" all mean something in Sanskrit).
+  let suspicious = 0
+  let sanskritSignal = 0
+  for (const tok of tokens) {
+    const normalized = stripDiacritics(tok)
+    if (SANSKRIT_ALLOWLIST.has(tok) || SANSKRIT_ALLOWLIST.has(normalized)) {
+      sanskritSignal++
+      continue
+    }
+    if (tok.length === 1) suspicious++
+    else if (ENGLISH_STOPWORDS.has(tok)) suspicious++
+    else if (ENGLISH_NOISE_WORDS.has(tok)) suspicious++
+  }
+
+  // Long compound tokens (≥5 chars) are also Sanskrit signal.
+  const longTokens = tokens.filter((x) => x.length >= 5)
+  sanskritSignal += longTokens.length
+
+  // Decision matrix:
+  //   - Lots of suspicious tokens AND no Sanskrit signal → low confidence
+  //   - Some suspicious + low Sanskrit signal → medium
+  //   - Suspicious outweighed by Sanskrit signal → high
+  if (suspicious >= 3 && sanskritSignal === 0) {
+    return {
+      verdict: 'keep',
+      confidence: 'low',
+      reason: `${suspicious} English-shaped tokens, no Sanskrit signal`,
+    }
+  }
+  if (suspicious >= 2 && sanskritSignal < suspicious) {
+    return {
+      verdict: 'keep',
+      confidence: 'low',
+      reason: `${suspicious} English-shaped tokens outweigh Sanskrit signal (${sanskritSignal})`,
+    }
+  }
+  if (sanskritSignal === 0) {
+    return {
+      verdict: 'keep',
+      confidence: 'medium',
+      reason: 'romanized but no Sanskrit signal (no allowlist words or long compounds)',
+    }
+  }
+  if (suspicious >= 1 && sanskritSignal < suspicious * 2) {
+    return {
+      verdict: 'keep',
+      confidence: 'medium',
+      reason: `${suspicious} English-shaped token(s) mixed in with ${sanskritSignal} Sanskrit signal`,
+    }
+  }
+  return {
+    verdict: 'keep',
+    confidence: 'high',
+    reason:
+      sanskritSignal >= 2
+        ? `${sanskritSignal} Sanskrit-shaped tokens, no English noise`
+        : 'romanized Sanskrit-shaped tokens',
+  }
+}
+
+/**
+ * Second-pass scorer: ask Claude to rate each kept segment HIGH / MEDIUM / LOW.
+ *
+ * Heuristics above already rejected obvious garbage (foreign scripts, boilerplate,
+ * punctuation-only). What remains is the borderline middle: plausibly Sanskrit,
+ * possibly drifted English. Claude rates each one without dropping anything —
+ * the UI will show low-confidence lines with a visual warning rather than hide them.
+ *
+ * IMPORTANT: This function only RATES segments. It never edits, transliterates,
+ * or corrects text — that would risk hallucination.
+ *
+ * If Claude rates a segment differently from the heuristic, we take the more
+ * cautious of the two (i.e. min of high → medium → low). That way Claude can
+ * only *demote* confidence, never inflate it past what the heuristic saw.
+ */
+type ClaudeScore = { index: number; confidence: TranscriptConfidence; reason?: string }
+
+async function scoreSegmentsWithClaude(
+  segments: TranscriptSegment[]
+): Promise<TranscriptSegment[]> {
   if (segments.length === 0) return []
   if (!process.env.ANTHROPIC_API_KEY) {
-    console.warn('[transcribe] ANTHROPIC_API_KEY not set; skipping Claude validation pass')
+    console.warn('[transcribe] ANTHROPIC_API_KEY not set; skipping Claude scoring pass')
     return segments
   }
 
@@ -153,44 +309,63 @@ async function classifySegmentsWithClaude(
 
   const message = await anthropic.messages.create({
     model: VALIDATOR_MODEL,
-    max_tokens: 512,
+    max_tokens: 1024,
+    temperature: 0, // Deterministic scoring.
     system:
-      'You validate Whisper speech-to-text output from a Sanskrit song. ' +
-      'For each numbered segment, decide if it is recognizable Sanskrit content ' +
-      '— either Devanagari script, or a phonetic Latin romanization of real ' +
-      'Sanskrit words (e.g. "kalabhairavam bhaje", "śivāya namaḥ", "Yam Yam Yak Salom Pam"). ' +
-      'REJECT segments that are: English prose, partial English/Sanskrit mixtures, ' +
-      'gibberish, or words from other languages. Be CONSERVATIVE: when in doubt, reject. ' +
-      'Do NOT translate, transliterate, or correct anything — only classify. ' +
-      'Respond with ONLY a JSON array of integer indices to KEEP, e.g. [0,2,3]. No other text.',
-    messages: [{ role: 'user', content: `Segments to validate:\n${numbered}` }],
+      'You rate Whisper speech-to-text output from a Sanskrit song. ' +
+      'For each numbered segment, assign a confidence tier:\n' +
+      '  - "high": clearly recognizable Sanskrit — Devanagari script, or romanization ' +
+      'of obvious Sanskrit vocabulary (e.g. "śivāya namaḥ", "bhajeham bhajeham", ' +
+      '"oṃ namo nārāyaṇāya").\n' +
+      '  - "medium": plausibly Sanskrit but unfamiliar or slightly garbled — possibly ' +
+      'rare compounds, possibly Whisper mis-hearings of real lyrics.\n' +
+      '  - "low": looks more like English prose, gibberish, or a non-Indic language ' +
+      '— but we still want to show it to the user with a warning.\n' +
+      'NEVER drop a segment — every input index must appear in your output. ' +
+      'Repetitive lines are EXPECTED in devotional songs (chorus/refrain). ' +
+      'Do NOT translate, transliterate, or correct anything — only score. ' +
+      'Respond with ONLY a JSON array like ' +
+      '[{"index":0,"confidence":"high","reason":"Devanagari"},...]. No other text.',
+    messages: [{ role: 'user', content: `Segments to score:\n${numbered}` }],
   })
 
   const content = message.content[0]
   if (content.type !== 'text') return segments
 
-  const match = content.text.match(/\[[\s\S]*?\]/)
+  const match = content.text.match(/\[[\s\S]*\]/)
   if (!match) {
-    console.warn('[transcribe] validator returned non-JSON; keeping all heuristic-passed segments')
+    console.warn('[transcribe] scorer returned non-JSON; keeping heuristic scores')
     return segments
   }
 
-  let keepIndices: number[]
+  let scores: ClaudeScore[]
   try {
-    keepIndices = JSON.parse(match[0])
-    if (!Array.isArray(keepIndices)) throw new Error('not an array')
-  } catch (e) {
-    console.warn('[transcribe] validator parse failed; keeping all heuristic-passed segments')
+    scores = JSON.parse(match[0])
+    if (!Array.isArray(scores)) throw new Error('not an array')
+  } catch {
+    console.warn('[transcribe] scorer parse failed; keeping heuristic scores')
     return segments
   }
 
-  const keep = new Set(keepIndices.filter((n) => Number.isInteger(n) && n >= 0 && n < segments.length))
-  const result = segments.filter((_, i) => keep.has(i))
-  const dropped = segments.length - result.length
-  if (dropped > 0) {
-    console.log(`[transcribe] Claude validator dropped ${dropped}/${segments.length} additional segments`)
+  const order: Record<TranscriptConfidence, number> = { high: 3, medium: 2, low: 1 }
+  const byIndex = new Map<number, ClaudeScore>()
+  for (const s of scores) {
+    if (Number.isInteger(s.index) && order[s.confidence]) byIndex.set(s.index, s)
   }
-  return result
+
+  return segments.map((seg, i) => {
+    const claudeScore = byIndex.get(i)
+    if (!claudeScore) return seg
+    // Take the more cautious of the two confidences. Claude can demote but
+    // never promote past what the heuristic saw.
+    const merged: TranscriptConfidence =
+      order[claudeScore.confidence] < order[seg.confidence] ? claudeScore.confidence : seg.confidence
+    const reason =
+      merged === claudeScore.confidence && merged !== seg.confidence
+        ? `Claude: ${claudeScore.reason || claudeScore.confidence}`
+        : seg.confidence_reason
+    return { ...seg, confidence: merged, confidence_reason: reason }
+  })
 }
 
 export async function transcribeAudio(
@@ -225,34 +400,87 @@ export async function transcribeAudio(
 
   const data = await response.json()
 
-  const rawSegments: { start: number; end: number; text: string }[] = (data.segments || []).map(
-    (seg: any) => ({ start: seg.start, end: seg.end, text: seg.text })
-  )
+  const rawSegments: { start: number; end: number; text: string; avg_logprob?: number }[] = (
+    data.segments || []
+  ).map((seg: any) => ({
+    start: seg.start,
+    end: seg.end,
+    text: seg.text,
+    avg_logprob: typeof seg.avg_logprob === 'number' ? seg.avg_logprob : undefined,
+  }))
 
-  const heuristicPassed = rawSegments.filter((s) => looksLikeSanskritOrHindi(s.text))
+  // First pass: heuristic scoring. Hard-rejects (foreign scripts, boilerplate)
+  // are dropped; everything else is kept with a confidence tier.
+  const scoredSegments: TranscriptSegment[] = []
+  let hardRejected = 0
+  for (let i = 0; i < rawSegments.length; i++) {
+    const raw = rawSegments[i]
+    const verdict = scoreSegmentHeuristic(raw.text)
+    if (verdict.verdict === 'reject') {
+      hardRejected++
+      console.log(
+        `[transcribe]   hard-reject #${i} (${verdict.reason}): ${raw.text.trim().slice(0, 120)}`
+      )
+      continue
+    }
+    // Demote to 'low' if Whisper's own confidence was very poor. Groq returns
+    // avg_logprob ≈ -0.2 for clean speech, ≈ -1.0+ for noisy/uncertain audio.
+    let confidence = verdict.confidence
+    let reason = verdict.reason
+    if (typeof raw.avg_logprob === 'number' && raw.avg_logprob < -1.0 && confidence === 'high') {
+      confidence = 'medium'
+      reason = `${verdict.reason}; Whisper avg_logprob ${raw.avg_logprob.toFixed(2)} suggests uncertain audio`
+    }
+    if (typeof raw.avg_logprob === 'number' && raw.avg_logprob < -1.5 && confidence === 'medium') {
+      confidence = 'low'
+      reason = `${verdict.reason}; Whisper avg_logprob ${raw.avg_logprob.toFixed(2)} (very low)`
+    }
+    scoredSegments.push({
+      start: raw.start,
+      end: raw.end,
+      text: raw.text,
+      confidence,
+      confidence_reason: reason,
+      avg_logprob: raw.avg_logprob,
+    })
+  }
 
-  const heuristicDropped = rawSegments.length - heuristicPassed.length
-  if (heuristicDropped > 0) {
+  if (hardRejected > 0) {
     console.log(
-      `[transcribe] heuristic filter dropped ${heuristicDropped}/${rawSegments.length} segments`
+      `[transcribe] hard-rejected ${hardRejected}/${rawSegments.length} segments (foreign script / boilerplate / too short)`
     )
   }
 
-  // Second-pass: ask Claude to classify what survived the heuristic. Cheap,
-  // and removes the whack-a-mole of enumerating Whisper's English noise words.
-  let validatedSegments = heuristicPassed
+  // Second pass: Claude scores each survivor. Can only demote confidence,
+  // never promote — protects against Claude over-trusting borderline content.
+  let finalSegments = scoredSegments
   try {
-    validatedSegments = await classifySegmentsWithClaude(heuristicPassed)
+    finalSegments = await scoreSegmentsWithClaude(scoredSegments)
   } catch (err) {
     console.warn(
-      '[transcribe] Claude validator failed; falling back to heuristic-only output:',
+      '[transcribe] Claude scorer failed; falling back to heuristic-only scores:',
       err instanceof Error ? err.message : err
     )
   }
 
+  // Summary log so the terminal output is informative.
+  const tally = { high: 0, medium: 0, low: 0 }
+  for (const s of finalSegments) tally[s.confidence]++
+  console.log(
+    `[transcribe] confidence breakdown — high: ${tally.high}, medium: ${tally.medium}, low: ${tally.low}` +
+      ` (out of ${rawSegments.length} raw Whisper segments)`
+  )
+  for (const s of finalSegments) {
+    if (s.confidence !== 'high') {
+      console.log(
+        `[transcribe]   ${s.confidence}: ${s.text.trim().slice(0, 120)}  (${s.confidence_reason})`
+      )
+    }
+  }
+
   return {
-    text: validatedSegments.map((s) => s.text.trim()).join(' '),
-    segments: validatedSegments,
+    text: finalSegments.map((s) => s.text.trim()).join(' '),
+    segments: finalSegments,
     language: data.language,
   }
 }
@@ -284,16 +512,20 @@ export async function fetchYouTubeCaptions(videoId: string): Promise<Transcripti
 
 function parseTimedText(data: any): TranscriptionResult {
   const events = data.events || []
-  const segments = events
+  const segments: TranscriptSegment[] = events
     .filter((e: any) => e.segs)
     .map((e: any) => ({
       start: (e.tStartMs || 0) / 1000,
       end: ((e.tStartMs || 0) + (e.dDurationMs || 3000)) / 1000,
       text: e.segs.map((s: any) => s.utf8).join(''),
+      // YouTube auto-captions are generally well-curated for Hindi/Sanskrit,
+      // so we trust them. Curators can downgrade in the verify UI if needed.
+      confidence: 'high' as const,
+      confidence_reason: 'YouTube auto-caption (uploader-provided or auto-generated)',
     }))
 
   return {
-    text: segments.map((s: any) => s.text).join(' '),
+    text: segments.map((s) => s.text).join(' '),
     segments,
     language: 'sa',
   }

@@ -1,6 +1,21 @@
 import { useRef, useEffect } from 'react';
-import type { LyricsLine } from '../../../shared/types/database.types';
+import type { LyricsLine, TranscriptConfidence } from '../../../shared/types/database.types';
 import { FAMILIARITY_THRESHOLDS } from '../../../shared/lib/constants';
+
+// Visual treatment per confidence tier. High = no marker (the default, trusted
+// state). Medium = amber left border ("plausible, but check"). Low = red left
+// border + opacity ("Whisper wasn't sure — translation may be inaccurate").
+const CONFIDENCE_STYLE: Record<TranscriptConfidence, string> = {
+  high: '',
+  medium: 'border-l-4 border-amber-500/60',
+  low: 'border-l-4 border-red-500/60 opacity-80',
+};
+
+const CONFIDENCE_LABEL: Record<TranscriptConfidence, string> = {
+  high: 'High confidence',
+  medium: 'Medium confidence — Whisper less sure',
+  low: 'Low confidence — may not be accurate Sanskrit',
+};
 
 export interface TappedWord {
   devanagari: string;
@@ -36,11 +51,18 @@ export function LyricsPanel({ lines, currentLineIndex, vocabulary, onWordTap }: 
     <div className="bg-gray-900 rounded-xl p-4 max-h-80 overflow-y-auto space-y-3 scrollbar-thin">
       {lines.map((line, i) => {
         const isActive = i === currentLineIndex;
+        const confidence: TranscriptConfidence = line.confidence ?? 'high';
+        const confidenceStyle = CONFIDENCE_STYLE[confidence];
+        const tooltip =
+          confidence === 'high'
+            ? undefined
+            : `${CONFIDENCE_LABEL[confidence]}${line.confidence_reason ? ` — ${line.confidence_reason}` : ''}`;
         return (
           <div
             key={i}
             ref={isActive ? activeRef : null}
-            className={`p-3 rounded-lg transition-all ${
+            title={tooltip}
+            className={`p-3 rounded-lg transition-all ${confidenceStyle} ${
               isActive
                 ? 'bg-amber-500/10 border border-amber-500/30'
                 : 'opacity-50 hover:opacity-80'
@@ -67,6 +89,19 @@ export function LyricsPanel({ lines, currentLineIndex, vocabulary, onWordTap }: 
 
             {/* Transliteration */}
             <p className="text-sm text-gray-400 italic">{line.iast}</p>
+
+            {/* Confidence chip — only shown for medium/low so the high path
+                stays visually clean. Clicking the title attr already shows the
+                full reason; the chip is the at-a-glance signal. */}
+            {confidence !== 'high' && (
+              <p
+                className={`text-[10px] mt-1 uppercase tracking-wide ${
+                  confidence === 'low' ? 'text-red-400/80' : 'text-amber-400/80'
+                }`}
+              >
+                {confidence === 'low' ? 'Low confidence' : 'Medium confidence'}
+              </p>
+            )}
           </div>
         );
       })}

@@ -191,6 +191,8 @@ export interface Database {
   };
 }
 
+export type TranscriptConfidence = 'high' | 'medium' | 'low';
+
 export interface LyricsLine {
   line: number;
   start_time: number;
@@ -201,6 +203,22 @@ export interface LyricsLine {
   english_poetic: string;
   explanation: string;
   words: WordBreakdown[];
+  /**
+   * How confident we are that this line is genuine Sanskrit content vs.
+   * Whisper transcription noise. 'high' = Devanagari or Claude-confident;
+   * 'medium' = plausibly Sanskrit but borderline; 'low' = suspicious but
+   * not obviously garbage, shown with a warning. Defaults to 'high' for
+   * older rows that pre-date the confidence pipeline.
+   */
+  confidence?: TranscriptConfidence;
+  /** Short human-readable reason the line landed in its tier (debug aid). */
+  confidence_reason?: string;
+  /**
+   * If true, this line was deliberately not translated because its
+   * confidence was 'low'. The UI shows a "Translate anyway?" affordance
+   * to let the user opt into translating it on demand.
+   */
+  translation_pending?: boolean;
 }
 
 export interface WordBreakdown {

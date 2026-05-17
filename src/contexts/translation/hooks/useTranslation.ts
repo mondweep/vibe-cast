@@ -161,10 +161,15 @@ export function useTranslation(videoId: string | null, currentTime: number) {
         if (cancelled) return;
 
         if (transcription.segments && transcription.segments.length > 0) {
-          const transcribedLines = transcription.segments.map((s) => ({
+          const transcribedLines = transcription.segments.map((s: any) => ({
             text: s.text,
             start_time: s.start_time ?? s.start,
             end_time: s.end_time ?? s.end,
+            // Pass confidence through to the translator so low-confidence
+            // lines are skipped (marked translation_pending) and the UI can
+            // offer a per-line "Translate anyway" button.
+            confidence: s.confidence,
+            confidence_reason: s.confidence_reason,
           }));
 
           const translatedLines = await translateSong(transcribedLines);

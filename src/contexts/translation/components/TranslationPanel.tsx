@@ -15,10 +15,24 @@ export function TranslationPanel({ currentLine, mode, explanation }: Translation
     );
   }
 
+  const confidence = currentLine.confidence ?? 'high';
   const translation = mode === 'literal' ? currentLine.english_literal : currentLine.english_poetic;
 
   return (
     <div className="bg-gray-900 rounded-xl p-6 space-y-4">
+      {/* Medium-confidence disclaimer above the translation. Low-confidence
+          lines are dropped server-side, so we only ever surface 'medium' here. */}
+      {confidence === 'medium' && (
+        <div className="rounded-md px-3 py-2 text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30">
+          Medium confidence: Whisper had some uncertainty transcribing this line — the translation may not be exact.
+          {currentLine.confidence_reason && (
+            <span className="block text-[10px] opacity-70 mt-0.5">
+              {currentLine.confidence_reason}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* English translation */}
       <div>
         <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">

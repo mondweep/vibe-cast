@@ -14,6 +14,16 @@ dist-ssr
 *.local
 .env
 
+# yt-dlp scratch files (full + partial downloads left in repo root by /api/transcribe)
+temp_*.mp3
+temp_*.mp4
+temp_*.mp4.part
+temp_*.webm
+temp_*.part
+
+# Supabase CLI scratch
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
