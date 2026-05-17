@@ -12,6 +12,8 @@ import { useSync } from '../contexts/player/hooks/useSync'
 import { useTranslation } from '../contexts/translation/hooks/useTranslation'
 import { useVocabulary } from '../contexts/learning/hooks/useVocabulary'
 import { useAuth } from '../contexts/auth/hooks/useAuth'
+import { useCurator } from '../contexts/auth/hooks/useCurator'
+import { RequestSongForm } from '../contexts/library/components/RequestSongForm'
 import type { TranslationMode } from '../shared/types/database.types'
 
 export function PlayPage() {
@@ -22,6 +24,7 @@ export function PlayPage() {
   const [editing, setEditing] = useState(false)
   const [tappedWord, setTappedWord] = useState<TappedWord | null>(null)
   const { user } = useAuth()
+  const { isCurator } = useCurator()
   // Optimistic override after a successful Verify or Unverify so the UI
   // reflects the new state without refetching the song from Supabase.
   // Reset to null whenever the video changes.
@@ -48,7 +51,10 @@ export function PlayPage() {
   }, [searchParams, videoId])
 
   const sync = useSync(videoId)
-  const translation = useTranslation(videoId, sync.currentTime)
+  // Only the curator is allowed to trigger live transcription. For everyone
+  // else, useTranslation will resolve a verified row OR surface a friendly
+  // "not in library" error rather than running Whisper.
+  const translation = useTranslation(videoId, sync.currentTime, isCurator)
   const vocabulary = useVocabulary(translation.currentLine, videoId)
 
   const handleVideoEnd = useCallback(() => {
@@ -60,9 +66,33 @@ export function PlayPage() {
 
   return (
     <div className="space-y-6">
-      <URLInput onVideoSelect={setVideoId} />
+      {/* The URL input triggers live yt-dlp + Whisper transcription, which we
+          deliberately keep curator-only. Non-curators hitting YouTube directly
+          from the deployed app would run into anti-bot blocks, and even when
+          it works they'd see Whisper transcriptions of unverified quality.
+          Curators see the input; everyone else gets a request form below. */}
+      {isCurator && <URLInput onVideoSelect={setVideoId} />}
 
-      {videoId && (
+      {/* Non-curator opened a videoId that isn't in the verified library.
+          Live transcription is curator-gated, so show the request form
+          instead of a broken / silent player. */}
+      {videoId && !isCurator && translation.error === 'not-in-library' && (
+        <div className="py-10 space-y-6">
+          <div className="max-w-xl mx-auto text-center">
+            <h2 className="text-xl font-semibold text-gray-200 mb-2">
+              This song isn't in the library yet
+            </h2>
+            <p className="text-gray-400 text-sm">
+              Verified translations and word-by-word breakdowns are only available for songs the
+              curator has reviewed. You can request this one below — the curator gets a Telegram
+              notification and will add it as soon as possible.
+            </p>
+          </div>
+          <RequestSongForm />
+        </div>
+      )}
+
+      {videoId && (isCurator || translation.error !== 'not-in-library') && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-4">
             <YouTubePlayer
@@ -149,16 +179,35 @@ export function PlayPage() {
         </div>
       )}
 
-      {!videoId && (
-        <div className="text-center py-20">
+      {!videoId && isCurator && (
+        <div className="text-center py-16">
           <p className="text-5xl mb-4">🙏</p>
           <h2 className="text-2xl font-bold text-gray-200 mb-2">
             Discover Sanskrit Through Music
           </h2>
           <p className="text-gray-400 max-w-md mx-auto">
             Paste a YouTube URL of any Sanskrit song above. As it plays, you'll see real-time
-            translations and start building your Sanskrit vocabulary.
+            transcription and translation — review and verify to add it to the public library.
           </p>
+        </div>
+      )}
+
+      {!videoId && !isCurator && (
+        <div className="py-10 space-y-6">
+          <div className="text-center max-w-xl mx-auto">
+            <p className="text-5xl mb-4">🙏</p>
+            <h2 className="text-2xl font-bold text-gray-200 mb-2">
+              Discover Sanskrit Through Music
+            </h2>
+            <p className="text-gray-400">
+              Open a song from the{' '}
+              <a href="/library" className="text-amber-400 hover:underline">
+                Library
+              </a>{' '}
+              to play with real-time, verified translations and word-by-word breakdowns.
+            </p>
+          </div>
+          <RequestSongForm />
         </div>
       )}
 

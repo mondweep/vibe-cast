@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../shared/lib/supabaseClient';
-import { CheckCircle2, Music, Heart } from 'lucide-react';
+import { CheckCircle2, Music, Heart, Inbox } from 'lucide-react';
+import { useCurator } from '../contexts/auth/hooks/useCurator';
+import { listPendingRequests } from '../contexts/library/services/songRequestsClient';
 
 interface LibrarySong {
   id: string;
@@ -26,9 +28,32 @@ function videoIdOf(url: string): string | null {
 
 export function LibraryPage() {
   const navigate = useNavigate();
+  const { isCurator } = useCurator();
   const [songs, setSongs] = useState<LibrarySong[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+
+  // Curator-only: count pending song requests for the banner. Failures are
+  // silent — the rest of the page works the same.
+  useEffect(() => {
+    if (!isCurator) {
+      setPendingCount(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const rows = await listPendingRequests();
+        if (!cancelled) setPendingCount(rows.length);
+      } catch {
+        if (!cancelled) setPendingCount(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isCurator]);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,6 +118,22 @@ export function LibraryPage() {
           {songs.length} verified {songs.length === 1 ? 'song' : 'songs'}
         </span>
       </div>
+
+      {/* Curator-only banner — surfaces pending song requests at-a-glance
+          from the most-visited page. Hidden when there are zero pending so
+          we don't show an empty state. */}
+      {isCurator && pendingCount !== null && pendingCount > 0 && (
+        <Link
+          to="/queue"
+          className="mb-3 flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-200 hover:bg-amber-500/20 transition-colors"
+        >
+          <span className="inline-flex items-center gap-2">
+            <Inbox size={14} />
+            {pendingCount} song {pendingCount === 1 ? 'request' : 'requests'} pending review
+          </span>
+          <span className="text-amber-400/80 text-xs">Go to queue →</span>
+        </Link>
+      )}
 
       {/* Subtle support strip — sits above the grid on the most-visited public
           page. Skippable; never blocks content. */}

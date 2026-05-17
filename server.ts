@@ -17,6 +17,11 @@ import {
 } from './api/routes/translate.js'
 import { verifySong, unverifySong } from './api/routes/songs.js'
 import { recordConsent, trackProfile } from './api/routes/consent.js'
+import {
+  submitSongRequest,
+  listPendingRequests,
+  updateRequestStatus,
+} from './api/routes/songRequests.js'
 
 const execPromise = promisify(exec)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -339,6 +344,53 @@ app.post('/api/songs/unverify', async (req, res) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unverify failed'
     const code = msg.includes('not authorised') || msg.includes('Invalid auth') ? 403 : 500
+    res.status(code).json({ error: msg })
+  }
+})
+
+// --- Song-request queue ---
+// Public POST (anon or auth). Curator-only GET + status updates.
+
+app.post('/api/song-requests', async (req, res) => {
+  try {
+    const result = await submitSongRequest(getJwt(req), req.body || {})
+    if (result.status === 'invalid') return res.status(400).json(result)
+    if (result.status === 'rate-limited') return res.status(429).json(result)
+    if (result.status === 'already-in-library') return res.status(200).json(result)
+    if (result.status === 'already-requested') return res.status(200).json(result)
+    res.status(201).json(result)
+  } catch (err) {
+    console.error('Song request submission error:', err)
+    res.status(500).json({ error: 'Failed to submit song request' })
+  }
+})
+
+app.get('/api/song-requests', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await listPendingRequests(jwt)
+    res.json(result)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Failed to list requests'
+    const code = msg.includes('Only the curator') ? 403 : 500
+    res.status(code).json({ error: msg })
+  }
+})
+
+app.patch('/api/song-requests/:id', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const { status, reason } = req.body || {}
+    if (!['accepted', 'rejected', 'duplicate'].includes(status)) {
+      return res.status(400).json({ error: 'status must be one of accepted, rejected, duplicate' })
+    }
+    const result = await updateRequestStatus(jwt, req.params.id, status, reason)
+    res.json(result)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Failed to update request'
+    const code = msg.includes('Only the curator') ? 403 : 500
     res.status(code).json({ error: msg })
   }
 })

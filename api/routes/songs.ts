@@ -23,6 +23,14 @@ const CURATOR_EMAILS = new Set([
   'mondweep@dxsure.uk',
 ])
 
+export interface CuratorWord {
+  devanagari?: string
+  iast?: string
+  meaning?: string
+  root_dhatu?: string
+  grammar?: string
+}
+
 export interface VerifyLine {
   start_time?: number
   end_time?: number
@@ -32,6 +40,17 @@ export interface VerifyLine {
   english_literal?: string
   explanation?: string
   text?: string // fallback if devanagari is missing
+  /**
+   * Optional curator-supplied word breakdown. If present and non-empty, this
+   * is used VERBATIM and splitSanskrit is NOT called for this line. Only when
+   * words is missing/empty do we fall back to live Claude extraction.
+   *
+   * This preserves curator intent: the canonical word order matching the
+   * verse text, exact diacritic forms (नभस् vs नभो, पालं vs पाल), and
+   * carefully-written meanings — none of which Claude's split would
+   * necessarily reproduce.
+   */
+  words?: CuratorWord[]
 }
 
 export interface VerifyRequest {
@@ -140,11 +159,29 @@ export async function verifySong(
   const extractOne = async (
     line: VerifyLine,
     idx: number
-  ): Promise<{ line_number: number; words?: number; error?: string }> => {
+  ): Promise<{ line_number: number; words?: number; source?: string; error?: string }> => {
     const text = (line.devanagari || line.text || '').trim()
     if (!text) return { line_number: idx, error: 'empty line' }
     try {
-      const words = await splitSanskrit(text)
+      // If the curator supplied a non-empty words[] for this line, use it
+      // verbatim — splitSanskrit re-extraction would scramble the order,
+      // collapse diacritic distinctions (नभस् → नभो), and replace the
+      // hand-written meanings with Claude's freshly-generated ones. Curator
+      // intent wins.
+      const curatorWords = Array.isArray(line.words)
+        ? line.words.filter((w) => w?.devanagari && w?.iast && w?.meaning)
+        : []
+
+      let words: CuratorWord[]
+      let source: string
+      if (curatorWords.length > 0) {
+        words = curatorWords
+        source = 'curator'
+      } else {
+        words = (await splitSanskrit(text)) as CuratorWord[]
+        source = 'splitSanskrit'
+      }
+
       let inserted = 0
       for (const w of words) {
         if (!w?.devanagari || !w?.iast || !w?.meaning) continue
@@ -177,22 +214,48 @@ export async function verifySong(
         }
         inserted++
       }
-      return { line_number: idx, words: inserted }
+      return { line_number: idx, words: inserted, source }
     } catch (err) {
       return { line_number: idx, error: err instanceof Error ? err.message : String(err) }
     }
   }
 
-  const wordExtraction: { line_number: number; words?: number; error?: string }[] = []
+  const wordExtraction: { line_number: number; words?: number; source?: string; error?: string }[] = []
   for (let i = 0; i < body.lines.length; i += BATCH_SIZE) {
     const batch = body.lines.slice(i, i + BATCH_SIZE)
     const results = await Promise.all(
       batch.map((line, j) => extractOne(line, i + j))
     )
     wordExtraction.push(...results)
-    if (i + BATCH_SIZE < body.lines.length) {
+    // Only throttle when the batch actually hit Claude. Curator-supplied
+    // word breakdowns skip splitSanskrit entirely, so the 5s sleep is dead
+    // weight for fully pre-curated payloads like the Hari Stotram.
+    const hitClaude = results.some((r) => r.source === 'splitSanskrit')
+    if (hitClaude && i + BATCH_SIZE < body.lines.length) {
       await sleep(BATCH_DELAY_MS)
     }
+  }
+
+  // If this song was in the request queue, mark all pending requests for
+  // this videoId as 'accepted' so the curator's queue stays clean. Best-effort
+  // — failure here doesn't roll back the verify, since the song is real and
+  // saved either way.
+  try {
+    await sb
+      .from('song_requests')
+      .update({
+        status: 'accepted',
+        processed_at: new Date().toISOString(),
+        processed_by: userId,
+      })
+      .eq('video_id', body.videoId)
+      .eq('status', 'pending')
+  } catch (err) {
+    console.warn(
+      '[verify] failed to clear pending requests for',
+      body.videoId,
+      err instanceof Error ? err.message : err,
+    )
   }
 
   return { song: songRow, wordExtraction }

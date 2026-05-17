@@ -74,7 +74,19 @@ async function hydrateLineWords(songId: string, lines: LyricsLine[]): Promise<Ly
   }));
 }
 
-export function useTranslation(videoId: string | null, currentTime: number) {
+/**
+ * When `allowLiveTranscription` is false, the hook only resolves lyrics from
+ * the verified library. If the song isn't there, it surfaces an honest error
+ * ("not in library") instead of falling through to yt-dlp + Whisper. The
+ * curator passes true; non-curators pass false so they can't accidentally
+ * trigger live transcription on the production server (which would burn
+ * through YouTube bot-block limits and produce unvetted output).
+ */
+export function useTranslation(
+  videoId: string | null,
+  currentTime: number,
+  allowLiveTranscription: boolean = false,
+) {
   const [state, setState] = useState<TranslationState>(initialState);
   const linesRef = useRef<LyricsLine[]>([]);
 
@@ -120,6 +132,19 @@ export function useTranslation(videoId: string | null, currentTime: number) {
           | null;
 
         if (cancelled) return;
+
+        // If the song isn't in the verified library AND the caller (typically
+        // a non-curator visitor) hasn't opted into live transcription, stop
+        // here with an honest error. The PlayPage renders this as a "not in
+        // library — request it?" CTA rather than silently transcribing.
+        if (!verified?.lyrics_json && !allowLiveTranscription) {
+          setState((prev) => ({
+            ...prev,
+            loading: false,
+            error: 'not-in-library',
+          }))
+          return;
+        }
 
         if (verified?.lyrics_json) {
           // Hydrate per-line words[] from the canonical song_words ↔ words
@@ -201,7 +226,7 @@ export function useTranslation(videoId: string | null, currentTime: number) {
     return () => {
       cancelled = true;
     };
-  }, [videoId, setLines]);
+  }, [videoId, setLines, allowLiveTranscription]);
 
   // Update current line based on playback time.
   useEffect(() => {

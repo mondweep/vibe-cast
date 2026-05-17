@@ -36,14 +36,24 @@ Learn Sanskrit through music. Paste a YouTube URL, watch the video, and follow a
 - **One-click play** — clicking a card opens `/play?v=<id>` with the song pre-loaded from cached, trusted lyrics (no transcribe call fires)
 - **Curator-only editing** — `mondweep@gmail.com` / `mondweep@dxsure.uk` can edit lyrics line-by-line inline on `/play` and click **Verify & Save** to publish, or **Unverify** to remove a song from public view
 - **Canonical vocabulary extraction** — when a song is verified, the server runs sandhi-split on every line and feeds the resulting words into a shared dictionary that powers everyone's flashcard deck
+- **Curator-supplied word breakdowns** — verify-time payloads can include a hand-curated `words[]` array per line; if present, sandhi-split is skipped and the words are inserted verbatim (preserves exact diacritic forms, ordering, and meanings)
+
+### Song-request queue (visitor-facing)
+- **Visitors don't trigger live transcription** — only the curator sees the URL input on `/play`. Other users get a request form. This avoids exposing visitors to YouTube anti-bot blocks and the variable quality of un-curated Whisper output
+- **Public request form** — anyone (anon or signed-in) can submit a YouTube URL with optional note. Rate-limited to 1/day per visitor for anon, unlimited for signed-in
+- **Dedup at submission** — server checks the verified library AND existing pending requests before inserting; visitors get a friendly "already in library" or "already requested" message
+- **Telegram notification** to the curator on every accepted request (fire-and-forget, never blocks the user)
+- **Curator `/queue` page** lists pending requests with Take this / Reject actions; verifying a song auto-clears its pending request
 
 ### Under the Hood
 - **Claude API** (Haiku 4.5) for Sanskrit-to-English translation, sandhi splitting, and word analysis
-- **Audio transcription pipeline** — yt-dlp pulls audio for videos without captions, Groq Whisper-large-v3-turbo transcribes (Sanskrit or Hindi hint), a multi-stage filter (regex + English stopword/noise list + Claude validator) rejects hallucinations before translation
+- **Audio transcription pipeline** — yt-dlp pulls audio for videos without captions, Groq Whisper-large-v3-turbo transcribes (Sanskrit or Hindi hint), a confidence-scoring pipeline (heuristic + Sanskrit allowlist + Whisper logprob + Claude validator) labels each segment high/medium/low before translation
+- **Three-tier confidence labels** — hard rejects (foreign scripts, "Subtitles by" boilerplate) drop pre-translate. Low-confidence lines are dropped server-side (too noisy to surface even with a warning). Medium-confidence lines surface with an amber disclaimer. High renders normally. Cost-conscious: low isn't sent to the translator at all
 - **Strict no-hallucination guard** — bulk translation refuses noisy input rather than inventing lyrics
+- **Telegram bot** for curator alerts (song requests, nightly auto-curation summaries)
 - **SM-2 spaced repetition algorithm** for long-term retention
 - **YouTube caption extraction** with Sanskrit/Hindi fallback
-- **Supabase** for auth, user profiles, vocabulary persistence, and the verified-library schema
+- **Supabase** for auth, user profiles, vocabulary persistence, the verified-library schema, and the song-request queue
 - **Railway** deployment — single Express server serving both the API and the static frontend
 
 ## Tech Stack
@@ -66,32 +76,44 @@ Learn Sanskrit through music. Paste a YouTube URL, watch the video, and follow a
 ├── tsconfig.server.json             # Server TypeScript config
 ├── api/
 │   └── routes/
-│       ├── translate.ts             # Claude-powered translate + sandhi split
-│       ├── transcribe.ts            # Groq Whisper + hallucination guard
-│       └── songs.ts                 # /api/songs/verify and /unverify
+│       ├── translate.ts             # Claude-powered translate + sandhi split + confidence-aware bulk
+│       ├── transcribe.ts            # Groq Whisper + confidence scoring + Sanskrit allowlist
+│       ├── songs.ts                 # /api/songs/verify and /unverify (honours curator words[])
+│       ├── songRequests.ts          # /api/song-requests POST/GET/PATCH + Telegram notify
+│       └── consent.ts               # /api/consent + /api/profile/track
+├── curator/                         # Hand-curated canonical JSON payloads for verifySong
 ├── supabase/
-│   └── migrations/                  # 001–007: schema + RLS migrations
+│   └── migrations/                  # 001–011: schema + RLS migrations
 ├── src/
-│   ├── App.tsx                      # Routes: /library (public), /play, /revise, /progress
+│   ├── App.tsx                      # Routes: /library (public), /play, /revise, /progress, /queue (curator)
 │   ├── main.tsx                     # Entry point
 │   ├── index.css                    # Tailwind imports
 │   ├── pages/
-│   │   ├── LibraryPage.tsx          # Public grid of verified songs
-│   │   ├── PlayPage.tsx             # YouTube player + live translation + curator verify UI
+│   │   ├── LibraryPage.tsx          # Public grid of verified songs + curator pending-requests banner
+│   │   ├── PlayPage.tsx             # YouTube player + live translation (curator URL input only)
+│   │   ├── QueuePage.tsx            # Curator queue of pending song requests
 │   │   ├── RevisePage.tsx           # Flashcards, matching game, lazy library deck sync
-│   │   └── ProgressPage.tsx         # Stats, vocabulary breakdown
+│   │   ├── ProgressPage.tsx         # Stats, vocabulary breakdown
+│   │   ├── AboutPage.tsx            # Architecture diagram + contribute invitation
+│   │   └── PrivacyPage.tsx          # Privacy policy
 │   ├── contexts/
-│   │   ├── auth/                    # Supabase auth (sign in/up, protected routes)
+│   │   ├── auth/
+│   │   │   ├── components/          # SignIn, SignUp, ProtectedRoute
+│   │   │   ├── hooks/               # useAuth, useCurator (allowlist check)
+│   │   │   └── services/            # supabaseAuth
+│   │   ├── library/
+│   │   │   ├── components/          # RequestSongForm (non-curator visitor form)
+│   │   │   └── services/            # songRequestsClient
 │   │   ├── player/                  # YouTube player, playback sync, URL input
 │   │   ├── translation/
-│   │   │   ├── components/          # LyricsPanel, EditableLyricsPanel, VerifyBar, TranslationPanel, WordPopup
-│   │   │   ├── hooks/               # useTranslation (verified-first, no auto-cache)
-│   │   │   └── services/            # transcriber, translator, libraryClient
+│   │   │   ├── components/          # LyricsPanel (verse text), EditableLyricsPanel, VerifyBar, TranslationPanel, WordPopup
+│   │   │   ├── hooks/               # useTranslation (verified-first; allowLiveTranscription flag)
+│   │   │   └── services/            # transcriber, translator (confidence-aware), libraryClient
 │   │   └── learning/                # Vocabulary tracking, SRS, flashcards, libraryDeckSync
 │   └── shared/
-│       ├── components/              # Layout, ErrorBoundary
+│       ├── components/              # Layout (curator-only Queue tab), ConsentBanner, ErrorBoundary
 │       ├── lib/                     # Constants, Supabase client
-│       └── types/                   # Database types, LyricsLine, WordBreakdown
+│       └── types/                   # Database types, LyricsLine (+ confidence fields), WordBreakdown
 ```
 
 ## Getting Started
@@ -140,13 +162,32 @@ VITE_YOUTUBE_API_KEY=your-key
 # Cookies expire after a few weeks — refresh when transcription starts failing.
 YOUTUBE_COOKIES=
 
+# Supabase service-role key (recommended).
+# Used by /api/song-requests to dedup against other visitors' rows (which the
+# anon role can't see under RLS) and by the consent route. Without it, the
+# endpoints fall back to the anon client — rate-limiting + dedup still work
+# but only see rows the anon role can read.
+SUPABASE_SERVICE_ROLE_KEY=
+
+# Telegram bot — for curator notifications on new song requests and the
+# nightly auto-curation summary. Same bot/chat as the nightly task.
+# Without these, the song-request endpoint logs a warning and skips the
+# notification — the request still lands in the queue.
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+
 # Server port
 PORT=3000
 ```
 
 ### 3. Set up Supabase database
 
-Run the migration files in `supabase/migrations/` in order in the Supabase SQL editor. Migrations `001`–`006` create the base schema; migration `007` adds the verified-library schema (`verified` columns on `songs`, the `song_words` link table, the `library_words` view, and updated RLS policies for public-read of verified content + curator-only writes).
+Run the migration files in `supabase/migrations/` in order in the Supabase SQL editor:
+- `001`–`006` — base schema (profiles, words, vocabulary, songs, revision sessions)
+- `007` — verified library (`verified` columns on `songs`, `song_words` link table, `library_words` view, RLS for public-read of verified + curator-only writes)
+- `008` — consent + profile geo tracking + auto-profile trigger
+- `009`–`010` — nightly auto-curation queue + RLS reconcile
+- `011` — `song_requests` queue for visitor-submitted requests (anon INSERT, curator SELECT/UPDATE, dedup index)
 
 For reference, here's the resulting schema (do not run this SQL directly — use the migrations):
 
@@ -255,13 +296,19 @@ The app will be available at `http://localhost:3000`.
 | ------ | --------------------------------- | -------------------------------------------------------------------- |
 | GET    | `/api/health`                     | Health check                                                         |
 | GET    | `/api/youtube/captions/:videoId`  | Fetch YouTube captions (sa/hi)                                       |
-| POST   | `/api/transcribe`                 | yt-dlp + Whisper audio transcription with hallucination filtering    |
+| POST   | `/api/transcribe`                 | yt-dlp + Whisper transcription with confidence scoring per segment   |
 | POST   | `/api/translate`                  | Translate full song lyrics (strict no-hallucination guard)           |
-| POST   | `/api/translate/song`             | Translate a pre-segmented set of timestamped lines                   |
+| POST   | `/api/translate/song`             | Confidence-aware bulk translate: skips low-confidence lines server-side |
 | POST   | `/api/translate/line`             | Translate a single Sanskrit line (softer, best-effort prompt)        |
+| POST   | `/api/translate/single-line`      | One-off translate for an arbitrary line (returns full LyricsLine)    |
 | POST   | `/api/sanskrit/split`             | Sandhi splitting (word segmentation + grammar)                       |
-| POST   | `/api/songs/verify`               | Curator-only: persist edited lyrics as a verified library entry      |
+| POST   | `/api/songs/verify`               | Curator-only: persist edited lyrics; honours curator-supplied words[]; auto-clears pending requests for the videoId |
 | POST   | `/api/songs/unverify`             | Curator-only: revert a song to draft (remove from public library)    |
+| POST   | `/api/song-requests`              | Public (anon or auth): submit a YouTube URL to the curator queue. Dedups + rate-limits + fires Telegram |
+| GET    | `/api/song-requests`              | Curator-only: list pending requests                                  |
+| PATCH  | `/api/song-requests/:id`          | Curator-only: mark as accepted / rejected / duplicate                |
+| POST   | `/api/consent`                    | Record consent click (visitor_id + optional user_id + IP)            |
+| POST   | `/api/profile/track`              | Auth: capture IP-derived geolocation onto the user's profile         |
 
 ## Deploying to Railway
 
@@ -296,14 +343,16 @@ The Google OAuth button on the sign-in page comes from Supabase Auth. To make it
 
 Four routes are open to anonymous visitors (no account needed):
 - `/library` — browse all verified songs
-- `/play` (read-only) — load any verified song, watch the video, see lyrics scroll, tap words to view their canonical meaning. Vocabulary tracking is skipped (the visitor has no user_id to attach progress to).
+- `/play` (verified-library only) — load any verified song, watch the video, see lyrics scroll, tap words to view their canonical meaning. Live transcription (yt-dlp + Whisper) is curator-gated; non-curators see a "request this song" form instead of the URL input. Opening `?v=<id>` for a song that isn't in the library surfaces the same request form (no silent fallthrough to Whisper). Vocabulary tracking is skipped (the visitor has no user_id to attach progress to).
 - `/about` — visual architecture diagram, plain-language explanation of how songs reach the library, contribution invitation, credits
 - `/privacy` — privacy notice
 
 These are gated to signed-in users only:
 - `/revise` — flashcards, matching game (writes to user_vocabulary)
 - `/progress` — personal stats (reads from user_vocabulary)
-- The "Verify & Save" / "Unverify" curator buttons on `/play` (also email-allowlisted)
+- `/queue` — curator-only review queue of song requests
+- The URL input + live transcription on `/play` (curator email allowlist)
+- The "Verify & Save" / "Unverify" curator buttons on `/play` (same allowlist)
 
 ## Privacy and consent
 
@@ -366,7 +415,7 @@ The Play flow has two tiers:
 9. **Familiarity grows** — a logarithmic score increases with encounters (with a penalty for lookups); SM-2 schedules reviews
 10. **Revise to retain** — flashcards and matching games use the user's deck, filtered by familiarity level
 
-## Project Status (as of 2026-05-16)
+## Project Status (as of 2026-05-17)
 
 ### Completed
 
@@ -390,15 +439,32 @@ The Play flow has two tiers:
 - **Auto-create profiles row on signup** — `handle_new_user()` trigger on `auth.users` INSERT creates a corresponding `profiles` row with `display_name` from OAuth metadata or email. Closes the previous "missing profiles row" gap.
 - **Migration 008** (`supabase/migrations/008_consent_and_profile.sql`) — adds `linkedin_url`, `geo_*`, `ip_address`, `consent_at`, `consent_version` to `profiles`; creates `consent_log`; installs the new-user trigger.
 
+#### Added 2026-05-17
+
+- **Confidence-aware transcription pipeline** — `transcribe.ts` now scores every Whisper segment as `high` / `medium` / `low` instead of binary keep/drop. Hard rejects (foreign-script drift, "Subtitles by" boilerplate, < 4 alphabetic chars) drop pre-translate. Low-confidence lines are dropped server-side after scoring (noisy enough that surfacing them with a warning was misleading). Medium-confidence surfaces with an amber disclaimer in `LyricsPanel` + `TranslationPanel`. High renders normally. Translation cost is roughly flat for clean songs and never balloons on noisy ones.
+- **Sanskrit particle allowlist** (`SANSKRIT_ALLOWLIST` in `transcribe.ts`) — ~80 high-frequency short Sanskrit words (`om`, `iti`, `tu`, `ca`, `vai`, `bhajeham`, `namo`, deity names) are never counted as English-shaped tokens and count as positive Sanskrit signal. Stops short devotional lines like `oṃ namo nārāyaṇa` from being mis-flagged. Diacritic-stripping match means `narayan` and `nārāyaṇa` both hit the allowlist.
+- **Whisper avg_logprob signal** — read from `verbose_json` and used to demote borderline segments. `< -1.0` demotes one tier; `< -1.5` demotes two.
+- **Deterministic Claude validator** — `temperature: 0`. Same audio → same scores across runs. Validator can only demote a tier, never inflate past the heuristic.
+- **Curator-supplied `words[]` honoured at verify time** — `verifySong` checks for a non-empty curator-provided word breakdown per line; if present, sandhi-split is skipped and the words are inserted verbatim. Preserves exact diacritic forms (`नभस्` not `नभो`), ordering, and meanings. For fully-curated payloads, verify takes 1–2s instead of ~12s (no Claude calls).
+- **`LyricsPanel` renders canonical verse text** — previously it concatenated `words[].devanagari` with spaces, which destroyed sandhi-joined verses (`जगज्जालपालं` rendered as `जगत् जाल पालं`) and reordered when Claude's split produced different ordering. Now renders `line.devanagari` verbatim. Word-by-word breakdown lives in `TranslationPanel`'s "WORD BY WORD" section where it belongs.
+- **Migration 011** (`supabase/migrations/011_song_requests.sql`) — `song_requests` table with anon-INSERT / curator-SELECT-UPDATE RLS + unique-pending-per-video partial index for DB-level dedup.
+- **`/api/song-requests` endpoint** — public POST validates YouTube URL, dedups against verified library + pending queue, rate-limits anon to 1/24h per `visitor_id`, sends a Telegram message to the curator. Curator-only GET + PATCH for the queue page.
+- **`/queue` page** — curator-only listing of pending requests with "Take this" (→ `/play?v=…`) and "Reject" (with optional reason) actions. Verifying a song auto-clears any matching pending request.
+- **PlayPage curator-gating** — non-curators (anon or signed-in) no longer see the URL input or trigger live transcription. They see a `RequestSongForm` instead. `useTranslation`'s new `allowLiveTranscription` parameter (default false) prevents accidental Whisper triggers on stray `?v=` URLs — surfaces a friendly "not in library yet — request it?" CTA instead.
+- **Layout Queue tab + LibraryPage banner** — curator-only Queue tab in bottom nav, pending-requests banner on Library page linking to /queue.
+- **Hari Stotram added to library** — `cToCInaGzCw` (full 8-verse Shri Hari Stotram by Swami Brahmananda + opening *Oṃ namo nārāyaṇāya* + closing phalashruti). 10 lines, 182 curated word breakdowns from Stotra Ratnavali canonical source. Payload kept at `curator/hari-stotram-cToCInaGzCw.json` for re-verify.
+
 ### Remaining / known issues
 
 - **IAST anusvāra/nasal normalization (`ṃ` vs `m`)** — Sanskrit transliteration tolerates both `rājīvalocanaṃ` (with anusvāra) and `rājīvalocanam` (with plain `m`) for the same word; literal string-match treats them as different. Affects vocabulary lookup highlighting on lyric lines when the lyric IAST and the dictionary entry disagree. Clean fix is a small canonicalisation helper applied at both read and write time, plus a one-time migration to rewrite existing rows. Not yet implemented.
 - **Mark-revision and mark-learned buttons in WordPopup are stubs** — the buttons render but currently no-op for both signed-in and anonymous users. They need `vocabulary.markRevision(word)` / `vocabulary.markLearned(word)` helpers in `useVocabulary` that flip the corresponding flags on the `user_vocabulary` row. Stubbed in `PlayPage.tsx` with `TODO` comments.
-- **No "draft songs" curator queue** — the curator currently has to remember which URLs they've started transcribing but not yet verified. A `/curate` page listing all unverified drafts would help.
+- **No "draft songs" curator queue** — the curator currently has to remember which URLs they've started transcribing but not yet verified. A `/curate` page listing all unverified drafts would help. (Distinct from `/queue`, which is for *visitor-submitted* requests.)
 - **No edit history** — once a verified song is edited and re-saved, the prior lyrics are overwritten with no audit trail. Acceptable for now; revisit if multiple curators or community editing is added.
 - **No `revision_sessions` writes yet** — the table exists but `/revise` doesn't currently log sessions. Progress page shows real-time numbers from `user_vocabulary` directly.
 - **Three optional UI follow-ups** — search/filter on `/library`, category tags on songs (stotras vs. mantras vs. bhajans), and a "Word browser" page that lists all library words with their source songs.
 - **Cleanup of legacy songs RLS policies** — five overlapping policies are stacked from the migration history (snake_case curator + space-named auth policies). Functional but noisy; a future migration should reconcile.
+- **No notification back to song requesters** — the curator gets a Telegram message when a request comes in, but the requester isn't notified when their request is accepted or rejected. Anon requesters have no email; signed-in requesters could be emailed but the wiring isn't there yet. Worth adding once request volume justifies it.
+- **No CAPTCHA on the request form** — currently relies on the 1/24h-per-`visitor_id` rate limit. Move to CAPTCHA / sign-in-required if spam appears.
 
 ### Known limitations of the live transcription path
 
@@ -524,12 +590,18 @@ Low-confidence candidates (songs whose source can't be identified with certainty
 
 ## Requesting a song
 
-If you'd like a particular Sanskrit song added to the library, reach out via either:
+If you'd like a particular Sanskrit song added to the library, the easiest path is the in-app request form:
 
-- **LinkedIn:** [Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty/) — DM with the YouTube URL and any context you can give (source text, traditional verses, who sings it)
-- **GitHub:** Open an issue at [vibe-cast](https://github.com/mondweep/vibe-cast/tree/claude/sanskrit-english-songs-8IhOE) describing the song and ideally linking to a canonical text source
+- Open `/play` (signed-in or not) — you'll see a "Request a Sanskrit song" form
+- Paste the YouTube URL and an optional note (composer, traditional name, source text — anything that helps)
+- The curator gets a Telegram notification and the request appears in `/queue` for review
 
 For songs where the lyrics are standard published verses (the daily-prayer shlokas, well-known stotras, Vedic mantras, Bhagavad-Gītā chapters, Upaniṣad passages), curation is fast — typically ~30 minutes from request to verified library entry.
+
+Alternatively, reach out directly:
+
+- **LinkedIn:** [Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty/) — DM with the YouTube URL and any context
+- **GitHub:** Open an issue at [vibe-cast](https://github.com/mondweep/vibe-cast/tree/claude/sanskrit-english-songs-8IhOE) describing the song and ideally linking to a canonical text source
 
 ## Contributing
 

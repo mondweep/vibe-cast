@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react';
 import type { LyricsLine, TranscriptConfidence } from '../../../shared/types/database.types';
-import { FAMILIARITY_THRESHOLDS } from '../../../shared/lib/constants';
 
 // Visual treatment per confidence tier. High = no marker (the default, trusted
 // state). Medium = amber left border ("plausible, but check"). Low = red left
@@ -28,11 +27,13 @@ export interface TappedWord {
 interface LyricsPanelProps {
   lines: LyricsLine[];
   currentLineIndex: number;
-  vocabulary: Map<string, number>; // word iast -> familiarity score
-  onWordTap: (word: TappedWord) => void;
+  /** Reserved for a future click-to-lookup overlay; not currently rendered
+   *  here because the word-by-word breakdown lives in TranslationPanel. */
+  vocabulary?: Map<string, number>;
+  onWordTap?: (word: TappedWord) => void;
 }
 
-export function LyricsPanel({ lines, currentLineIndex, vocabulary, onWordTap }: LyricsPanelProps) {
+export function LyricsPanel({ lines, currentLineIndex }: LyricsPanelProps) {
   const activeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,27 +69,21 @@ export function LyricsPanel({ lines, currentLineIndex, vocabulary, onWordTap }: 
                 : 'opacity-50 hover:opacity-80'
             }`}
           >
-            {/* Devanagari */}
-            <p className="text-lg font-medium text-gray-100 mb-1">
-              {line.words?.map((word, wi) => {
-                const familiarity = vocabulary.get(word.iast) ?? 0;
-                const isNew = familiarity < FAMILIARITY_THRESHOLDS.RECOGNIZED;
-                return (
-                  <span
-                    key={wi}
-                    onClick={() => onWordTap(word)}
-                    className={`cursor-pointer hover:text-amber-300 transition-colors ${
-                      isNew && isActive ? 'text-amber-400 font-bold' : ''
-                    }`}
-                  >
-                    {word.devanagari}{' '}
-                  </span>
-                );
-              }) ?? line.devanagari}
+            {/* Devanagari verse text — render the canonical sandhi-joined form
+                exactly as the curator wrote it. We deliberately do NOT split it
+                into clickable word tokens here, because:
+                  1. line.devanagari preserves the sandhi (जगज्जालपालं), which
+                     would be lost if we concatenated word.devanagari entries
+                     (जगत् + जाल + पालं) — the result reads as a bag of stems,
+                     not a verse.
+                  2. The word-by-word breakdown (with meanings) lives in
+                     TranslationPanel where it renders correctly per active line. */}
+            <p className="text-lg font-medium text-gray-100 mb-1 whitespace-pre-wrap">
+              {line.devanagari}
             </p>
 
             {/* Transliteration */}
-            <p className="text-sm text-gray-400 italic">{line.iast}</p>
+            <p className="text-sm text-gray-400 italic whitespace-pre-wrap">{line.iast}</p>
 
             {/* Confidence chip — only shown for medium/low so the high path
                 stays visually clean. Clicking the title attr already shows the

@@ -9,6 +9,7 @@ import { ProgressPage } from './pages/ProgressPage'
 import { LibraryPage } from './pages/LibraryPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { AboutPage } from './pages/AboutPage'
+import { QueuePage } from './pages/QueuePage'
 
 export default function App() {
   return (
@@ -27,7 +28,10 @@ export default function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
       </Route>
 
-      {/* Personal SRS pages still require sign-in. */}
+      {/* Personal SRS pages still require sign-in. /queue also lives here —
+          the page itself enforces the curator allowlist (showing an empty
+          state to non-curators), and the API/RLS would reject any data
+          fetches even if they reached it. */}
       <Route
         element={
           <ProtectedRoute>
@@ -37,6 +41,7 @@ export default function App() {
       >
         <Route path="/revise" element={<RevisePage />} />
         <Route path="/progress" element={<ProgressPage />} />
+        <Route path="/queue" element={<QueuePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/library" replace />} />
     </Routes>

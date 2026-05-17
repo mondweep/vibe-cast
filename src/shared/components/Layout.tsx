@@ -1,10 +1,12 @@
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { Play, BookOpen, BarChart3, LogOut, Library, Github, Linkedin, Heart, Info } from 'lucide-react';
+import { Play, BookOpen, BarChart3, LogOut, Library, Github, Linkedin, Heart, Info, Inbox } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/hooks/useAuth';
+import { useCurator } from '../../contexts/auth/hooks/useCurator';
 import { ConsentBanner } from './ConsentBanner';
 
 export function Layout() {
   const { signOut, user } = useAuth();
+  const { isCurator } = useCurator();
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
@@ -100,6 +102,21 @@ export function Layout() {
             <Info size={20} />
             About
           </NavLink>
+          {/* Curator-only Queue tab. Hidden from regular users; the route
+              itself is also gated by ProtectedRoute + the page's own check. */}
+          {isCurator && (
+            <NavLink
+              to="/queue"
+              className={({ isActive }) =>
+                `flex flex-col items-center gap-1 text-xs transition-colors ${
+                  isActive ? 'text-amber-400' : 'text-gray-500 hover:text-gray-300'
+                }`
+              }
+            >
+              <Inbox size={20} />
+              Queue
+            </NavLink>
+          )}
         </div>
       </nav>
 
