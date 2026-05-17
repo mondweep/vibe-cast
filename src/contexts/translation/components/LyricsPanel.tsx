@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import type { LyricsLine, TranscriptConfidence } from '../../../shared/types/database.types';
+import { FAMILIARITY_THRESHOLDS } from '../../../shared/lib/constants';
 
 // Visual treatment per confidence tier. High = no marker (the default, trusted
 // state). Medium = amber left border ("plausible, but check"). Low = red left
@@ -27,13 +28,19 @@ export interface TappedWord {
 interface LyricsPanelProps {
   lines: LyricsLine[];
   currentLineIndex: number;
-  /** Reserved for a future click-to-lookup overlay; not currently rendered
-   *  here because the word-by-word breakdown lives in TranslationPanel. */
+  /** word-iast → familiarity score (0-1). Used to mark unfamiliar words on
+   *  the active line so the learner spots them. */
   vocabulary?: Map<string, number>;
+  /** Opens the WordPopup when a word chip below a verse is tapped. */
   onWordTap?: (word: TappedWord) => void;
 }
 
-export function LyricsPanel({ lines, currentLineIndex }: LyricsPanelProps) {
+export function LyricsPanel({
+  lines,
+  currentLineIndex,
+  vocabulary,
+  onWordTap,
+}: LyricsPanelProps) {
   const activeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -84,6 +91,38 @@ export function LyricsPanel({ lines, currentLineIndex }: LyricsPanelProps) {
 
             {/* Transliteration */}
             <p className="text-sm text-gray-400 italic whitespace-pre-wrap">{line.iast}</p>
+
+            {/* Clickable word chips — restores the click-to-meaning behavior
+                that learners rely on (previously the verse text itself was
+                clickable, but that destroyed sandhi rendering — see comment
+                above). Now the verse text stays canonical, and a compact
+                chip row beneath each line lets the learner tap any word to
+                open the WordPopup with full IAST + dhātu + grammar.
+                Unfamiliar words on the active line are highlighted amber. */}
+            {onWordTap && line.words && line.words.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {line.words.map((word, wi) => {
+                  const familiarity = vocabulary?.get(word.iast) ?? 0;
+                  const isNew =
+                    familiarity < FAMILIARITY_THRESHOLDS.RECOGNIZED;
+                  return (
+                    <button
+                      key={wi}
+                      type="button"
+                      onClick={() => onWordTap(word)}
+                      title="Tap for meaning, dhātu, and grammar"
+                      className={`text-xs px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                        isNew && isActive
+                          ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
+                          : 'bg-gray-800/60 text-gray-400 hover:bg-gray-800 hover:text-amber-300'
+                      }`}
+                    >
+                      {word.devanagari}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Confidence chip — only shown for medium/low so the high path
                 stays visually clean. Clicking the title attr already shows the

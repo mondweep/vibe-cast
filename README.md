@@ -75,11 +75,14 @@ Learn Sanskrit through music. Paste a YouTube URL, watch the video, and follow a
 ├── nixpacks.toml                    # Nixpacks build config (Node 22 + yt-dlp + ffmpeg)
 ├── tsconfig.server.json             # Server TypeScript config
 ├── api/
+│   ├── lib/
+│   │   └── curatorAllowlist.ts      # getCuratorEmails() cached lookup + addCuratorEmail() auto-grant
 │   └── routes/
 │       ├── translate.ts             # Claude-powered translate + sandhi split + confidence-aware bulk
 │       ├── transcribe.ts            # Groq Whisper + confidence scoring + Sanskrit allowlist
-│       ├── songs.ts                 # /api/songs/verify and /unverify (honours curator words[])
+│       ├── songs.ts                 # /api/songs/verify and /unverify (honours curator words[]; clears pending review)
 │       ├── songRequests.ts          # /api/song-requests POST/GET/PATCH + Telegram notify
+│       ├── feedback.ts              # /api/feedback POST/GET/PATCH; auto-grants curator on accept
 │       └── consent.ts               # /api/consent + /api/profile/track
 ├── curator/                         # Hand-curated canonical JSON payloads for verifySong
 ├── supabase/
@@ -91,7 +94,9 @@ Learn Sanskrit through music. Paste a YouTube URL, watch the video, and follow a
 │   ├── pages/
 │   │   ├── LibraryPage.tsx          # Public grid of verified songs + curator pending-requests banner
 │   │   ├── PlayPage.tsx             # YouTube player + live translation (curator URL input only)
-│   │   ├── QueuePage.tsx            # Curator queue of pending song requests
+│   │   ├── QueuePage.tsx            # Curator queue (tabs: song requests + feedback/applications)
+│   │   ├── FeedbackPage.tsx         # Public: comments / suggestions / curator applications
+│   │   ├── CuratePage.tsx           # Public: explainer of what curation involves
 │   │   ├── RevisePage.tsx           # Flashcards, matching game, lazy library deck sync
 │   │   ├── ProgressPage.tsx         # Stats, vocabulary breakdown
 │   │   ├── AboutPage.tsx            # Architecture diagram + contribute invitation
@@ -103,7 +108,7 @@ Learn Sanskrit through music. Paste a YouTube URL, watch the video, and follow a
 │   │   │   └── services/            # supabaseAuth
 │   │   ├── library/
 │   │   │   ├── components/          # RequestSongForm (non-curator visitor form)
-│   │   │   └── services/            # songRequestsClient
+│   │   │   └── services/            # songRequestsClient, feedbackClient
 │   │   ├── player/                  # YouTube player, playback sync, URL input
 │   │   ├── translation/
 │   │   │   ├── components/          # LyricsPanel (verse text), EditableLyricsPanel, VerifyBar, TranslationPanel, WordPopup
@@ -188,6 +193,8 @@ Run the migration files in `supabase/migrations/` in order in the Supabase SQL e
 - `008` — consent + profile geo tracking + auto-profile trigger
 - `009`–`010` — nightly auto-curation queue + RLS reconcile
 - `011` — `song_requests` queue for visitor-submitted requests (anon INSERT, curator SELECT/UPDATE, dedup index)
+- `012` — `feedback` CRM (comments, suggestions, curator applications) with `is_public` opt-in
+- `013` — `curator_allowlist` table + `is_curator()` SECURITY DEFINER function + `am_i_curator()` RPC. **Rewrites RLS on all curator-gated tables to call `is_curator()` instead of hardcoded email literals.** Seeds the table with the two existing curator emails.
 
 For reference, here's the resulting schema (do not run this SQL directly — use the migrations):
 
@@ -307,6 +314,9 @@ The app will be available at `http://localhost:3000`.
 | POST   | `/api/song-requests`              | Public (anon or auth): submit a YouTube URL to the curator queue. Dedups + rate-limits + fires Telegram |
 | GET    | `/api/song-requests`              | Curator-only: list pending requests                                  |
 | PATCH  | `/api/song-requests/:id`          | Curator-only: mark as accepted / rejected / duplicate                |
+| POST   | `/api/feedback`                   | Public: submit a comment, suggestion, or curator application. Kind-aware Telegram notify |
+| GET    | `/api/feedback?kind=…`            | Curator-only: list feedback (optional kind/status filter)            |
+| PATCH  | `/api/feedback/:id`               | Curator-only: status + notes; status='accepted' on a curator_application auto-grants curator access |
 | POST   | `/api/consent`                    | Record consent click (visitor_id + optional user_id + IP)            |
 | POST   | `/api/profile/track`              | Auth: capture IP-derived geolocation onto the user's profile         |
 
@@ -446,13 +456,25 @@ The Play flow has two tiers:
 - **Whisper avg_logprob signal** — read from `verbose_json` and used to demote borderline segments. `< -1.0` demotes one tier; `< -1.5` demotes two.
 - **Deterministic Claude validator** — `temperature: 0`. Same audio → same scores across runs. Validator can only demote a tier, never inflate past the heuristic.
 - **Curator-supplied `words[]` honoured at verify time** — `verifySong` checks for a non-empty curator-provided word breakdown per line; if present, sandhi-split is skipped and the words are inserted verbatim. Preserves exact diacritic forms (`नभस्` not `नभो`), ordering, and meanings. For fully-curated payloads, verify takes 1–2s instead of ~12s (no Claude calls).
-- **`LyricsPanel` renders canonical verse text** — previously it concatenated `words[].devanagari` with spaces, which destroyed sandhi-joined verses (`जगज्जालपालं` rendered as `जगत् जाल पालं`) and reordered when Claude's split produced different ordering. Now renders `line.devanagari` verbatim. Word-by-word breakdown lives in `TranslationPanel`'s "WORD BY WORD" section where it belongs.
+- **`verifySong` clears `pending_curator_review`** — an explicit curator verify is the strongest possible signal of approval, so it now force-clears the auto-review flag. Fixes songs auto-added by the nightly task that stayed hidden from anonymous visitors even after being explicitly verified.
+- **`LyricsPanel` renders canonical verse text + adds clickable word chips below** — previously it concatenated `words[].devanagari` with spaces, which destroyed sandhi-joined verses (`जगज्जालपालं` rendered as `जगत् जाल पालं`). Now renders `line.devanagari` verbatim **and** shows a compact chip strip beneath each verse — tap any chip to open the WordPopup with full meaning, dhātu, and grammar. Unfamiliar words on the active line are highlighted amber.
 - **Migration 011** (`supabase/migrations/011_song_requests.sql`) — `song_requests` table with anon-INSERT / curator-SELECT-UPDATE RLS + unique-pending-per-video partial index for DB-level dedup.
-- **`/api/song-requests` endpoint** — public POST validates YouTube URL, dedups against verified library + pending queue, rate-limits anon to 1/24h per `visitor_id`, sends a Telegram message to the curator. Curator-only GET + PATCH for the queue page.
-- **`/queue` page** — curator-only listing of pending requests with "Take this" (→ `/play?v=…`) and "Reject" (with optional reason) actions. Verifying a song auto-clears any matching pending request.
+- **`/api/song-requests` endpoint** — public POST validates YouTube URL, dedups against verified library + pending queue, rate-limits anon to 1/24h per `visitor_id`, sends a Telegram message to the curator. Curator-only GET + PATCH for the queue page. Tolerant of scheme-less URLs (`www.youtube.com/...`, `youtu.be/abc`, raw 11-char IDs).
+- **`/queue` page** — curator-only listing of pending requests with "Take this" (→ `/play?v=…`) and "Reject" (with optional reason) actions. Verifying a song auto-clears any matching pending request. **Two tabs:** Song requests + Feedback & applications.
 - **PlayPage curator-gating** — non-curators (anon or signed-in) no longer see the URL input or trigger live transcription. They see a `RequestSongForm` instead. `useTranslation`'s new `allowLiveTranscription` parameter (default false) prevents accidental Whisper triggers on stray `?v=` URLs — surfaces a friendly "not in library yet — request it?" CTA instead.
 - **Layout Queue tab + LibraryPage banner** — curator-only Queue tab in bottom nav, pending-requests banner on Library page linking to /queue.
+- **Migration 012** (`supabase/migrations/012_feedback.sql`) — `feedback` CRM table covering three kinds: `comment`, `suggestion`, `curator_application`. Anon INSERT + curator SELECT/UPDATE + service-role bypass. Includes `is_public` flag for opt-in public display (groundwork for a future public feedback wall).
+- **`/api/feedback` endpoints** — public POST (anon allowed; curator applications require name + email manually), curator-only GET + PATCH. Rate-limit 3/24h per visitor. Kind-aware Telegram notifications (💬 / 💡 / 🌟).
+- **`/feedback` page** — three-way form (comment / suggestion / curator application) with conditional curator-app fields (background, traditions, weekly hours, motivation). "Make public" opt-in for comments and suggestions.
+- **`/curate` page** — explainer covering what curation involves (skills, time commitment per song, quality standards, process). Linked from feedback form and About page.
+- **Footer link on every page** — "Feedback / become a curator →".
+- **Migration 013** (`supabase/migrations/013_curator_allowlist.sql`) — curator allowlist moved from hardcoded sets into a Supabase table. `is_curator()` SECURITY DEFINER function + `am_i_curator()` RPC for frontend gating. Seeded with the two existing curator emails. RLS on all curator-gated tables (songs, song_requests, feedback, pending_candidates) rewritten to use `is_curator()` instead of hardcoded literals.
+- **Auto-grant on application accept** — PATCH `/api/feedback` with `status='accepted'` on a curator_application row now auto-inserts the applicant's email into `curator_allowlist` (using `SUPABASE_SERVICE_ROLE_KEY`) and fires a confirmation Telegram. No more editing code to grant curator access.
+- **Backend allowlist cache** — `api/lib/curatorAllowlist.ts` provides `getCuratorEmails()` (5-min in-process cache) and `invalidateCuratorCache()`, replacing the hardcoded sets in `songs.ts` / `songRequests.ts` / `feedback.ts`.
+- **Frontend `useCurator` reads from AuthContext** — AuthProvider calls `supabase.rpc('am_i_curator')` on user change; `useCurator` reads the boolean. UI gating stays in sync with the live allowlist.
 - **Hari Stotram added to library** — `cToCInaGzCw` (full 8-verse Shri Hari Stotram by Swami Brahmananda + opening *Oṃ namo nārāyaṇāya* + closing phalashruti). 10 lines, 182 curated word breakdowns from Stotra Ratnavali canonical source. Payload kept at `curator/hari-stotram-cToCInaGzCw.json` for re-verify.
+- **Agni Sūktam added to library** — `mIVv3hsrhfM` (contemporary setting of Rigveda 1.1.1-3, 1.1.9, 1.189.1 / Īśā Up. 18, 2.23.1, and ritual *agnaye svāhā* offerings). 11 lines, 93 curated words. Payload at `curator/agni-suktam-mIVv3hsrhfM.json`.
+- **Māṇḍūkya Upaniṣad added to library** — `hLl60MetHC0` (contemporary setting of Māṇḍūkya 1, 2, 6, 7, 12 — the OM + four states + turīya teaching). 9 lines, 61 curated words including foundational Advaita vocabulary (`mahāvākya`, `turīya`, `kaivalya`, `advaita`, etc.). Payload at `curator/mandukya-upanishad-hLl60MetHC0.json`.
 
 ### Remaining / known issues
 
@@ -463,8 +485,10 @@ The Play flow has two tiers:
 - **No `revision_sessions` writes yet** — the table exists but `/revise` doesn't currently log sessions. Progress page shows real-time numbers from `user_vocabulary` directly.
 - **Three optional UI follow-ups** — search/filter on `/library`, category tags on songs (stotras vs. mantras vs. bhajans), and a "Word browser" page that lists all library words with their source songs.
 - **Cleanup of legacy songs RLS policies** — five overlapping policies are stacked from the migration history (snake_case curator + space-named auth policies). Functional but noisy; a future migration should reconcile.
-- **No notification back to song requesters** — the curator gets a Telegram message when a request comes in, but the requester isn't notified when their request is accepted or rejected. Anon requesters have no email; signed-in requesters could be emailed but the wiring isn't there yet. Worth adding once request volume justifies it.
+- **No notification back to song requesters** — the curator gets a Telegram message when a request comes in, but the requester isn't notified when their request is accepted or rejected. Anon requesters have no email; signed-in requesters could be emailed but the wiring isn't there yet. Worth adding once request volume justifies it. (Curator-application acceptance _does_ fire a Telegram to the curator now via migration 013's auto-grant flow.)
 - **No CAPTCHA on the request form** — currently relies on the 1/24h-per-`visitor_id` rate limit. Move to CAPTCHA / sign-in-required if spam appears.
+- **No public feedback wall yet** — migration 012 provides the `is_public` flag + a public-read RLS policy, but no page renders the publicly-marked items. A ~30-min add when you want it; the schema is ready.
+- **No UI for manual curator allowlist management** — accepting a curator_application via `/queue` is the automated path. To add or remove a curator outside that flow you currently insert/delete directly in Supabase. A small admin page is a nice follow-up.
 
 ### Known limitations of the live transcription path
 

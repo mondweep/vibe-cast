@@ -10,6 +10,8 @@ import { LibraryPage } from './pages/LibraryPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { AboutPage } from './pages/AboutPage'
 import { QueuePage } from './pages/QueuePage'
+import { FeedbackPage } from './pages/FeedbackPage'
+import { CuratePage } from './pages/CuratePage'
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
         <Route path="/play" element={<PlayPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
+        <Route path="/curate" element={<CuratePage />} />
       </Route>
 
       {/* Personal SRS pages still require sign-in. /queue also lives here —

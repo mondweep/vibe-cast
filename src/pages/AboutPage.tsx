@@ -101,6 +101,22 @@ export function AboutPage() {
       <section className="space-y-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-5">
         <h2 className="text-xl font-semibold text-amber-300">Contribute</h2>
         <p className="text-sm leading-relaxed">
+          <Link
+            to="/feedback"
+            className="text-amber-300 underline decoration-amber-500/50 hover:text-amber-200"
+          >
+            Send a comment or suggestion
+          </Link>
+          , or read{' '}
+          <Link
+            to="/curate"
+            className="text-amber-300 underline decoration-amber-500/50 hover:text-amber-200"
+          >
+            what curation involves
+          </Link>{' '}
+          and apply to help expand the verified library.
+        </p>
+        <p className="text-sm leading-relaxed">
           This is an open, evolving project. Help is genuinely welcome —
           whether that's verifying songs you know well, suggesting features,
           fixing bugs, improving translations, or porting the verified-library

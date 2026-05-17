@@ -22,6 +22,11 @@ import {
   listPendingRequests,
   updateRequestStatus,
 } from './api/routes/songRequests.js'
+import {
+  submitFeedback,
+  listFeedback,
+  updateFeedback,
+} from './api/routes/feedback.js'
 
 const execPromise = promisify(exec)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -391,6 +396,52 @@ app.patch('/api/song-requests/:id', async (req, res) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Failed to update request'
     const code = msg.includes('Only the curator') ? 403 : 500
+    res.status(code).json({ error: msg })
+  }
+})
+
+// --- Feedback CRM ---
+// Public POST (anon allowed for all kinds, including curator applications
+// per design D2; the form validates name + email manually). Curator-only
+// GET + PATCH for the queue page.
+
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const result = await submitFeedback(getJwt(req), req.body || {})
+    if (result.status === 'invalid') return res.status(400).json(result)
+    if (result.status === 'rate-limited') return res.status(429).json(result)
+    res.status(201).json(result)
+  } catch (err) {
+    console.error('Feedback submission error:', err)
+    res.status(500).json({ error: 'Failed to submit feedback' })
+  }
+})
+
+app.get('/api/feedback', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await listFeedback(jwt, {
+      kind: typeof req.query.kind === 'string' ? req.query.kind : undefined,
+      status: typeof req.query.status === 'string' ? req.query.status : undefined,
+    })
+    res.json(result)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Failed to list feedback'
+    const code = msg.includes('Only the curator') ? 403 : 500
+    res.status(code).json({ error: msg })
+  }
+})
+
+app.patch('/api/feedback/:id', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await updateFeedback(jwt, req.params.id, req.body || {})
+    res.json(result)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Failed to update feedback'
+    const code = msg.includes('Only the curator') ? 403 : 400
     res.status(code).json({ error: msg })
   }
 })

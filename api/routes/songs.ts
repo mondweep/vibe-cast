@@ -14,14 +14,10 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { splitSanskrit } from './translate.js'
+import { isCuratorEmail } from '../lib/curatorAllowlist.js'
 
 const SUPABASE_URL  = process.env.VITE_SUPABASE_URL  || process.env.SUPABASE_URL  || ''
 const SUPABASE_ANON = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || ''
-
-const CURATOR_EMAILS = new Set([
-  'mondweep@gmail.com',
-  'mondweep@dxsure.uk',
-])
 
 export interface CuratorWord {
   devanagari?: string
@@ -72,7 +68,7 @@ async function authenticateCurator(jwt: string): Promise<{ userId: string; email
   const { data, error } = await sb.auth.getUser(jwt)
   if (error || !data.user) throw new Error('Invalid auth token')
   const email = (data.user.email || '').toLowerCase()
-  if (!CURATOR_EMAILS.has(email)) {
+  if (!(await isCuratorEmail(email))) {
     throw new Error(`Account ${email} is not authorised to verify songs`)
   }
   return { userId: data.user.id, email }
@@ -121,6 +117,11 @@ export async function verifySong(
   const meta = await fetchYouTubeMetadata(body.videoId)
 
   // Upsert the song row.
+  //
+  // pending_curator_review is force-cleared here: an explicit curator verify
+  // IS the approval that the 24-hour auto-review window was waiting for.
+  // Without this, songs auto-added by the nightly task remain hidden from
+  // the public even after the curator explicitly verifies them.
   const youtubeUrl = `https://www.youtube.com/watch?v=${body.videoId}`
   const { data: songRow, error: songErr } = await sb
     .from('songs')
@@ -132,6 +133,7 @@ export async function verifySong(
         transcription_language: body.language || null,
         lyrics_json: body.lines,
         verified: true,
+        pending_curator_review: false,
         verified_at: new Date().toISOString(),
         verified_by: userId,
       },

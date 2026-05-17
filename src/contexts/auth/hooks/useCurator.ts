@@ -1,24 +1,22 @@
 import { useAuth } from './useAuth';
 
-// Must stay in sync with:
-//   - api/routes/songs.ts → CURATOR_EMAILS
-//   - api/routes/songRequests.ts → CURATOR_EMAILS
-//   - supabase/migrations/011_song_requests.sql → RLS policy literals
-//
-// The server (RLS + endpoint checks) is the source of truth for authorisation.
-// This hook is only for client-side UI gating (showing/hiding the URL input,
-// the Queue tab, the curator banner). Even if a malicious user spoofed it,
-// the server would still reject any curator-only API call.
-export const CURATOR_EMAILS = new Set<string>([
-  'mondweep@gmail.com',
-  'mondweep@dxsure.uk',
-]);
-
+/**
+ * Returns whether the signed-in user is a curator.
+ *
+ * The actual authority lives server-side (RLS on `curator_allowlist` and
+ * the `is_curator()` SECURITY DEFINER function in migration 013). This hook
+ * just reads the boolean that AuthContext fetches via the `am_i_curator`
+ * RPC after sign-in, so UI components can synchronously gate rendering.
+ *
+ * `isCurator` is `false` for signed-out users and during the brief window
+ * after sign-in before the RPC returns. `AuthContext.isCurator` is `null`
+ * during that window for components that want to render a "checking…" state.
+ */
 export function useCurator(): { isCurator: boolean; email: string | null } {
-  const { user } = useAuth();
+  const { user, isCurator } = useAuth();
   const email = (user?.email || '').toLowerCase();
   return {
-    isCurator: !!email && CURATOR_EMAILS.has(email),
+    isCurator: isCurator === true,
     email: email || null,
   };
 }

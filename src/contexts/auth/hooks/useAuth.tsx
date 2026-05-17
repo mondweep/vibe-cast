@@ -7,6 +7,13 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  /**
+   * Whether the signed-in user is a curator. Fetched from Supabase via the
+   * `am_i_curator` RPC after sign-in. Null while the fetch is in flight, so
+   * UI can show a non-curator default until the answer arrives. False for
+   * signed-out users.
+   */
+  isCurator: boolean | null;
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -19,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isCurator, setIsCurator] = useState<boolean | null>(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -48,6 +56,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Whenever the user changes, ask Supabase whether they're a curator.
+  // Uses the SECURITY DEFINER RPC `am_i_curator` (introduced in
+  // migration 013) so we don't have to read the full allowlist table.
+  // Falls back to false if the RPC errors (older databases without the
+  // function or RLS misconfiguration).
+  useEffect(() => {
+    if (!user) {
+      setIsCurator(false);
+      return;
+    }
+    let cancelled = false;
+    setIsCurator(null); // "in flight"
+    (async () => {
+      try {
+        const { data, error } = await supabase.rpc('am_i_curator');
+        if (cancelled) return;
+        if (error) {
+          console.warn('[auth] am_i_curator RPC failed:', error.message);
+          setIsCurator(false);
+        } else {
+          setIsCurator(Boolean(data));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.warn('[auth] am_i_curator threw:', err);
+          setIsCurator(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
   const signUp = async (email: string, password: string) => {
     await authService.signUpWithEmail(email, password);
   };
@@ -65,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isCurator, signUp, signIn, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );

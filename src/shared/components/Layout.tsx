@@ -1,5 +1,5 @@
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { Play, BookOpen, BarChart3, LogOut, Library, Github, Linkedin, Heart, Info, Inbox } from 'lucide-react';
+import { Play, BookOpen, BarChart3, LogOut, Library, Github, Linkedin, Heart, Info, Inbox, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/hooks/useAuth';
 import { useCurator } from '../../contexts/auth/hooks/useCurator';
 import { ConsentBanner } from './ConsentBanner';
@@ -148,6 +148,13 @@ export function Layout() {
         >
           <Heart size={11} /> Support this work
         </a>
+        <span className="mx-2 text-gray-700">·</span>
+        <Link
+          to="/feedback"
+          className="inline-flex items-center gap-1 text-amber-500/80 transition-colors hover:text-amber-400"
+        >
+          <MessageSquare size={11} /> Feedback / become a curator
+        </Link>
         <span className="mx-2 text-gray-700">·</span>
         <Link to="/privacy" className="text-gray-500 transition-colors hover:text-gray-300">
           Privacy

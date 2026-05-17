@@ -11,15 +11,12 @@
 // notification is fire-and-forget; failure never blocks the user's response.
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { isCuratorEmail } from '../lib/curatorAllowlist.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || ''
 const SUPABASE_ANON =
   process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || ''
 const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-
-// Same allowlist as verifySong. The DB RLS enforces this server-side; the
-// allowlist here is for early-exit / better error messages.
-const CURATOR_EMAILS = new Set(['mondweep@gmail.com', 'mondweep@dxsure.uk'])
 
 // Anon rate limit: 1 request per visitor_id per 24h. Signed-in callers skip.
 const ANON_RATE_LIMIT_WINDOW_HOURS = 24
@@ -291,7 +288,7 @@ export async function listPendingRequests(
   const sbAuth = clientForJwt(jwt)
   const { data: u } = await sbAuth.auth.getUser(jwt)
   const email = (u?.user?.email || '').toLowerCase()
-  if (!CURATOR_EMAILS.has(email)) {
+  if (!(await isCuratorEmail(email))) {
     throw new Error('Only the curator can read the song-request queue')
   }
   const sb = serviceClient() ?? sbAuth
@@ -318,7 +315,7 @@ export async function updateRequestStatus(
   const sbAuth = clientForJwt(jwt)
   const { data: u } = await sbAuth.auth.getUser(jwt)
   const email = (u?.user?.email || '').toLowerCase()
-  if (!CURATOR_EMAILS.has(email)) {
+  if (!(await isCuratorEmail(email))) {
     throw new Error('Only the curator can update song requests')
   }
   const userId = u?.user?.id || null
