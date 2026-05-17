@@ -100,15 +100,23 @@ export function useTranslation(videoId: string | null, currentTime: number) {
       setState({ ...initialState, loading: true });
 
       try {
-        // 1. Check the verified library first. Public read; no auth needed.
+        // 1. Check the library for a row. We do NOT filter by verified=true
+        //    client-side because we want curators to see auto-added drafts
+        //    (verified=false rows the nightly task wrote) so they can
+        //    review + click Verify & Save. RLS already enforces that
+        //    anonymous + non-curator visitors only see fully-public rows
+        //    (verified=true AND pending_curator_review=false), so this is
+        //    safe to leave unfiltered here — the database will return
+        //    nothing to non-curators for unverified rows.
         const { data: verifiedRaw } = await (supabase
           .from('songs')
-          .select('id, lyrics_json, title, transcription_language')
+          .select('id, lyrics_json, title, transcription_language, verified, pending_curator_review')
           .in('youtube_url', urlVariants(videoId!))
-          .eq('verified', true)
           .maybeSingle() as any);
         const verified = verifiedRaw as
-          | { id: string; lyrics_json: LyricsLine[]; title?: string; transcription_language?: string }
+          | { id: string; lyrics_json: LyricsLine[]; title?: string;
+              transcription_language?: string; verified: boolean;
+              pending_curator_review?: boolean }
           | null;
 
         if (cancelled) return;
@@ -116,12 +124,14 @@ export function useTranslation(videoId: string | null, currentTime: number) {
         if (verified?.lyrics_json) {
           // Hydrate per-line words[] from the canonical song_words ↔ words
           // join so LyricsPanel can render clickable spans + word popups.
-          // verify_song writes the line-level metadata but not per-line word
-          // arrays; we reconstruct them here from the song_words link table.
           const hydrated = await hydrateLineWords(verified.id, verified.lyrics_json);
           if (cancelled) return;
           setLines(hydrated, {
-            isVerified: true,
+            // isVerified reflects the public-ready state, not just "has a row".
+            // Auto-added drafts (verified=false, OR verified=true with
+            // pending_curator_review=true) show as not-yet-verified so the
+            // VerifyBar shows the right CTA ("Verify & Save", not "Save changes").
+            isVerified: verified.verified === true && verified.pending_curator_review !== true,
             songId: verified.id,
             transcriptionLanguage: verified.transcription_language ?? null,
           });
