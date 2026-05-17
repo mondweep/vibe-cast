@@ -80,10 +80,18 @@ export function RequestSongForm() {
             <label className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
               YouTube URL
             </label>
+            {/* type="text", not "url" — browser HTML5 url-validation rejects
+                "www.youtube.com/..." (no scheme) and "youtu.be/abc123" (also
+                no scheme), which is how most people paste URLs from the
+                address bar. The server's extractVideoId accepts both forms
+                plus raw 11-char videoIds. */}
             <input
-              type="url"
+              type="text"
               required
-              placeholder="https://www.youtube.com/watch?v=..."
+              inputMode="url"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="youtube.com/watch?v=... or youtu.be/... or just the 11-character video ID"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className="w-full rounded-md border border-gray-700 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:border-amber-500 focus:outline-none"

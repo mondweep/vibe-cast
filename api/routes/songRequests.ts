@@ -42,6 +42,14 @@ function serviceClient(): SupabaseClient | null {
 /**
  * Parse a YouTube URL or raw 11-char videoId.
  * Returns null if we can't extract a videoId.
+ *
+ * Tolerant of how people actually paste URLs:
+ *   - Raw 11-char videoId:           "dQw4w9WgXcQ"
+ *   - Full URL with scheme:          "https://www.youtube.com/watch?v=..."
+ *   - Scheme-less ('www.' or bare):  "www.youtube.com/watch?v=..."
+ *   - Short form:                    "youtu.be/dQw4w9WgXcQ" (with or without scheme)
+ *   - Embed / shorts / v / live:     "/embed/<id>", "/shorts/<id>", "/v/<id>", "/live/<id>"
+ *   - Mobile + music:                "m.youtube.com", "music.youtube.com"
  */
 function extractVideoId(input: string): string | null {
   const trimmed = (input || '').trim()
@@ -50,9 +58,12 @@ function extractVideoId(input: string): string | null {
   // Raw 11-char videoId
   if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) return trimmed
 
-  // URL form (canonical, short, embed, music.youtube.com)
+  // new URL() throws without a scheme — prepend https:// if missing.
+  // We tolerate bare hostnames like "youtu.be/..." and "www.youtube.com/...".
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+
   try {
-    const u = new URL(trimmed)
+    const u = new URL(withScheme)
     if (u.hostname.includes('youtu.be')) {
       const id = u.pathname.replace(/^\//, '').split('/')[0]
       return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null
@@ -60,12 +71,12 @@ function extractVideoId(input: string): string | null {
     if (u.hostname.includes('youtube.com')) {
       const v = u.searchParams.get('v')
       if (v && /^[A-Za-z0-9_-]{11}$/.test(v)) return v
-      // /embed/<id>, /shorts/<id>, /v/<id>
-      const m = u.pathname.match(/\/(?:embed|shorts|v)\/([A-Za-z0-9_-]{11})/)
+      // /embed/<id>, /shorts/<id>, /v/<id>, /live/<id>
+      const m = u.pathname.match(/\/(?:embed|shorts|v|live)\/([A-Za-z0-9_-]{11})/)
       if (m) return m[1]
     }
   } catch {
-    // not a URL
+    // not a URL — fall through
   }
   return null
 }
