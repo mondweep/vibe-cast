@@ -294,9 +294,10 @@ The Google OAuth button on the sign-in page comes from Supabase Auth. To make it
 
 ## Public access without sign-in
 
-Three routes are open to anonymous visitors (no account needed):
+Four routes are open to anonymous visitors (no account needed):
 - `/library` — browse all verified songs
 - `/play` (read-only) — load any verified song, watch the video, see lyrics scroll, tap words to view their canonical meaning. Vocabulary tracking is skipped (the visitor has no user_id to attach progress to).
+- `/about` — visual architecture diagram, plain-language explanation of how songs reach the library, contribution invitation, credits
 - `/privacy` — privacy notice
 
 These are gated to signed-in users only:
