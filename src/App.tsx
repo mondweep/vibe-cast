@@ -12,6 +12,7 @@ import { AboutPage } from './pages/AboutPage'
 import { QueuePage } from './pages/QueuePage'
 import { FeedbackPage } from './pages/FeedbackPage'
 import { CuratePage } from './pages/CuratePage'
+import { GraphPage } from './pages/GraphPage'
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/curate" element={<CuratePage />} />
+        <Route path="/graph" element={<GraphPage />} />
       </Route>
 
       {/* Personal SRS pages still require sign-in. /queue also lives here —

@@ -27,6 +27,11 @@ import {
   listFeedback,
   updateFeedback,
 } from './api/routes/feedback.js'
+import {
+  listConcepts,
+  getConcept,
+  getSongConcepts,
+} from './api/routes/concepts.js'
 
 const execPromise = promisify(exec)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -492,6 +497,38 @@ app.patch('/api/feedback/:id', async (req, res) => {
     const msg = err instanceof Error ? err.message : 'Failed to update feedback'
     const code = msg.includes('Only the curator') ? 403 : 400
     res.status(code).json({ error: msg })
+  }
+})
+
+// --- Concept layer ---
+// All public read; no auth required. Data comes from the verified library.
+
+app.get('/api/concepts', async (_req, res) => {
+  try {
+    const result = await listConcepts()
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to list concepts' })
+  }
+})
+
+app.get('/api/concepts/:slug', async (req, res) => {
+  try {
+    const result = await getConcept(req.params.slug)
+    res.json(result)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Failed to load concept'
+    const code = msg.includes('not found') ? 404 : 500
+    res.status(code).json({ error: msg })
+  }
+})
+
+app.get('/api/songs/:videoId/concepts', async (req, res) => {
+  try {
+    const result = await getSongConcepts(req.params.videoId)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to load song concepts' })
   }
 })
 

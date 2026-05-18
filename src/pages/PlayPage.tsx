@@ -14,6 +14,7 @@ import { useVocabulary } from '../contexts/learning/hooks/useVocabulary'
 import { useAuth } from '../contexts/auth/hooks/useAuth'
 import { useCurator } from '../contexts/auth/hooks/useCurator'
 import { RequestSongForm } from '../contexts/library/components/RequestSongForm'
+import { ConceptSidePanel } from '../shared/components/ConceptSidePanel'
 import type { TranslationMode } from '../shared/types/database.types'
 
 export function PlayPage() {
@@ -93,6 +94,8 @@ export function PlayPage() {
       )}
 
       {videoId && (isCurator || translation.error !== 'not-in-library') && (
+        <div className="space-y-4">
+          <ConceptSidePanel videoId={videoId} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-4">
             <YouTubePlayer
@@ -176,6 +179,7 @@ export function PlayPage() {
               explanation={translation.currentExplanation}
             />
           </div>
+        </div>
         </div>
       )}
 
