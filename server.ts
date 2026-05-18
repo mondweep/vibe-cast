@@ -286,10 +286,46 @@ app.post('/api/transcribe', async (req, res) => {
     const ytDlpCmd = `yt-dlp ${cookiesArg} --user-agent "${userAgent}" --referer "https://www.google.com/" --extractor-args "youtube:player-client=${playerClient}" -f 18 -x --audio-format mp3 --max-filesize 25M -o "${tempFile}" "https://www.youtube.com/watch?v=${actualVideoId}"`
 
     console.log(`Executing yt-dlp for ${actualVideoId}...`)
-    await execPromise(ytDlpCmd)
+    let ytStdout = ''
+    let ytStderr = ''
+    try {
+      const result = await execPromise(ytDlpCmd)
+      ytStdout = result.stdout || ''
+      ytStderr = result.stderr || ''
+    } catch (execErr: any) {
+      // exec rejected — log everything before re-throwing for the outer catch.
+      ytStdout = execErr?.stdout || ''
+      ytStderr = execErr?.stderr || ''
+      console.error(`yt-dlp failed for ${actualVideoId} (exit ${execErr?.code}):`)
+      if (ytStdout.trim()) console.error('  stdout:', ytStdout.trim().split('\n').slice(-10).join('\n  '))
+      if (ytStderr.trim()) console.error('  stderr:', ytStderr.trim().split('\n').slice(-10).join('\n  '))
+      throw execErr
+    }
 
     if (!fs.existsSync(tempFile)) {
-      throw new Error('Audio extraction failed: File not found')
+      // yt-dlp exited 0 but produced no file. The two common silent-success
+      // cases are: --max-filesize aborted the download (warning, exit 0),
+      // and "Requested format is not available" (info, exit 0). Dump
+      // yt-dlp's own output so we have a real diagnostic instead of
+      // "File not found".
+      console.error(`yt-dlp exit=0 but no file at ${tempFile}.`)
+      if (ytStdout.trim()) {
+        console.error('  stdout (last 10 lines):')
+        console.error('  ' + ytStdout.trim().split('\n').slice(-10).join('\n  '))
+      }
+      if (ytStderr.trim()) {
+        console.error('  stderr (last 10 lines):')
+        console.error('  ' + ytStderr.trim().split('\n').slice(-10).join('\n  '))
+      }
+      const hint =
+        /max[-_ ]?filesize/i.test(ytStderr + ytStdout)
+          ? ' (audio file exceeds --max-filesize 25M — try a shorter video or raise the cap)'
+          : /sign in|bot|cookies/i.test(ytStderr + ytStdout)
+            ? ' (YouTube wants sign-in; set YOUTUBE_COOKIES even on local dev for this video)'
+            : /Requested format is not available/i.test(ytStderr + ytStdout)
+              ? ' (format 18 unavailable for this video — likely needs a different player-client)'
+              : ''
+      throw new Error(`Audio extraction failed: file not produced${hint}`)
     }
 
     const audioBuffer = fs.readFileSync(tempFile)
