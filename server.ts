@@ -80,11 +80,24 @@ app.get('/api/youtube/captions/:videoId', async (req, res) => {
     const { videoId } = req.params
     console.log(`Attempting caption fetch for ${videoId}...`)
     
+    // YouTube's timedtext endpoint returns HTTP 200 with an *empty body* for
+    // videos that don't have auto-captions in the requested language — which
+    // is the common case for Sanskrit. Calling .json() on that empty body
+    // throws SyntaxError. We treat any non-JSON / non-events response as
+    // "no captions" and let the caller fall through to yt-dlp + Whisper.
     const fetchWithLang = async (lang: string) => {
-      const response = await fetch(`https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`)
-      if (response.ok) {
-        const data = await response.json()
+      try {
+        const response = await fetch(
+          `https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`
+        )
+        if (!response.ok) return null
+        const text = await response.text()
+        if (!text.trim()) return null // empty body = no captions in this language
+        const data = JSON.parse(text)
         if (data && data.events) return data
+      } catch {
+        // Empty body, malformed JSON, network blip — treat as "no captions".
+        // Not noteworthy on its own; the caller falls back to Whisper.
       }
       return null
     }
