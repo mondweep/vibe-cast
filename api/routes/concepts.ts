@@ -43,27 +43,29 @@ export type WordRow = {
 
 export async function listConcepts(): Promise<{ concepts: ConceptRow[] }> {
   const sb = publicClient()
-  // Pull concepts + a word-count via a left-join aggregate.
+  // Concepts + word-count via PostgREST's embedded aggregate.
+  // Previously we pulled every word_concepts row and counted client-side, but
+  // PostgREST caps responses at 1000 rows by default — with >1000 mapping
+  // rows, most concepts came back with 0. The {count} embed runs server-side.
   const { data: concepts, error: cErr } = await sb
     .from('concepts')
-    .select('id, slug, label, summary, color, display_order')
+    .select(
+      'id, slug, label, summary, color, display_order, word_concepts(count)',
+    )
     .order('display_order', { ascending: true })
     .order('label', { ascending: true })
   if (cErr) throw new Error(`list concepts: ${cErr.message}`)
 
-  // Word counts in one query
-  const { data: wcRows, error: wcErr } = await sb
-    .from('word_concepts')
-    .select('concept_id')
-  if (wcErr) throw new Error(`count word_concepts: ${wcErr.message}`)
-  const counts = new Map<string, number>()
-  for (const r of wcRows || []) {
-    counts.set(r.concept_id, (counts.get(r.concept_id) || 0) + 1)
-  }
-  const withCounts: ConceptRow[] = (concepts || []).map((c) => ({
-    ...c,
-    word_count: counts.get(c.id) || 0,
-  }))
+  const withCounts: ConceptRow[] = (concepts || []).map((c: any) => {
+    const wc = c.word_concepts
+    // Embed-count comes back as [{count: N}] in newer PostgREST builds.
+    const count =
+      Array.isArray(wc) && wc.length > 0 && typeof wc[0]?.count === 'number'
+        ? (wc[0].count as number)
+        : 0
+    const { word_concepts: _omit, ...rest } = c
+    return { ...(rest as ConceptRow), word_count: count }
+  })
   return { concepts: withCounts }
 }
 

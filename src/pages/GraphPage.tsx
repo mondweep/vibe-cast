@@ -1,315 +1,162 @@
 /**
- * /graph — the concept knowledge graph.
+ * /graph — the concept browser.
  *
- * Default view shows ~20-30 concept nodes laid out radially. Click a concept
- * to expand: its member words bloom around it. Click again to collapse.
+ * Two-pane layout: concepts list on the left, word cards on the right.
+ * Replaces the earlier React-Flow radial graph, which was unreadable
+ * once more than one bucket was open (nodes overlapped and labels
+ * stacked on top of each other).
  *
- * Data comes from /api/concepts (one trip on mount) and /api/concepts/:slug
- * (lazy, per click-to-expand).
+ * Data:
+ *   GET /api/concepts          — one trip on mount, populates left list
+ *   GET /api/concepts/:slug    — lazy per selection, populates right pane
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ReactFlow,
-  ReactFlowProvider,
-  Background,
-  Controls,
-  MiniMap,
-  Handle,
-  Position,
-  type Node,
-  type Edge,
-  type NodeProps,
-  type NodeMouseHandler,
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
-import { Search, Sparkles, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Search, Sparkles, X } from 'lucide-react'
 
 type ConceptRow = {
-  id: string;
-  slug: string;
-  label: string;
-  summary: string | null;
-  color: string | null;
-  display_order: number;
-  word_count: number;
-};
+  id: string
+  slug: string
+  label: string
+  summary: string | null
+  color: string | null
+  display_order: number
+  word_count: number
+}
 
 type WordRow = {
-  id: string;
-  devanagari: string;
-  iast: string;
-  meaning_short: string;
-  meaning_full?: string | null;
-};
-
-type ExpandedData = { concept: ConceptRow; words: WordRow[] };
-
-// ---------------------------------------------------------------------------
-// Custom node components
-// ---------------------------------------------------------------------------
-
-type ConceptNodeData = {
-  concept: ConceptRow;
-  expanded: boolean;
-  filtered: boolean;
-  onClick: (slug: string) => void;
-};
-
-function ConceptNode({ data }: NodeProps<Node<ConceptNodeData>>) {
-  const { concept, expanded, filtered, onClick } = data;
-  const bg = concept.color || '#5B7FFF';
-  return (
-    <div
-      onClick={() => onClick(concept.slug)}
-      className={`px-3 py-2 rounded-xl border cursor-pointer text-center transition-all ${
-        filtered ? 'opacity-30' : 'opacity-100'
-      } ${expanded ? 'ring-2 ring-amber-300 shadow-lg' : 'hover:ring-2 hover:ring-white/40'}`}
-      style={{
-        backgroundColor: bg + '20',
-        borderColor: bg,
-        color: bg,
-        minWidth: 120,
-        maxWidth: 180,
-      }}
-      title={concept.summary || undefined}
-    >
-      <Handle type="source" position={Position.Top} style={{ opacity: 0 }} />
-      <Handle type="target" position={Position.Bottom} style={{ opacity: 0 }} />
-      <div className="font-semibold text-sm leading-tight">{concept.label}</div>
-      <div className="text-[10px] mt-0.5 opacity-75">{concept.word_count} words</div>
-    </div>
-  );
+  id: string
+  devanagari: string
+  iast: string
+  meaning_short: string
+  meaning_full?: string | null
 }
 
-type WordNodeData = { word: WordRow; parentColor: string };
+type ConceptDetail = { concept: ConceptRow; words: WordRow[] }
 
-function WordNode({ data }: NodeProps<Node<WordNodeData>>) {
-  return (
-    <div
-      className="px-2 py-1 rounded-md border text-center text-xs"
-      style={{
-        backgroundColor: '#1f2937',
-        borderColor: data.parentColor + '80',
-        color: '#e5e7eb',
-        minWidth: 70,
-        maxWidth: 130,
-      }}
-      title={data.word.meaning_short}
-    >
-      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
-      <div className="font-medium leading-tight">{data.word.iast}</div>
-      <div className="text-[9px] mt-0.5 opacity-60 line-clamp-2">
-        {data.word.meaning_short}
-      </div>
-    </div>
-  );
-}
+export function GraphPage() {
+  const [concepts, setConcepts] = useState<ConceptRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
+  const [detail, setDetail] = useState<ConceptDetail | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [conceptFilter, setConceptFilter] = useState('')
+  const [wordFilter, setWordFilter] = useState('')
 
-const nodeTypes = { concept: ConceptNode, word: WordNode };
-
-// ---------------------------------------------------------------------------
-// Layout helpers
-// ---------------------------------------------------------------------------
-
-const CENTER_X = 0;
-const CENTER_Y = 0;
-const CONCEPT_RADIUS = 360;
-const WORD_RADIUS = 130;
-
-function layoutConcepts(concepts: ConceptRow[]): Map<string, { x: number; y: number }> {
-  const positions = new Map<string, { x: number; y: number }>();
-  const n = concepts.length;
-  if (n === 0) return positions;
-  // Spread concepts on a ring around centre.
-  for (let i = 0; i < n; i++) {
-    const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
-    positions.set(concepts[i].slug, {
-      x: CENTER_X + CONCEPT_RADIUS * Math.cos(angle),
-      y: CENTER_Y + CONCEPT_RADIUS * Math.sin(angle),
-    });
-  }
-  return positions;
-}
-
-function layoutWordsAround(
-  centre: { x: number; y: number },
-  words: WordRow[],
-): Map<string, { x: number; y: number }> {
-  const positions = new Map<string, { x: number; y: number }>();
-  const n = words.length;
-  if (n === 0) return positions;
-  // For up to 20 words, single ring. More than that, multiple rings.
-  const perRing = 12;
-  for (let i = 0; i < n; i++) {
-    const ring = Math.floor(i / perRing);
-    const idxInRing = i % perRing;
-    const inRing = Math.min(perRing, n - ring * perRing);
-    const radius = WORD_RADIUS + ring * 60;
-    const angle = (idxInRing / inRing) * 2 * Math.PI + ring * 0.2;
-    positions.set(words[i].id, {
-      x: centre.x + radius * Math.cos(angle),
-      y: centre.y + radius * Math.sin(angle),
-    });
-  }
-  return positions;
-}
-
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
-function GraphPageInner() {
-  const [concepts, setConcepts] = useState<ConceptRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Map<string, ExpandedData>>(new Map());
-  const [search, setSearch] = useState('');
-  const [activeConcept, setActiveConcept] = useState<ConceptRow | null>(null);
+  // Cache concept details so re-selecting is instant.
+  const [detailCache, setDetailCache] = useState<Map<string, ConceptDetail>>(
+    () => new Map(),
+  )
 
   // Initial concept fetch
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
+    let cancelled = false
+    ;(async () => {
       try {
-        const resp = await fetch('/api/concepts');
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const data = await resp.json();
-        if (!cancelled) setConcepts(data.concepts || []);
+        const resp = await fetch('/api/concepts')
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+        const data = await resp.json()
+        if (!cancelled) {
+          const list: ConceptRow[] = data.concepts || []
+          setConcepts(list)
+          // Auto-select the first one so the right pane isn't empty.
+          if (list.length > 0) setSelectedSlug(list[0].slug)
+        }
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load concepts');
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load concepts')
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setLoading(false)
       }
-    })();
+    })()
     return () => {
-      cancelled = true;
-    };
-  }, []);
+      cancelled = true
+    }
+  }, [])
 
-  // Lazy-load a concept's words on first expand.
-  const ensureLoaded = useCallback(
-    async (slug: string) => {
-      if (expanded.has(slug)) return expanded.get(slug)!;
-      const resp = await fetch(`/api/concepts/${encodeURIComponent(slug)}`);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = (await resp.json()) as ExpandedData;
-      setExpanded((prev) => {
-        const next = new Map(prev);
-        next.set(slug, data);
-        return next;
-      });
-      return data;
-    },
-    [expanded],
-  );
-
-  const handleConceptClick = useCallback(
-    async (slug: string) => {
-      const concept = concepts.find((c) => c.slug === slug);
-      setActiveConcept(concept || null);
+  // Lazy-load detail when selection changes
+  useEffect(() => {
+    if (!selectedSlug) {
+      setDetail(null)
+      return
+    }
+    const cached = detailCache.get(selectedSlug)
+    if (cached) {
+      setDetail(cached)
+      setWordFilter('')
+      return
+    }
+    let cancelled = false
+    setDetailLoading(true)
+    setDetail(null)
+    setWordFilter('')
+    ;(async () => {
       try {
-        await ensureLoaded(slug);
-        // Toggle expansion: if already in expanded set, collapse by removing.
-        setExpanded((prev) => {
-          const next = new Map(prev);
-          if (next.has(slug + ':open')) {
-            next.delete(slug + ':open');
-          } else {
-            // mark as open via a sentinel key — actual data is under `slug`
-            next.set(slug + ':open', next.get(slug)!);
-          }
-          return next;
-        });
+        const resp = await fetch(`/api/concepts/${encodeURIComponent(selectedSlug)}`)
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+        const data = (await resp.json()) as ConceptDetail
+        if (!cancelled) {
+          setDetail(data)
+          setDetailCache((prev) => {
+            const next = new Map(prev)
+            next.set(selectedSlug, data)
+            return next
+          })
+        }
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load concept');
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load concept')
+      } finally {
+        if (!cancelled) setDetailLoading(false)
       }
-    },
-    [concepts, ensureLoaded],
-  );
-
-  // Build nodes + edges based on current state and search filter
-  const conceptPositions = useMemo(() => layoutConcepts(concepts), [concepts]);
-
-  const { nodes, edges } = useMemo(() => {
-    const filterQ = search.trim().toLowerCase();
-    const conceptNodes: Node[] = concepts.map((c) => {
-      const pos = conceptPositions.get(c.slug) || { x: 0, y: 0 };
-      const matches =
-        !filterQ ||
-        c.label.toLowerCase().includes(filterQ) ||
-        c.slug.includes(filterQ) ||
-        (c.summary || '').toLowerCase().includes(filterQ);
-      return {
-        id: `concept:${c.id}`,
-        type: 'concept',
-        position: pos,
-        data: {
-          concept: c,
-          expanded: expanded.has(c.slug + ':open'),
-          filtered: !matches,
-          onClick: handleConceptClick,
-        },
-        draggable: true,
-      };
-    });
-
-    const wordNodes: Node[] = [];
-    const edgeList: Edge[] = [];
-    for (const c of concepts) {
-      const isOpen = expanded.has(c.slug + ':open');
-      if (!isOpen) continue;
-      const detail = expanded.get(c.slug);
-      if (!detail) continue;
-      const centre = conceptPositions.get(c.slug) || { x: 0, y: 0 };
-      const wordPos = layoutWordsAround(centre, detail.words);
-      const color = c.color || '#5B7FFF';
-      for (const w of detail.words) {
-        const pos = wordPos.get(w.id) || centre;
-        wordNodes.push({
-          id: `word:${c.id}:${w.id}`,
-          type: 'word',
-          position: pos,
-          data: { word: w, parentColor: color },
-          draggable: true,
-        });
-        edgeList.push({
-          id: `e:${c.id}:${w.id}`,
-          source: `concept:${c.id}`,
-          target: `word:${c.id}:${w.id}`,
-          style: { stroke: color + '60', strokeWidth: 1 },
-        });
-      }
+    })()
+    return () => {
+      cancelled = true
     }
-    return { nodes: [...conceptNodes, ...wordNodes], edges: edgeList };
-  }, [concepts, conceptPositions, expanded, search, handleConceptClick]);
+  }, [selectedSlug, detailCache])
 
-  const onPaneClick = useCallback(() => {
-    setActiveConcept(null);
-  }, []);
+  // Filtered concept list
+  const visibleConcepts = useMemo(() => {
+    const q = conceptFilter.trim().toLowerCase()
+    if (!q) return concepts
+    return concepts.filter(
+      (c) =>
+        c.label.toLowerCase().includes(q) ||
+        c.slug.includes(q) ||
+        (c.summary || '').toLowerCase().includes(q),
+    )
+  }, [concepts, conceptFilter])
 
-  const onNodeClick: NodeMouseHandler = useCallback((_evt, node) => {
-    if (node.type === 'concept') {
-      // ConceptNode handles its own click via the data.onClick callback,
-      // but React Flow may also call this. No-op to avoid double-triggering.
-      return;
-    }
-  }, []);
+  // Filtered word list
+  const visibleWords = useMemo(() => {
+    if (!detail) return []
+    const q = wordFilter.trim().toLowerCase()
+    if (!q) return detail.words
+    return detail.words.filter(
+      (w) =>
+        w.iast.toLowerCase().includes(q) ||
+        w.devanagari.includes(q) ||
+        w.meaning_short.toLowerCase().includes(q),
+    )
+  }, [detail, wordFilter])
+
+  const handleSelect = useCallback((slug: string) => {
+    setSelectedSlug(slug)
+  }, [])
 
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto py-16 text-center text-gray-400">
         <Sparkles className="inline mb-3 text-amber-400/60" size={32} />
-        <div>Loading concept graph…</div>
+        <div>Loading concepts…</div>
       </div>
-    );
+    )
   }
   if (error) {
     return (
       <div className="max-w-3xl mx-auto py-16 text-center text-rose-400">
-        Failed to load concepts: {error}
+        Failed to load: {error}
       </div>
-    );
+    )
   }
   if (concepts.length === 0) {
     return (
@@ -317,96 +164,182 @@ function GraphPageInner() {
         <Sparkles className="inline text-amber-400/60" size={36} />
         <div className="text-lg text-gray-200">No concepts yet.</div>
         <p className="text-sm">
-          Concepts are generated by running{' '}
-          <code className="text-amber-300 bg-gray-900 px-1.5 py-0.5 rounded text-xs">
-            npx tsx scripts/cluster_concepts.ts
-          </code>{' '}
-          against the verified library. Once that runs, refresh this page.
+          Concepts are seeded from the verified library — once seeded, refresh this page.
         </p>
       </div>
-    );
+    )
   }
 
+  const totalWords = concepts.reduce((acc, c) => acc + c.word_count, 0)
+  const selected = concepts.find((c) => c.slug === selectedSlug) || null
+
   return (
-    <div className="-m-6 h-[calc(100vh-160px)] relative">
-      {/* Search + summary header overlays the graph */}
-      <div className="absolute top-3 left-3 z-10 flex items-center gap-2 bg-gray-900/90 backdrop-blur rounded-lg px-3 py-2 border border-gray-800">
-        <Search size={14} className="text-gray-500" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Filter concepts…"
-          className="bg-transparent text-sm text-gray-100 placeholder-gray-500 outline-none w-48"
-        />
-        {search && (
-          <button onClick={() => setSearch('')} className="text-gray-500 hover:text-gray-300">
-            <X size={14} />
-          </button>
-        )}
-      </div>
-
-      <div className="absolute top-3 right-3 z-10 bg-gray-900/90 backdrop-blur rounded-lg px-3 py-2 border border-gray-800 text-xs text-gray-400">
-        {concepts.length} concepts ·{' '}
-        {concepts.reduce((acc, c) => acc + c.word_count, 0)} words ·{' '}
-        {[...expanded.keys()].filter((k) => k.endsWith(':open')).length} expanded
-      </div>
-
-      {/* Active concept summary */}
-      {activeConcept && (
-        <div className="absolute bottom-3 left-3 z-10 bg-gray-900/90 backdrop-blur rounded-lg px-4 py-3 border border-gray-800 max-w-md">
-          <div className="flex items-center gap-2 mb-1">
-            <span
-              className="inline-block w-2 h-2 rounded-full"
-              style={{ backgroundColor: activeConcept.color || '#5B7FFF' }}
-            />
-            <span className="font-semibold text-gray-100">{activeConcept.label}</span>
-            <span className="text-xs text-gray-500">({activeConcept.word_count} words)</span>
+    <div className="-m-6 h-[calc(100vh-160px)] flex flex-col md:flex-row bg-gray-950 text-gray-100">
+      {/* LEFT: concept list */}
+      <aside className="md:w-80 md:min-w-[260px] md:max-w-[340px] border-b md:border-b-0 md:border-r border-gray-800 flex flex-col bg-gray-900/60">
+        <div className="px-4 py-3 border-b border-gray-800">
+          <div className="flex items-baseline justify-between mb-2">
+            <h2 className="text-sm font-semibold text-gray-200">Concepts</h2>
+            <span className="text-[11px] text-gray-500">
+              {concepts.length} · {totalWords} words
+            </span>
           </div>
-          {activeConcept.summary && (
-            <div className="text-sm text-gray-300 leading-snug">{activeConcept.summary}</div>
-          )}
-          <div className="text-xs text-gray-500 mt-1.5">
-            Click again to{' '}
-            {expanded.has(activeConcept.slug + ':open') ? 'collapse' : 'expand'} its words.
+          <div className="relative">
+            <Search
+              size={13}
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500"
+            />
+            <input
+              value={conceptFilter}
+              onChange={(e) => setConceptFilter(e.target.value)}
+              placeholder="Filter concepts…"
+              className="w-full pl-7 pr-7 py-1.5 bg-gray-950 border border-gray-800 rounded-md text-sm text-gray-100 placeholder-gray-500 outline-none focus:border-gray-700"
+            />
+            {conceptFilter && (
+              <button
+                onClick={() => setConceptFilter('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                aria-label="clear filter"
+              >
+                <X size={13} />
+              </button>
+            )}
           </div>
         </div>
-      )}
 
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        onNodeClick={onNodeClick}
-        onPaneClick={onPaneClick}
-        fitView
-        fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.2}
-        maxZoom={2.0}
-        proOptions={{ hideAttribution: true }}
-        colorMode="dark"
-      >
-        <Background color="#1f2937" gap={24} />
-        <Controls className="!bg-gray-900 !border-gray-800" />
-        <MiniMap
-          nodeColor={(n) => {
-            if (n.type === 'concept') {
-              const c = (n.data as ConceptNodeData).concept;
-              return c.color || '#5B7FFF';
-            }
-            return '#4b5563';
-          }}
-          maskColor="rgba(0,0,0,0.6)"
-          className="!bg-gray-900 !border-gray-800"
-        />
-      </ReactFlow>
+        <div className="flex-1 overflow-y-auto py-1">
+          {visibleConcepts.length === 0 ? (
+            <div className="px-4 py-6 text-xs text-gray-500 text-center">No matches.</div>
+          ) : (
+            visibleConcepts.map((c) => {
+              const isSel = c.slug === selectedSlug
+              const color = c.color || '#5B7FFF'
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => handleSelect(c.slug)}
+                  className={`w-full text-left px-4 py-2 flex items-center gap-3 transition-colors border-l-2 ${
+                    isSel
+                      ? 'bg-gray-800/80 border-l-current'
+                      : 'border-l-transparent hover:bg-gray-900'
+                  }`}
+                  style={{ color: isSel ? color : undefined }}
+                >
+                  <span
+                    className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="flex-1 min-w-0">
+                    <span
+                      className={`block text-sm leading-tight truncate ${
+                        isSel ? '' : 'text-gray-200'
+                      }`}
+                    >
+                      {c.label}
+                    </span>
+                  </span>
+                  <span
+                    className={`text-[11px] px-1.5 py-0.5 rounded font-mono ${
+                      isSel ? 'bg-gray-900' : 'bg-gray-800 text-gray-500'
+                    }`}
+                  >
+                    {c.word_count}
+                  </span>
+                </button>
+              )
+            })
+          )}
+        </div>
+      </aside>
+
+      {/* RIGHT: word pane */}
+      <section className="flex-1 flex flex-col overflow-hidden">
+        {!selected ? (
+          <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">
+            Pick a concept on the left to see its words.
+          </div>
+        ) : (
+          <>
+            <header
+              className="px-6 py-4 border-b border-gray-800"
+              style={{
+                background: `linear-gradient(90deg, ${
+                  selected.color || '#5B7FFF'
+                }14 0%, transparent 80%)`,
+              }}
+            >
+              <div className="flex items-baseline gap-3 mb-1.5">
+                <span
+                  className="inline-block w-3 h-3 rounded-full"
+                  style={{ backgroundColor: selected.color || '#5B7FFF' }}
+                />
+                <h1 className="text-lg font-semibold text-gray-100">{selected.label}</h1>
+                <span className="text-xs text-gray-500">{selected.word_count} words</span>
+              </div>
+              {selected.summary && (
+                <p className="text-sm text-gray-400 leading-snug max-w-3xl">
+                  {selected.summary}
+                </p>
+              )}
+              {detail && detail.words.length > 12 && (
+                <div className="mt-3 relative max-w-md">
+                  <Search
+                    size={13}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500"
+                  />
+                  <input
+                    value={wordFilter}
+                    onChange={(e) => setWordFilter(e.target.value)}
+                    placeholder="Filter words in this concept…"
+                    className="w-full pl-7 pr-7 py-1.5 bg-gray-950 border border-gray-800 rounded-md text-sm text-gray-100 placeholder-gray-500 outline-none focus:border-gray-700"
+                  />
+                  {wordFilter && (
+                    <button
+                      onClick={() => setWordFilter('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                      aria-label="clear word filter"
+                    >
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+              )}
+            </header>
+
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {detailLoading ? (
+                <div className="text-sm text-gray-500">Loading words…</div>
+              ) : visibleWords.length === 0 ? (
+                <div className="text-sm text-gray-500">
+                  {detail && detail.words.length === 0
+                    ? 'No words in this concept yet.'
+                    : 'No words match the filter.'}
+                </div>
+              ) : (
+                <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
+                  {visibleWords.map((w) => (
+                    <article
+                      key={w.id}
+                      className="px-3 py-2.5 bg-gray-900/70 border border-gray-800 rounded-lg hover:border-gray-700 transition-colors"
+                      style={{
+                        borderLeft: `3px solid ${selected.color || '#5B7FFF'}80`,
+                      }}
+                    >
+                      <div className="text-lg font-medium text-gray-100 leading-tight">
+                        {w.devanagari}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5 font-mono">{w.iast}</div>
+                      <div className="text-xs text-gray-300 mt-1.5 leading-snug">
+                        {w.meaning_short}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </section>
     </div>
-  );
-}
-
-export function GraphPage() {
-  return (
-    <ReactFlowProvider>
-      <GraphPageInner />
-    </ReactFlowProvider>
-  );
+  )
 }
