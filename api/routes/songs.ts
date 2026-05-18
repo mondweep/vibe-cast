@@ -54,6 +54,21 @@ export interface VerifyRequest {
   lines: VerifyLine[]
   title?: string
   language?: string
+  /**
+   * Optional categorization tags (genre, tradition, deity, source, author).
+   * Each tag is normalised to lowercase kebab-case before insert. See
+   * supabase/migrations/014_song_tags.sql for the canonical tag vocabulary.
+   */
+  tags?: string[]
+}
+
+/** Normalize a curator-supplied tag to lowercase kebab-case + strip surrounding whitespace. */
+function normaliseTag(t: unknown): string | null {
+  if (typeof t !== 'string') return null
+  const cleaned = t.trim().toLowerCase().replace(/\s+/g, '-')
+  // Allow only lowercase a-z, digits, hyphen, underscore. Reject otherwise.
+  if (!cleaned || !/^[a-z0-9][a-z0-9_-]{0,49}$/.test(cleaned)) return null
+  return cleaned
 }
 
 function clientForJwt(jwt: string): SupabaseClient {
@@ -116,6 +131,15 @@ export async function verifySong(
 
   const meta = await fetchYouTubeMetadata(body.videoId)
 
+  // Normalise the curator-supplied tags (lowercase, kebab-case, dedup).
+  const normalisedTags = Array.from(
+    new Set(
+      (Array.isArray(body.tags) ? body.tags : [])
+        .map(normaliseTag)
+        .filter((t): t is string => t !== null)
+    )
+  )
+
   // Upsert the song row.
   //
   // pending_curator_review is force-cleared here: an explicit curator verify
@@ -123,22 +147,27 @@ export async function verifySong(
   // Without this, songs auto-added by the nightly task remain hidden from
   // the public even after the curator explicitly verifies them.
   const youtubeUrl = `https://www.youtube.com/watch?v=${body.videoId}`
+  const upsertPayload: Record<string, unknown> = {
+    youtube_url: youtubeUrl,
+    title: body.title || meta.title || null,
+    thumbnail_url: meta.thumbnail_url || null,
+    transcription_language: body.language || null,
+    lyrics_json: body.lines,
+    verified: true,
+    pending_curator_review: false,
+    verified_at: new Date().toISOString(),
+    verified_by: userId,
+  }
+  // Only overwrite tags if the curator supplied any — re-verifying with the
+  // tags field omitted shouldn't wipe existing tags. (Pass `tags: []`
+  // explicitly to clear.)
+  if (Array.isArray(body.tags)) {
+    upsertPayload.tags = normalisedTags
+  }
+
   const { data: songRow, error: songErr } = await sb
     .from('songs')
-    .upsert(
-      {
-        youtube_url: youtubeUrl,
-        title: body.title || meta.title || null,
-        thumbnail_url: meta.thumbnail_url || null,
-        transcription_language: body.language || null,
-        lyrics_json: body.lines,
-        verified: true,
-        pending_curator_review: false,
-        verified_at: new Date().toISOString(),
-        verified_by: userId,
-      },
-      { onConflict: 'youtube_url' }
-    )
+    .upsert(upsertPayload, { onConflict: 'youtube_url' })
     .select()
     .single()
 

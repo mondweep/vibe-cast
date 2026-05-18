@@ -1,0 +1,346 @@
+{
+  "_comment": "Hanuman chant cycle — two canonical Sanskrit verses (the Manojavam dhyāna-śloka and the Hanumat-smaraṇāt-bhavet 'eight blessings' śloka) framed by traditional Hindi devotional invocations (Jai Shri Ram / Jai Hanuman / Jai Bajrang Bali). The 8 lines below cover ONE complete cycle (0:00–3:10). The user reports that the same cycle loops again from 3:10 to the end of the video; that second cycle will not highlight in the lyric panel (a known limitation — useTranslation matches a single linear time range). Timestamps were supplied by the curator from the audio.",
+  "videoId": "-FcrMGq5Vso",
+  "youtube_url": "https://www.youtube.com/watch?v=-FcrMGq5Vso",
+  "title": "Hanuman Chant — Manojavam Mantra + Hanumat Smaraṇāt + Jai Shri Ram",
+  "language": "sa",
+  "tags": [
+    "bhajan",
+    "bhakti",
+    "hanuman",
+    "daily-prayer"
+  ],
+  "lines": [
+    {
+      "line": 0,
+      "start_time": 7,
+      "end_time": 14,
+      "devanagari": "जय श्री राम",
+      "iast": "jai śrī rām",
+      "english_literal": "Victory to Shri Rama!",
+      "english_poetic": "Victory to Lord Rama!",
+      "explanation": "Opening invocation. 'Jai' (जय) is the colloquial Hindi/Bhojpuri pronunciation of Sanskrit 'jaya' (victory); in popular devotional usage the chant 'Jai Shri Ram' is a salutation rather than a metaphysical statement — affirming Rama's victory over forces of disorder. The most common Hindu devotional refrain.",
+      "words": [
+        {
+          "devanagari": "जय",
+          "iast": "jaya",
+          "meaning": "victory, hail!"
+        },
+        {
+          "devanagari": "श्री",
+          "iast": "śrī",
+          "meaning": "venerable, auspicious (honorific prefix)"
+        },
+        {
+          "devanagari": "राम",
+          "iast": "rāma",
+          "meaning": "Rama (the seventh avatāra of Viṣṇu)"
+        }
+      ]
+    },
+    {
+      "line": 1,
+      "start_time": 14,
+      "end_time": 32,
+      "devanagari": "जय बजरंग बली",
+      "iast": "jai bajraṅga balī",
+      "english_literal": "Victory to the strong one with thunderbolt-limbs!",
+      "english_poetic": "Victory to Bajrang Bali — the one with limbs as strong as lightning.",
+      "explanation": "Invocation to Hanuman. 'Bajrang' is the popular Hindi spelling of Sanskrit 'vajrāṅga' (वज्राङ्ग — vajra 'thunderbolt' + aṅga 'limb'), referring to Hanuman's near-indestructible body. 'Balī' (बली) = strong one. Bajrang Bali is one of the most beloved names for Hanuman in North Indian devotion.",
+      "words": [
+        {
+          "devanagari": "जय",
+          "iast": "jaya",
+          "meaning": "victory, hail!"
+        },
+        {
+          "devanagari": "बजरंग",
+          "iast": "bajraṅga",
+          "meaning": "thunderbolt-limbed (Hindi form of Sanskrit vajrāṅga)"
+        },
+        {
+          "devanagari": "बली",
+          "iast": "balī",
+          "meaning": "strong, powerful one"
+        }
+      ]
+    },
+    {
+      "line": 2,
+      "start_time": 34,
+      "end_time": 106,
+      "devanagari": "मनोजवं मारुततुल्यवेगं जितेन्द्रियं बुद्धिमतां वरिष्ठम् । वातात्मजं वानरयूथमुख्यं श्रीरामदूतं शरणं प्रपद्ये ॥",
+      "iast": "manojavaṃ māruta-tulya-vegaṃ jitendriyaṃ buddhimatāṃ variṣṭham | vātātmajaṃ vānara-yūtha-mukhyaṃ śrī-rāma-dūtaṃ śaraṇaṃ prapadye ||",
+      "english_literal": "Mind-swift, of speed equal to the wind, with senses conquered, best among the intelligent; son of the wind, chief of the monkey-troop, messenger of Shri Rama — I take refuge.",
+      "english_poetic": "I take refuge in him whose speed is the speed of the mind, whose force equals the wind — who has conquered his senses, who is foremost among the wise; the son of the Wind-god, leader of the monkey host, the messenger of Shri Rama.",
+      "explanation": "The traditional dhyāna-śloka of Hanuman, recited at the opening of Hanuman pūjā and at the start of the Sundara Kāṇḍa of the Rāmacaritamānasa. The verse names eight epithets in a single breath: mano-java (mind-swift), māruta-tulya-vega (wind-paced), jitendriya (sense-conqueror), buddhimatāṃ variṣṭha (foremost-of-the-wise), vātātmaja (wind's-son), vānara-yūtha-mukhya (monkey-troop-leader), śrī-rāma-dūta (Rama's messenger). The mantra is a complete portrait of Hanuman's qualities — physical, intellectual, and devotional. 'Śaraṇaṃ prapadye' (I take refuge) is the standard Vaiṣṇava act of self-surrender.",
+      "words": [
+        {
+          "devanagari": "मनोजवं",
+          "iast": "manojavaṃ",
+          "meaning": "mind-swift, as fast as thought"
+        },
+        {
+          "devanagari": "मारुत",
+          "iast": "māruta",
+          "meaning": "the wind (also a name for Vāyu)"
+        },
+        {
+          "devanagari": "तुल्य",
+          "iast": "tulya",
+          "meaning": "equal to"
+        },
+        {
+          "devanagari": "वेगं",
+          "iast": "vegaṃ",
+          "meaning": "speed, force"
+        },
+        {
+          "devanagari": "जितेन्द्रियं",
+          "iast": "jitendriyaṃ",
+          "meaning": "one whose senses are conquered (jita + indriya)"
+        },
+        {
+          "devanagari": "बुद्धिमतां",
+          "iast": "buddhimatāṃ",
+          "meaning": "of the intelligent (genitive plural)"
+        },
+        {
+          "devanagari": "वरिष्ठम्",
+          "iast": "variṣṭham",
+          "meaning": "foremost, best (superlative of vara)"
+        },
+        {
+          "devanagari": "वातात्मजं",
+          "iast": "vātātmajaṃ",
+          "meaning": "son of the wind (vāta + ātmaja)"
+        },
+        {
+          "devanagari": "वानर",
+          "iast": "vānara",
+          "meaning": "monkey, forest-dweller"
+        },
+        {
+          "devanagari": "यूथ",
+          "iast": "yūtha",
+          "meaning": "troop, herd"
+        },
+        {
+          "devanagari": "मुख्यं",
+          "iast": "mukhyaṃ",
+          "meaning": "chief, leader"
+        },
+        {
+          "devanagari": "श्री-राम-दूतं",
+          "iast": "śrī-rāma-dūtaṃ",
+          "meaning": "messenger of Shri Rama"
+        },
+        {
+          "devanagari": "शरणं",
+          "iast": "śaraṇaṃ",
+          "meaning": "refuge, shelter"
+        },
+        {
+          "devanagari": "प्रपद्ये",
+          "iast": "prapadye",
+          "meaning": "I take refuge, I surrender",
+          "root_dhatu": "पद्",
+          "grammar": "1st person singular present ātmanepada"
+        }
+      ]
+    },
+    {
+      "line": 3,
+      "start_time": 106,
+      "end_time": 140,
+      "devanagari": "बुद्धिर्बलं यशो धैर्यं निर्भयत्वम् अरोगता । अजाड्यं वाक्पटुत्वं च हनूमत्स्मरणाद् भवेत् ॥",
+      "iast": "buddhir balaṃ yaśo dhairyaṃ nirbhayatvam arogatā | ajāḍyaṃ vāk-paṭutvaṃ ca hanūmat-smaraṇād bhavet ||",
+      "english_literal": "Intelligence, strength, fame, firmness, fearlessness, freedom from disease, freedom from sluggishness, and eloquence — (these) come about from remembering Hanuman.",
+      "english_poetic": "Intelligence, strength, fame, and courage; fearlessness and freedom from illness; an alert mind and eloquence in speech — all these arise from the remembrance of Hanuman.",
+      "explanation": "The famous 'Hanumat-smaraṇāt-bhavet' śloka — one of the most widely quoted Hanuman verses, often inscribed on Hanuman temple walls. It enumerates **eight blessings** that come from merely remembering Hanuman: (1) buddhi (intellect), (2) bala (physical strength), (3) yaśas (fame), (4) dhairya (courage), (5) nirbhayatva (fearlessness), (6) arogatā (freedom from disease), (7) ajāḍya (freedom from sluggishness / mental dullness), (8) vāk-paṭutva (skill in speech). The optative 'bhavet' (one would obtain) keeps the verse as a promise rather than a guarantee — the blessings arise as a natural consequence of the remembering.",
+      "words": [
+        {
+          "devanagari": "बुद्धिः",
+          "iast": "buddhiḥ",
+          "meaning": "intelligence, intellect"
+        },
+        {
+          "devanagari": "बलं",
+          "iast": "balaṃ",
+          "meaning": "strength, power"
+        },
+        {
+          "devanagari": "यशः",
+          "iast": "yaśaḥ",
+          "meaning": "fame, glory"
+        },
+        {
+          "devanagari": "धैर्यं",
+          "iast": "dhairyaṃ",
+          "meaning": "firmness, courage, fortitude"
+        },
+        {
+          "devanagari": "निर्भयत्वम्",
+          "iast": "nirbhayatvam",
+          "meaning": "fearlessness (nir + bhaya + tva)"
+        },
+        {
+          "devanagari": "अरोगता",
+          "iast": "arogatā",
+          "meaning": "freedom from disease, health"
+        },
+        {
+          "devanagari": "अजाड्यं",
+          "iast": "ajāḍyaṃ",
+          "meaning": "freedom from sluggishness / dullness (a + jāḍya)"
+        },
+        {
+          "devanagari": "वाक्-पटुत्वं",
+          "iast": "vāk-paṭutvaṃ",
+          "meaning": "eloquence (speech-skill)"
+        },
+        {
+          "devanagari": "च",
+          "iast": "ca",
+          "meaning": "and"
+        },
+        {
+          "devanagari": "हनूमत्",
+          "iast": "hanūmat",
+          "meaning": "Hanuman (in compound form)"
+        },
+        {
+          "devanagari": "स्मरणात्",
+          "iast": "smaraṇāt",
+          "meaning": "from remembering",
+          "grammar": "ablative singular"
+        },
+        {
+          "devanagari": "भवेत्",
+          "iast": "bhavet",
+          "meaning": "would be, one obtains",
+          "root_dhatu": "भू",
+          "grammar": "3rd person singular optative"
+        }
+      ]
+    },
+    {
+      "line": 4,
+      "start_time": 140,
+      "end_time": 162,
+      "devanagari": "मनोजवं मारुततुल्यवेगं जितेन्द्रियं बुद्धिमतां वरिष्ठम् । वातात्मजं वानरयूथमुख्यं श्रीरामदूतं शरणं प्रपद्ये ॥",
+      "iast": "manojavaṃ māruta-tulya-vegaṃ jitendriyaṃ buddhimatāṃ variṣṭham | vātātmajaṃ vānara-yūtha-mukhyaṃ śrī-rāma-dūtaṃ śaraṇaṃ prapadye ||",
+      "english_literal": "(Manojavam dhyāna-śloka — reprise.)",
+      "english_poetic": "(The Manojavam mantra returns, sealing the prayer-sequence.)",
+      "explanation": "Reprise of the Manojavam dhyāna-śloka, sung after the smaraṇāt verse to close the prayer-sequence. The full word-by-word breakdown is on the earlier occurrence of this verse (line 2 above).",
+      "words": [
+        {
+          "devanagari": "मनोजवं",
+          "iast": "manojavaṃ",
+          "meaning": "mind-swift"
+        },
+        {
+          "devanagari": "मारुततुल्यवेगं",
+          "iast": "māruta-tulya-vegaṃ",
+          "meaning": "of wind-equal speed"
+        },
+        {
+          "devanagari": "जितेन्द्रियं",
+          "iast": "jitendriyaṃ",
+          "meaning": "with senses conquered"
+        },
+        {
+          "devanagari": "वरिष्ठम्",
+          "iast": "variṣṭham",
+          "meaning": "the foremost"
+        },
+        {
+          "devanagari": "वातात्मजं",
+          "iast": "vātātmajaṃ",
+          "meaning": "son of the wind"
+        },
+        {
+          "devanagari": "शरणं प्रपद्ये",
+          "iast": "śaraṇaṃ prapadye",
+          "meaning": "I take refuge"
+        }
+      ]
+    },
+    {
+      "line": 5,
+      "start_time": 162,
+      "end_time": 169,
+      "devanagari": "जय श्री राम",
+      "iast": "jai śrī rām",
+      "english_literal": "Victory to Shri Rama!",
+      "english_poetic": "Victory to Lord Rama!",
+      "explanation": "Closing invocation — the cycle returns to where it began.",
+      "words": [
+        {
+          "devanagari": "जय",
+          "iast": "jaya",
+          "meaning": "victory, hail!"
+        },
+        {
+          "devanagari": "श्री",
+          "iast": "śrī",
+          "meaning": "venerable (honorific)"
+        },
+        {
+          "devanagari": "राम",
+          "iast": "rāma",
+          "meaning": "Rama"
+        }
+      ]
+    },
+    {
+      "line": 6,
+      "start_time": 169,
+      "end_time": 176,
+      "devanagari": "जय हनुमान",
+      "iast": "jai hanumān",
+      "english_literal": "Victory to Hanuman!",
+      "english_poetic": "Victory to Lord Hanuman!",
+      "explanation": "Direct invocation to Hanuman by his Sanskrit name. 'Hanumān' (हनुमान्) is conventionally derived from 'hanu' (jaw) + the possessive '-mat' suffix, referring to his distinctive jaw — a feature in the well-known childhood story of Hanuman trying to swallow the sun and being struck by Indra's vajra.",
+      "words": [
+        {
+          "devanagari": "जय",
+          "iast": "jaya",
+          "meaning": "victory!"
+        },
+        {
+          "devanagari": "हनुमान्",
+          "iast": "hanumān",
+          "meaning": "Hanuman (the one with the distinctive jaw)"
+        }
+      ]
+    },
+    {
+      "line": 7,
+      "start_time": 176,
+      "end_time": 190,
+      "devanagari": "जय बजरंग बली",
+      "iast": "jai bajraṅga balī",
+      "english_literal": "Victory to Bajrang Bali!",
+      "english_poetic": "Victory to Bajrang Bali — the thunderbolt-strong one!",
+      "explanation": "Final repetition of the Bajrang-Bali invocation, closing the cycle. The audio continues to loop the same content (Jai Shri Ram → Jai Bajrang Bali → Manojavam → smaraṇāt → Jai Shri Ram → Jai Hanuman → Jai Bajrang Bali) for the remainder of the video.",
+      "words": [
+        {
+          "devanagari": "जय",
+          "iast": "jaya",
+          "meaning": "victory!"
+        },
+        {
+          "devanagari": "बजरंग",
+          "iast": "bajraṅga",
+          "meaning": "thunderbolt-limbed (Hindi for Sanskrit vajrāṅga)"
+        },
+        {
+          "devanagari": "बली",
+          "iast": "balī",
+          "meaning": "strong one"
+        }
+      ]
+    }
+  ]
+}

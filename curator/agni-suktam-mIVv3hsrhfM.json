@@ -4,6 +4,13 @@
   "youtube_url": "https://www.youtube.com/watch?v=mIVv3hsrhfM",
   "title": "Agni Sūktam (contemporary setting of Rigveda 1.1 + Īśā Up. 18)",
   "language": "sa",
+  "tags": [
+    "metal-fusion",
+    "vedic",
+    "agni",
+    "rigveda",
+    "isha-upanishad"
+  ],
   "lines": [
     {
       "line": 0,
@@ -15,11 +22,35 @@
       "english_poetic": "To Agni, the offering! This is for Agni — it is not for me.",
       "explanation": "The standard offering formula of every Vedic yajña. 'Svāhā' is the invocation cast as the ghee meets the flame; 'idaṃ na mama' ('this is not mine') is the act of renunciation — the offerer releases ownership of the gift at the moment it is given. The ritual essence of all sacrifice in three words.",
       "words": [
-        { "devanagari": "अग्नये", "iast": "agnaye", "meaning": "to Agni (god of fire)", "grammar": "masculine, dative singular" },
-        { "devanagari": "स्वाहा", "iast": "svāhā", "meaning": "the offering-utterance; let it be well-given", "grammar": "indeclinable, ritual exclamation" },
-        { "devanagari": "इदं", "iast": "idaṃ", "meaning": "this", "grammar": "neuter, nominative singular" },
-        { "devanagari": "न", "iast": "na", "meaning": "not" },
-        { "devanagari": "मम", "iast": "mama", "meaning": "of me, mine", "grammar": "genitive of aham" }
+        {
+          "devanagari": "अग्नये",
+          "iast": "agnaye",
+          "meaning": "to Agni (god of fire)",
+          "grammar": "masculine, dative singular"
+        },
+        {
+          "devanagari": "स्वाहा",
+          "iast": "svāhā",
+          "meaning": "the offering-utterance; let it be well-given",
+          "grammar": "indeclinable, ritual exclamation"
+        },
+        {
+          "devanagari": "इदं",
+          "iast": "idaṃ",
+          "meaning": "this",
+          "grammar": "neuter, nominative singular"
+        },
+        {
+          "devanagari": "न",
+          "iast": "na",
+          "meaning": "not"
+        },
+        {
+          "devanagari": "मम",
+          "iast": "mama",
+          "meaning": "of me, mine",
+          "grammar": "genitive of aham"
+        }
       ]
     },
     {
@@ -32,14 +63,55 @@
       "english_poetic": "I praise Agni — household priest of the sacrifice, the god, the seasonal-officiant, the invoker, lavisher of treasures.",
       "explanation": "Rigveda 1.1.1 — the opening verse of the entire Veda. Hindu tradition holds that the recorded knowledge of humanity begins with this praise of Agni. Each epithet names a specific ritual role: purohita (the priest installed in the household), ṛtvij (the priest of the season's rite), hotṛ (the invoker who calls the gods to the offering), and ratnadhātama ('bestower of treasures' in the superlative).",
       "words": [
-        { "devanagari": "अग्निम्", "iast": "agnim", "meaning": "Agni (god of fire)", "grammar": "masculine, accusative singular" },
-        { "devanagari": "ईळे", "iast": "īḷe", "meaning": "I praise, I worship", "root_dhatu": "ईड्", "grammar": "1st person singular present ātmanepada" },
-        { "devanagari": "पुरोहितं", "iast": "purohitam", "meaning": "household priest, one placed in front", "grammar": "accusative singular" },
-        { "devanagari": "यज्ञस्य", "iast": "yajñasya", "meaning": "of the sacrifice", "grammar": "masculine, genitive singular" },
-        { "devanagari": "देवम्", "iast": "devam", "meaning": "god, divine one", "grammar": "accusative singular" },
-        { "devanagari": "ऋत्विजम्", "iast": "ṛtvijam", "meaning": "seasonal priest, officiant of the rite", "grammar": "accusative singular" },
-        { "devanagari": "होतारं", "iast": "hotāram", "meaning": "the invoker, oblation-pourer", "grammar": "accusative singular" },
-        { "devanagari": "रत्नधातमम्", "iast": "ratnadhātamam", "meaning": "most-bestower-of-treasures (superlative)", "grammar": "accusative singular" }
+        {
+          "devanagari": "अग्निम्",
+          "iast": "agnim",
+          "meaning": "Agni (god of fire)",
+          "grammar": "masculine, accusative singular"
+        },
+        {
+          "devanagari": "ईळे",
+          "iast": "īḷe",
+          "meaning": "I praise, I worship",
+          "root_dhatu": "ईड्",
+          "grammar": "1st person singular present ātmanepada"
+        },
+        {
+          "devanagari": "पुरोहितं",
+          "iast": "purohitam",
+          "meaning": "household priest, one placed in front",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "यज्ञस्य",
+          "iast": "yajñasya",
+          "meaning": "of the sacrifice",
+          "grammar": "masculine, genitive singular"
+        },
+        {
+          "devanagari": "देवम्",
+          "iast": "devam",
+          "meaning": "god, divine one",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "ऋत्विजम्",
+          "iast": "ṛtvijam",
+          "meaning": "seasonal priest, officiant of the rite",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "होतारं",
+          "iast": "hotāram",
+          "meaning": "the invoker, oblation-pourer",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "रत्नधातमम्",
+          "iast": "ratnadhātamam",
+          "meaning": "most-bestower-of-treasures (superlative)",
+          "grammar": "accusative singular"
+        }
       ]
     },
     {
@@ -52,17 +124,72 @@
       "english_poetic": "Agni — worthy of praise by the ancient seers and by the new ones alike. He will carry the gods here to the rite.",
       "explanation": "Rigveda 1.1.2 — Agni bridges generations. Worshipped by the original ṛṣis who heard the Veda and by their living successors, he carries the rite's offerings up to the gods and the gods' presence down to the altar. The verb 'vakṣati' (will bring) sets the rite in active anticipation.",
       "words": [
-        { "devanagari": "अग्निः", "iast": "agniḥ", "meaning": "Agni", "grammar": "nominative singular" },
-        { "devanagari": "पूर्वेभिः", "iast": "pūrvebhiḥ", "meaning": "by the ancient ones", "grammar": "instrumental plural (Vedic form)" },
-        { "devanagari": "ऋषिभिः", "iast": "ṛṣibhiḥ", "meaning": "by the seers", "grammar": "instrumental plural" },
-        { "devanagari": "ईड्यः", "iast": "īḍyaḥ", "meaning": "worthy of praise", "grammar": "nominative singular, gerundive of ईड्" },
-        { "devanagari": "नूतनैः", "iast": "nūtanaiḥ", "meaning": "by new (seers)", "grammar": "instrumental plural" },
-        { "devanagari": "उत", "iast": "uta", "meaning": "and, also", "grammar": "indeclinable" },
-        { "devanagari": "सः", "iast": "saḥ", "meaning": "he", "grammar": "nominative singular" },
-        { "devanagari": "देवान्", "iast": "devān", "meaning": "the gods", "grammar": "accusative plural" },
-        { "devanagari": "आ", "iast": "ā", "meaning": "hither, here (preverb)", "grammar": "preverb" },
-        { "devanagari": "इह", "iast": "iha", "meaning": "here, at this place" },
-        { "devanagari": "वक्षति", "iast": "vakṣati", "meaning": "(he) will bring, will carry", "root_dhatu": "वह्", "grammar": "3rd person singular future" }
+        {
+          "devanagari": "अग्निः",
+          "iast": "agniḥ",
+          "meaning": "Agni",
+          "grammar": "nominative singular"
+        },
+        {
+          "devanagari": "पूर्वेभिः",
+          "iast": "pūrvebhiḥ",
+          "meaning": "by the ancient ones",
+          "grammar": "instrumental plural (Vedic form)"
+        },
+        {
+          "devanagari": "ऋषिभिः",
+          "iast": "ṛṣibhiḥ",
+          "meaning": "by the seers",
+          "grammar": "instrumental plural"
+        },
+        {
+          "devanagari": "ईड्यः",
+          "iast": "īḍyaḥ",
+          "meaning": "worthy of praise",
+          "grammar": "nominative singular, gerundive of ईड्"
+        },
+        {
+          "devanagari": "नूतनैः",
+          "iast": "nūtanaiḥ",
+          "meaning": "by new (seers)",
+          "grammar": "instrumental plural"
+        },
+        {
+          "devanagari": "उत",
+          "iast": "uta",
+          "meaning": "and, also",
+          "grammar": "indeclinable"
+        },
+        {
+          "devanagari": "सः",
+          "iast": "saḥ",
+          "meaning": "he",
+          "grammar": "nominative singular"
+        },
+        {
+          "devanagari": "देवान्",
+          "iast": "devān",
+          "meaning": "the gods",
+          "grammar": "accusative plural"
+        },
+        {
+          "devanagari": "आ",
+          "iast": "ā",
+          "meaning": "hither, here (preverb)",
+          "grammar": "preverb"
+        },
+        {
+          "devanagari": "इह",
+          "iast": "iha",
+          "meaning": "here, at this place"
+        },
+        {
+          "devanagari": "वक्षति",
+          "iast": "vakṣati",
+          "meaning": "(he) will bring, will carry",
+          "root_dhatu": "वह्",
+          "grammar": "3rd person singular future"
+        }
       ]
     },
     {
@@ -75,14 +202,54 @@
       "english_poetic": "Through Agni one wins wealth and sustenance, day after day — fame, and the very fullness of heroes.",
       "explanation": "Rigveda 1.1.3 — the temporal cadence of Agni's blessing. 'Dive dive' ('day by day') is the daily renewal that the offering establishes; 'vīravattama' literally 'most-having-of-heroes' — the well-tended fire produces a household full of strong sons (in the Vedic frame, the marker of prosperity).",
       "words": [
-        { "devanagari": "अग्निना", "iast": "agninā", "meaning": "by Agni, through Agni", "grammar": "instrumental singular" },
-        { "devanagari": "रयिम्", "iast": "rayim", "meaning": "wealth", "grammar": "accusative singular" },
-        { "devanagari": "अश्नवत्", "iast": "aśnavat", "meaning": "(he) obtains, attains", "root_dhatu": "अश्", "grammar": "3rd person singular" },
-        { "devanagari": "पोषम्", "iast": "poṣam", "meaning": "nourishment, prosperity", "grammar": "accusative singular" },
-        { "devanagari": "एव", "iast": "eva", "meaning": "indeed (emphatic)" },
-        { "devanagari": "दिवेदिवे", "iast": "dive-dive", "meaning": "day by day", "grammar": "locative reduplicated" },
-        { "devanagari": "यशसं", "iast": "yaśasam", "meaning": "glory, fame", "grammar": "accusative singular" },
-        { "devanagari": "वीरवत्तमम्", "iast": "vīravattamam", "meaning": "having the most heroes (superlative)", "grammar": "accusative singular" }
+        {
+          "devanagari": "अग्निना",
+          "iast": "agninā",
+          "meaning": "by Agni, through Agni",
+          "grammar": "instrumental singular"
+        },
+        {
+          "devanagari": "रयिम्",
+          "iast": "rayim",
+          "meaning": "wealth",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "अश्नवत्",
+          "iast": "aśnavat",
+          "meaning": "(he) obtains, attains",
+          "root_dhatu": "अश्",
+          "grammar": "3rd person singular"
+        },
+        {
+          "devanagari": "पोषम्",
+          "iast": "poṣam",
+          "meaning": "nourishment, prosperity",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "एव",
+          "iast": "eva",
+          "meaning": "indeed (emphatic)"
+        },
+        {
+          "devanagari": "दिवेदिवे",
+          "iast": "dive-dive",
+          "meaning": "day by day",
+          "grammar": "locative reduplicated"
+        },
+        {
+          "devanagari": "यशसं",
+          "iast": "yaśasam",
+          "meaning": "glory, fame",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "वीरवत्तमम्",
+          "iast": "vīravattamam",
+          "meaning": "having the most heroes (superlative)",
+          "grammar": "accusative singular"
+        }
       ]
     },
     {
@@ -95,17 +262,69 @@
       "english_poetic": "Agni is the mouth that receives our offerings, the giver among the gods. May he, with Mitra and Varuṇa, magnify us with grace.",
       "explanation": "A composite Vedic Agni invocation. 'Mouth of the offerings' is the classical image: every oblation poured into the fire reaches the gods through Agni's mouth — he is the sole conduit. The closing benediction invokes Mitra (the god of contracts) and Varuṇa (cosmic order), placing this rite under their joint care.",
       "words": [
-        { "devanagari": "अग्निः", "iast": "agniḥ", "meaning": "Agni", "grammar": "nominative singular" },
-        { "devanagari": "मुखं", "iast": "mukham", "meaning": "mouth, opening", "grammar": "nominative singular" },
-        { "devanagari": "कव्यानां", "iast": "kavyānām", "meaning": "of the offerings (to the manes or gods)", "grammar": "genitive plural" },
-        { "devanagari": "भगः", "iast": "bhagaḥ", "meaning": "Bhaga (god of dispensation), bestower", "grammar": "nominative singular" },
-        { "devanagari": "देवानाम्", "iast": "devānām", "meaning": "of the gods", "grammar": "genitive plural" },
-        { "devanagari": "उत", "iast": "uta", "meaning": "and" },
-        { "devanagari": "सः", "iast": "saḥ", "meaning": "he" },
-        { "devanagari": "नः", "iast": "naḥ", "meaning": "us, of us", "grammar": "1st person plural accusative/genitive" },
-        { "devanagari": "मित्रः", "iast": "mitraḥ", "meaning": "Mitra (god of contracts, friend)" },
-        { "devanagari": "वरुणः", "iast": "varuṇaḥ", "meaning": "Varuṇa (god of cosmic order, ṛta)" },
-        { "devanagari": "मामहन्ताम्", "iast": "māmahantām", "meaning": "may they magnify, glorify (us)", "root_dhatu": "मह्", "grammar": "3rd person plural imperative ātmanepada (intensive)" }
+        {
+          "devanagari": "अग्निः",
+          "iast": "agniḥ",
+          "meaning": "Agni",
+          "grammar": "nominative singular"
+        },
+        {
+          "devanagari": "मुखं",
+          "iast": "mukham",
+          "meaning": "mouth, opening",
+          "grammar": "nominative singular"
+        },
+        {
+          "devanagari": "कव्यानां",
+          "iast": "kavyānām",
+          "meaning": "of the offerings (to the manes or gods)",
+          "grammar": "genitive plural"
+        },
+        {
+          "devanagari": "भगः",
+          "iast": "bhagaḥ",
+          "meaning": "Bhaga (god of dispensation), bestower",
+          "grammar": "nominative singular"
+        },
+        {
+          "devanagari": "देवानाम्",
+          "iast": "devānām",
+          "meaning": "of the gods",
+          "grammar": "genitive plural"
+        },
+        {
+          "devanagari": "उत",
+          "iast": "uta",
+          "meaning": "and"
+        },
+        {
+          "devanagari": "सः",
+          "iast": "saḥ",
+          "meaning": "he"
+        },
+        {
+          "devanagari": "नः",
+          "iast": "naḥ",
+          "meaning": "us, of us",
+          "grammar": "1st person plural accusative/genitive"
+        },
+        {
+          "devanagari": "मित्रः",
+          "iast": "mitraḥ",
+          "meaning": "Mitra (god of contracts, friend)"
+        },
+        {
+          "devanagari": "वरुणः",
+          "iast": "varuṇaḥ",
+          "meaning": "Varuṇa (god of cosmic order, ṛta)"
+        },
+        {
+          "devanagari": "मामहन्ताम्",
+          "iast": "māmahantām",
+          "meaning": "may they magnify, glorify (us)",
+          "root_dhatu": "मह्",
+          "grammar": "3rd person plural imperative ātmanepada (intensive)"
+        }
       ]
     },
     {
@@ -118,7 +337,12 @@
       "english_poetic": "May it be offered! May it be offered! May it be offered!",
       "explanation": "The threefold svāhā — three consecutive offerings into the fire. In yajña practice each pour is timed to the utterance; the threefold repetition often marks the completion of a major oblation sequence.",
       "words": [
-        { "devanagari": "स्वाहा", "iast": "svāhā", "meaning": "the offering-utterance; let it be well-given", "grammar": "indeclinable, ritual exclamation" }
+        {
+          "devanagari": "स्वाहा",
+          "iast": "svāhā",
+          "meaning": "the offering-utterance; let it be well-given",
+          "grammar": "indeclinable, ritual exclamation"
+        }
       ]
     },
     {
@@ -131,23 +355,112 @@
       "english_poetic": "O Agni, lead us by the good path to prosperity — you, the god who knows all the ways. Take away from us the crookedness of sin; we offer you the fullest praise we can.",
       "explanation": "Rigveda 1.189.1 = Īśā Upaniṣad mantra 18. Recited at the close of every formal Vedic and Vedantic recitation. The structure is a four-fold prayer: lead us → because you know all → cleanse our error → so we may praise. The word 'juhurāṇam' (literally 'going crookedly') for sin captures the Vedic conception of error as deviation from ṛta, the straight path of cosmic order.",
       "words": [
-        { "devanagari": "अग्ने", "iast": "agne", "meaning": "O Agni", "grammar": "vocative singular" },
-        { "devanagari": "नय", "iast": "naya", "meaning": "lead!", "root_dhatu": "नी", "grammar": "2nd person singular imperative" },
-        { "devanagari": "सुपथा", "iast": "supathā", "meaning": "by the good path", "grammar": "instrumental singular" },
-        { "devanagari": "राये", "iast": "rāye", "meaning": "to wealth, for the sake of wealth", "grammar": "dative singular" },
-        { "devanagari": "अस्मान्", "iast": "asmān", "meaning": "us", "grammar": "1st person plural accusative" },
-        { "devanagari": "विश्वानि", "iast": "viśvāni", "meaning": "all", "grammar": "neuter plural accusative" },
-        { "devanagari": "देव", "iast": "deva", "meaning": "O god", "grammar": "vocative singular" },
-        { "devanagari": "वयुनानि", "iast": "vayunāni", "meaning": "paths, ways, modes of knowledge", "grammar": "neuter plural accusative" },
-        { "devanagari": "विद्वान्", "iast": "vidvān", "meaning": "knowing", "root_dhatu": "विद्", "grammar": "nominative singular, perfect participle" },
-        { "devanagari": "युयोधि", "iast": "yuyodhi", "meaning": "separate, ward off!", "root_dhatu": "यु", "grammar": "2nd person singular imperative intensive" },
-        { "devanagari": "अस्मत्", "iast": "asmat", "meaning": "from us", "grammar": "ablative" },
-        { "devanagari": "जुहुराणम्", "iast": "juhurāṇam", "meaning": "going crookedly, deviating", "grammar": "accusative singular participle" },
-        { "devanagari": "एनः", "iast": "enaḥ", "meaning": "sin, fault", "grammar": "neuter accusative singular" },
-        { "devanagari": "भूयिष्ठां", "iast": "bhūyiṣṭhām", "meaning": "most abundant (superlative)", "grammar": "accusative singular feminine" },
-        { "devanagari": "ते", "iast": "te", "meaning": "to you", "grammar": "2nd person singular dative" },
-        { "devanagari": "नमउक्तिं", "iast": "nama-uktim", "meaning": "speech of homage, word of obeisance", "grammar": "accusative singular" },
-        { "devanagari": "विधेम", "iast": "vidhema", "meaning": "may we offer, perform", "root_dhatu": "विध्", "grammar": "1st person plural optative" }
+        {
+          "devanagari": "अग्ने",
+          "iast": "agne",
+          "meaning": "O Agni",
+          "grammar": "vocative singular"
+        },
+        {
+          "devanagari": "नय",
+          "iast": "naya",
+          "meaning": "lead!",
+          "root_dhatu": "नी",
+          "grammar": "2nd person singular imperative"
+        },
+        {
+          "devanagari": "सुपथा",
+          "iast": "supathā",
+          "meaning": "by the good path",
+          "grammar": "instrumental singular"
+        },
+        {
+          "devanagari": "राये",
+          "iast": "rāye",
+          "meaning": "to wealth, for the sake of wealth",
+          "grammar": "dative singular"
+        },
+        {
+          "devanagari": "अस्मान्",
+          "iast": "asmān",
+          "meaning": "us",
+          "grammar": "1st person plural accusative"
+        },
+        {
+          "devanagari": "विश्वानि",
+          "iast": "viśvāni",
+          "meaning": "all",
+          "grammar": "neuter plural accusative"
+        },
+        {
+          "devanagari": "देव",
+          "iast": "deva",
+          "meaning": "O god",
+          "grammar": "vocative singular"
+        },
+        {
+          "devanagari": "वयुनानि",
+          "iast": "vayunāni",
+          "meaning": "paths, ways, modes of knowledge",
+          "grammar": "neuter plural accusative"
+        },
+        {
+          "devanagari": "विद्वान्",
+          "iast": "vidvān",
+          "meaning": "knowing",
+          "root_dhatu": "विद्",
+          "grammar": "nominative singular, perfect participle"
+        },
+        {
+          "devanagari": "युयोधि",
+          "iast": "yuyodhi",
+          "meaning": "separate, ward off!",
+          "root_dhatu": "यु",
+          "grammar": "2nd person singular imperative intensive"
+        },
+        {
+          "devanagari": "अस्मत्",
+          "iast": "asmat",
+          "meaning": "from us",
+          "grammar": "ablative"
+        },
+        {
+          "devanagari": "जुहुराणम्",
+          "iast": "juhurāṇam",
+          "meaning": "going crookedly, deviating",
+          "grammar": "accusative singular participle"
+        },
+        {
+          "devanagari": "एनः",
+          "iast": "enaḥ",
+          "meaning": "sin, fault",
+          "grammar": "neuter accusative singular"
+        },
+        {
+          "devanagari": "भूयिष्ठां",
+          "iast": "bhūyiṣṭhām",
+          "meaning": "most abundant (superlative)",
+          "grammar": "accusative singular feminine"
+        },
+        {
+          "devanagari": "ते",
+          "iast": "te",
+          "meaning": "to you",
+          "grammar": "2nd person singular dative"
+        },
+        {
+          "devanagari": "नमउक्तिं",
+          "iast": "nama-uktim",
+          "meaning": "speech of homage, word of obeisance",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "विधेम",
+          "iast": "vidhema",
+          "meaning": "may we offer, perform",
+          "root_dhatu": "विध्",
+          "grammar": "1st person plural optative"
+        }
       ]
     },
     {
@@ -160,14 +473,55 @@
       "english_poetic": "O Agni — we call upon you as lord of the hosts, poet among poets, of incomparable fame.",
       "explanation": "Rigveda 2.23.1 (with opening vocative 'agne') — the famous 'gaṇānāṃ tvā gaṇapatiṃ havāmahe' verse. In the Rigveda this is addressed to Brahmaṇaspati, the lord of mantras; in later Hindu tradition the same verse came to be applied to Gaṇeśa as the invocation chanted at the start of every undertaking. 'Kaviṃ kavīnām' — the seer-poet of all seer-poets — is a high Vedic title.",
       "words": [
-        { "devanagari": "अग्ने", "iast": "agne", "meaning": "O Agni", "grammar": "vocative singular" },
-        { "devanagari": "गणानां", "iast": "gaṇānām", "meaning": "of the hosts, troops, gatherings", "grammar": "genitive plural" },
-        { "devanagari": "त्वा", "iast": "tvā", "meaning": "you", "grammar": "2nd person singular accusative" },
-        { "devanagari": "गणपतिं", "iast": "gaṇapatim", "meaning": "lord of hosts (Gaṇapati)", "grammar": "accusative singular" },
-        { "devanagari": "हवामहे", "iast": "havāmahe", "meaning": "we invoke", "root_dhatu": "ह्वे", "grammar": "1st person plural present ātmanepada" },
-        { "devanagari": "कविं", "iast": "kavim", "meaning": "seer, poet", "grammar": "accusative singular" },
-        { "devanagari": "कवीनाम्", "iast": "kavīnām", "meaning": "of the seers/poets", "grammar": "genitive plural" },
-        { "devanagari": "उपमश्रवस्तमम्", "iast": "upamaśravastamam", "meaning": "of most-comparable-fame, of incomparable renown", "grammar": "accusative singular superlative" }
+        {
+          "devanagari": "अग्ने",
+          "iast": "agne",
+          "meaning": "O Agni",
+          "grammar": "vocative singular"
+        },
+        {
+          "devanagari": "गणानां",
+          "iast": "gaṇānām",
+          "meaning": "of the hosts, troops, gatherings",
+          "grammar": "genitive plural"
+        },
+        {
+          "devanagari": "त्वा",
+          "iast": "tvā",
+          "meaning": "you",
+          "grammar": "2nd person singular accusative"
+        },
+        {
+          "devanagari": "गणपतिं",
+          "iast": "gaṇapatim",
+          "meaning": "lord of hosts (Gaṇapati)",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "हवामहे",
+          "iast": "havāmahe",
+          "meaning": "we invoke",
+          "root_dhatu": "ह्वे",
+          "grammar": "1st person plural present ātmanepada"
+        },
+        {
+          "devanagari": "कविं",
+          "iast": "kavim",
+          "meaning": "seer, poet",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "कवीनाम्",
+          "iast": "kavīnām",
+          "meaning": "of the seers/poets",
+          "grammar": "genitive plural"
+        },
+        {
+          "devanagari": "उपमश्रवस्तमम्",
+          "iast": "upamaśravastamam",
+          "meaning": "of most-comparable-fame, of incomparable renown",
+          "grammar": "accusative singular superlative"
+        }
       ]
     },
     {
@@ -180,18 +534,80 @@
       "english_poetic": "I summon first, from the east, the banner of the sacrifice — Agni who dwells in heaven. Kindled day by day, he brings us strength.",
       "explanation": "A Vedic Agni invocation in the yajña-prayoga tradition. The fire on the altar is the visible banner ('ketu') marking that this place has become the seat of the rite; Agni in heaven is simultaneously summoned to occupy that banner. 'Diviṣad' — sitting in heaven — names the celestial form; 'idhyamāna' (being kindled) the earthly. 'Vāja' is the Vedic word for vigour, strength, the prize won in the rite.",
       "words": [
-        { "devanagari": "यज्ञस्य", "iast": "yajñasya", "meaning": "of the sacrifice", "grammar": "genitive singular" },
-        { "devanagari": "केतुं", "iast": "ketum", "meaning": "banner, standard", "grammar": "accusative singular" },
-        { "devanagari": "प्रथमं", "iast": "prathamam", "meaning": "first", "grammar": "accusative singular" },
-        { "devanagari": "पुरस्तात्", "iast": "purastāt", "meaning": "from in front, from the east", "grammar": "indeclinable" },
-        { "devanagari": "आ", "iast": "ā", "meaning": "hither (preverb)", "grammar": "preverb" },
-        { "devanagari": "ह्वये", "iast": "hvaye", "meaning": "I call, I invoke", "root_dhatu": "ह्वे", "grammar": "1st person singular present ātmanepada" },
-        { "devanagari": "दिविषद्", "iast": "diviṣad", "meaning": "sitting in heaven, heavenly", "grammar": "accusative singular" },
-        { "devanagari": "अग्निम्", "iast": "agnim", "meaning": "Agni", "grammar": "accusative singular" },
-        { "devanagari": "सु", "iast": "su", "meaning": "well (intensifier)", "grammar": "particle" },
-        { "devanagari": "दिवेदिवे", "iast": "dive-dive", "meaning": "day by day", "grammar": "locative reduplicated" },
-        { "devanagari": "इध्यमानं", "iast": "idhyamānam", "meaning": "being kindled", "root_dhatu": "इन्ध्", "grammar": "present passive participle, accusative singular" },
-        { "devanagari": "वाजान्", "iast": "vājān", "meaning": "strengths, prizes, sustenance", "grammar": "masculine accusative plural" }
+        {
+          "devanagari": "यज्ञस्य",
+          "iast": "yajñasya",
+          "meaning": "of the sacrifice",
+          "grammar": "genitive singular"
+        },
+        {
+          "devanagari": "केतुं",
+          "iast": "ketum",
+          "meaning": "banner, standard",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "प्रथमं",
+          "iast": "prathamam",
+          "meaning": "first",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "पुरस्तात्",
+          "iast": "purastāt",
+          "meaning": "from in front, from the east",
+          "grammar": "indeclinable"
+        },
+        {
+          "devanagari": "आ",
+          "iast": "ā",
+          "meaning": "hither (preverb)",
+          "grammar": "preverb"
+        },
+        {
+          "devanagari": "ह्वये",
+          "iast": "hvaye",
+          "meaning": "I call, I invoke",
+          "root_dhatu": "ह्वे",
+          "grammar": "1st person singular present ātmanepada"
+        },
+        {
+          "devanagari": "दिविषद्",
+          "iast": "diviṣad",
+          "meaning": "sitting in heaven, heavenly",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "अग्निम्",
+          "iast": "agnim",
+          "meaning": "Agni",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "सु",
+          "iast": "su",
+          "meaning": "well (intensifier)",
+          "grammar": "particle"
+        },
+        {
+          "devanagari": "दिवेदिवे",
+          "iast": "dive-dive",
+          "meaning": "day by day",
+          "grammar": "locative reduplicated"
+        },
+        {
+          "devanagari": "इध्यमानं",
+          "iast": "idhyamānam",
+          "meaning": "being kindled",
+          "root_dhatu": "इन्ध्",
+          "grammar": "present passive participle, accusative singular"
+        },
+        {
+          "devanagari": "वाजान्",
+          "iast": "vājān",
+          "meaning": "strengths, prizes, sustenance",
+          "grammar": "masculine accusative plural"
+        }
       ]
     },
     {
@@ -204,16 +620,66 @@
       "english_poetic": "Like a father to his son, O Agni, be easy for us to approach. Stay with us — for our well-being.",
       "explanation": "Rigveda 1.1.9 — the closing verse of the very first hymn of the Veda. The simile 'piteva sūnave' (as a father to a son) is one of the gentlest images in the entire Rigveda; the verse imagines Agni not as cosmic banner but as patient parent. The Vedic root 'sac-' (to be a companion to) carries the request: be near us. With this prayer the Veda begins.",
       "words": [
-        { "devanagari": "सः", "iast": "saḥ", "meaning": "he" },
-        { "devanagari": "नः", "iast": "naḥ", "meaning": "us, to us", "grammar": "1st person plural" },
-        { "devanagari": "पिता", "iast": "pitā", "meaning": "father", "grammar": "nominative singular" },
-        { "devanagari": "इव", "iast": "iva", "meaning": "like, as" },
-        { "devanagari": "सूनवे", "iast": "sūnave", "meaning": "to a son", "grammar": "dative singular" },
-        { "devanagari": "अग्ने", "iast": "agne", "meaning": "O Agni", "grammar": "vocative singular" },
-        { "devanagari": "सूपायनः", "iast": "sūpāyanaḥ", "meaning": "easy to approach, accessible", "grammar": "nominative singular" },
-        { "devanagari": "भव", "iast": "bhava", "meaning": "be!", "root_dhatu": "भू", "grammar": "2nd person singular imperative" },
-        { "devanagari": "सचस्व", "iast": "sacasva", "meaning": "be in company with, accompany!", "root_dhatu": "सच्", "grammar": "2nd person singular imperative ātmanepada" },
-        { "devanagari": "स्वस्तये", "iast": "svastaye", "meaning": "for well-being, for blessing", "grammar": "feminine dative singular" }
+        {
+          "devanagari": "सः",
+          "iast": "saḥ",
+          "meaning": "he"
+        },
+        {
+          "devanagari": "नः",
+          "iast": "naḥ",
+          "meaning": "us, to us",
+          "grammar": "1st person plural"
+        },
+        {
+          "devanagari": "पिता",
+          "iast": "pitā",
+          "meaning": "father",
+          "grammar": "nominative singular"
+        },
+        {
+          "devanagari": "इव",
+          "iast": "iva",
+          "meaning": "like, as"
+        },
+        {
+          "devanagari": "सूनवे",
+          "iast": "sūnave",
+          "meaning": "to a son",
+          "grammar": "dative singular"
+        },
+        {
+          "devanagari": "अग्ने",
+          "iast": "agne",
+          "meaning": "O Agni",
+          "grammar": "vocative singular"
+        },
+        {
+          "devanagari": "सूपायनः",
+          "iast": "sūpāyanaḥ",
+          "meaning": "easy to approach, accessible",
+          "grammar": "nominative singular"
+        },
+        {
+          "devanagari": "भव",
+          "iast": "bhava",
+          "meaning": "be!",
+          "root_dhatu": "भू",
+          "grammar": "2nd person singular imperative"
+        },
+        {
+          "devanagari": "सचस्व",
+          "iast": "sacasva",
+          "meaning": "be in company with, accompany!",
+          "root_dhatu": "सच्",
+          "grammar": "2nd person singular imperative ātmanepada"
+        },
+        {
+          "devanagari": "स्वस्तये",
+          "iast": "svastaye",
+          "meaning": "for well-being, for blessing",
+          "grammar": "feminine dative singular"
+        }
       ]
     },
     {
@@ -226,8 +692,18 @@
       "english_poetic": "To Agni — the offering! The offering! The offering!",
       "explanation": "The rite closes as it began — three offerings to Agni, the threefold 'svāhā' fading into the silence after the last flame.",
       "words": [
-        { "devanagari": "अग्नये", "iast": "agnaye", "meaning": "to Agni", "grammar": "dative singular" },
-        { "devanagari": "स्वाहा", "iast": "svāhā", "meaning": "the offering-utterance; let it be well-given", "grammar": "indeclinable, ritual exclamation" }
+        {
+          "devanagari": "अग्नये",
+          "iast": "agnaye",
+          "meaning": "to Agni",
+          "grammar": "dative singular"
+        },
+        {
+          "devanagari": "स्वाहा",
+          "iast": "svāhā",
+          "meaning": "the offering-utterance; let it be well-given",
+          "grammar": "indeclinable, ritual exclamation"
+        }
       ]
     }
   ]

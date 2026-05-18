@@ -4,6 +4,12 @@
   "youtube_url": "https://www.youtube.com/watch?v=cToCInaGzCw",
   "title": "Shri Hari Stotram (Jagajjālapālam)",
   "language": "sa",
+  "tags": [
+    "classical-stotra",
+    "bhakti",
+    "vishnu",
+    "swami-brahmananda"
+  ],
   "lines": [
     {
       "line": 0,
@@ -15,9 +21,24 @@
       "english_poetic": "Om — I bow to Lord Nārāyaṇa.",
       "explanation": "The ashtākṣara — the sacred eight-syllable Vishnu mantra — used as an invocation before reciting any Vaiṣṇava stotram.",
       "words": [
-        { "devanagari": "ॐ", "iast": "oṃ", "meaning": "the sacred primordial sound" },
-        { "devanagari": "नमो", "iast": "namo", "meaning": "salutation, obeisance", "root_dhatu": "नमस्", "grammar": "indeclinable" },
-        { "devanagari": "नारायणाय", "iast": "nārāyaṇāya", "meaning": "to Nārāyaṇa (Vishnu)", "grammar": "masculine, dative singular" }
+        {
+          "devanagari": "ॐ",
+          "iast": "oṃ",
+          "meaning": "the sacred primordial sound"
+        },
+        {
+          "devanagari": "नमो",
+          "iast": "namo",
+          "meaning": "salutation, obeisance",
+          "root_dhatu": "नमस्",
+          "grammar": "indeclinable"
+        },
+        {
+          "devanagari": "नारायणाय",
+          "iast": "nārāyaṇāya",
+          "meaning": "to Nārāyaṇa (Vishnu)",
+          "grammar": "masculine, dative singular"
+        }
       ]
     },
     {
@@ -30,27 +51,114 @@
       "english_poetic": "He who protects the woven fabric of the worlds, with a shining garland round his neck, his forehead radiant as the autumn moon, the death of mighty demons; whose body is dark as the open sky, whose māyā none can defeat, the consort of lotus-born Lakṣmī — I worship Him, I worship Him.",
       "explanation": "Verse 1 establishes Hari as cosmic protector and demon-slayer, foreshadowing the themes of the entire stotram: he holds creation together while remaining transcendent. 'Padmā' is one of Lakṣmī's names.",
       "words": [
-        { "devanagari": "जगत्", "iast": "jagat", "meaning": "world, universe" },
-        { "devanagari": "जाल", "iast": "jāla", "meaning": "net, web" },
-        { "devanagari": "पालं", "iast": "pālam", "meaning": "protector", "grammar": "accusative singular" },
-        { "devanagari": "कचत्", "iast": "kacat", "meaning": "shining, glittering" },
-        { "devanagari": "कण्ठ", "iast": "kaṇṭha", "meaning": "neck" },
-        { "devanagari": "मालं", "iast": "mālam", "meaning": "garland" },
-        { "devanagari": "शरत्", "iast": "śarat", "meaning": "autumn" },
-        { "devanagari": "चन्द्र", "iast": "candra", "meaning": "moon" },
-        { "devanagari": "भालं", "iast": "bhālam", "meaning": "forehead" },
-        { "devanagari": "महा", "iast": "mahā", "meaning": "great" },
-        { "devanagari": "दैत्य", "iast": "daitya", "meaning": "demon" },
-        { "devanagari": "कालं", "iast": "kālam", "meaning": "death, time" },
-        { "devanagari": "नभस्", "iast": "nabhas", "meaning": "sky" },
-        { "devanagari": "नील", "iast": "nīla", "meaning": "dark blue" },
-        { "devanagari": "कायं", "iast": "kāyam", "meaning": "body" },
-        { "devanagari": "दुरावार", "iast": "durāvāra", "meaning": "hard to ward off" },
-        { "devanagari": "मायं", "iast": "māyam", "meaning": "māyā, illusion" },
-        { "devanagari": "सुपद्मा", "iast": "supadmā", "meaning": "the beautiful lotus-born one (Lakṣmī)" },
-        { "devanagari": "सहायं", "iast": "sahāyam", "meaning": "companion" },
-        { "devanagari": "भजे", "iast": "bhaje", "meaning": "I worship", "root_dhatu": "भज्", "grammar": "1st person singular present" },
-        { "devanagari": "अहम्", "iast": "aham", "meaning": "I" }
+        {
+          "devanagari": "जगत्",
+          "iast": "jagat",
+          "meaning": "world, universe"
+        },
+        {
+          "devanagari": "जाल",
+          "iast": "jāla",
+          "meaning": "net, web"
+        },
+        {
+          "devanagari": "पालं",
+          "iast": "pālam",
+          "meaning": "protector",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "कचत्",
+          "iast": "kacat",
+          "meaning": "shining, glittering"
+        },
+        {
+          "devanagari": "कण्ठ",
+          "iast": "kaṇṭha",
+          "meaning": "neck"
+        },
+        {
+          "devanagari": "मालं",
+          "iast": "mālam",
+          "meaning": "garland"
+        },
+        {
+          "devanagari": "शरत्",
+          "iast": "śarat",
+          "meaning": "autumn"
+        },
+        {
+          "devanagari": "चन्द्र",
+          "iast": "candra",
+          "meaning": "moon"
+        },
+        {
+          "devanagari": "भालं",
+          "iast": "bhālam",
+          "meaning": "forehead"
+        },
+        {
+          "devanagari": "महा",
+          "iast": "mahā",
+          "meaning": "great"
+        },
+        {
+          "devanagari": "दैत्य",
+          "iast": "daitya",
+          "meaning": "demon"
+        },
+        {
+          "devanagari": "कालं",
+          "iast": "kālam",
+          "meaning": "death, time"
+        },
+        {
+          "devanagari": "नभस्",
+          "iast": "nabhas",
+          "meaning": "sky"
+        },
+        {
+          "devanagari": "नील",
+          "iast": "nīla",
+          "meaning": "dark blue"
+        },
+        {
+          "devanagari": "कायं",
+          "iast": "kāyam",
+          "meaning": "body"
+        },
+        {
+          "devanagari": "दुरावार",
+          "iast": "durāvāra",
+          "meaning": "hard to ward off"
+        },
+        {
+          "devanagari": "मायं",
+          "iast": "māyam",
+          "meaning": "māyā, illusion"
+        },
+        {
+          "devanagari": "सुपद्मा",
+          "iast": "supadmā",
+          "meaning": "the beautiful lotus-born one (Lakṣmī)"
+        },
+        {
+          "devanagari": "सहायं",
+          "iast": "sahāyam",
+          "meaning": "companion"
+        },
+        {
+          "devanagari": "भजे",
+          "iast": "bhaje",
+          "meaning": "I worship",
+          "root_dhatu": "भज्",
+          "grammar": "1st person singular present"
+        },
+        {
+          "devanagari": "अहम्",
+          "iast": "aham",
+          "meaning": "I"
+        }
       ]
     },
     {
@@ -63,26 +171,106 @@
       "english_poetic": "He who reclines forever upon the milk ocean, whose smile blossoms like a fresh-opening flower, who dwells within every corner of the universe, who blazes with the radiance of a hundred suns; armed with mace and disc, robed in luminous yellow silk, his lovely face lit with a smile — I worship Him, I worship Him.",
       "explanation": "Verse 2 paints Vishnu's iconography: reclining on Ananta-śeṣa in the cosmic ocean, holding the gadā (Kaumodakī) and cakra (Sudarśana), wearing the pītāmbara. The 'hundred suns' image is a classical Vedic measure of divine luminosity.",
       "words": [
-        { "devanagari": "सदा", "iast": "sadā", "meaning": "always" },
-        { "devanagari": "अम्भोधि", "iast": "ambhodhi", "meaning": "ocean (water-holder)" },
-        { "devanagari": "वासं", "iast": "vāsam", "meaning": "dwelling, abode" },
-        { "devanagari": "गलत्", "iast": "galat", "meaning": "dripping, newly-opening" },
-        { "devanagari": "पुष्प", "iast": "puṣpa", "meaning": "flower" },
-        { "devanagari": "हासं", "iast": "hāsam", "meaning": "smile, laughter" },
-        { "devanagari": "जगत्", "iast": "jagat", "meaning": "world" },
-        { "devanagari": "सन्निवासं", "iast": "sannivāsam", "meaning": "complete dwelling, indwelling presence" },
-        { "devanagari": "शत", "iast": "śata", "meaning": "hundred" },
-        { "devanagari": "आदित्य", "iast": "āditya", "meaning": "sun" },
-        { "devanagari": "भासम्", "iast": "bhāsam", "meaning": "radiance, splendour" },
-        { "devanagari": "गदा", "iast": "gadā", "meaning": "mace" },
-        { "devanagari": "चक्र", "iast": "cakra", "meaning": "discus" },
-        { "devanagari": "शस्त्रं", "iast": "śastram", "meaning": "weapon" },
-        { "devanagari": "लसत्", "iast": "lasat", "meaning": "shining, glittering" },
-        { "devanagari": "पीत", "iast": "pīta", "meaning": "yellow" },
-        { "devanagari": "वस्त्रं", "iast": "vastram", "meaning": "garment, cloth" },
-        { "devanagari": "हसत्", "iast": "hasat", "meaning": "smiling" },
-        { "devanagari": "चारु", "iast": "cāru", "meaning": "beautiful, charming" },
-        { "devanagari": "वक्त्रं", "iast": "vaktram", "meaning": "face, mouth" }
+        {
+          "devanagari": "सदा",
+          "iast": "sadā",
+          "meaning": "always"
+        },
+        {
+          "devanagari": "अम्भोधि",
+          "iast": "ambhodhi",
+          "meaning": "ocean (water-holder)"
+        },
+        {
+          "devanagari": "वासं",
+          "iast": "vāsam",
+          "meaning": "dwelling, abode"
+        },
+        {
+          "devanagari": "गलत्",
+          "iast": "galat",
+          "meaning": "dripping, newly-opening"
+        },
+        {
+          "devanagari": "पुष्प",
+          "iast": "puṣpa",
+          "meaning": "flower"
+        },
+        {
+          "devanagari": "हासं",
+          "iast": "hāsam",
+          "meaning": "smile, laughter"
+        },
+        {
+          "devanagari": "जगत्",
+          "iast": "jagat",
+          "meaning": "world"
+        },
+        {
+          "devanagari": "सन्निवासं",
+          "iast": "sannivāsam",
+          "meaning": "complete dwelling, indwelling presence"
+        },
+        {
+          "devanagari": "शत",
+          "iast": "śata",
+          "meaning": "hundred"
+        },
+        {
+          "devanagari": "आदित्य",
+          "iast": "āditya",
+          "meaning": "sun"
+        },
+        {
+          "devanagari": "भासम्",
+          "iast": "bhāsam",
+          "meaning": "radiance, splendour"
+        },
+        {
+          "devanagari": "गदा",
+          "iast": "gadā",
+          "meaning": "mace"
+        },
+        {
+          "devanagari": "चक्र",
+          "iast": "cakra",
+          "meaning": "discus"
+        },
+        {
+          "devanagari": "शस्त्रं",
+          "iast": "śastram",
+          "meaning": "weapon"
+        },
+        {
+          "devanagari": "लसत्",
+          "iast": "lasat",
+          "meaning": "shining, glittering"
+        },
+        {
+          "devanagari": "पीत",
+          "iast": "pīta",
+          "meaning": "yellow"
+        },
+        {
+          "devanagari": "वस्त्रं",
+          "iast": "vastram",
+          "meaning": "garment, cloth"
+        },
+        {
+          "devanagari": "हसत्",
+          "iast": "hasat",
+          "meaning": "smiling"
+        },
+        {
+          "devanagari": "चारु",
+          "iast": "cāru",
+          "meaning": "beautiful, charming"
+        },
+        {
+          "devanagari": "वक्त्रं",
+          "iast": "vaktram",
+          "meaning": "face, mouth"
+        }
       ]
     },
     {
@@ -95,24 +283,96 @@
       "english_poetic": "He who hangs as a garland round the neck of Lakṣmī, the very essence of the gathered Vedas, who plays in the depths of the cosmic waters, who lifts the burden of the Earth; whose form is consciousness-bliss itself, whose true nature enchants the mind, who has assumed many incarnations — I worship Him, I worship Him.",
       "explanation": "Verse 3 weaves four registers together: Vishnu as Lakṣmī's beloved, as the meaning of all Vedas, as the cosmic sleeper on Ananta, and as the lifter of the world's weight (echoing the avatāras of Varāha and Kūrma). 'Cit-ānanda' is the technical Vedāntic compound for the Self.",
       "words": [
-        { "devanagari": "रमा", "iast": "ramā", "meaning": "Ramā, Lakṣmī" },
-        { "devanagari": "कण्ठ", "iast": "kaṇṭha", "meaning": "neck" },
-        { "devanagari": "हारं", "iast": "hāram", "meaning": "garland, necklace" },
-        { "devanagari": "श्रुति", "iast": "śruti", "meaning": "Veda (that which is heard)" },
-        { "devanagari": "व्रात", "iast": "vrāta", "meaning": "multitude, collection" },
-        { "devanagari": "सारं", "iast": "sāram", "meaning": "essence" },
-        { "devanagari": "जलान्तर्", "iast": "jalāntar", "meaning": "within water" },
-        { "devanagari": "विहारं", "iast": "vihāram", "meaning": "sport, recreation" },
-        { "devanagari": "धरा", "iast": "dharā", "meaning": "earth" },
-        { "devanagari": "भार", "iast": "bhāra", "meaning": "burden" },
-        { "devanagari": "हारम्", "iast": "hāram", "meaning": "remover, taker-away" },
-        { "devanagari": "चित्", "iast": "cit", "meaning": "consciousness" },
-        { "devanagari": "आनन्द", "iast": "ānanda", "meaning": "bliss" },
-        { "devanagari": "रूपं", "iast": "rūpam", "meaning": "form" },
-        { "devanagari": "मनोज्ञ", "iast": "manojña", "meaning": "delightful to the mind" },
-        { "devanagari": "स्वरूपं", "iast": "svarūpam", "meaning": "true form, essential nature" },
-        { "devanagari": "धृत", "iast": "dhṛta", "meaning": "held, taken on" },
-        { "devanagari": "अनेक", "iast": "aneka", "meaning": "many" }
+        {
+          "devanagari": "रमा",
+          "iast": "ramā",
+          "meaning": "Ramā, Lakṣmī"
+        },
+        {
+          "devanagari": "कण्ठ",
+          "iast": "kaṇṭha",
+          "meaning": "neck"
+        },
+        {
+          "devanagari": "हारं",
+          "iast": "hāram",
+          "meaning": "garland, necklace"
+        },
+        {
+          "devanagari": "श्रुति",
+          "iast": "śruti",
+          "meaning": "Veda (that which is heard)"
+        },
+        {
+          "devanagari": "व्रात",
+          "iast": "vrāta",
+          "meaning": "multitude, collection"
+        },
+        {
+          "devanagari": "सारं",
+          "iast": "sāram",
+          "meaning": "essence"
+        },
+        {
+          "devanagari": "जलान्तर्",
+          "iast": "jalāntar",
+          "meaning": "within water"
+        },
+        {
+          "devanagari": "विहारं",
+          "iast": "vihāram",
+          "meaning": "sport, recreation"
+        },
+        {
+          "devanagari": "धरा",
+          "iast": "dharā",
+          "meaning": "earth"
+        },
+        {
+          "devanagari": "भार",
+          "iast": "bhāra",
+          "meaning": "burden"
+        },
+        {
+          "devanagari": "हारम्",
+          "iast": "hāram",
+          "meaning": "remover, taker-away"
+        },
+        {
+          "devanagari": "चित्",
+          "iast": "cit",
+          "meaning": "consciousness"
+        },
+        {
+          "devanagari": "आनन्द",
+          "iast": "ānanda",
+          "meaning": "bliss"
+        },
+        {
+          "devanagari": "रूपं",
+          "iast": "rūpam",
+          "meaning": "form"
+        },
+        {
+          "devanagari": "मनोज्ञ",
+          "iast": "manojña",
+          "meaning": "delightful to the mind"
+        },
+        {
+          "devanagari": "स्वरूपं",
+          "iast": "svarūpam",
+          "meaning": "true form, essential nature"
+        },
+        {
+          "devanagari": "धृत",
+          "iast": "dhṛta",
+          "meaning": "held, taken on"
+        },
+        {
+          "devanagari": "अनेक",
+          "iast": "aneka",
+          "meaning": "many"
+        }
       ]
     },
     {
@@ -125,26 +385,106 @@
       "english_poetic": "He who is untouched by ageing or birth, brimming with the highest bliss, sunk in eternal samādhi, forever fresh; the very cause of the world's coming-into-being, the rallying banner of the army of gods, the one bridge spanning all three realms — I worship Him, I worship Him.",
       "explanation": "The theologically densest verse: Vishnu is at once transcendent (beyond birth and decay, absorbed in samādhi) and immanent (cause of all creation, protector of devas, bridge between worlds). The Vedāntic paradox of the Absolute that is also active in the world is held in a single śloka.",
       "words": [
-        { "devanagari": "जरा", "iast": "jarā", "meaning": "old age" },
-        { "devanagari": "जन्म", "iast": "janma", "meaning": "birth" },
-        { "devanagari": "हीनं", "iast": "hīnam", "meaning": "free from, devoid of" },
-        { "devanagari": "पर", "iast": "para", "meaning": "supreme, highest" },
-        { "devanagari": "आनन्द", "iast": "ānanda", "meaning": "bliss" },
-        { "devanagari": "पीनं", "iast": "pīnam", "meaning": "full, swollen" },
-        { "devanagari": "समाधान", "iast": "samādhāna", "meaning": "samādhi, meditative absorption" },
-        { "devanagari": "लीनं", "iast": "līnam", "meaning": "absorbed, dissolved in" },
-        { "devanagari": "सदा", "iast": "sadā", "meaning": "always" },
-        { "devanagari": "एव", "iast": "eva", "meaning": "indeed (emphatic)" },
-        { "devanagari": "अनवीनम्", "iast": "anavīnam", "meaning": "ever-new, never-old" },
-        { "devanagari": "जगत्", "iast": "jagat", "meaning": "world" },
-        { "devanagari": "जन्म", "iast": "janma", "meaning": "birth" },
-        { "devanagari": "हेतुं", "iast": "hetum", "meaning": "cause" },
-        { "devanagari": "सुर", "iast": "sura", "meaning": "god, deva" },
-        { "devanagari": "अनीक", "iast": "anīka", "meaning": "army" },
-        { "devanagari": "केतुं", "iast": "ketum", "meaning": "banner, standard" },
-        { "devanagari": "त्रिलोक", "iast": "triloka", "meaning": "three worlds" },
-        { "devanagari": "एक", "iast": "eka", "meaning": "sole, one" },
-        { "devanagari": "सेतुं", "iast": "setum", "meaning": "bridge" }
+        {
+          "devanagari": "जरा",
+          "iast": "jarā",
+          "meaning": "old age"
+        },
+        {
+          "devanagari": "जन्म",
+          "iast": "janma",
+          "meaning": "birth"
+        },
+        {
+          "devanagari": "हीनं",
+          "iast": "hīnam",
+          "meaning": "free from, devoid of"
+        },
+        {
+          "devanagari": "पर",
+          "iast": "para",
+          "meaning": "supreme, highest"
+        },
+        {
+          "devanagari": "आनन्द",
+          "iast": "ānanda",
+          "meaning": "bliss"
+        },
+        {
+          "devanagari": "पीनं",
+          "iast": "pīnam",
+          "meaning": "full, swollen"
+        },
+        {
+          "devanagari": "समाधान",
+          "iast": "samādhāna",
+          "meaning": "samādhi, meditative absorption"
+        },
+        {
+          "devanagari": "लीनं",
+          "iast": "līnam",
+          "meaning": "absorbed, dissolved in"
+        },
+        {
+          "devanagari": "सदा",
+          "iast": "sadā",
+          "meaning": "always"
+        },
+        {
+          "devanagari": "एव",
+          "iast": "eva",
+          "meaning": "indeed (emphatic)"
+        },
+        {
+          "devanagari": "अनवीनम्",
+          "iast": "anavīnam",
+          "meaning": "ever-new, never-old"
+        },
+        {
+          "devanagari": "जगत्",
+          "iast": "jagat",
+          "meaning": "world"
+        },
+        {
+          "devanagari": "जन्म",
+          "iast": "janma",
+          "meaning": "birth"
+        },
+        {
+          "devanagari": "हेतुं",
+          "iast": "hetum",
+          "meaning": "cause"
+        },
+        {
+          "devanagari": "सुर",
+          "iast": "sura",
+          "meaning": "god, deva"
+        },
+        {
+          "devanagari": "अनीक",
+          "iast": "anīka",
+          "meaning": "army"
+        },
+        {
+          "devanagari": "केतुं",
+          "iast": "ketum",
+          "meaning": "banner, standard"
+        },
+        {
+          "devanagari": "त्रिलोक",
+          "iast": "triloka",
+          "meaning": "three worlds"
+        },
+        {
+          "devanagari": "एक",
+          "iast": "eka",
+          "meaning": "sole, one"
+        },
+        {
+          "devanagari": "सेतुं",
+          "iast": "setum",
+          "meaning": "bridge"
+        }
       ]
     },
     {
@@ -157,25 +497,102 @@
       "english_poetic": "He whose praises the Vedas sing, who rides upon Garuḍa lord of birds, the very cause of liberation, who breaks the pride of those who oppose Śiva; ever-favourable to his devotees, the deep root of this world-tree, who casts away the piercing pain of grief — I worship Him, I worship Him.",
       "explanation": "Verse 5 highlights Vishnu as the source of mokṣa and as protector of dharma. 'Khagādhīśa' (Garuḍa) is his vāhana. The world-as-tree (jagad-vṛkṣa) is a recurring image — Vishnu is the root from which manifestation grows, echoing Gītā 15's aśvattha tree.",
       "words": [
-        { "devanagari": "कृत", "iast": "kṛta", "meaning": "done, made" },
-        { "devanagari": "आम्नाय", "iast": "āmnāya", "meaning": "Veda, sacred tradition" },
-        { "devanagari": "गानं", "iast": "gānam", "meaning": "song" },
-        { "devanagari": "खग", "iast": "khaga", "meaning": "bird (sky-goer)" },
-        { "devanagari": "अधीश", "iast": "adhīśa", "meaning": "lord" },
-        { "devanagari": "यानं", "iast": "yānam", "meaning": "vehicle, mount" },
-        { "devanagari": "विमुक्तेर्", "iast": "vimukter", "meaning": "of liberation", "grammar": "genitive singular" },
-        { "devanagari": "निदानं", "iast": "nidānam", "meaning": "primary cause" },
-        { "devanagari": "हर", "iast": "hara", "meaning": "Hara (Śiva)" },
-        { "devanagari": "अराति", "iast": "arāti", "meaning": "enemy" },
-        { "devanagari": "मानम्", "iast": "mānam", "meaning": "pride" },
-        { "devanagari": "स्वभक्त", "iast": "svabhakta", "meaning": "his own devotees" },
-        { "devanagari": "अनुकूलं", "iast": "anukūlam", "meaning": "favourable" },
-        { "devanagari": "जगद्", "iast": "jagad", "meaning": "world" },
-        { "devanagari": "वृक्ष", "iast": "vṛkṣa", "meaning": "tree" },
-        { "devanagari": "मूलं", "iast": "mūlam", "meaning": "root" },
-        { "devanagari": "निरस्त", "iast": "nirasta", "meaning": "cast away, removed" },
-        { "devanagari": "आर्त", "iast": "ārta", "meaning": "suffering, afflicted" },
-        { "devanagari": "शूलं", "iast": "śūlam", "meaning": "sharp pain, spike" }
+        {
+          "devanagari": "कृत",
+          "iast": "kṛta",
+          "meaning": "done, made"
+        },
+        {
+          "devanagari": "आम्नाय",
+          "iast": "āmnāya",
+          "meaning": "Veda, sacred tradition"
+        },
+        {
+          "devanagari": "गानं",
+          "iast": "gānam",
+          "meaning": "song"
+        },
+        {
+          "devanagari": "खग",
+          "iast": "khaga",
+          "meaning": "bird (sky-goer)"
+        },
+        {
+          "devanagari": "अधीश",
+          "iast": "adhīśa",
+          "meaning": "lord"
+        },
+        {
+          "devanagari": "यानं",
+          "iast": "yānam",
+          "meaning": "vehicle, mount"
+        },
+        {
+          "devanagari": "विमुक्तेर्",
+          "iast": "vimukter",
+          "meaning": "of liberation",
+          "grammar": "genitive singular"
+        },
+        {
+          "devanagari": "निदानं",
+          "iast": "nidānam",
+          "meaning": "primary cause"
+        },
+        {
+          "devanagari": "हर",
+          "iast": "hara",
+          "meaning": "Hara (Śiva)"
+        },
+        {
+          "devanagari": "अराति",
+          "iast": "arāti",
+          "meaning": "enemy"
+        },
+        {
+          "devanagari": "मानम्",
+          "iast": "mānam",
+          "meaning": "pride"
+        },
+        {
+          "devanagari": "स्वभक्त",
+          "iast": "svabhakta",
+          "meaning": "his own devotees"
+        },
+        {
+          "devanagari": "अनुकूलं",
+          "iast": "anukūlam",
+          "meaning": "favourable"
+        },
+        {
+          "devanagari": "जगद्",
+          "iast": "jagad",
+          "meaning": "world"
+        },
+        {
+          "devanagari": "वृक्ष",
+          "iast": "vṛkṣa",
+          "meaning": "tree"
+        },
+        {
+          "devanagari": "मूलं",
+          "iast": "mūlam",
+          "meaning": "root"
+        },
+        {
+          "devanagari": "निरस्त",
+          "iast": "nirasta",
+          "meaning": "cast away, removed"
+        },
+        {
+          "devanagari": "आर्त",
+          "iast": "ārta",
+          "meaning": "suffering, afflicted"
+        },
+        {
+          "devanagari": "शूलं",
+          "iast": "śūlam",
+          "meaning": "sharp pain, spike"
+        }
       ]
     },
     {
@@ -188,26 +605,106 @@
       "english_poetic": "He who is lord of all the immortals, his locks dark and lustrous as a bee, in whom the whole universe is but a small reflection, whose dwelling is the sky of the heart; whose body is forever divine, free from every worldly craving, whose home is fair Vaikuṇṭha — I worship Him, I worship Him.",
       "explanation": "Verse 6 holds the cosmic and the intimate together: Vishnu is both lord of devas in Vaikuṇṭha and present in the 'sky of the heart' (hṛd-ākāśa) of the meditator. The image of the world as a 'small reflection' (bimba-leśa) within him inverts the usual cosmology — Vishnu is the original, the universe a passing image.",
       "words": [
-        { "devanagari": "समस्त", "iast": "samasta", "meaning": "all, entire" },
-        { "devanagari": "अमर", "iast": "amara", "meaning": "immortal, god" },
-        { "devanagari": "ईशं", "iast": "īśam", "meaning": "lord" },
-        { "devanagari": "द्विरेफ", "iast": "dvirepha", "meaning": "bee (literally 'two-r-bearer')" },
-        { "devanagari": "आभ", "iast": "ābha", "meaning": "resembling" },
-        { "devanagari": "केशं", "iast": "keśam", "meaning": "hair" },
-        { "devanagari": "जगद्", "iast": "jagad", "meaning": "world" },
-        { "devanagari": "बिम्ब", "iast": "bimba", "meaning": "reflection, image" },
-        { "devanagari": "लेशं", "iast": "leśam", "meaning": "small portion, atom" },
-        { "devanagari": "हृद्", "iast": "hṛd", "meaning": "heart" },
-        { "devanagari": "आकाश", "iast": "ākāśa", "meaning": "sky, ether, space" },
-        { "devanagari": "देशम्", "iast": "deśam", "meaning": "place, location" },
-        { "devanagari": "सदा", "iast": "sadā", "meaning": "always" },
-        { "devanagari": "दिव्य", "iast": "divya", "meaning": "divine, celestial" },
-        { "devanagari": "देहं", "iast": "deham", "meaning": "body" },
-        { "devanagari": "विमुक्त", "iast": "vimukta", "meaning": "completely free from" },
-        { "devanagari": "अखिल", "iast": "akhila", "meaning": "all, entire" },
-        { "devanagari": "ईहं", "iast": "īham", "meaning": "desire, craving" },
-        { "devanagari": "सुवैकुण्ठ", "iast": "suvaikuṇṭha", "meaning": "the fair Vaikuṇṭha (Vishnu's abode)" },
-        { "devanagari": "गेहं", "iast": "geham", "meaning": "home, abode" }
+        {
+          "devanagari": "समस्त",
+          "iast": "samasta",
+          "meaning": "all, entire"
+        },
+        {
+          "devanagari": "अमर",
+          "iast": "amara",
+          "meaning": "immortal, god"
+        },
+        {
+          "devanagari": "ईशं",
+          "iast": "īśam",
+          "meaning": "lord"
+        },
+        {
+          "devanagari": "द्विरेफ",
+          "iast": "dvirepha",
+          "meaning": "bee (literally 'two-r-bearer')"
+        },
+        {
+          "devanagari": "आभ",
+          "iast": "ābha",
+          "meaning": "resembling"
+        },
+        {
+          "devanagari": "केशं",
+          "iast": "keśam",
+          "meaning": "hair"
+        },
+        {
+          "devanagari": "जगद्",
+          "iast": "jagad",
+          "meaning": "world"
+        },
+        {
+          "devanagari": "बिम्ब",
+          "iast": "bimba",
+          "meaning": "reflection, image"
+        },
+        {
+          "devanagari": "लेशं",
+          "iast": "leśam",
+          "meaning": "small portion, atom"
+        },
+        {
+          "devanagari": "हृद्",
+          "iast": "hṛd",
+          "meaning": "heart"
+        },
+        {
+          "devanagari": "आकाश",
+          "iast": "ākāśa",
+          "meaning": "sky, ether, space"
+        },
+        {
+          "devanagari": "देशम्",
+          "iast": "deśam",
+          "meaning": "place, location"
+        },
+        {
+          "devanagari": "सदा",
+          "iast": "sadā",
+          "meaning": "always"
+        },
+        {
+          "devanagari": "दिव्य",
+          "iast": "divya",
+          "meaning": "divine, celestial"
+        },
+        {
+          "devanagari": "देहं",
+          "iast": "deham",
+          "meaning": "body"
+        },
+        {
+          "devanagari": "विमुक्त",
+          "iast": "vimukta",
+          "meaning": "completely free from"
+        },
+        {
+          "devanagari": "अखिल",
+          "iast": "akhila",
+          "meaning": "all, entire"
+        },
+        {
+          "devanagari": "ईहं",
+          "iast": "īham",
+          "meaning": "desire, craving"
+        },
+        {
+          "devanagari": "सुवैकुण्ठ",
+          "iast": "suvaikuṇṭha",
+          "meaning": "the fair Vaikuṇṭha (Vishnu's abode)"
+        },
+        {
+          "devanagari": "गेहं",
+          "iast": "geham",
+          "meaning": "home, abode"
+        }
       ]
     },
     {
@@ -220,25 +717,102 @@
       "english_poetic": "He who is mightier than the assembled host of gods, foremost in all three worlds, the gravest among gurus, firmly fixed in his own essential nature; ever calm in the heat of battle, the hero of heroes, the very shore beyond the ocean of saṃsāra — I worship Him, I worship Him.",
       "explanation": "Verse 7 emphasises Vishnu's role as supreme warrior-teacher. 'Bhavāmbhodhi-tīram' — the shore of the ocean of becoming — is a classic image of mokṣa: worldly existence is a sea, the divine the further shore. 'Svarūpaika-niṣṭha' means he never wavers from his own true nature, a virtue the yogi imitates.",
       "words": [
-        { "devanagari": "सुर", "iast": "sura", "meaning": "god, deva" },
-        { "devanagari": "अलि", "iast": "ali", "meaning": "host, throng" },
-        { "devanagari": "बलिष्ठं", "iast": "baliṣṭham", "meaning": "mightiest" },
-        { "devanagari": "त्रिलोकी", "iast": "trilokī", "meaning": "three worlds (collectively)" },
-        { "devanagari": "वरिष्ठं", "iast": "variṣṭham", "meaning": "foremost, best" },
-        { "devanagari": "गुरूणां", "iast": "gurūṇāṃ", "meaning": "of gurus", "grammar": "genitive plural" },
-        { "devanagari": "गरिष्ठं", "iast": "gariṣṭham", "meaning": "weightiest, most venerable" },
-        { "devanagari": "स्वरूप", "iast": "svarūpa", "meaning": "own true form" },
-        { "devanagari": "एक", "iast": "eka", "meaning": "one, sole" },
-        { "devanagari": "निष्ठम्", "iast": "niṣṭham", "meaning": "fixed in, devoted to" },
-        { "devanagari": "सदा", "iast": "sadā", "meaning": "always" },
-        { "devanagari": "युद्ध", "iast": "yuddha", "meaning": "battle, war" },
-        { "devanagari": "धीरं", "iast": "dhīram", "meaning": "steady, calm, brave" },
-        { "devanagari": "महा", "iast": "mahā", "meaning": "great" },
-        { "devanagari": "वीर", "iast": "vīra", "meaning": "hero" },
-        { "devanagari": "वीरं", "iast": "vīram", "meaning": "hero (intensified)" },
-        { "devanagari": "भव", "iast": "bhava", "meaning": "becoming, worldly existence" },
-        { "devanagari": "अम्भोधि", "iast": "ambhodhi", "meaning": "ocean" },
-        { "devanagari": "तीरं", "iast": "tīram", "meaning": "shore, bank" }
+        {
+          "devanagari": "सुर",
+          "iast": "sura",
+          "meaning": "god, deva"
+        },
+        {
+          "devanagari": "अलि",
+          "iast": "ali",
+          "meaning": "host, throng"
+        },
+        {
+          "devanagari": "बलिष्ठं",
+          "iast": "baliṣṭham",
+          "meaning": "mightiest"
+        },
+        {
+          "devanagari": "त्रिलोकी",
+          "iast": "trilokī",
+          "meaning": "three worlds (collectively)"
+        },
+        {
+          "devanagari": "वरिष्ठं",
+          "iast": "variṣṭham",
+          "meaning": "foremost, best"
+        },
+        {
+          "devanagari": "गुरूणां",
+          "iast": "gurūṇāṃ",
+          "meaning": "of gurus",
+          "grammar": "genitive plural"
+        },
+        {
+          "devanagari": "गरिष्ठं",
+          "iast": "gariṣṭham",
+          "meaning": "weightiest, most venerable"
+        },
+        {
+          "devanagari": "स्वरूप",
+          "iast": "svarūpa",
+          "meaning": "own true form"
+        },
+        {
+          "devanagari": "एक",
+          "iast": "eka",
+          "meaning": "one, sole"
+        },
+        {
+          "devanagari": "निष्ठम्",
+          "iast": "niṣṭham",
+          "meaning": "fixed in, devoted to"
+        },
+        {
+          "devanagari": "सदा",
+          "iast": "sadā",
+          "meaning": "always"
+        },
+        {
+          "devanagari": "युद्ध",
+          "iast": "yuddha",
+          "meaning": "battle, war"
+        },
+        {
+          "devanagari": "धीरं",
+          "iast": "dhīram",
+          "meaning": "steady, calm, brave"
+        },
+        {
+          "devanagari": "महा",
+          "iast": "mahā",
+          "meaning": "great"
+        },
+        {
+          "devanagari": "वीर",
+          "iast": "vīra",
+          "meaning": "hero"
+        },
+        {
+          "devanagari": "वीरं",
+          "iast": "vīram",
+          "meaning": "hero (intensified)"
+        },
+        {
+          "devanagari": "भव",
+          "iast": "bhava",
+          "meaning": "becoming, worldly existence"
+        },
+        {
+          "devanagari": "अम्भोधि",
+          "iast": "ambhodhi",
+          "meaning": "ocean"
+        },
+        {
+          "devanagari": "तीरं",
+          "iast": "tīram",
+          "meaning": "shore, bank"
+        }
       ]
     },
     {
@@ -251,25 +825,103 @@
       "english_poetic": "He who has Lakṣmī on his left, who reclines upon the cosmic serpent, to whom all sacrifice is rendered, free of every clinging and craving; whom the foremost sages sing in praise, whom the gods stand around in attendance, who is beyond the surging streams of the three guṇas — I worship Him, I worship Him.",
       "explanation": "Verse 8 closes the stotram by gathering the deity's domestic, ritual, and metaphysical aspects: Lakṣmī beside him, Śeṣa-nāga beneath him, the yajña attaining its fruit through him, and his own transcendence of the three guṇas (sattva, rajas, tamas) — the very ground of Sāṃkhya-Vedānta cosmology.",
       "words": [
-        { "devanagari": "रमा", "iast": "ramā", "meaning": "Ramā, Lakṣmī" },
-        { "devanagari": "वाम", "iast": "vāma", "meaning": "left" },
-        { "devanagari": "भागं", "iast": "bhāgam", "meaning": "side, portion" },
-        { "devanagari": "तल", "iast": "tala", "meaning": "surface, under-side" },
-        { "devanagari": "नग्र", "iast": "nagra", "meaning": "(uncertain; some readings 'agra' — front/tip)" },
-        { "devanagari": "नागं", "iast": "nāgam", "meaning": "serpent (Śeṣa)" },
-        { "devanagari": "कृत", "iast": "kṛta", "meaning": "done, performed" },
-        { "devanagari": "अधीन", "iast": "adhīna", "meaning": "subject to" },
-        { "devanagari": "यागं", "iast": "yāgam", "meaning": "sacrifice, yajña" },
-        { "devanagari": "गत", "iast": "gata", "meaning": "gone, departed" },
-        { "devanagari": "आराग", "iast": "ārāga", "meaning": "attachment" },
-        { "devanagari": "रागम्", "iast": "rāgam", "meaning": "passion, desire" },
-        { "devanagari": "मुनीन्द्रैः", "iast": "munīndraiḥ", "meaning": "by chiefs of sages", "grammar": "instrumental plural" },
-        { "devanagari": "सुगीतं", "iast": "sugītam", "meaning": "well-sung" },
-        { "devanagari": "सुरैः", "iast": "suraiḥ", "meaning": "by the gods", "grammar": "instrumental plural" },
-        { "devanagari": "संपरीतं", "iast": "samparītam", "meaning": "surrounded" },
-        { "devanagari": "गुण", "iast": "guṇa", "meaning": "quality (sattva, rajas, tamas)" },
-        { "devanagari": "ओघैः", "iast": "oghaiḥ", "meaning": "by floods, streams" },
-        { "devanagari": "अतीतं", "iast": "atītam", "meaning": "transcending, beyond" }
+        {
+          "devanagari": "रमा",
+          "iast": "ramā",
+          "meaning": "Ramā, Lakṣmī"
+        },
+        {
+          "devanagari": "वाम",
+          "iast": "vāma",
+          "meaning": "left"
+        },
+        {
+          "devanagari": "भागं",
+          "iast": "bhāgam",
+          "meaning": "side, portion"
+        },
+        {
+          "devanagari": "तल",
+          "iast": "tala",
+          "meaning": "surface, under-side"
+        },
+        {
+          "devanagari": "नग्र",
+          "iast": "nagra",
+          "meaning": "(uncertain; some readings 'agra' — front/tip)"
+        },
+        {
+          "devanagari": "नागं",
+          "iast": "nāgam",
+          "meaning": "serpent (Śeṣa)"
+        },
+        {
+          "devanagari": "कृत",
+          "iast": "kṛta",
+          "meaning": "done, performed"
+        },
+        {
+          "devanagari": "अधीन",
+          "iast": "adhīna",
+          "meaning": "subject to"
+        },
+        {
+          "devanagari": "यागं",
+          "iast": "yāgam",
+          "meaning": "sacrifice, yajña"
+        },
+        {
+          "devanagari": "गत",
+          "iast": "gata",
+          "meaning": "gone, departed"
+        },
+        {
+          "devanagari": "आराग",
+          "iast": "ārāga",
+          "meaning": "attachment"
+        },
+        {
+          "devanagari": "रागम्",
+          "iast": "rāgam",
+          "meaning": "passion, desire"
+        },
+        {
+          "devanagari": "मुनीन्द्रैः",
+          "iast": "munīndraiḥ",
+          "meaning": "by chiefs of sages",
+          "grammar": "instrumental plural"
+        },
+        {
+          "devanagari": "सुगीतं",
+          "iast": "sugītam",
+          "meaning": "well-sung"
+        },
+        {
+          "devanagari": "सुरैः",
+          "iast": "suraiḥ",
+          "meaning": "by the gods",
+          "grammar": "instrumental plural"
+        },
+        {
+          "devanagari": "संपरीतं",
+          "iast": "samparītam",
+          "meaning": "surrounded"
+        },
+        {
+          "devanagari": "गुण",
+          "iast": "guṇa",
+          "meaning": "quality (sattva, rajas, tamas)"
+        },
+        {
+          "devanagari": "ओघैः",
+          "iast": "oghaiḥ",
+          "meaning": "by floods, streams"
+        },
+        {
+          "devanagari": "अतीतं",
+          "iast": "atītam",
+          "meaning": "transcending, beyond"
+        }
       ]
     },
     {
@@ -282,29 +934,130 @@
       "english_poetic": "Whoever, with a steady mind, recites these eight verses daily — this garland adorning Murāri's neck — surely goes to the sorrowless world of Vishnu, and is never again touched by the grief of birth and ageing.",
       "explanation": "The phalashruti — the traditional 'fruit of recitation' verse that closes Sanskrit stotras. It names the eight verses as a 'kaṇṭha-hāra' (necklace) for Murāri (Vishnu, slayer of the demon Mura), and promises the meditative reciter passage to Vaikuṇṭha and freedom from the cycle of birth and death.",
       "words": [
-        { "devanagari": "इदं", "iast": "idaṃ", "meaning": "this" },
-        { "devanagari": "यः", "iast": "yaḥ", "meaning": "who(ever)" },
-        { "devanagari": "तु", "iast": "tu", "meaning": "indeed (emphatic)" },
-        { "devanagari": "नित्यं", "iast": "nityaṃ", "meaning": "daily, eternally" },
-        { "devanagari": "समाधाय", "iast": "samādhāya", "meaning": "having concentrated", "grammar": "absolutive" },
-        { "devanagari": "चित्तं", "iast": "cittaṃ", "meaning": "mind" },
-        { "devanagari": "पठेद्", "iast": "paṭhed", "meaning": "may recite", "root_dhatu": "पठ्", "grammar": "3rd person singular optative" },
-        { "devanagari": "अष्टकं", "iast": "aṣṭakaṃ", "meaning": "octet, set of eight verses" },
-        { "devanagari": "कण्ठ", "iast": "kaṇṭha", "meaning": "neck" },
-        { "devanagari": "हारं", "iast": "hāraṃ", "meaning": "garland, necklace" },
-        { "devanagari": "मुरारेः", "iast": "murāreḥ", "meaning": "of Murāri (Vishnu)", "grammar": "genitive singular" },
-        { "devanagari": "सः", "iast": "saḥ", "meaning": "he" },
-        { "devanagari": "विष्णोः", "iast": "viṣṇoḥ", "meaning": "of Vishnu", "grammar": "genitive singular" },
-        { "devanagari": "विशोकं", "iast": "viśokaṃ", "meaning": "sorrowless" },
-        { "devanagari": "ध्रुवं", "iast": "dhruvaṃ", "meaning": "certainly, firmly" },
-        { "devanagari": "याति", "iast": "yāti", "meaning": "goes", "root_dhatu": "या", "grammar": "3rd person singular present" },
-        { "devanagari": "लोकं", "iast": "lokaṃ", "meaning": "world" },
-        { "devanagari": "जरा", "iast": "jarā", "meaning": "old age" },
-        { "devanagari": "जन्म", "iast": "janma", "meaning": "birth" },
-        { "devanagari": "शोकं", "iast": "śokaṃ", "meaning": "sorrow, grief" },
-        { "devanagari": "पुनर्", "iast": "punar", "meaning": "again" },
-        { "devanagari": "विन्दते", "iast": "vindate", "meaning": "obtains", "root_dhatu": "विद्", "grammar": "3rd person singular present (ātmanepada)" },
-        { "devanagari": "नो", "iast": "no", "meaning": "not (na + u, emphatic)" }
+        {
+          "devanagari": "इदं",
+          "iast": "idaṃ",
+          "meaning": "this"
+        },
+        {
+          "devanagari": "यः",
+          "iast": "yaḥ",
+          "meaning": "who(ever)"
+        },
+        {
+          "devanagari": "तु",
+          "iast": "tu",
+          "meaning": "indeed (emphatic)"
+        },
+        {
+          "devanagari": "नित्यं",
+          "iast": "nityaṃ",
+          "meaning": "daily, eternally"
+        },
+        {
+          "devanagari": "समाधाय",
+          "iast": "samādhāya",
+          "meaning": "having concentrated",
+          "grammar": "absolutive"
+        },
+        {
+          "devanagari": "चित्तं",
+          "iast": "cittaṃ",
+          "meaning": "mind"
+        },
+        {
+          "devanagari": "पठेद्",
+          "iast": "paṭhed",
+          "meaning": "may recite",
+          "root_dhatu": "पठ्",
+          "grammar": "3rd person singular optative"
+        },
+        {
+          "devanagari": "अष्टकं",
+          "iast": "aṣṭakaṃ",
+          "meaning": "octet, set of eight verses"
+        },
+        {
+          "devanagari": "कण्ठ",
+          "iast": "kaṇṭha",
+          "meaning": "neck"
+        },
+        {
+          "devanagari": "हारं",
+          "iast": "hāraṃ",
+          "meaning": "garland, necklace"
+        },
+        {
+          "devanagari": "मुरारेः",
+          "iast": "murāreḥ",
+          "meaning": "of Murāri (Vishnu)",
+          "grammar": "genitive singular"
+        },
+        {
+          "devanagari": "सः",
+          "iast": "saḥ",
+          "meaning": "he"
+        },
+        {
+          "devanagari": "विष्णोः",
+          "iast": "viṣṇoḥ",
+          "meaning": "of Vishnu",
+          "grammar": "genitive singular"
+        },
+        {
+          "devanagari": "विशोकं",
+          "iast": "viśokaṃ",
+          "meaning": "sorrowless"
+        },
+        {
+          "devanagari": "ध्रुवं",
+          "iast": "dhruvaṃ",
+          "meaning": "certainly, firmly"
+        },
+        {
+          "devanagari": "याति",
+          "iast": "yāti",
+          "meaning": "goes",
+          "root_dhatu": "या",
+          "grammar": "3rd person singular present"
+        },
+        {
+          "devanagari": "लोकं",
+          "iast": "lokaṃ",
+          "meaning": "world"
+        },
+        {
+          "devanagari": "जरा",
+          "iast": "jarā",
+          "meaning": "old age"
+        },
+        {
+          "devanagari": "जन्म",
+          "iast": "janma",
+          "meaning": "birth"
+        },
+        {
+          "devanagari": "शोकं",
+          "iast": "śokaṃ",
+          "meaning": "sorrow, grief"
+        },
+        {
+          "devanagari": "पुनर्",
+          "iast": "punar",
+          "meaning": "again"
+        },
+        {
+          "devanagari": "विन्दते",
+          "iast": "vindate",
+          "meaning": "obtains",
+          "root_dhatu": "विद्",
+          "grammar": "3rd person singular present (ātmanepada)"
+        },
+        {
+          "devanagari": "नो",
+          "iast": "no",
+          "meaning": "not (na + u, emphatic)"
+        }
       ]
     }
   ]

@@ -4,6 +4,13 @@
   "youtube_url": "https://www.youtube.com/watch?v=T9LKMvyzS5w",
   "title": "Aham Brahmāsmi — Contemporary setting on the Vedāntic mahāvākya",
   "language": "sa",
+  "tags": [
+    "meditative-chant",
+    "upanishadic",
+    "advaita-vedanta",
+    "mahavakya",
+    "contemporary"
+  ],
   "lines": [
     {
       "line": 0,
@@ -15,7 +22,11 @@
       "english_poetic": "OM… OM… OM…",
       "explanation": "Whispered opening chant of the sacred syllable. The threefold OM is the standard Upaniṣadic invocation — each utterance covers one of the three states of consciousness (waking, dream, deep sleep), with the silence after the third standing for turīya (the fourth, pure awareness — see Māṇḍūkya 12).",
       "words": [
-        { "devanagari": "ॐ", "iast": "oṃ", "meaning": "the sacred primordial syllable" }
+        {
+          "devanagari": "ॐ",
+          "iast": "oṃ",
+          "meaning": "the sacred primordial syllable"
+        }
       ]
     },
     {
@@ -28,21 +39,84 @@
       "english_poetic": "Mind itself is the cycle of suffering — stilling the mind is what is called liberation. My very nature is pure knowledge; I am beyond thoughts, beyond actions.",
       "explanation": "Verse 1 — CONTEMPORARY SANSKRIT COMPOSITION, but the first line is almost verbatim from the Maitri Upaniṣad VI.34 ('mana eva manuṣyāṇāṃ kāraṇaṃ bandha-mokṣayoḥ — bandhāya viṣayāsaktaṃ muktyai nirviṣayaṃ smṛtam' — the mind alone is the cause of bondage and liberation for human beings) and the Yoga Sūtras (yogaś citta-vṛtti-nirodhaḥ — Yoga is the cessation of mental fluctuations). The second half names the Self with three classical Vedantic terms: 'śuddha-bodha-svabhāva' (whose nature is pure awareness), 'nirvikalpa' (without alternative — non-dual), and 'akriya' (without action — the witness, not the doer).",
       "words": [
-        { "devanagari": "चित्तम्", "iast": "cittam", "meaning": "the mind" },
-        { "devanagari": "एव", "iast": "eva", "meaning": "indeed (emphatic)" },
-        { "devanagari": "हि", "iast": "hi", "meaning": "for, indeed" },
-        { "devanagari": "संसारः", "iast": "saṃsāraḥ", "meaning": "the cycle of birth and death" },
-        { "devanagari": "तत्", "iast": "tat", "meaning": "that" },
-        { "devanagari": "निरुद्धं", "iast": "niruddhaṃ", "meaning": "restrained, stilled" },
-        { "devanagari": "मोक्षः", "iast": "mokṣaḥ", "meaning": "liberation" },
-        { "devanagari": "उच्यते", "iast": "ucyate", "meaning": "is called", "root_dhatu": "वच्", "grammar": "3rd person singular passive" },
-        { "devanagari": "शुद्ध", "iast": "śuddha", "meaning": "pure" },
-        { "devanagari": "बोध", "iast": "bodha", "meaning": "knowledge, awareness" },
-        { "devanagari": "स्वभावः", "iast": "svabhāvaḥ", "meaning": "one's own nature" },
-        { "devanagari": "अस्मि", "iast": "asmi", "meaning": "I am", "root_dhatu": "अस्" },
-        { "devanagari": "निर्विकल्पः", "iast": "nirvikalpaḥ", "meaning": "without alternative, non-dual" },
-        { "devanagari": "अहम्", "iast": "aham", "meaning": "I" },
-        { "devanagari": "अक्रियः", "iast": "akriyaḥ", "meaning": "without action, actionless" }
+        {
+          "devanagari": "चित्तम्",
+          "iast": "cittam",
+          "meaning": "the mind"
+        },
+        {
+          "devanagari": "एव",
+          "iast": "eva",
+          "meaning": "indeed (emphatic)"
+        },
+        {
+          "devanagari": "हि",
+          "iast": "hi",
+          "meaning": "for, indeed"
+        },
+        {
+          "devanagari": "संसारः",
+          "iast": "saṃsāraḥ",
+          "meaning": "the cycle of birth and death"
+        },
+        {
+          "devanagari": "तत्",
+          "iast": "tat",
+          "meaning": "that"
+        },
+        {
+          "devanagari": "निरुद्धं",
+          "iast": "niruddhaṃ",
+          "meaning": "restrained, stilled"
+        },
+        {
+          "devanagari": "मोक्षः",
+          "iast": "mokṣaḥ",
+          "meaning": "liberation"
+        },
+        {
+          "devanagari": "उच्यते",
+          "iast": "ucyate",
+          "meaning": "is called",
+          "root_dhatu": "वच्",
+          "grammar": "3rd person singular passive"
+        },
+        {
+          "devanagari": "शुद्ध",
+          "iast": "śuddha",
+          "meaning": "pure"
+        },
+        {
+          "devanagari": "बोध",
+          "iast": "bodha",
+          "meaning": "knowledge, awareness"
+        },
+        {
+          "devanagari": "स्वभावः",
+          "iast": "svabhāvaḥ",
+          "meaning": "one's own nature"
+        },
+        {
+          "devanagari": "अस्मि",
+          "iast": "asmi",
+          "meaning": "I am",
+          "root_dhatu": "अस्"
+        },
+        {
+          "devanagari": "निर्विकल्पः",
+          "iast": "nirvikalpaḥ",
+          "meaning": "without alternative, non-dual"
+        },
+        {
+          "devanagari": "अहम्",
+          "iast": "aham",
+          "meaning": "I"
+        },
+        {
+          "devanagari": "अक्रियः",
+          "iast": "akriyaḥ",
+          "meaning": "without action, actionless"
+        }
       ]
     },
     {
@@ -55,15 +129,54 @@
       "english_poetic": "All that is seen is made of That. Diversity is an illusion — only the One exists; nothing else is truly seen.",
       "explanation": "Pre-chorus — CONTEMPORARY SANSKRIT COMPOSITION echoing a famous Vedantic teaching: 'na iha nānāsti kiñcana' ('there is no diversity here whatsoever') from the Bṛhadāraṇyaka and Kaṭha Upaniṣads, and the broader Advaita position that what appears to be many is in truth the One Brahman. 'Tan-mayaṃ' (made of That) names the entire phenomenal world as nothing other than Brahman, the favourite move of Śaṅkara's commentaries.",
       "words": [
-        { "devanagari": "यद्", "iast": "yad", "meaning": "which, what" },
-        { "devanagari": "दृश्यं", "iast": "dṛśyaṃ", "meaning": "is seen, visible", "grammar": "gerundive" },
-        { "devanagari": "तद्", "iast": "tad", "meaning": "that" },
-        { "devanagari": "यन्-मयं", "iast": "yan-mayaṃ", "meaning": "made of That, consisting of That" },
-        { "devanagari": "सर्वं", "iast": "sarvaṃ", "meaning": "all" },
-        { "devanagari": "नाना", "iast": "nānā", "meaning": "many, diversity" },
-        { "devanagari": "च", "iast": "ca", "meaning": "and" },
-        { "devanagari": "आस्ते", "iast": "āste", "meaning": "exists, is", "root_dhatu": "आस्" },
-        { "devanagari": "न दृश्यते", "iast": "na dṛśyate", "meaning": "is not seen", "root_dhatu": "दृश्" }
+        {
+          "devanagari": "यद्",
+          "iast": "yad",
+          "meaning": "which, what"
+        },
+        {
+          "devanagari": "दृश्यं",
+          "iast": "dṛśyaṃ",
+          "meaning": "is seen, visible",
+          "grammar": "gerundive"
+        },
+        {
+          "devanagari": "तद्",
+          "iast": "tad",
+          "meaning": "that"
+        },
+        {
+          "devanagari": "यन्-मयं",
+          "iast": "yan-mayaṃ",
+          "meaning": "made of That, consisting of That"
+        },
+        {
+          "devanagari": "सर्वं",
+          "iast": "sarvaṃ",
+          "meaning": "all"
+        },
+        {
+          "devanagari": "नाना",
+          "iast": "nānā",
+          "meaning": "many, diversity"
+        },
+        {
+          "devanagari": "च",
+          "iast": "ca",
+          "meaning": "and"
+        },
+        {
+          "devanagari": "आस्ते",
+          "iast": "āste",
+          "meaning": "exists, is",
+          "root_dhatu": "आस्"
+        },
+        {
+          "devanagari": "न दृश्यते",
+          "iast": "na dṛśyate",
+          "meaning": "is not seen",
+          "root_dhatu": "दृश्"
+        }
       ]
     },
     {
@@ -76,11 +189,33 @@
       "english_poetic": "I am Brahman! I am the light of knowledge!",
       "explanation": "Chorus — anchored in the canonical mahāvākya 'aham brahmāsmi' from Bṛhadāraṇyaka Upaniṣad I.4.10 — ONE OF THE FOUR GREAT SAYINGS (mahāvākyas) of Advaita Vedānta, one per Veda: tat tvam asi (Chāndogya, Sāmaveda), ayam ātmā brahma (Māṇḍūkya, Atharvaveda), prajñānaṃ brahma (Aitareya, Ṛgveda), and aham brahmāsmi here (BAU, Yajurveda). 'Jñāna-tejasi' (in the radiance of knowledge) is the songwriter's addition naming the realisation as luminous insight.",
       "words": [
-        { "devanagari": "अहं", "iast": "ahaṃ", "meaning": "I" },
-        { "devanagari": "ब्रह्म", "iast": "brahma", "meaning": "Brahman, the absolute" },
-        { "devanagari": "अस्मि", "iast": "asmi", "meaning": "I am", "root_dhatu": "अस्" },
-        { "devanagari": "ज्ञान", "iast": "jñāna", "meaning": "knowledge" },
-        { "devanagari": "तेजसि", "iast": "tejasi", "meaning": "in the radiance / fire", "grammar": "neuter locative singular" }
+        {
+          "devanagari": "अहं",
+          "iast": "ahaṃ",
+          "meaning": "I"
+        },
+        {
+          "devanagari": "ब्रह्म",
+          "iast": "brahma",
+          "meaning": "Brahman, the absolute"
+        },
+        {
+          "devanagari": "अस्मि",
+          "iast": "asmi",
+          "meaning": "I am",
+          "root_dhatu": "अस्"
+        },
+        {
+          "devanagari": "ज्ञान",
+          "iast": "jñāna",
+          "meaning": "knowledge"
+        },
+        {
+          "devanagari": "तेजसि",
+          "iast": "tejasi",
+          "meaning": "in the radiance / fire",
+          "grammar": "neuter locative singular"
+        }
       ]
     },
     {
@@ -93,14 +228,47 @@
       "english_poetic": "When the mind dissolves, I am without body, non-dual. All sins are gone — I shine as the radiant sun of wisdom.",
       "explanation": "Verse 2 — CONTEMPORARY SANSKRIT COMPOSITION. 'Sarva-pāpa-prahīṇa' (one from whom all sins have fallen away) is a phrase from the Chāndogya Upaniṣad III.14.4 in its description of the Self in the heart. 'Advaya' (non-dual) is the technical Advaita term. 'Jñāna-bhāskara' (sun of knowledge) is the same image used in the previous song — a stock metaphor for awakened insight dispelling the night of avidyā (ignorance).",
       "words": [
-        { "devanagari": "चित्त-सत्ता", "iast": "citta-sattā", "meaning": "mind-existence, the very being of mind" },
-        { "devanagari": "विलीनेन", "iast": "vilīnena", "meaning": "by being dissolved", "grammar": "instrumental" },
-        { "devanagari": "देह-शून्यः", "iast": "deha-śūnyaḥ", "meaning": "bodyless, devoid of body" },
-        { "devanagari": "अद्वयः", "iast": "advayaḥ", "meaning": "non-dual, without a second" },
-        { "devanagari": "सर्व-पापा", "iast": "sarva-pāpā", "meaning": "all sins" },
-        { "devanagari": "प्रहीणः", "iast": "prahīṇaḥ", "meaning": "abandoned, dropped away" },
-        { "devanagari": "प्रकटः", "iast": "prakaṭaḥ", "meaning": "manifest, revealed" },
-        { "devanagari": "ज्ञान-भास्करः", "iast": "jñāna-bhāskaraḥ", "meaning": "the sun of knowledge" }
+        {
+          "devanagari": "चित्त-सत्ता",
+          "iast": "citta-sattā",
+          "meaning": "mind-existence, the very being of mind"
+        },
+        {
+          "devanagari": "विलीनेन",
+          "iast": "vilīnena",
+          "meaning": "by being dissolved",
+          "grammar": "instrumental"
+        },
+        {
+          "devanagari": "देह-शून्यः",
+          "iast": "deha-śūnyaḥ",
+          "meaning": "bodyless, devoid of body"
+        },
+        {
+          "devanagari": "अद्वयः",
+          "iast": "advayaḥ",
+          "meaning": "non-dual, without a second"
+        },
+        {
+          "devanagari": "सर्व-पापा",
+          "iast": "sarva-pāpā",
+          "meaning": "all sins"
+        },
+        {
+          "devanagari": "प्रहीणः",
+          "iast": "prahīṇaḥ",
+          "meaning": "abandoned, dropped away"
+        },
+        {
+          "devanagari": "प्रकटः",
+          "iast": "prakaṭaḥ",
+          "meaning": "manifest, revealed"
+        },
+        {
+          "devanagari": "ज्ञान-भास्करः",
+          "iast": "jñāna-bhāskaraḥ",
+          "meaning": "the sun of knowledge"
+        }
       ]
     },
     {
@@ -113,9 +281,21 @@
       "english_poetic": "I am Brahman! I am the light of knowledge! Tejo-bindu — the point of light!",
       "explanation": "Up-tempo chorus reprise. 'Tejo-bindu' (the point/drop of light) is the title of the Tejobindu Upaniṣad — one of the 108 Upaniṣads of the Muktikā canon, a minor Yoga Upaniṣad describing the meditation on a 'point of light' between the eyebrows as a path to liberation. The phrase is the artist's invocation of that tradition rather than a verbatim quotation.",
       "words": [
-        { "devanagari": "अहं ब्रह्मास्मि", "iast": "ahaṃ brahmāsmi", "meaning": "I am Brahman (the Great Saying)" },
-        { "devanagari": "ज्ञान-तेजसि", "iast": "jñāna-tejasi", "meaning": "in the radiance of knowledge" },
-        { "devanagari": "तेजो-बिन्दु", "iast": "tejo-bindu", "meaning": "point/drop of light (also title of a Yoga Upaniṣad)" }
+        {
+          "devanagari": "अहं ब्रह्मास्मि",
+          "iast": "ahaṃ brahmāsmi",
+          "meaning": "I am Brahman (the Great Saying)"
+        },
+        {
+          "devanagari": "ज्ञान-तेजसि",
+          "iast": "jñāna-tejasi",
+          "meaning": "in the radiance of knowledge"
+        },
+        {
+          "devanagari": "तेजो-बिन्दु",
+          "iast": "tejo-bindu",
+          "meaning": "point/drop of light (also title of a Yoga Upaniṣad)"
+        }
       ]
     },
     {
@@ -128,8 +308,16 @@
       "english_poetic": "OM… peace… peace… peace…",
       "explanation": "Standard Vedic / Vedantic closing invocation — the very form used at the end of the principal Upaniṣads. The threefold śāntiḥ asks for peace from the three sources of disturbance: ādhyātmika (from within oneself — body, mind), ādhibhautika (from other beings — people, animals, environment), and ādhidaivika (from cosmic forces — fate, the gods, weather). The closing OM bookends the opening of the song.",
       "words": [
-        { "devanagari": "ॐ", "iast": "oṃ", "meaning": "the sacred syllable" },
-        { "devanagari": "शान्तिः", "iast": "śāntiḥ", "meaning": "peace" }
+        {
+          "devanagari": "ॐ",
+          "iast": "oṃ",
+          "meaning": "the sacred syllable"
+        },
+        {
+          "devanagari": "शान्तिः",
+          "iast": "śāntiḥ",
+          "meaning": "peace"
+        }
       ]
     }
   ]

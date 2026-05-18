@@ -4,6 +4,13 @@
   "youtube_url": "https://www.youtube.com/watch?v=7zhDg2OcVv0",
   "title": "Rudrāṣṭakam (Tulsidas) — Namāmīśam-īśāna Nirvāṇa-rūpaṃ",
   "language": "sa",
+  "tags": [
+    "classical-stotra",
+    "bhakti",
+    "shiva",
+    "tulsidas",
+    "ramcaritmanas"
+  ],
   "lines": [
     {
       "line": 0,
@@ -15,20 +22,80 @@
       "english_poetic": "I bow to Īśāna, whose form is liberation itself — all-pervading, omnipresent, the very being whom the Vedas call Brahman. Native and bare of qualities, free of all alternative, beyond all wanting — the open sky of consciousness whose home is space itself — I worship Him.",
       "explanation": "Verse 1 of the Rudrāṣṭakam — the opening salutation to Śiva as the absolute. Note the cascade of via-negativa adjectives in pāda 3: nirguṇa (without attributes), nirvikalpa (without alternative — non-dual), nirīha (without desire). 'Cid-ākāśa' (sky of consciousness) is a hallmark Tantric phrase: pure awareness pictured as boundless space.",
       "words": [
-        { "devanagari": "नमामि", "iast": "namāmi", "meaning": "I bow", "root_dhatu": "नम्", "grammar": "1st person singular present" },
-        { "devanagari": "ईशम्", "iast": "īśam", "meaning": "Lord, ruler", "grammar": "accusative singular" },
-        { "devanagari": "ईशान", "iast": "īśāna", "meaning": "O Ruler (epithet of Śiva)", "grammar": "vocative singular" },
-        { "devanagari": "निर्वाण-रूपं", "iast": "nirvāṇa-rūpaṃ", "meaning": "of the form of liberation" },
-        { "devanagari": "विभुं", "iast": "vibhuṃ", "meaning": "all-pervading, mighty" },
-        { "devanagari": "व्यापकं", "iast": "vyāpakaṃ", "meaning": "omnipresent" },
-        { "devanagari": "ब्रह्म-वेद-स्वरूपम्", "iast": "brahma-veda-svarūpam", "meaning": "whose true form is the Brahman of the Vedas" },
-        { "devanagari": "निजं", "iast": "nijaṃ", "meaning": "innate, one's own" },
-        { "devanagari": "निर्गुणं", "iast": "nirguṇaṃ", "meaning": "without attributes" },
-        { "devanagari": "निर्विकल्पं", "iast": "nirvikalpaṃ", "meaning": "without alternative, undivided" },
-        { "devanagari": "निरीहं", "iast": "nirīhaṃ", "meaning": "without desire" },
-        { "devanagari": "चिदाकाशम्", "iast": "cidākāśam", "meaning": "the sky of consciousness" },
-        { "devanagari": "आकाश-वासं", "iast": "ākāśa-vāsaṃ", "meaning": "dwelling in space" },
-        { "devanagari": "भजेऽहम्", "iast": "bhajeham", "meaning": "I worship" }
+        {
+          "devanagari": "नमामि",
+          "iast": "namāmi",
+          "meaning": "I bow",
+          "root_dhatu": "नम्",
+          "grammar": "1st person singular present"
+        },
+        {
+          "devanagari": "ईशम्",
+          "iast": "īśam",
+          "meaning": "Lord, ruler",
+          "grammar": "accusative singular"
+        },
+        {
+          "devanagari": "ईशान",
+          "iast": "īśāna",
+          "meaning": "O Ruler (epithet of Śiva)",
+          "grammar": "vocative singular"
+        },
+        {
+          "devanagari": "निर्वाण-रूपं",
+          "iast": "nirvāṇa-rūpaṃ",
+          "meaning": "of the form of liberation"
+        },
+        {
+          "devanagari": "विभुं",
+          "iast": "vibhuṃ",
+          "meaning": "all-pervading, mighty"
+        },
+        {
+          "devanagari": "व्यापकं",
+          "iast": "vyāpakaṃ",
+          "meaning": "omnipresent"
+        },
+        {
+          "devanagari": "ब्रह्म-वेद-स्वरूपम्",
+          "iast": "brahma-veda-svarūpam",
+          "meaning": "whose true form is the Brahman of the Vedas"
+        },
+        {
+          "devanagari": "निजं",
+          "iast": "nijaṃ",
+          "meaning": "innate, one's own"
+        },
+        {
+          "devanagari": "निर्गुणं",
+          "iast": "nirguṇaṃ",
+          "meaning": "without attributes"
+        },
+        {
+          "devanagari": "निर्विकल्पं",
+          "iast": "nirvikalpaṃ",
+          "meaning": "without alternative, undivided"
+        },
+        {
+          "devanagari": "निरीहं",
+          "iast": "nirīhaṃ",
+          "meaning": "without desire"
+        },
+        {
+          "devanagari": "चिदाकाशम्",
+          "iast": "cidākāśam",
+          "meaning": "the sky of consciousness"
+        },
+        {
+          "devanagari": "आकाश-वासं",
+          "iast": "ākāśa-vāsaṃ",
+          "meaning": "dwelling in space"
+        },
+        {
+          "devanagari": "भजेऽहम्",
+          "iast": "bhajeham",
+          "meaning": "I worship"
+        }
       ]
     },
     {
@@ -41,20 +108,78 @@
       "english_poetic": "Formless, the root from which OM springs, the fourth state beyond word and knowledge and grasp, the Lord — the Lord of mountains. Awesome, the death of even great Death, full of compassion, the treasury of every quality, the far shore beyond saṃsāra — to You I bow.",
       "explanation": "Verse 2 develops the paradox of Śiva — simultaneously formless (nirākāra) yet identified with form (the mountain-dweller of Kailāsa, girīśa). 'Mahākāla-kāla' literally means 'the time of even Great-Time' — Śiva is the destroyer even of Death itself. 'Turīya' is the fourth state of consciousness from the Māṇḍūkya Upaniṣad — pure awareness beyond waking, dream, deep sleep.",
       "words": [
-        { "devanagari": "निराकारम्", "iast": "nirākāram", "meaning": "formless" },
-        { "devanagari": "ओङ्कारमूलं", "iast": "oṃkāra-mūlaṃ", "meaning": "the root/source of OM" },
-        { "devanagari": "तुरीयं", "iast": "turīyaṃ", "meaning": "the fourth (state of consciousness)" },
-        { "devanagari": "गिरा", "iast": "girā", "meaning": "by speech", "grammar": "instrumental singular" },
-        { "devanagari": "ज्ञान", "iast": "jñāna", "meaning": "knowledge" },
-        { "devanagari": "गोतीतम्", "iast": "gotītam", "meaning": "beyond the senses (go = sense organ + atīta = beyond)" },
-        { "devanagari": "ईशं", "iast": "īśaṃ", "meaning": "the Lord" },
-        { "devanagari": "गिरीशम्", "iast": "girīśam", "meaning": "Lord of the mountain (Kailāsa); epithet of Śiva" },
-        { "devanagari": "करालं", "iast": "karālaṃ", "meaning": "terrible, fierce" },
-        { "devanagari": "महाकाल-कालं", "iast": "mahākāla-kālaṃ", "meaning": "the death of even Great-Death" },
-        { "devanagari": "कृपालं", "iast": "kṛpālaṃ", "meaning": "compassionate, kind" },
-        { "devanagari": "गुणागार", "iast": "guṇāgāra", "meaning": "O abode of (good) qualities", "grammar": "vocative singular" },
-        { "devanagari": "संसार-पारं", "iast": "saṃsāra-pāraṃ", "meaning": "the far shore beyond saṃsāra" },
-        { "devanagari": "नतोऽहम्", "iast": "nato'ham", "meaning": "I bow (nataḥ + aham)" }
+        {
+          "devanagari": "निराकारम्",
+          "iast": "nirākāram",
+          "meaning": "formless"
+        },
+        {
+          "devanagari": "ओङ्कारमूलं",
+          "iast": "oṃkāra-mūlaṃ",
+          "meaning": "the root/source of OM"
+        },
+        {
+          "devanagari": "तुरीयं",
+          "iast": "turīyaṃ",
+          "meaning": "the fourth (state of consciousness)"
+        },
+        {
+          "devanagari": "गिरा",
+          "iast": "girā",
+          "meaning": "by speech",
+          "grammar": "instrumental singular"
+        },
+        {
+          "devanagari": "ज्ञान",
+          "iast": "jñāna",
+          "meaning": "knowledge"
+        },
+        {
+          "devanagari": "गोतीतम्",
+          "iast": "gotītam",
+          "meaning": "beyond the senses (go = sense organ + atīta = beyond)"
+        },
+        {
+          "devanagari": "ईशं",
+          "iast": "īśaṃ",
+          "meaning": "the Lord"
+        },
+        {
+          "devanagari": "गिरीशम्",
+          "iast": "girīśam",
+          "meaning": "Lord of the mountain (Kailāsa); epithet of Śiva"
+        },
+        {
+          "devanagari": "करालं",
+          "iast": "karālaṃ",
+          "meaning": "terrible, fierce"
+        },
+        {
+          "devanagari": "महाकाल-कालं",
+          "iast": "mahākāla-kālaṃ",
+          "meaning": "the death of even Great-Death"
+        },
+        {
+          "devanagari": "कृपालं",
+          "iast": "kṛpālaṃ",
+          "meaning": "compassionate, kind"
+        },
+        {
+          "devanagari": "गुणागार",
+          "iast": "guṇāgāra",
+          "meaning": "O abode of (good) qualities",
+          "grammar": "vocative singular"
+        },
+        {
+          "devanagari": "संसार-पारं",
+          "iast": "saṃsāra-pāraṃ",
+          "meaning": "the far shore beyond saṃsāra"
+        },
+        {
+          "devanagari": "नतोऽहम्",
+          "iast": "nato'ham",
+          "meaning": "I bow (nataḥ + aham)"
+        }
       ]
     },
     {
@@ -67,24 +192,97 @@
       "english_poetic": "Fair as the snow-clad mountain, deep and unmoved — His glorious body radiant with the splendour of a crore Cupids. The Gaṅgā rolls in waves over His matted hair, the young crescent moon glows on His brow, and around His throat — the cobra.",
       "explanation": "Verse 3 turns from the metaphysical Śiva to the iconographic Śiva: the snow-white body, the Gaṅgā cascading from his matted locks, the crescent moon on his forehead, the serpent around his throat. 'Manobhūta-koṭi-prabhā' compares his radiance to ten million Kāmadevas (the god of love, also called Manobhū / Manmatha) — a Sanskrit hyperbole for unmatched beauty.",
       "words": [
-        { "devanagari": "तुषाराद्रि", "iast": "tuṣārādri", "meaning": "snow-mountain (Himālaya)" },
-        { "devanagari": "संकाश", "iast": "saṃkāśa", "meaning": "resembling, like" },
-        { "devanagari": "गौरं", "iast": "gauraṃ", "meaning": "fair, white" },
-        { "devanagari": "गभीरं", "iast": "gabhīraṃ", "meaning": "deep, profound" },
-        { "devanagari": "मनोभूत", "iast": "manobhūta", "meaning": "Kāmadeva (the love-god, lit. 'mind-born')" },
-        { "devanagari": "कोटि", "iast": "koṭi", "meaning": "ten million, crore" },
-        { "devanagari": "प्रभा", "iast": "prabhā", "meaning": "splendour, radiance" },
-        { "devanagari": "श्री", "iast": "śrī", "meaning": "glorious, auspicious" },
-        { "devanagari": "शरीरम्", "iast": "śarīram", "meaning": "body" },
-        { "devanagari": "स्फुरन्", "iast": "sphuran", "meaning": "quivering, shining" },
-        { "devanagari": "मौलि", "iast": "mauli", "meaning": "head, crown" },
-        { "devanagari": "कल्लोलिनी", "iast": "kallolinī", "meaning": "river (one having waves)" },
-        { "devanagari": "चारु-गङ्गा", "iast": "cāru-gaṅgā", "meaning": "the lovely Gaṅgā" },
-        { "devanagari": "लसत्", "iast": "lasat", "meaning": "shining" },
-        { "devanagari": "भाल", "iast": "bhāla", "meaning": "forehead" },
-        { "devanagari": "बालेन्दु", "iast": "bālendu", "meaning": "young moon, crescent" },
-        { "devanagari": "कण्ठे", "iast": "kaṇṭhe", "meaning": "on the throat", "grammar": "locative singular" },
-        { "devanagari": "भुजङ्गा", "iast": "bhujaṅgā", "meaning": "serpent" }
+        {
+          "devanagari": "तुषाराद्रि",
+          "iast": "tuṣārādri",
+          "meaning": "snow-mountain (Himālaya)"
+        },
+        {
+          "devanagari": "संकाश",
+          "iast": "saṃkāśa",
+          "meaning": "resembling, like"
+        },
+        {
+          "devanagari": "गौरं",
+          "iast": "gauraṃ",
+          "meaning": "fair, white"
+        },
+        {
+          "devanagari": "गभीरं",
+          "iast": "gabhīraṃ",
+          "meaning": "deep, profound"
+        },
+        {
+          "devanagari": "मनोभूत",
+          "iast": "manobhūta",
+          "meaning": "Kāmadeva (the love-god, lit. 'mind-born')"
+        },
+        {
+          "devanagari": "कोटि",
+          "iast": "koṭi",
+          "meaning": "ten million, crore"
+        },
+        {
+          "devanagari": "प्रभा",
+          "iast": "prabhā",
+          "meaning": "splendour, radiance"
+        },
+        {
+          "devanagari": "श्री",
+          "iast": "śrī",
+          "meaning": "glorious, auspicious"
+        },
+        {
+          "devanagari": "शरीरम्",
+          "iast": "śarīram",
+          "meaning": "body"
+        },
+        {
+          "devanagari": "स्फुरन्",
+          "iast": "sphuran",
+          "meaning": "quivering, shining"
+        },
+        {
+          "devanagari": "मौलि",
+          "iast": "mauli",
+          "meaning": "head, crown"
+        },
+        {
+          "devanagari": "कल्लोलिनी",
+          "iast": "kallolinī",
+          "meaning": "river (one having waves)"
+        },
+        {
+          "devanagari": "चारु-गङ्गा",
+          "iast": "cāru-gaṅgā",
+          "meaning": "the lovely Gaṅgā"
+        },
+        {
+          "devanagari": "लसत्",
+          "iast": "lasat",
+          "meaning": "shining"
+        },
+        {
+          "devanagari": "भाल",
+          "iast": "bhāla",
+          "meaning": "forehead"
+        },
+        {
+          "devanagari": "बालेन्दु",
+          "iast": "bālendu",
+          "meaning": "young moon, crescent"
+        },
+        {
+          "devanagari": "कण्ठे",
+          "iast": "kaṇṭhe",
+          "meaning": "on the throat",
+          "grammar": "locative singular"
+        },
+        {
+          "devanagari": "भुजङ्गा",
+          "iast": "bhujaṅgā",
+          "meaning": "serpent"
+        }
       ]
     },
     {
@@ -97,20 +295,78 @@
       "english_poetic": "Ear-rings swaying, brows over wide and beautiful eyes, broad-framed, with a serene face — blue-throated, full of compassion. Clad in a lion's skin, garlanded with skulls — Śaṃkara the beloved, Lord of all — Him I worship.",
       "explanation": "Verse 4 continues the iconography. 'Nīlakaṇṭha' (blue-throat) recalls the legend of the Sāgara-manthana: Śiva swallowed the deadly halāhala poison to save the universe, and held it in his throat — turning it forever blue. 'Mṛgādhīśa-carmāmbara' (lion-skin garment) and 'muṇḍa-māla' (skull-garland) are the renunciate-Śiva of the cremation grounds.",
       "words": [
-        { "devanagari": "चलत्-कुण्डलं", "iast": "calat-kuṇḍalaṃ", "meaning": "with swinging earrings" },
-        { "devanagari": "भ्रू", "iast": "bhrū", "meaning": "brow" },
-        { "devanagari": "सुनेत्रं", "iast": "sunetraṃ", "meaning": "with beautiful eyes" },
-        { "devanagari": "विशालं", "iast": "viśālaṃ", "meaning": "broad, wide" },
-        { "devanagari": "प्रसन्नाननं", "iast": "prasannānanaṃ", "meaning": "with a serene face" },
-        { "devanagari": "नीलकण्ठं", "iast": "nīlakaṇṭhaṃ", "meaning": "blue-throated (epithet)" },
-        { "devanagari": "दयालम्", "iast": "dayālam", "meaning": "compassionate" },
-        { "devanagari": "मृगाधीश", "iast": "mṛgādhīśa", "meaning": "lord of beasts, lion" },
-        { "devanagari": "चर्माम्बरं", "iast": "carmāmbaraṃ", "meaning": "with skin as garment" },
-        { "devanagari": "मुण्डमालं", "iast": "muṇḍamālaṃ", "meaning": "wearing a garland of skulls" },
-        { "devanagari": "प्रियं", "iast": "priyaṃ", "meaning": "dear, beloved" },
-        { "devanagari": "शंकरं", "iast": "śaṃkaraṃ", "meaning": "Śaṃkara (the auspicious one)" },
-        { "devanagari": "सर्वनाथं", "iast": "sarvanāthaṃ", "meaning": "Lord of all" },
-        { "devanagari": "भजामि", "iast": "bhajāmi", "meaning": "I worship", "root_dhatu": "भज्", "grammar": "1st person singular present" }
+        {
+          "devanagari": "चलत्-कुण्डलं",
+          "iast": "calat-kuṇḍalaṃ",
+          "meaning": "with swinging earrings"
+        },
+        {
+          "devanagari": "भ्रू",
+          "iast": "bhrū",
+          "meaning": "brow"
+        },
+        {
+          "devanagari": "सुनेत्रं",
+          "iast": "sunetraṃ",
+          "meaning": "with beautiful eyes"
+        },
+        {
+          "devanagari": "विशालं",
+          "iast": "viśālaṃ",
+          "meaning": "broad, wide"
+        },
+        {
+          "devanagari": "प्रसन्नाननं",
+          "iast": "prasannānanaṃ",
+          "meaning": "with a serene face"
+        },
+        {
+          "devanagari": "नीलकण्ठं",
+          "iast": "nīlakaṇṭhaṃ",
+          "meaning": "blue-throated (epithet)"
+        },
+        {
+          "devanagari": "दयालम्",
+          "iast": "dayālam",
+          "meaning": "compassionate"
+        },
+        {
+          "devanagari": "मृगाधीश",
+          "iast": "mṛgādhīśa",
+          "meaning": "lord of beasts, lion"
+        },
+        {
+          "devanagari": "चर्माम्बरं",
+          "iast": "carmāmbaraṃ",
+          "meaning": "with skin as garment"
+        },
+        {
+          "devanagari": "मुण्डमालं",
+          "iast": "muṇḍamālaṃ",
+          "meaning": "wearing a garland of skulls"
+        },
+        {
+          "devanagari": "प्रियं",
+          "iast": "priyaṃ",
+          "meaning": "dear, beloved"
+        },
+        {
+          "devanagari": "शंकरं",
+          "iast": "śaṃkaraṃ",
+          "meaning": "Śaṃkara (the auspicious one)"
+        },
+        {
+          "devanagari": "सर्वनाथं",
+          "iast": "sarvanāthaṃ",
+          "meaning": "Lord of all"
+        },
+        {
+          "devanagari": "भजामि",
+          "iast": "bhajāmi",
+          "meaning": "I worship",
+          "root_dhatu": "भज्",
+          "grammar": "1st person singular present"
+        }
       ]
     },
     {
@@ -123,18 +379,66 @@
       "english_poetic": "Fierce and pre-eminent, bold and resolute, the supreme Lord — undivided, unborn, radiant as a crore suns. He who tears out by the root the three-pronged spike of suffering — the Trident-bearer — I worship Him, the consort of Bhavānī, who is found by the heart that feels.",
       "explanation": "Verse 5 — Śiva as cosmic warrior. 'Trayaḥ-śūla-nirmūlana' has two readings: literally 'uprooter of the trident' (referring to his own weapon), or 'uprooter of the threefold spike' — the three sufferings of saṃsāra (ādhyātmika, ādhibhautika, ādhidaivika — those born of self, environment, and divine forces). 'Bhāva-gamya' — attainable only by bhāva (devotional feeling), not by intellect alone.",
       "words": [
-        { "devanagari": "प्रचण्डं", "iast": "pracaṇḍaṃ", "meaning": "fierce, terrible" },
-        { "devanagari": "प्रकृष्टं", "iast": "prakṛṣṭaṃ", "meaning": "excellent, exalted" },
-        { "devanagari": "प्रगल्भं", "iast": "pragalbhaṃ", "meaning": "bold, resolute" },
-        { "devanagari": "परेशं", "iast": "pareśaṃ", "meaning": "supreme Lord (para + īśa)" },
-        { "devanagari": "अखण्डम्", "iast": "akhaṇḍam", "meaning": "undivided" },
-        { "devanagari": "अजं", "iast": "ajaṃ", "meaning": "unborn" },
-        { "devanagari": "भानु-कोटि-प्रकाशम्", "iast": "bhānu-koṭi-prakāśam", "meaning": "with the splendour of a crore suns" },
-        { "devanagari": "त्रयः-शूल", "iast": "trayaḥ-śūla", "meaning": "the three sufferings (or: trident, three-spike)" },
-        { "devanagari": "निर्मूलनं", "iast": "nirmūlanaṃ", "meaning": "uprooting, eradicating" },
-        { "devanagari": "शूल-पाणिं", "iast": "śūla-pāṇiṃ", "meaning": "trident-handed" },
-        { "devanagari": "भवानी-पतिं", "iast": "bhavānī-patiṃ", "meaning": "the husband of Bhavānī (Pārvatī)" },
-        { "devanagari": "भाव-गम्यम्", "iast": "bhāva-gamyam", "meaning": "attainable by feeling (devotion)" }
+        {
+          "devanagari": "प्रचण्डं",
+          "iast": "pracaṇḍaṃ",
+          "meaning": "fierce, terrible"
+        },
+        {
+          "devanagari": "प्रकृष्टं",
+          "iast": "prakṛṣṭaṃ",
+          "meaning": "excellent, exalted"
+        },
+        {
+          "devanagari": "प्रगल्भं",
+          "iast": "pragalbhaṃ",
+          "meaning": "bold, resolute"
+        },
+        {
+          "devanagari": "परेशं",
+          "iast": "pareśaṃ",
+          "meaning": "supreme Lord (para + īśa)"
+        },
+        {
+          "devanagari": "अखण्डम्",
+          "iast": "akhaṇḍam",
+          "meaning": "undivided"
+        },
+        {
+          "devanagari": "अजं",
+          "iast": "ajaṃ",
+          "meaning": "unborn"
+        },
+        {
+          "devanagari": "भानु-कोटि-प्रकाशम्",
+          "iast": "bhānu-koṭi-prakāśam",
+          "meaning": "with the splendour of a crore suns"
+        },
+        {
+          "devanagari": "त्रयः-शूल",
+          "iast": "trayaḥ-śūla",
+          "meaning": "the three sufferings (or: trident, three-spike)"
+        },
+        {
+          "devanagari": "निर्मूलनं",
+          "iast": "nirmūlanaṃ",
+          "meaning": "uprooting, eradicating"
+        },
+        {
+          "devanagari": "शूल-पाणिं",
+          "iast": "śūla-pāṇiṃ",
+          "meaning": "trident-handed"
+        },
+        {
+          "devanagari": "भवानी-पतिं",
+          "iast": "bhavānī-patiṃ",
+          "meaning": "the husband of Bhavānī (Pārvatī)"
+        },
+        {
+          "devanagari": "भाव-गम्यम्",
+          "iast": "bhāva-gamyam",
+          "meaning": "attainable by feeling (devotion)"
+        }
       ]
     },
     {
@@ -147,17 +451,64 @@
       "english_poetic": "Beyond all measure, auspicious — He who brings on the dissolution at the end of the kalpa. Always the giver of bliss to the good, the destroyer of the Three Cities (Tripura). Mass of consciousness-bliss, remover of delusion — be gracious, be gracious, O Lord, destroyer of the love-god!",
       "explanation": "Verse 6 — direct petition. 'Purārī' (enemy of the cities) refers to Śiva's mythic destruction of Tripura, the three sky-cities built by the asura sons of Tāraka. 'Manmathārī' (enemy of Manmatha) recalls his burning of Kāmadeva when the love-god tried to break his meditation. 'Cidānanda-saṃdoha' — a 'collection / mass' of pure consciousness-bliss — is a high Vedantic phrase. The doubled 'prasīda prasīda' is the emotional fulcrum of the whole hymn.",
       "words": [
-        { "devanagari": "कलातीत", "iast": "kalātīta", "meaning": "beyond all parts/measure" },
-        { "devanagari": "कल्याण", "iast": "kalyāṇa", "meaning": "auspicious" },
-        { "devanagari": "कल्पान्तकारी", "iast": "kalpāntakārī", "meaning": "doer of the end of the kalpa (cosmic dissolver)" },
-        { "devanagari": "सदा", "iast": "sadā", "meaning": "always" },
-        { "devanagari": "सज्जनानन्द-दाता", "iast": "sajjanānanda-dātā", "meaning": "giver of bliss to the good" },
-        { "devanagari": "पुरारी", "iast": "purārī", "meaning": "destroyer of the (three) cities" },
-        { "devanagari": "चिदानन्द-संदोह", "iast": "cidānanda-saṃdoha", "meaning": "the mass / aggregate of consciousness-bliss" },
-        { "devanagari": "मोहापहारी", "iast": "mohāpahārī", "meaning": "remover of delusion" },
-        { "devanagari": "प्रसीद", "iast": "prasīda", "meaning": "be gracious!", "root_dhatu": "सद्", "grammar": "2nd person singular imperative" },
-        { "devanagari": "प्रभो", "iast": "prabho", "meaning": "O Lord", "grammar": "vocative singular" },
-        { "devanagari": "मन्मथारी", "iast": "manmathārī", "meaning": "destroyer of Manmatha (the love-god)" }
+        {
+          "devanagari": "कलातीत",
+          "iast": "kalātīta",
+          "meaning": "beyond all parts/measure"
+        },
+        {
+          "devanagari": "कल्याण",
+          "iast": "kalyāṇa",
+          "meaning": "auspicious"
+        },
+        {
+          "devanagari": "कल्पान्तकारी",
+          "iast": "kalpāntakārī",
+          "meaning": "doer of the end of the kalpa (cosmic dissolver)"
+        },
+        {
+          "devanagari": "सदा",
+          "iast": "sadā",
+          "meaning": "always"
+        },
+        {
+          "devanagari": "सज्जनानन्द-दाता",
+          "iast": "sajjanānanda-dātā",
+          "meaning": "giver of bliss to the good"
+        },
+        {
+          "devanagari": "पुरारी",
+          "iast": "purārī",
+          "meaning": "destroyer of the (three) cities"
+        },
+        {
+          "devanagari": "चिदानन्द-संदोह",
+          "iast": "cidānanda-saṃdoha",
+          "meaning": "the mass / aggregate of consciousness-bliss"
+        },
+        {
+          "devanagari": "मोहापहारी",
+          "iast": "mohāpahārī",
+          "meaning": "remover of delusion"
+        },
+        {
+          "devanagari": "प्रसीद",
+          "iast": "prasīda",
+          "meaning": "be gracious!",
+          "root_dhatu": "सद्",
+          "grammar": "2nd person singular imperative"
+        },
+        {
+          "devanagari": "प्रभो",
+          "iast": "prabho",
+          "meaning": "O Lord",
+          "grammar": "vocative singular"
+        },
+        {
+          "devanagari": "मन्मथारी",
+          "iast": "manmathārī",
+          "meaning": "destroyer of Manmatha (the love-god)"
+        }
       ]
     },
     {
@@ -170,18 +521,69 @@
       "english_poetic": "Until people bow at the lotus-feet of the Lord of Umā — in this world or any beyond — until then there is no happiness, no peace, no end to inner burning. Be gracious, O Lord, You who dwell within every being.",
       "explanation": "Verse 7 — the theological core of the hymn. The 'yāvad… tāvad…' (until… until then…) structure makes a strict conditional: peace is not available outside devotion to Śiva. 'Sarva-bhūtādhivāsa' (indweller of all beings) anticipates the deeply Vedantic close: the divine isn't elsewhere, it's the antaryāmin.",
       "words": [
-        { "devanagari": "न यावद्", "iast": "na yāvad", "meaning": "until not, as long as not" },
-        { "devanagari": "उमानाथ", "iast": "umānātha", "meaning": "Lord of Umā (= Śiva)" },
-        { "devanagari": "पादारविन्दं", "iast": "pādāravindaṃ", "meaning": "lotus-feet" },
-        { "devanagari": "भजन्ति", "iast": "bhajanti", "meaning": "they worship", "root_dhatu": "भज्", "grammar": "3rd person plural present" },
-        { "devanagari": "इह लोके", "iast": "iha loke", "meaning": "in this world" },
-        { "devanagari": "परे वा", "iast": "pare vā", "meaning": "or in the other (beyond)" },
-        { "devanagari": "नराणाम्", "iast": "narāṇām", "meaning": "of people", "grammar": "genitive plural" },
-        { "devanagari": "न तावत्", "iast": "na tāvat", "meaning": "until then not" },
-        { "devanagari": "सुखं", "iast": "sukhaṃ", "meaning": "happiness" },
-        { "devanagari": "शान्ति", "iast": "śānti", "meaning": "peace" },
-        { "devanagari": "सन्ताप-नाशं", "iast": "santāpa-nāśaṃ", "meaning": "destruction of affliction / burning" },
-        { "devanagari": "सर्व-भूताधिवासम्", "iast": "sarva-bhūtādhivāsam", "meaning": "the indweller of all beings" }
+        {
+          "devanagari": "न यावद्",
+          "iast": "na yāvad",
+          "meaning": "until not, as long as not"
+        },
+        {
+          "devanagari": "उमानाथ",
+          "iast": "umānātha",
+          "meaning": "Lord of Umā (= Śiva)"
+        },
+        {
+          "devanagari": "पादारविन्दं",
+          "iast": "pādāravindaṃ",
+          "meaning": "lotus-feet"
+        },
+        {
+          "devanagari": "भजन्ति",
+          "iast": "bhajanti",
+          "meaning": "they worship",
+          "root_dhatu": "भज्",
+          "grammar": "3rd person plural present"
+        },
+        {
+          "devanagari": "इह लोके",
+          "iast": "iha loke",
+          "meaning": "in this world"
+        },
+        {
+          "devanagari": "परे वा",
+          "iast": "pare vā",
+          "meaning": "or in the other (beyond)"
+        },
+        {
+          "devanagari": "नराणाम्",
+          "iast": "narāṇām",
+          "meaning": "of people",
+          "grammar": "genitive plural"
+        },
+        {
+          "devanagari": "न तावत्",
+          "iast": "na tāvat",
+          "meaning": "until then not"
+        },
+        {
+          "devanagari": "सुखं",
+          "iast": "sukhaṃ",
+          "meaning": "happiness"
+        },
+        {
+          "devanagari": "शान्ति",
+          "iast": "śānti",
+          "meaning": "peace"
+        },
+        {
+          "devanagari": "सन्ताप-नाशं",
+          "iast": "santāpa-nāśaṃ",
+          "meaning": "destruction of affliction / burning"
+        },
+        {
+          "devanagari": "सर्व-भूताधिवासम्",
+          "iast": "sarva-bhūtādhivāsam",
+          "meaning": "the indweller of all beings"
+        }
       ]
     },
     {
@@ -194,22 +596,95 @@
       "english_poetic": "I know no yoga, no japa, not even how to make pūjā — I only bow, always and in every way, to You, O Śambhu. Burnt by the flood of grief that is age and birth and dying — protect this stricken one, O Lord, O Śambhu!",
       "explanation": "Verse 8 — the final cry. The hymn closes not with metaphysical claim but with humble confession: the devotee knows none of the sophisticated paths — neither yoga, nor mantra-repetition, nor ritual — and asks for grace anyway. 'Āpanna' (one who has fallen into trouble) is the petitioner's posture. This personal humility after seven verses of cosmic praise is what gives the Rudrāṣṭakam its enduring devotional power.",
       "words": [
-        { "devanagari": "न जानामि", "iast": "na jānāmi", "meaning": "I do not know", "root_dhatu": "ज्ञा", "grammar": "1st person singular present" },
-        { "devanagari": "योगं", "iast": "yogaṃ", "meaning": "yoga" },
-        { "devanagari": "जपं", "iast": "japaṃ", "meaning": "japa, mantra-repetition" },
-        { "devanagari": "नैव पूजां", "iast": "naiva pūjāṃ", "meaning": "nor worship" },
-        { "devanagari": "नतोऽहम्", "iast": "nato'ham", "meaning": "I am bowing" },
-        { "devanagari": "सदा सर्वदा", "iast": "sadā sarvadā", "meaning": "always, in every way" },
-        { "devanagari": "शम्भु", "iast": "śambhu", "meaning": "O Śambhu (bestower of bliss)", "grammar": "vocative singular" },
-        { "devanagari": "तुभ्यम्", "iast": "tubhyam", "meaning": "to You", "grammar": "2nd person singular dative" },
-        { "devanagari": "जरा", "iast": "jarā", "meaning": "old age" },
-        { "devanagari": "जन्म", "iast": "janma", "meaning": "birth" },
-        { "devanagari": "दुःखौघ", "iast": "duḥkhaugha", "meaning": "flood of sorrow" },
-        { "devanagari": "तातप्यमानं", "iast": "tātapyamānaṃ", "meaning": "being burnt / tormented", "grammar": "passive participle accusative" },
-        { "devanagari": "प्रभो", "iast": "prabho", "meaning": "O Lord", "grammar": "vocative" },
-        { "devanagari": "पाहि", "iast": "pāhi", "meaning": "protect!", "root_dhatu": "पा", "grammar": "2nd person singular imperative" },
-        { "devanagari": "आपन्नम्", "iast": "āpannam", "meaning": "the afflicted one" },
-        { "devanagari": "ईश", "iast": "īśa", "meaning": "O Lord", "grammar": "vocative" }
+        {
+          "devanagari": "न जानामि",
+          "iast": "na jānāmi",
+          "meaning": "I do not know",
+          "root_dhatu": "ज्ञा",
+          "grammar": "1st person singular present"
+        },
+        {
+          "devanagari": "योगं",
+          "iast": "yogaṃ",
+          "meaning": "yoga"
+        },
+        {
+          "devanagari": "जपं",
+          "iast": "japaṃ",
+          "meaning": "japa, mantra-repetition"
+        },
+        {
+          "devanagari": "नैव पूजां",
+          "iast": "naiva pūjāṃ",
+          "meaning": "nor worship"
+        },
+        {
+          "devanagari": "नतोऽहम्",
+          "iast": "nato'ham",
+          "meaning": "I am bowing"
+        },
+        {
+          "devanagari": "सदा सर्वदा",
+          "iast": "sadā sarvadā",
+          "meaning": "always, in every way"
+        },
+        {
+          "devanagari": "शम्भु",
+          "iast": "śambhu",
+          "meaning": "O Śambhu (bestower of bliss)",
+          "grammar": "vocative singular"
+        },
+        {
+          "devanagari": "तुभ्यम्",
+          "iast": "tubhyam",
+          "meaning": "to You",
+          "grammar": "2nd person singular dative"
+        },
+        {
+          "devanagari": "जरा",
+          "iast": "jarā",
+          "meaning": "old age"
+        },
+        {
+          "devanagari": "जन्म",
+          "iast": "janma",
+          "meaning": "birth"
+        },
+        {
+          "devanagari": "दुःखौघ",
+          "iast": "duḥkhaugha",
+          "meaning": "flood of sorrow"
+        },
+        {
+          "devanagari": "तातप्यमानं",
+          "iast": "tātapyamānaṃ",
+          "meaning": "being burnt / tormented",
+          "grammar": "passive participle accusative"
+        },
+        {
+          "devanagari": "प्रभो",
+          "iast": "prabho",
+          "meaning": "O Lord",
+          "grammar": "vocative"
+        },
+        {
+          "devanagari": "पाहि",
+          "iast": "pāhi",
+          "meaning": "protect!",
+          "root_dhatu": "पा",
+          "grammar": "2nd person singular imperative"
+        },
+        {
+          "devanagari": "आपन्नम्",
+          "iast": "āpannam",
+          "meaning": "the afflicted one"
+        },
+        {
+          "devanagari": "ईश",
+          "iast": "īśa",
+          "meaning": "O Lord",
+          "grammar": "vocative"
+        }
       ]
     }
   ]

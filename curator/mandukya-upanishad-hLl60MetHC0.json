@@ -4,6 +4,14 @@
   "youtube_url": "https://www.youtube.com/watch?v=hLl60MetHC0",
   "title": "Māṇḍūkya Upaniṣad (contemporary setting on OM and Turīya)",
   "language": "sa",
+  "tags": [
+    "meditative-chant",
+    "upanishadic",
+    "advaita-vedanta",
+    "om",
+    "turiya",
+    "mandukya-upanishad"
+  ],
   "lines": [
     {
       "line": 0,
@@ -15,17 +23,68 @@
       "english_poetic": "OM — this one imperishable syllable is all of this. What was, what is, and what shall be — all of it is OM alone.",
       "explanation": "Māṇḍūkya Upaniṣad mantra 1 (slightly abridged — the canonical text inserts 'tasyopavyākhyānam' meaning 'its explanation follows'). The opening axiom of the entire Upaniṣad: the syllable OM encompasses the whole of time. 'Akṣara' literally means 'imperishable' (a-kṣara = non-decaying) — applied here to OM, the single syllable that does not pass away even when all phenomenal things do.",
       "words": [
-        { "devanagari": "ॐ", "iast": "oṃ", "meaning": "the sacred syllable OM" },
-        { "devanagari": "इति", "iast": "iti", "meaning": "thus, so (quotative)", "grammar": "indeclinable" },
-        { "devanagari": "एतद्", "iast": "etad", "meaning": "this", "grammar": "neuter, nominative singular" },
-        { "devanagari": "अक्षरम्", "iast": "akṣaram", "meaning": "imperishable syllable", "grammar": "neuter, nominative singular" },
-        { "devanagari": "इदं", "iast": "idaṃ", "meaning": "this (whole)", "grammar": "neuter, nominative singular" },
-        { "devanagari": "सर्वं", "iast": "sarvam", "meaning": "all, the whole" },
-        { "devanagari": "भूतं", "iast": "bhūtam", "meaning": "what has been, past", "grammar": "past participle, neuter nominative" },
-        { "devanagari": "भवद्", "iast": "bhavad", "meaning": "what is being, present", "grammar": "present participle, neuter nominative" },
-        { "devanagari": "भविष्यद्", "iast": "bhaviṣyad", "meaning": "what shall be, future", "grammar": "future participle, neuter nominative" },
-        { "devanagari": "ओङ्कार", "iast": "oṃkāra", "meaning": "the syllable OM, the OM-utterance" },
-        { "devanagari": "एव", "iast": "eva", "meaning": "alone, indeed (emphatic)" }
+        {
+          "devanagari": "ॐ",
+          "iast": "oṃ",
+          "meaning": "the sacred syllable OM"
+        },
+        {
+          "devanagari": "इति",
+          "iast": "iti",
+          "meaning": "thus, so (quotative)",
+          "grammar": "indeclinable"
+        },
+        {
+          "devanagari": "एतद्",
+          "iast": "etad",
+          "meaning": "this",
+          "grammar": "neuter, nominative singular"
+        },
+        {
+          "devanagari": "अक्षरम्",
+          "iast": "akṣaram",
+          "meaning": "imperishable syllable",
+          "grammar": "neuter, nominative singular"
+        },
+        {
+          "devanagari": "इदं",
+          "iast": "idaṃ",
+          "meaning": "this (whole)",
+          "grammar": "neuter, nominative singular"
+        },
+        {
+          "devanagari": "सर्वं",
+          "iast": "sarvam",
+          "meaning": "all, the whole"
+        },
+        {
+          "devanagari": "भूतं",
+          "iast": "bhūtam",
+          "meaning": "what has been, past",
+          "grammar": "past participle, neuter nominative"
+        },
+        {
+          "devanagari": "भवद्",
+          "iast": "bhavad",
+          "meaning": "what is being, present",
+          "grammar": "present participle, neuter nominative"
+        },
+        {
+          "devanagari": "भविष्यद्",
+          "iast": "bhaviṣyad",
+          "meaning": "what shall be, future",
+          "grammar": "future participle, neuter nominative"
+        },
+        {
+          "devanagari": "ओङ्कार",
+          "iast": "oṃkāra",
+          "meaning": "the syllable OM, the OM-utterance"
+        },
+        {
+          "devanagari": "एव",
+          "iast": "eva",
+          "meaning": "alone, indeed (emphatic)"
+        }
       ]
     },
     {
@@ -38,14 +97,49 @@
       "english_poetic": "All this is truly Brahman. This very Self is Brahman. And this Self has four quarters (four states of consciousness).",
       "explanation": "Māṇḍūkya Upaniṣad mantra 2 — three of the most condensed equations in all of Vedānta. Each is a mahāvākya-class statement. 'Sarvaṃ brahma' (all is Brahman) — the cosmic identity. 'Ayam ātmā brahma' (this Self is Brahman) — the personal identity; this is one of the four great Vedantic mahāvākyas. 'Catuṣpāt' (four-quartered, four-footed) introduces the framework the rest of the Upaniṣad expounds: the four states of consciousness.",
       "words": [
-        { "devanagari": "सर्वं", "iast": "sarvam", "meaning": "all" },
-        { "devanagari": "हि", "iast": "hi", "meaning": "indeed, truly (particle)" },
-        { "devanagari": "एतद्", "iast": "etad", "meaning": "this" },
-        { "devanagari": "ब्रह्म", "iast": "brahma", "meaning": "Brahman, the absolute" },
-        { "devanagari": "अयम्", "iast": "ayam", "meaning": "this (here)", "grammar": "masculine nominative singular" },
-        { "devanagari": "आत्मा", "iast": "ātmā", "meaning": "Self, ātman", "grammar": "masculine nominative singular" },
-        { "devanagari": "सः", "iast": "saḥ", "meaning": "he, that", "grammar": "masculine nominative singular" },
-        { "devanagari": "चतुष्पात्", "iast": "catuṣpāt", "meaning": "four-quartered, four-footed (with four parts)" }
+        {
+          "devanagari": "सर्वं",
+          "iast": "sarvam",
+          "meaning": "all"
+        },
+        {
+          "devanagari": "हि",
+          "iast": "hi",
+          "meaning": "indeed, truly (particle)"
+        },
+        {
+          "devanagari": "एतद्",
+          "iast": "etad",
+          "meaning": "this"
+        },
+        {
+          "devanagari": "ब्रह्म",
+          "iast": "brahma",
+          "meaning": "Brahman, the absolute"
+        },
+        {
+          "devanagari": "अयम्",
+          "iast": "ayam",
+          "meaning": "this (here)",
+          "grammar": "masculine nominative singular"
+        },
+        {
+          "devanagari": "आत्मा",
+          "iast": "ātmā",
+          "meaning": "Self, ātman",
+          "grammar": "masculine nominative singular"
+        },
+        {
+          "devanagari": "सः",
+          "iast": "saḥ",
+          "meaning": "he, that",
+          "grammar": "masculine nominative singular"
+        },
+        {
+          "devanagari": "चतुष्पात्",
+          "iast": "catuṣpāt",
+          "meaning": "four-quartered, four-footed (with four parts)"
+        }
       ]
     },
     {
@@ -58,10 +152,30 @@
       "english_poetic": "Waking — dreaming — deep sleep — and Turīya, beyond even the night.",
       "explanation": "A summary refrain naming the four states of consciousness the Upaniṣad analyses one by one in mantras 3-7. Jāgrat is the outward-knowing waking state; svapna is the inward-knowing dream state where the mind generates its own objects; suṣupti is the dreamless deep-sleep state where neither subject nor object appear; turīya ('the fourth') is the ground of all three — pure awareness, present even in dreamless sleep as the witness who 'knows' that nothing was known.",
       "words": [
-        { "devanagari": "जागरितं", "iast": "jāgaritam", "meaning": "the waking state", "grammar": "neuter nominative singular" },
-        { "devanagari": "स्वप्नं", "iast": "svapnam", "meaning": "the dreaming state", "grammar": "neuter nominative singular" },
-        { "devanagari": "सुषुप्तं", "iast": "suṣuptam", "meaning": "the deep-sleep state", "grammar": "neuter nominative singular" },
-        { "devanagari": "तुरीयम्", "iast": "turīyam", "meaning": "the fourth (state — pure awareness)", "grammar": "neuter nominative singular" }
+        {
+          "devanagari": "जागरितं",
+          "iast": "jāgaritam",
+          "meaning": "the waking state",
+          "grammar": "neuter nominative singular"
+        },
+        {
+          "devanagari": "स्वप्नं",
+          "iast": "svapnam",
+          "meaning": "the dreaming state",
+          "grammar": "neuter nominative singular"
+        },
+        {
+          "devanagari": "सुषुप्तं",
+          "iast": "suṣuptam",
+          "meaning": "the deep-sleep state",
+          "grammar": "neuter nominative singular"
+        },
+        {
+          "devanagari": "तुरीयम्",
+          "iast": "turīyam",
+          "meaning": "the fourth (state — pure awareness)",
+          "grammar": "neuter nominative singular"
+        }
       ]
     },
     {
@@ -74,13 +188,43 @@
       "english_poetic": "OM. The fourth — peaceful, blissful, non-dual, where the world dissolves — shines.",
       "explanation": "Selected phrases from Māṇḍūkya mantra 7's famous catalogue of what turīya IS (the via positiva, following a long via negativa of what it is NOT). 'Śāntam' (peaceful), 'śivam' (auspicious/blissful), 'advaitam' (non-dual) — three of the most celebrated adjectives in all of Vedānta. 'Prapañcopaśama' literally 'the cessation/calming of the phenomenal-spreading-out' — when turīya is recognised, the apparent multiplicity of the world subsides.",
       "words": [
-        { "devanagari": "ॐ", "iast": "oṃ", "meaning": "the sacred syllable OM" },
-        { "devanagari": "तुरीयं", "iast": "turīyam", "meaning": "the fourth (pure awareness)" },
-        { "devanagari": "शान्तं", "iast": "śāntam", "meaning": "peaceful, at rest" },
-        { "devanagari": "शिवम्", "iast": "śivam", "meaning": "auspicious, blissful, kindly" },
-        { "devanagari": "अद्वैतं", "iast": "advaitam", "meaning": "non-dual, without a second" },
-        { "devanagari": "प्रपञ्चोपशमं", "iast": "prapañcopaśamam", "meaning": "the cessation of the phenomenal world, where multiplicity subsides" },
-        { "devanagari": "विभाति", "iast": "vibhāti", "meaning": "shines forth, manifests", "root_dhatu": "भा", "grammar": "3rd person singular present (with vi- preverb)" }
+        {
+          "devanagari": "ॐ",
+          "iast": "oṃ",
+          "meaning": "the sacred syllable OM"
+        },
+        {
+          "devanagari": "तुरीयं",
+          "iast": "turīyam",
+          "meaning": "the fourth (pure awareness)"
+        },
+        {
+          "devanagari": "शान्तं",
+          "iast": "śāntam",
+          "meaning": "peaceful, at rest"
+        },
+        {
+          "devanagari": "शिवम्",
+          "iast": "śivam",
+          "meaning": "auspicious, blissful, kindly"
+        },
+        {
+          "devanagari": "अद्वैतं",
+          "iast": "advaitam",
+          "meaning": "non-dual, without a second"
+        },
+        {
+          "devanagari": "प्रपञ्चोपशमं",
+          "iast": "prapañcopaśamam",
+          "meaning": "the cessation of the phenomenal world, where multiplicity subsides"
+        },
+        {
+          "devanagari": "विभाति",
+          "iast": "vibhāti",
+          "meaning": "shines forth, manifests",
+          "root_dhatu": "भा",
+          "grammar": "3rd person singular present (with vi- preverb)"
+        }
       ]
     },
     {
@@ -93,12 +237,39 @@
       "english_poetic": "Not inward-knowing, not outward-knowing — pure essence of self-awareness — beyond all grasp, beyond all thought.",
       "explanation": "From Māṇḍūkya mantra 7's via negativa — selected from a longer catalogue of seven negations (na antaḥ-prajñam, na bahiṣ-prajñam, na ubhayataḥ-prajñam, na prajñāna-ghanam, na prajñam, na aprajñam, etc.). The teaching: turīya is not a kind of knowing turned outward, not a knowing turned inward, not both, not even a thick mass of knowing — it is the ground in which knowing arises. 'Ekātma-pratyaya-sāra' is the most positive phrase in this section: 'the essence (sāra) of the awareness (pratyaya) of the one Self (ekātma)'.",
       "words": [
-        { "devanagari": "न", "iast": "na", "meaning": "not" },
-        { "devanagari": "अन्तःप्रज्ञं", "iast": "antaḥ-prajñam", "meaning": "inward-knowing, conscious of inner objects (i.e. dreaming)", "grammar": "neuter nominative singular" },
-        { "devanagari": "बहिष्प्रज्ञं", "iast": "bahiṣ-prajñam", "meaning": "outward-knowing, conscious of outer objects (i.e. waking)" },
-        { "devanagari": "एकात्मप्रत्ययसारं", "iast": "ekātma-pratyaya-sāram", "meaning": "the essence of the awareness of the one Self" },
-        { "devanagari": "अग्राह्यम्", "iast": "agrāhyam", "meaning": "ungraspable (a- + grāhya, gerundive of grah-)", "root_dhatu": "ग्रह्" },
-        { "devanagari": "अचिन्त्यम्", "iast": "acintyam", "meaning": "unthinkable, beyond conceptual thought", "root_dhatu": "चिन्त्" }
+        {
+          "devanagari": "न",
+          "iast": "na",
+          "meaning": "not"
+        },
+        {
+          "devanagari": "अन्तःप्रज्ञं",
+          "iast": "antaḥ-prajñam",
+          "meaning": "inward-knowing, conscious of inner objects (i.e. dreaming)",
+          "grammar": "neuter nominative singular"
+        },
+        {
+          "devanagari": "बहिष्प्रज्ञं",
+          "iast": "bahiṣ-prajñam",
+          "meaning": "outward-knowing, conscious of outer objects (i.e. waking)"
+        },
+        {
+          "devanagari": "एकात्मप्रत्ययसारं",
+          "iast": "ekātma-pratyaya-sāram",
+          "meaning": "the essence of the awareness of the one Self"
+        },
+        {
+          "devanagari": "अग्राह्यम्",
+          "iast": "agrāhyam",
+          "meaning": "ungraspable (a- + grāhya, gerundive of grah-)",
+          "root_dhatu": "ग्रह्"
+        },
+        {
+          "devanagari": "अचिन्त्यम्",
+          "iast": "acintyam",
+          "meaning": "unthinkable, beyond conceptual thought",
+          "root_dhatu": "चिन्त्"
+        }
       ]
     },
     {
@@ -111,14 +282,50 @@
       "english_poetic": "This is the Lord of All, the Inner Controller, the source from which everything springs — origin and end of all beings.",
       "explanation": "Māṇḍūkya mantra 6 (the canonical text also includes 'eṣa sarvajñaḥ' / 'this is the all-knowing one'). Three classical Vedantic titles in one breath: sarveśvara (lord of all), antaryāmin (the inner controller — also a key term in the Bṛhadāraṇyaka), yoni (the womb / source). 'Prabhavāpyayau' is a single compound for 'arising and dissolution' — the two endpoints of every being's life, both inside Brahman.",
       "words": [
-        { "devanagari": "एष", "iast": "eṣa", "meaning": "this (one)", "grammar": "masculine nominative singular" },
-        { "devanagari": "सर्वेश्वरः", "iast": "sarveśvaraḥ", "meaning": "Lord of all (sarva + īśvara)" },
-        { "devanagari": "अन्तर्यामी", "iast": "antaryāmī", "meaning": "the inner controller, indweller" },
-        { "devanagari": "योनिः", "iast": "yoniḥ", "meaning": "source, womb, origin" },
-        { "devanagari": "सर्वस्य", "iast": "sarvasya", "meaning": "of all", "grammar": "neuter genitive singular" },
-        { "devanagari": "प्रभवाप्ययौ", "iast": "prabhavāpyayau", "meaning": "origin and dissolution (compound dual)", "grammar": "masculine nominative dual" },
-        { "devanagari": "हि", "iast": "hi", "meaning": "indeed, for" },
-        { "devanagari": "भूतानाम्", "iast": "bhūtānām", "meaning": "of beings, of all that has come into being", "grammar": "neuter genitive plural" }
+        {
+          "devanagari": "एष",
+          "iast": "eṣa",
+          "meaning": "this (one)",
+          "grammar": "masculine nominative singular"
+        },
+        {
+          "devanagari": "सर्वेश्वरः",
+          "iast": "sarveśvaraḥ",
+          "meaning": "Lord of all (sarva + īśvara)"
+        },
+        {
+          "devanagari": "अन्तर्यामी",
+          "iast": "antaryāmī",
+          "meaning": "the inner controller, indweller"
+        },
+        {
+          "devanagari": "योनिः",
+          "iast": "yoniḥ",
+          "meaning": "source, womb, origin"
+        },
+        {
+          "devanagari": "सर्वस्य",
+          "iast": "sarvasya",
+          "meaning": "of all",
+          "grammar": "neuter genitive singular"
+        },
+        {
+          "devanagari": "प्रभवाप्ययौ",
+          "iast": "prabhavāpyayau",
+          "meaning": "origin and dissolution (compound dual)",
+          "grammar": "masculine nominative dual"
+        },
+        {
+          "devanagari": "हि",
+          "iast": "hi",
+          "meaning": "indeed, for"
+        },
+        {
+          "devanagari": "भूतानाम्",
+          "iast": "bhūtānām",
+          "meaning": "of beings, of all that has come into being",
+          "grammar": "neuter genitive plural"
+        }
       ]
     },
     {
@@ -131,11 +338,31 @@
       "english_poetic": "When mind is at peace and the world is empty — Turīya roars as silent light.",
       "explanation": "A contemporary composition (not from the Upaniṣad text) using Vedantic vocabulary to describe the experiential approach to turīya. The phrasing echoes the Yoga Sūtras (cittaṃ śāntaṃ recalls 'yogaś citta-vṛtti-nirodhaḥ') joined to the Madhyamaka-influenced Vedantic notion of phenomenal emptiness. The songwriter's own meditation on the canonical material that precedes and follows.",
       "words": [
-        { "devanagari": "चित्तं", "iast": "cittam", "meaning": "mind, awareness, citta" },
-        { "devanagari": "शान्तं", "iast": "śāntam", "meaning": "peaceful, calmed" },
-        { "devanagari": "प्रपञ्चं", "iast": "prapañcam", "meaning": "the phenomenal world, the expanding multiplicity" },
-        { "devanagari": "शून्यम्", "iast": "śūnyam", "meaning": "empty, void" },
-        { "devanagari": "तुरीयम्", "iast": "turīyam", "meaning": "the fourth (state)" }
+        {
+          "devanagari": "चित्तं",
+          "iast": "cittam",
+          "meaning": "mind, awareness, citta"
+        },
+        {
+          "devanagari": "शान्तं",
+          "iast": "śāntam",
+          "meaning": "peaceful, calmed"
+        },
+        {
+          "devanagari": "प्रपञ्चं",
+          "iast": "prapañcam",
+          "meaning": "the phenomenal world, the expanding multiplicity"
+        },
+        {
+          "devanagari": "शून्यम्",
+          "iast": "śūnyam",
+          "meaning": "empty, void"
+        },
+        {
+          "devanagari": "तुरीयम्",
+          "iast": "turīyam",
+          "meaning": "the fourth (state)"
+        }
       ]
     },
     {
@@ -148,14 +375,46 @@
       "english_poetic": "OM. The fourth — peace, bliss, non-duality — liberation, the highest state. Ascend.",
       "explanation": "Composite: 'turīyaṃ śāntaṃ śivam advaitam' is from Māṇḍūkya 7; 'kaivalyaṃ paramaṃ padam' is a phrase from the wider Yoga-Vedānta vocabulary (kaivalya is the goal-term of Patañjali's Yoga Sūtras — total isolation of pure consciousness from phenomenal entanglement). The songwriter joins the Vedāntic and Yogic terms to point to the same realisation.",
       "words": [
-        { "devanagari": "ॐ", "iast": "oṃ", "meaning": "the sacred syllable OM" },
-        { "devanagari": "तुरीयं", "iast": "turīyam", "meaning": "the fourth" },
-        { "devanagari": "शान्तं", "iast": "śāntam", "meaning": "peaceful" },
-        { "devanagari": "शिवम्", "iast": "śivam", "meaning": "auspicious, blissful" },
-        { "devanagari": "अद्वैतं", "iast": "advaitam", "meaning": "non-dual" },
-        { "devanagari": "कैवल्यं", "iast": "kaivalyam", "meaning": "absolute solitude, liberation (Yoga term)" },
-        { "devanagari": "परमं", "iast": "paramam", "meaning": "highest, supreme" },
-        { "devanagari": "पदम्", "iast": "padam", "meaning": "state, abode, foot" }
+        {
+          "devanagari": "ॐ",
+          "iast": "oṃ",
+          "meaning": "the sacred syllable OM"
+        },
+        {
+          "devanagari": "तुरीयं",
+          "iast": "turīyam",
+          "meaning": "the fourth"
+        },
+        {
+          "devanagari": "शान्तं",
+          "iast": "śāntam",
+          "meaning": "peaceful"
+        },
+        {
+          "devanagari": "शिवम्",
+          "iast": "śivam",
+          "meaning": "auspicious, blissful"
+        },
+        {
+          "devanagari": "अद्वैतं",
+          "iast": "advaitam",
+          "meaning": "non-dual"
+        },
+        {
+          "devanagari": "कैवल्यं",
+          "iast": "kaivalyam",
+          "meaning": "absolute solitude, liberation (Yoga term)"
+        },
+        {
+          "devanagari": "परमं",
+          "iast": "paramam",
+          "meaning": "highest, supreme"
+        },
+        {
+          "devanagari": "पदम्",
+          "iast": "padam",
+          "meaning": "state, abode, foot"
+        }
       ]
     },
     {
@@ -168,10 +427,28 @@
       "english_poetic": "OM beyond all measure — silence itself becomes sound.",
       "explanation": "Closing line evoking Māṇḍūkya mantra 12: 'amātraś caturtho 'vyavahāryaḥ prapañcopaśamaḥ śivo'dvaita evam oṃkāra ātmaiva' — 'The measureless (a-mātra) fourth is the untransactable, the cessation of phenomena, blissful, non-dual; thus OM itself is the Self.' OM is decomposed into its three measurable sounds (a-u-m) corresponding to the three measurable states; the fourth 'measure' is the silence after the m — and that silence is turīya. The song closes by becoming that silence.",
       "words": [
-        { "devanagari": "अमात्रः", "iast": "amātraḥ", "meaning": "without measure, immeasurable (a- + mātra)" },
-        { "devanagari": "ॐ", "iast": "oṃ", "meaning": "the sacred syllable OM" },
-        { "devanagari": "मौनं", "iast": "maunam", "meaning": "silence" },
-        { "devanagari": "शब्दीभवति", "iast": "śabdībhavati", "meaning": "becomes sound (śabda + bhū)", "root_dhatu": "भू", "grammar": "3rd person singular present" }
+        {
+          "devanagari": "अमात्रः",
+          "iast": "amātraḥ",
+          "meaning": "without measure, immeasurable (a- + mātra)"
+        },
+        {
+          "devanagari": "ॐ",
+          "iast": "oṃ",
+          "meaning": "the sacred syllable OM"
+        },
+        {
+          "devanagari": "मौनं",
+          "iast": "maunam",
+          "meaning": "silence"
+        },
+        {
+          "devanagari": "शब्दीभवति",
+          "iast": "śabdībhavati",
+          "meaning": "becomes sound (śabda + bhū)",
+          "root_dhatu": "भू",
+          "grammar": "3rd person singular present"
+        }
       ]
     }
   ]
