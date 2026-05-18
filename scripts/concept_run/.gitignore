@@ -1,0 +1,2 @@
+# Local clustering run artefacts — large, derived data, not source of truth.
+*.json

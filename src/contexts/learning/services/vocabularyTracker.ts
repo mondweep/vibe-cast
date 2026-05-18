@@ -4,6 +4,27 @@ import type { WordBreakdown } from '../../../shared/types/database.types'
 // Use `as any` for Supabase mutations where RLS policy types conflict with client types.
 // This is safe because the actual DB schema enforces constraints.
 
+// Cache videoId → songs.id (uuid) lookups. `word_encounters.song_id` is `uuid NOT NULL`,
+// so we have to resolve YouTube video IDs to the song row's UUID before inserting.
+const songIdCache = new Map<string, string>()
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+async function resolveSongId(idOrVideoId: string): Promise<string | null> {
+  if (!idOrVideoId) return null
+  if (UUID_RE.test(idOrVideoId)) return idOrVideoId // already a song UUID
+  const cached = songIdCache.get(idOrVideoId)
+  if (cached) return cached
+  const { data, error } = await (supabase
+    .from('songs')
+    .select('id, youtube_url')
+    .or(`youtube_url.like.%v=${idOrVideoId},youtube_url.like.%youtu.be/${idOrVideoId}%`)
+    .limit(1) as any)
+  if (error || !data || data.length === 0) return null
+  const songId = (data as any[])[0].id as string
+  songIdCache.set(idOrVideoId, songId)
+  return songId
+}
+
 export async function logWordEncounter(
   userId: string,
   word: WordBreakdown,
@@ -11,6 +32,12 @@ export async function logWordEncounter(
   lineNumber: number,
   lookedUp: boolean = false
 ): Promise<void> {
+  // Caller passes either a song UUID or a YouTube videoId; normalise to UUID.
+  const resolvedSongId = await resolveSongId(songId)
+  if (!resolvedSongId) {
+    // Song not found — drop silently rather than spamming the user with 400s.
+    return
+  }
   // Ensure word exists in dictionary
   const { data: existingWord } = await (supabase
     .from('words')
@@ -42,7 +69,7 @@ export async function logWordEncounter(
   await (supabase.from('word_encounters') as any).insert({
     user_id: userId,
     word_id: wordId,
-    song_id: songId,
+    song_id: resolvedSongId,
     line_number: lineNumber,
     looked_up: lookedUp,
   })

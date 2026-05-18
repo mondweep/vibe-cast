@@ -80,21 +80,24 @@ export async function getConcept(slug: string): Promise<{
     .single()
   if (cErr || !concept) throw new Error(`concept not found: ${slug}`)
 
-  const { data: wcRows, error: wcErr } = await sb
+  // Single round-trip via PostgREST FK embedding. This avoids sending a
+  // huge `id=in.(uuid1,uuid2,…)` URL when a concept covers hundreds of
+  // words (e.g. the Sahasranāma epithet bucket has ~500), which would
+  // exceed PostgREST's URL length limit and 500 out.
+  const { data: rows, error: wErr } = await sb
     .from('word_concepts')
-    .select('word_id, weight')
+    .select('weight, words(id, devanagari, iast, meaning_short, meaning_full)')
     .eq('concept_id', concept.id)
-  if (wcErr) throw new Error(`load word_concepts: ${wcErr.message}`)
-  const wordIds = (wcRows || []).map((r) => r.word_id)
-  if (wordIds.length === 0) return { concept, words: [] }
+  if (wErr) throw new Error(`load concept words: ${wErr.message}`)
 
-  const { data: words, error: wErr } = await sb
-    .from('words')
-    .select('id, devanagari, iast, meaning_short, meaning_full')
-    .in('id', wordIds)
-    .order('iast', { ascending: true })
-  if (wErr) throw new Error(`load words: ${wErr.message}`)
-  return { concept, words: words || [] }
+  const words: WordRow[] = []
+  for (const r of (rows || []) as Array<{ words: WordRow | WordRow[] | null }>) {
+    // PostgREST returns the embedded row as an object (1:1) or array. Be defensive.
+    const w = Array.isArray(r.words) ? r.words[0] : r.words
+    if (w && w.id) words.push(w)
+  }
+  words.sort((a, b) => a.iast.localeCompare(b.iast))
+  return { concept, words }
 }
 
 // Look up a song by either YouTube videoId or the raw youtube_url field.
