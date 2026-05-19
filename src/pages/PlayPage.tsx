@@ -153,6 +153,7 @@ export function PlayPage() {
               <EditableLyricsPanel
                 lines={translation.lines}
                 currentLineIndex={translation.currentLineIndex}
+                currentTime={sync.currentTime}
                 onChange={translation.updateLine}
               />
             ) : (
