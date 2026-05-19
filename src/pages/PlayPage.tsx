@@ -109,8 +109,16 @@ export function PlayPage() {
       {videoId && (isCurator || translation.error !== 'not-in-library') && (
         <div className="space-y-4">
           <ConceptSidePanel videoId={videoId} />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-4">
+        {/* Two-column grid on desktop with explicit row placement:
+             row 1 col 1 = video + translation toggle
+             row 1-2 col 2 = lyrics panel + translation panel (spans both rows)
+             row 2 col 1 = engagement (likes + comments)
+            This eliminates the dead space that previously sat below the
+            translation toggle on desktop (left column shorter than right).
+            On mobile (single column), everything stacks in source order:
+            video, toggle, lyrics, translation panel, likes, comments. */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div className="space-y-4 lg:col-start-1 lg:row-start-1">
             <YouTubePlayer
               videoId={videoId}
               onTimeUpdate={sync.handleTimeUpdate}
@@ -143,7 +151,7 @@ export function PlayPage() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 lg:col-start-2 lg:row-start-1 lg:row-span-2">
             {/* VerifyBar is curator-only and self-gates on email allowlist;
                 it returns null for anonymous and non-curator users. */}
             {user && (
@@ -195,16 +203,17 @@ export function PlayPage() {
               explanation={translation.currentExplanation}
             />
           </div>
-        </div>
 
-        {/* Engagement: likes + comments (ENG-001 in KANBAN.md).
-            Below the lyrics grid so it shows on both desktop (two-column)
-            and mobile (single-column) layouts without crowding the player. */}
-        <div className="mt-4 border-t border-gray-800 pt-4 space-y-4">
-          <div className="flex items-center justify-between">
+          {/* Engagement: likes + comments (ENG-001 in KANBAN.md).
+              On desktop this sits in column 1, row 2 — directly below the
+              video + translation toggle — so the gap that used to appear
+              under the toggle (left col shorter than the lyrics col) is now
+              filled. On mobile (single column) it stacks after the lyrics
+              and translation panel. */}
+          <div className="space-y-4 lg:col-start-1 lg:row-start-2 border-t border-gray-800 pt-4">
             <LikeButton videoId={videoId} />
+            <CommentsSection videoId={videoId} />
           </div>
-          <CommentsSection videoId={videoId} />
         </div>
         </div>
       )}

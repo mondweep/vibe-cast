@@ -14,6 +14,15 @@ interface LibrarySong {
   transcription_language: string | null;
   verified_at: string | null;
   tags: string[] | null;
+  /** Aggregate of song_likes for this song. PostgREST returns this as an
+   *  array of one row `[{ count: N }]` from the embedded-resource count
+   *  syntax; we normalise to a plain number after the fetch. */
+  like_count: number;
+}
+
+/** PostgREST raw shape before we flatten the embedded count. */
+interface LibrarySongRaw extends Omit<LibrarySong, 'like_count'> {
+  song_likes?: Array<{ count: number }> | null;
 }
 
 // Pull videoId out of either canonical (`...?v=ID`) or shortened URLs.
@@ -106,7 +115,9 @@ export function LibraryPage() {
       const { data, error } = await (supabase
         .from('songs')
         .select(
-          'id, youtube_url, title, thumbnail_url, duration_seconds, transcription_language, verified_at, tags'
+          // song_likes(count) is the PostgREST aggregate-on-embed syntax —
+          // one round trip, server-side aggregation, no per-card N+1.
+          'id, youtube_url, title, thumbnail_url, duration_seconds, transcription_language, verified_at, tags, song_likes(count)'
         )
         .eq('verified', true)
         .order('verified_at', { ascending: false }) as any);
@@ -117,7 +128,22 @@ export function LibraryPage() {
         setLoading(false);
         return;
       }
-      setSongs((data as LibrarySong[]) || []);
+      // Flatten the embedded `[{count: N}]` shape to a plain number on each
+      // row so downstream filters / renders don't have to know the wire shape.
+      const flattened: LibrarySong[] = ((data as LibrarySongRaw[]) || []).map(
+        (r) => ({
+          id: r.id,
+          youtube_url: r.youtube_url,
+          title: r.title,
+          thumbnail_url: r.thumbnail_url,
+          duration_seconds: r.duration_seconds,
+          transcription_language: r.transcription_language,
+          verified_at: r.verified_at,
+          tags: r.tags,
+          like_count: r.song_likes?.[0]?.count ?? 0,
+        })
+      );
+      setSongs(flattened);
       setLoading(false);
     })();
     return () => {
@@ -171,9 +197,37 @@ export function LibraryPage() {
   }
 
   if (loading) {
+    // Skeleton grid that mirrors the real card layout (aspect-video thumb +
+    // two title lines + a row of three tag chips). Perceived load time
+    // drops a lot vs. a centred spinner because the user sees the page
+    // structure immediately. Six placeholders cover roughly two rows on
+    // most desktop widths; mobile collapses to a single column naturally.
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="text-amber-400 animate-pulse">Loading library…</div>
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6 flex items-baseline justify-between">
+          <h2 className="text-2xl font-semibold text-amber-400">Verified Library</h2>
+          <span className="text-sm text-gray-500 animate-pulse">Loading…</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-xl overflow-hidden bg-gray-900 border border-gray-800 animate-pulse"
+              aria-hidden
+            >
+              <div className="aspect-video bg-gray-800" />
+              <div className="p-3 space-y-3">
+                <div className="h-4 w-3/4 bg-gray-800 rounded" />
+                <div className="h-3 w-1/2 bg-gray-800 rounded" />
+                <div className="flex gap-1 pt-1">
+                  <div className="h-3 w-12 bg-gray-800 rounded" />
+                  <div className="h-3 w-16 bg-gray-800 rounded" />
+                  <div className="h-3 w-10 bg-gray-800 rounded" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -356,6 +410,12 @@ export function LibraryPage() {
                       )}
                       {s.verified_at && (
                         <span>· added {new Date(s.verified_at).toLocaleDateString()}</span>
+                      )}
+                      {s.like_count > 0 && (
+                        <span className="ml-auto inline-flex items-center gap-1 text-rose-400">
+                          <Heart size={12} className="fill-rose-400 stroke-rose-400" />
+                          {s.like_count}
+                        </span>
                       )}
                     </div>
                   </div>
