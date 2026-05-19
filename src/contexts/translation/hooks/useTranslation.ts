@@ -17,6 +17,9 @@ interface TranslationState {
   songId: string | null;
   /** The Whisper language hint used by the transcribe pipeline ('sa' or 'hi'). */
   transcriptionLanguage: string | null;
+  /** Tags from songs.tags — used by PlayPage to render conditional banners
+   *  (e.g. `lyrics-are-source-text` triggers the fusion-rendition disclaimer). */
+  tags: string[];
 }
 
 const initialState: TranslationState = {
@@ -29,6 +32,7 @@ const initialState: TranslationState = {
   isVerified: false,
   songId: null,
   transcriptionLanguage: null,
+  tags: [],
 };
 
 // Old cache rows used `https://youtube.com/watch?v=...`; the new verify
@@ -122,13 +126,13 @@ export function useTranslation(
         //    nothing to non-curators for unverified rows.
         const { data: verifiedRaw } = await (supabase
           .from('songs')
-          .select('id, lyrics_json, title, transcription_language, verified, pending_curator_review')
+          .select('id, lyrics_json, title, transcription_language, verified, pending_curator_review, tags')
           .in('youtube_url', urlVariants(videoId!))
           .maybeSingle() as any);
         const verified = verifiedRaw as
           | { id: string; lyrics_json: LyricsLine[]; title?: string;
               transcription_language?: string; verified: boolean;
-              pending_curator_review?: boolean }
+              pending_curator_review?: boolean; tags?: string[] | null }
           | null;
 
         if (cancelled) return;
@@ -159,6 +163,7 @@ export function useTranslation(
             isVerified: verified.verified === true && verified.pending_curator_review !== true,
             songId: verified.id,
             transcriptionLanguage: verified.transcription_language ?? null,
+            tags: verified.tags ?? [],
           });
           return;
         }

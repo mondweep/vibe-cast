@@ -7,6 +7,10 @@ import { EditableLyricsPanel } from '../contexts/translation/components/Editable
 import { TranslationPanel } from '../contexts/translation/components/TranslationPanel'
 import { VerifyBar } from '../contexts/translation/components/VerifyBar'
 import { WordPopup } from '../contexts/translation/components/WordPopup'
+import {
+  SourceTextDisclaimerBanner,
+  LYRICS_ARE_SOURCE_TEXT_TAG,
+} from '../contexts/translation/components/SourceTextDisclaimerBanner'
 import { SessionSummary } from '../contexts/learning/components/SessionSummary'
 import { useSync } from '../contexts/player/hooks/useSync'
 import { useTranslation } from '../contexts/translation/hooks/useTranslation'
@@ -64,6 +68,13 @@ export function PlayPage() {
 
   const isVerified =
     localVerifiedOverride !== null ? localVerifiedOverride : translation.isVerified
+
+  // Render the source-text disclaimer banner above the lyrics panel when the
+  // song row carries the `lyrics-are-source-text` tag. Survives Verify & Save
+  // because the tag lives on the songs row itself, not in lyrics_json.
+  const showSourceTextDisclaimer = (translation.tags ?? []).includes(
+    LYRICS_ARE_SOURCE_TEXT_TAG
+  )
 
   return (
     <div className="space-y-6">
@@ -148,6 +159,8 @@ export function PlayPage() {
                 onUnverified={() => setLocalVerifiedOverride(false)}
               />
             )}
+
+            {showSourceTextDisclaimer && <SourceTextDisclaimerBanner />}
 
             {editing ? (
               <EditableLyricsPanel
