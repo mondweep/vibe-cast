@@ -11,6 +11,8 @@ import {
   SourceTextDisclaimerBanner,
   LYRICS_ARE_SOURCE_TEXT_TAG,
 } from '../contexts/translation/components/SourceTextDisclaimerBanner'
+import { LikeButton } from '../contexts/engagement/components/LikeButton'
+import { CommentsSection } from '../contexts/engagement/components/CommentsSection'
 import { SessionSummary } from '../contexts/learning/components/SessionSummary'
 import { useSync } from '../contexts/player/hooks/useSync'
 import { useTranslation } from '../contexts/translation/hooks/useTranslation'
@@ -193,6 +195,16 @@ export function PlayPage() {
               explanation={translation.currentExplanation}
             />
           </div>
+        </div>
+
+        {/* Engagement: likes + comments (ENG-001 in KANBAN.md).
+            Below the lyrics grid so it shows on both desktop (two-column)
+            and mobile (single-column) layouts without crowding the player. */}
+        <div className="mt-4 border-t border-gray-800 pt-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <LikeButton videoId={videoId} />
+          </div>
+          <CommentsSection videoId={videoId} />
         </div>
         </div>
       )}

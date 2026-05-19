@@ -1,5 +1,5 @@
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { Play, BookOpen, BarChart3, LogOut, Library, Github, Linkedin, Heart, Info, Inbox, MessageSquare, Network } from 'lucide-react';
+import { Play, BookOpen, BarChart3, LogOut, Library, Github, Linkedin, Heart, Info, Inbox, MessageSquare, Network, Map } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/hooks/useAuth';
 import { useCurator } from '../../contexts/auth/hooks/useCurator';
 import { ConsentBanner } from './ConsentBanner';
@@ -101,6 +101,17 @@ export function Layout() {
           >
             <Network size={20} />
             Graph
+          </NavLink>
+          <NavLink
+            to="/roadmap"
+            className={({ isActive }) =>
+              `flex flex-col items-center gap-1 text-xs transition-colors ${
+                isActive ? 'text-amber-400' : 'text-gray-500 hover:text-gray-300'
+              }`
+            }
+          >
+            <Map size={20} />
+            Roadmap
           </NavLink>
           <NavLink
             to="/about"

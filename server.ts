@@ -32,6 +32,21 @@ import {
   getConcept,
   getSongConcepts,
 } from './api/routes/concepts.js'
+import {
+  getLikeStatus,
+  likeSong,
+  unlikeSong,
+  listComments,
+  postComment,
+  patchComment,
+  deleteComment,
+} from './api/routes/engagement.js'
+import {
+  listKanban,
+  castVote,
+  removeVote,
+  updateItem as updateKanbanItem,
+} from './api/routes/kanban.js'
 
 const execPromise = promisify(exec)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -568,6 +583,182 @@ app.post('/api/profile/track', async (req, res) => {
     const msg = err instanceof Error ? err.message : 'Profile track failed'
     const code = msg.includes('Invalid auth') ? 403 : 500
     res.status(code).json({ error: msg })
+  }
+})
+
+// --- Engagement: likes + comments (ENG-001 in KANBAN.md) ---
+// All routes accept Bearer JWT for write operations; reads are public.
+
+app.get('/api/songs/:videoId/likes', async (req, res) => {
+  try {
+    const result = await getLikeStatus(getJwt(req), req.params.videoId)
+    if ('error' in result) {
+      return res.status(result.error === 'song-not-found' ? 404 : 400).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Like status failed' })
+  }
+})
+
+app.post('/api/songs/:videoId/likes', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await likeSong(jwt, req.params.videoId)
+    if ('error' in result) {
+      const code = result.error === 'auth-required' ? 401
+        : result.error === 'song-not-found' ? 404 : 400
+      return res.status(code).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Like failed' })
+  }
+})
+
+app.delete('/api/songs/:videoId/likes', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await unlikeSong(jwt, req.params.videoId)
+    if ('error' in result) {
+      const code = result.error === 'auth-required' ? 401
+        : result.error === 'song-not-found' ? 404 : 400
+      return res.status(code).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Unlike failed' })
+  }
+})
+
+app.get('/api/songs/:videoId/comments', async (req, res) => {
+  try {
+    const before = typeof req.query.before === 'string' ? req.query.before : null
+    const limit = req.query.limit ? Number(req.query.limit) : undefined
+    const result = await listComments(getJwt(req), req.params.videoId, { before, limit })
+    if ('error' in result) {
+      return res.status(result.error === 'song-not-found' ? 404 : 400).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'List comments failed' })
+  }
+})
+
+app.post('/api/songs/:videoId/comments', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await postComment(jwt, req.params.videoId, { body: req.body?.body || '' })
+    if ('error' in result) {
+      const code = result.error === 'auth-required' ? 401
+        : result.error === 'song-not-found' ? 404
+        : result.error === 'body-required' || result.error === 'body-too-long' ? 400
+        : 500
+      return res.status(code).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Post comment failed' })
+  }
+})
+
+app.patch('/api/comments/:id', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await patchComment(jwt, req.params.id, req.body || {})
+    if ('error' in result) {
+      const code = result.error === 'auth-required' ? 401
+        : result.error === 'body-required' || result.error === 'body-too-long' ? 400
+        : 500
+      return res.status(code).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Patch comment failed' })
+  }
+})
+
+app.delete('/api/comments/:id', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await deleteComment(jwt, req.params.id)
+    if ('error' in result) {
+      const code = result.error === 'auth-required' ? 401 : 500
+      return res.status(code).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Delete comment failed' })
+  }
+})
+
+// --- Kanban / public roadmap (KAN-001) ---
+// Public view-only read; authed up-vote toggle. Item CRUD is intentionally
+// not exposed via API — the curator edits via Cowork (service-role SQL).
+
+app.get('/api/kanban', async (req, res) => {
+  try {
+    const result = await listKanban(getJwt(req))
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'List kanban failed' })
+  }
+})
+
+app.post('/api/kanban/items/:id/votes', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await castVote(jwt, req.params.id)
+    if ('error' in result) {
+      const code = result.error === 'auth-required' ? 401
+        : result.error === 'item-not-found' ? 404 : 400
+      return res.status(code).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Vote failed' })
+  }
+})
+
+app.delete('/api/kanban/items/:id/votes', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await removeVote(jwt, req.params.id)
+    if ('error' in result) {
+      const code = result.error === 'auth-required' ? 401 : 400
+      return res.status(code).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Unvote failed' })
+  }
+})
+
+// Curator-only: move an item between swim lanes. Side-effects started_at /
+// completed_at; see updateItem() in api/routes/kanban.ts for the rules.
+app.patch('/api/kanban/items/:id', async (req, res) => {
+  const jwt = getJwt(req)
+  if (!jwt) return res.status(401).json({ error: 'Authorization Bearer token required' })
+  try {
+    const result = await updateKanbanItem(jwt, req.params.id, req.body || {})
+    if ('error' in result) {
+      const code = result.error === 'auth-required' ? 401
+        : result.error === 'curator-only' ? 403
+        : result.error === 'item-not-found' ? 404
+        : result.error === 'invalid-status' || result.error === 'no-fields-to-update' ? 400
+        : 500
+      return res.status(code).json(result)
+    }
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Update kanban item failed' })
   }
 })
 
