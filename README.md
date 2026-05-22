@@ -1,3 +1,21 @@
+ # 🔒 Frozen Open-Source Archive
+
+**This branch is a snapshot of the SanskritSync codebase as of 22 May 2026.**
+Active development has moved to a private repository. The live site at
+[sanskrit-sync-service-production.up.railway.app](https://sanskrit-sync-service-production.up.railway.app)
+ships from the private repo and may diverge from what you see here.
+
+Code on this branch as of the freeze date is — and remains — available
+under the [MIT License](#license) below. You're welcome to read it, learn
+from it, fork it, or build on it under those terms.
+
+**To request features, report bugs, or apply to become a curator:** use
+the in-app [Feedback / become a curator](https://sanskrit-sync-service-production.up.railway.app/feedback)
+link on the live site. GitHub issues on this branch are no longer monitored.
+
+Full backstory: [`/source`](https://sanskrit-sync-service-production.up.railway.app/source) on the live site.
+
+
 # SanskritSync
 
 Learn Sanskrit through music. Paste a YouTube URL, watch the video, and follow along with real-time line-by-line translations — Devanagari, IAST transliteration, word-by-word breakdowns, and poetic English. Every word you encounter is tracked with spaced repetition so you build lasting vocabulary over time.
