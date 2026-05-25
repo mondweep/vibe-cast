@@ -1,0 +1,85 @@
+id: gmail-classifier-workflow
+version: 1.0.0
+entry_node: email_analyzer
+
+nodes:
+  - id: email_analyzer
+    node_type:
+      llm_call:
+        model: openai/gpt-4o-mini
+        messages_path: input.messages
+        heal: true
+    config:
+      output_schema:
+        type: object
+        properties:
+          category:
+            type: string
+            enum: [career_growth, continuous_learning, sales_opportunity, spam, standard_work]
+          relevance_score:
+            type: integer
+            minimum: 1
+            maximum: 10
+          summary:
+            type: string
+          key_action_item:
+            type: string
+        required: [category, relevance_score, summary, key_action_item]
+        additionalProperties: false
+      user_input_prompt: |
+        Analyze the following email details (Sender, Subject, and Body).
+        Classify it into one of these categories:
+        - 'career_growth': Mentorship, promotion opportunities, networking, performance reviews.
+        - 'continuous_learning': Industry newsletters, tech tutorials, online courses, research papers.
+        - 'sales_opportunity': Inbound sales, clients, business partnerships.
+        - 'spam': Marketing promos, newsletters you didn't subscribe to, irrelevant notifications.
+        - 'standard_work': General transactional team threads.
+        
+        Rate its relevance on a scale of 1-10. Provide a brief 1-sentence summary.
+        If there is a clear actionable step for the reader, extract it in 'key_action_item' (as a short, action-oriented instruction). If there is no clear action item, set 'key_action_item' to 'None'.
+        Return JSON only.
+
+  - id: category_router
+    node_type:
+      switch:
+        branches:
+          - condition: '$.nodes.email_analyzer.output.category == "sales_opportunity"'
+            target: sales_action_builder
+        default: pass_through
+
+  - id: sales_action_builder
+    node_type:
+      llm_call:
+        model: openai/gpt-4o-mini
+        messages_path: input.messages
+        heal: true
+    config:
+      output_schema:
+        type: object
+        properties:
+          draft_reply:
+            type: string
+          next_step:
+            type: string
+        required: [draft_reply, next_step]
+        additionalProperties: false
+      user_input_prompt: |
+        This email has been flagged as a high-value sales opportunity. 
+        Draft a polite, professional, and highly engaging reply to secure a meeting.
+        Return a JSON object with the following fields:
+        - "draft_reply": The complete text of your professional email reply.
+        - "next_step": A single sentence summarizing what you should do next.
+        Return JSON only.
+
+  - id: pass_through
+    node_type:
+      custom_worker:
+        handler: log_complete
+        handler_file: handlers.py
+    config:
+      payload:
+        status: complete
+
+edges:
+  - from: email_analyzer
+    to: category_router

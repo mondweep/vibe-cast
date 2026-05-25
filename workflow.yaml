@@ -1,0 +1,96 @@
+id: customer-inquiry-workflow
+version: 1.0.0
+entry_node: classifier
+
+nodes:
+  - id: classifier
+    node_type:
+      llm_call:
+        model: openai/gpt-4o-mini
+        messages_path: input.messages
+        heal: true
+    config:
+      output_schema:
+        type: object
+        properties:
+          category:
+            type: string
+            enum: [support, sales, feedback]
+          sentiment:
+            type: string
+            enum: [positive, neutral, negative]
+          urgency:
+            type: string
+            enum: [high, medium, low]
+        required: [category, sentiment, urgency]
+        additionalProperties: false
+      user_input_prompt: |
+        Classify the customer's input into one of three categories: support, sales, or feedback.
+        Assess the sentiment as positive, neutral, or negative.
+        Evaluate the urgency as high, medium, or low.
+        Return JSON only.
+
+  - id: router
+    node_type:
+      switch:
+        branches:
+          - condition: '$.nodes.classifier.output.category == "support"'
+            target: support_handler
+          - condition: '$.nodes.classifier.output.category == "sales"'
+            target: sales_handler
+        default: feedback_handler
+
+  - id: support_handler
+    node_type:
+      custom_worker:
+        handler: process_support
+        handler_file: handlers.py
+    config:
+      payload:
+        urgency: '{{nodes.classifier.output.urgency}}'
+        sentiment: '{{nodes.classifier.output.sentiment}}'
+
+  - id: sales_handler
+    node_type:
+      llm_call:
+        model: openai/gpt-4o-mini
+        messages_path: input.messages
+        heal: true
+    config:
+      output_schema:
+        type: object
+        properties:
+          deal_value_estimate:
+            type: string
+            enum: [high, medium, low]
+          recommended_action:
+            type: string
+        required: [deal_value_estimate, recommended_action]
+        additionalProperties: false
+      user_input_prompt: |
+        Act as an expert sales executive. Based on the customer query, estimate the prospective deal value and recommend the immediate next sales action to close the deal.
+        Return JSON only.
+
+  - id: feedback_handler
+    node_type:
+      llm_call:
+        model: openai/gpt-4o-mini
+        messages_path: input.messages
+        heal: true
+    config:
+      output_schema:
+        type: object
+        properties:
+          response:
+            type: string
+          auto_thank_you:
+            type: boolean
+        required: [response, auto_thank_you]
+        additionalProperties: false
+      user_input_prompt: |
+        Acknowledge the feedback professionally. Provide a short, warm appreciation response.
+        Return JSON only.
+
+edges:
+  - from: classifier
+    to: router

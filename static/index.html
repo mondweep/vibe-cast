@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleAgents Studio</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #131b2e;
+            --card-border: #1e294b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --primary-hover: #4f46e5;
+            --secondary: #a855f7;
+            --accent: #f43f5e;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --font-main: 'Outfit', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 40%);
+        }
+
+        /* Layout */
+        header {
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(19, 27, 46, 0.7);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 0.5rem 0.75rem;
+            border-radius: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #ffffff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-credentials {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .credential-input {
+            background: #0f1524;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            width: 250px;
+            transition: var(--transition);
+        }
+
+        .credential-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Navigation Tabs */
+        .tabs-nav {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.75rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.75rem 1.5rem;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+            background: var(--primary-glow);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05);
+        }
+
+        /* Dashboard Views */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .tab-content.active.single-col {
+            grid-template-columns: 1fr;
+        }
+
+        @media (max-width: 1024px) {
+            .tab-content.active {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Generic Cards & Styling */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 1rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            background: #090d16;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            padding: 1rem;
+            resize: vertical;
+            min-height: 180px;
+            transition: var(--transition);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.9rem 1.8rem;
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-muted);
+            box-shadow: none;
+            transform: translateY(-1px);
+        }
+
+        /* Output / Display Panels */
+        .output-panel {
+            background: #080c14;
+            border: 1px solid #141c2f;
+            border-radius: 12px;
+            padding: 1.25rem;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .output-text {
+            font-family: var(--font-code);
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* Healing Visualizations */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-value.success {
+            color: var(--success);
+        }
+
+        .metric-value.warning {
+            color: var(--warning);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+
+        .flag-tag {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: var(--font-code);
+            display: inline-block;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Diff highlight styles */
+        .diff-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .diff-pane {
+            background: #060910;
+            border: 1px solid #121929;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .diff-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.25rem;
+        }
+
+        /* Code Playground Panels */
+        .code-playground {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-block {
+            background: #080c14;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .code-content {
+            padding: 1.25rem;
+            font-family: var(--font-code);
+            font-size: 0.82rem;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-main);
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        /* Interactive Workflow Designer */
+        .workflow-studio-layout {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 350px 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1200px) {
+            .workflow-studio-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .workflow-visual-canvas {
+            background: #080c14;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            min-height: 450px;
+            position: relative;
+        }
+
+        /* Visual Nodes */
+        .wf-node {
+            background: #101626;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            min-width: 200px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+            transition: var(--transition);
+        }
+
+        .wf-node.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+            background: linear-gradient(135deg, #131c33, #1e2547);
+        }
+
+        .wf-node.completed {
+            border-color: var(--success);
+            background: linear-gradient(135deg, #101a24, #122924);
+        }
+
+        .wf-node-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.5px;
+        }
+
+        .wf-node-type {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .wf-edge-line {
+            width: 2px;
+            height: 30px;
+            background: var(--card-border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .wf-edge-line.active {
+            background: var(--primary);
+        }
+
+        .wf-branches-container {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+        }
+
+        .wf-branch-line-left, .wf-branch-line-right, .wf-branch-line-center {
+            width: 100%;
+            height: 2px;
+            background: var(--card-border);
+            position: absolute;
+            top: -15px;
+            z-index: 1;
+        }
+
+        /* File Editor view */
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .editor-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .editor-tab {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .editor-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <div class="logo-badge">SA</div>
+            <h1 class="logo-title">SimpleAgents Studio</h1>
+        </div>
+        <div class="header-credentials">
+            <input type="password" id="apiKeyInput" class="credential-input" placeholder="OpenAI API Key (Defaults to env)">
+            <input type="text" id="apiBaseInput" class="credential-input" placeholder="API Base URL (Optional)">
+        </div>
+    </header>
+
+    <div class="main-container">
+        <nav class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('healer')">
+                <span class="card-icon">🩹</span> JSON Healer
+            </button>
+            <button class="tab-btn" onclick="switchTab('completion')">
+                <span class="card-icon">⚡</span> Structured Output
+            </button>
+            <button class="tab-btn" onclick="switchTab('workflow')">
+                <span class="card-icon">🧬</span> Workflow Studio
+            </button>
+            <button class="tab-btn" onclick="switchTab('gmail')">
+                <span class="card-icon">📬</span> Email Analyst
+            </button>
+        </nav>
+
+        <!-- JSON HEALER VIEW -->
+        <div id="tab-healer" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🩹</span>
+                    <div>
+                        <div class="card-title">JSON Healing Arena</div>
+                        <div class="card-subtitle">Zero-prompt error recovery for malformed LLM outputs</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rawJsonInput">Malformed JSON Input</label>
+                    <textarea id="rawJsonInput" placeholder='{"name": "Alice", "age": 28, "interests": ["coding", "ai",],}'></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="healerSchemaInput">Optional Output Schema (JSON Schema Dict)</label>
+                    <textarea id="healerSchemaInput" style="min-height: 120px;" placeholder='{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "age": {"type": "integer"}
+  },
+  "required": ["name", "age"]
+}'></textarea>
+                </div>
+
+                <button class="btn" onclick="runHeal()">
+                    <span>Repair JSON</span>
+                </button>
+            </div>
+
+            <div class="code-playground">
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="healStatus">-</div>
+                        <div class="metric-label">Was Healed</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="healConfidence">-</div>
+                        <div class="metric-label">Confidence</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="coercedStatus">-</div>
+                        <div class="metric-label">Coerced</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Repair Flags</label>
+                    <div id="flagsContainer" style="min-height: 40px;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">No repairs applied yet.</span>
+                    </div>
+                </div>
+
+                <div class="diff-container">
+                    <div class="diff-pane">
+                        <div class="diff-title">Original Input</div>
+                        <div class="output-text" id="diffOriginal" style="color: var(--accent);">-</div>
+                    </div>
+                    <div class="diff-pane">
+                        <div class="diff-title">Healed Output</div>
+                        <div class="output-text" id="diffHealed" style="color: var(--success);">-</div>
+                    </div>
+                </div>
+
+                <div class="card-header" style="margin-top: 1rem; border: none; padding-bottom: 0;">
+                    <div class="card-title" style="font-size: 1rem;">Python Integration Code</div>
+                </div>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('pythonHealCode')">Copy</button>
+                    <pre class="code-content" id="pythonHealCode">from simple_agents_py import heal_json, coerce_to_schema
+
+# Fix trailing commas, unclosed brackets/quotes
+result = heal_json('...')
+print("Healed Dict:", result.value)
+print("Confidence:", result.confidence)
+
+# Optionally coerce parsed value to a JSON Schema contract
+schema = {...}
+coerced = coerce_to_schema(result.value, schema)
+print("Validated Schema Dict:", coerced.value)</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPLETION VIEW -->
+        <div id="tab-completion" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">⚡</span>
+                    <div>
+                        <div class="card-title">Completion & Coercion</div>
+                        <div class="card-subtitle">Perform structured completions with high-fidelity validation</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="completionModel">Model Name</label>
+                    <input type="text" id="completionModel" class="credential-input" style="width: 100%; margin-bottom: 1rem;" value="gpt-4o-mini">
+                </div>
+
+                <div class="form-group">
+                    <label for="promptInput">Completion Prompt</label>
+                    <textarea id="promptInput" placeholder="Generate a profile for a fictional character named Marcus. Include age, role, and inventory list."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="schemaInput">Output Schema (JSON Schema Dict)</label>
+                    <textarea id="schemaInput" placeholder='{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "age": {"type": "integer"},
+    "role": {"type": "string"},
+    "inventory": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "required": ["name", "age", "role", "inventory"],
+  "additionalProperties": false
+}'></textarea>
+                </div>
+
+                <button class="btn" onclick="runComplete()">
+                    <span id="completeBtnText">Execute Completion</span>
+                </button>
+            </div>
+
+            <div class="code-playground">
+                <div class="output-panel">
+                    <div class="output-header">
+                        <span>Structured Output Result</span>
+                        <span id="completeLatency">- ms</span>
+                    </div>
+                    <div class="output-text" id="completionOutput">Submit prompt to see response.</div>
+                </div>
+
+                <div class="card-header" style="margin-top: 1rem; border: none; padding-bottom: 0;">
+                    <div class="card-title" style="font-size: 1rem;">Python Integration Code</div>
+                </div>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('pythonCompleteCode')">Copy</button>
+                    <pre class="code-content" id="pythonCompleteCode">from simple_agents_py import Client
+
+# Build client
+client = Client("openai", api_key="sk-...")
+
+schema = {
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "age": {"type": "integer"}
+  },
+  "required": ["name", "age"]
+}
+
+# Returns auto-healed and coerced JSON results
+response = client.complete(
+    "gpt-4o-mini", 
+    "Extract Alice age: 28.",
+    schema=schema
+)
+print("Coerced Content:", response.content)</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKFLOW STUDIO VIEW -->
+        <div id="tab-workflow" class="tab-content single-col">
+            <div class="workflow-studio-layout">
+                <!-- Editor Pane -->
+                <div class="editor-container">
+                    <div class="card" style="padding: 1.5rem; height: 100%;">
+                        <div class="card-header" style="margin-bottom: 1rem;">
+                            <span class="card-icon">📝</span>
+                            <div>
+                                <div class="card-title">Workflow Editor</div>
+                                <div class="card-subtitle">Inspect & edit graph configuration</div>
+                            </div>
+                        </div>
+
+                        <div class="editor-selector">
+                            <button class="editor-tab active" id="btn-workflow-yaml" onclick="selectEditorFile('workflow.yaml')">workflow.yaml</button>
+                            <button class="editor-tab" id="btn-handlers-py" onclick="selectEditorFile('handlers.py')">handlers.py</button>
+                        </div>
+
+                        <textarea id="editorContent" style="min-height: 400px; font-family: var(--font-code); font-size: 0.8rem;"></textarea>
+
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="btn btn-secondary" onclick="saveEditorFile()">Save Config</button>
+                            <button class="btn" onclick="runWorkflow()">Run Workflow</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Canvas -->
+                <div class="workflow-visual-canvas">
+                    <div class="card-title" style="position: absolute; top: 1.5rem; left: 2rem;">Visual Graph Trace</div>
+                    
+                    <div class="wf-node" id="node-classifier">
+                        <div class="wf-node-title">classifier</div>
+                        <div class="wf-node-type">llm_call</div>
+                    </div>
+                    
+                    <div class="wf-edge-line" id="edge-1"></div>
+                    
+                    <div class="wf-node" id="node-router">
+                        <div class="wf-node-title">router</div>
+                        <div class="wf-node-type">switch</div>
+                    </div>
+                    
+                    <div class="wf-edge-line" id="edge-2"></div>
+                    
+                    <div class="wf-branches-container">
+                        <div class="wf-node" id="node-support_handler">
+                            <div class="wf-node-title">support_handler</div>
+                            <div class="wf-node-type">custom_worker</div>
+                        </div>
+                        
+                        <div class="wf-node" id="node-sales_handler">
+                            <div class="wf-node-title">sales_handler</div>
+                            <div class="wf-node-type">llm_call</div>
+                        </div>
+                        
+                        <div class="wf-node" id="node-feedback_handler">
+                            <div class="wf-node-title">feedback_handler</div>
+                            <div class="wf-node-type">llm_call</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Execution Results & Code -->
+                <div class="code-playground">
+                    <div class="card" style="padding: 1.5rem; height: 100%; display: flex; flex-direction: column;">
+                        <div class="card-header" style="margin-bottom: 1rem; border-bottom: none; padding-bottom: 0;">
+                            <span class="card-icon">⚙️</span>
+                            <div>
+                                <div class="card-title">Execution Console</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="workflowInputQuery">Customer Inquiry Input</label>
+                            <input type="text" id="workflowInputQuery" class="credential-input" style="width: 100%;" value="Hi, I bought a software license yesterday but the system charged me twice. Please refund me.">
+                        </div>
+
+                        <div class="output-panel" style="flex-grow: 1; min-height: 250px;">
+                            <div class="output-header">
+                                <span>Output Payload</span>
+                                <span id="wfStatus">-</span>
+                            </div>
+                            <div class="output-text" id="workflowConsole">Run the workflow to see execution logs...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Code Block (Python Runner) -->
+            <div class="card" style="margin-top: 1rem;">
+                <div class="card-header">
+                    <div class="card-title">How to Run YAML Workflows in Python</div>
+                    <div class="card-subtitle">This exact execution is processed behind the scenes using simple-agents-py</div>
+                </div>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('pythonWfCode')">Copy</button>
+                    <pre class="code-content" id="pythonWfCode">import os
+from pathlib import Path
+from simple_agents_py import Client
+from simple_agents_py.workflow_request import (
+    WorkflowExecutionRequest, WorkflowMessage, WorkflowRole,
+)
+
+# 1. Initialize client
+client = Client("openai", api_key=os.environ.get("OPENAI_API_KEY"))
+
+# 2. Prepare request with inputs
+req = WorkflowExecutionRequest(
+    workflow_path=str(Path("workflow.yaml").resolve()),
+    messages=[
+        WorkflowMessage(
+            role=WorkflowRole.USER, 
+            content="Hi, I charged me twice. Please refund me."
+        )
+    ]
+)
+
+# 3. Execute
+result = client.run_workflow(req)
+
+# 4. Read Outputs
+print("Terminal Node:", result.terminal_node)
+print("Execution Trace Path:", result.trace)
+print("Outputs:", result.outputs)</pre>
+            </div>
+        </div>
+    </div>
+
+        <!-- EMAIL ANALYST VIEW -->
+        <div id="tab-gmail" class="tab-content single-col">
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="card-icon">📬</span>
+                        <div>
+                            <div class="card-title">Gmail Career & Learning Analyst</div>
+                            <div class="card-subtitle">Secure OAuth 2.0 pipeline mapping your inbox to professional growth priorities</div>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn" id="btnRunGmail" onclick="runGmailAnalysis()">
+                            <span class="card-icon">⚡</span> <span id="gmailBtnText">Analyze Inbox (Last 7 Days)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Inbox Dashboard Metrics -->
+                <div class="metric-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem;">
+                    <div class="metric-card">
+                        <div class="metric-value" id="gmailTotalCount">0</div>
+                        <div class="metric-label">Total Emails</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value success" id="gmailCareerCount">0</div>
+                        <div class="metric-label">Career opportunities</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="gmailLearningCount" style="color: var(--secondary);">0</div>
+                        <div class="metric-label">Learning Resources</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value warning" id="gmailSalesCount">0</div>
+                        <div class="metric-label">Sales Leads</div>
+                    </div>
+                </div>
+
+                <!-- Distribution Bar Chart -->
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label>Inbox Category Distribution</label>
+                    <div id="gmailChartBar" style="width: 100%; height: 24px; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; overflow: hidden; margin-top: 0.5rem; border: 1px solid var(--card-border);">
+                        <!-- Dynamic segment bars will be appended here -->
+                    </div>
+                    <div id="gmailChartLegend" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-muted);">
+                        <!-- Legends -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Highlights Layout -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+                <!-- Career & Learning Column -->
+                <div class="card" style="padding: 1.5rem;">
+                    <div class="card-header" style="margin-bottom: 1rem;">
+                        <span class="card-icon">🚀</span>
+                        <div>
+                            <div class="card-title">Priority Action Items</div>
+                            <div class="card-subtitle">AI-extracted recommendations for career growth and learning</div>
+                        </div>
+                    </div>
+                    <div id="gmailActionItemsContainer" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">No priority action items. Run an audit to see highlights.</span>
+                    </div>
+                </div>
+
+                <!-- Sales Leads and Drafts Column -->
+                <div class="card" style="padding: 1.5rem;">
+                    <div class="card-header" style="margin-bottom: 1rem;">
+                        <span class="card-icon">💼</span>
+                        <div>
+                            <div class="card-title">Inbound Sales Responses</div>
+                            <div class="card-subtitle">Auto-generated engagements for client leads</div>
+                        </div>
+                    </div>
+                    <div id="gmailSalesDraftsContainer" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">No inbound sales leads detected in this audit.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Email Classification Timeline -->
+            <div class="card" style="padding: 1.5rem;">
+                <div class="card-header" style="margin-bottom: 1rem; border-bottom: none; padding-bottom: 0;">
+                    <span class="card-icon">🗓️</span>
+                    <div>
+                        <div class="card-title">Audited Message History</div>
+                        <div class="card-subtitle">Classification logs for all recent inbox items</div>
+                    </div>
+                </div>
+                <div style="overflow-x: auto; width: 100%;">
+                    <table id="gmailTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; margin-top: 1rem;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--card-border); color: var(--text-muted); font-weight: 600;">
+                                <th style="padding: 0.75rem;">Category</th>
+                                <th style="padding: 0.75rem;">Sender / Date</th>
+                                <th style="padding: 0.75rem;">Subject & Summary</th>
+                                <th style="padding: 0.75rem; text-align: center;">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gmailTableBody">
+                            <tr>
+                                <td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                                    Click "Analyze Inbox" to process your recent emails.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global error capture for remote visual debugging
+        window.onerror = function(message, source, lineno, colno, error) {
+            showVisualError(error || new Error(message), `at ${source}:${lineno}:${colno}`);
+            return false;
+        };
+
+        window.addEventListener('unhandledrejection', function(event) {
+            showVisualError(event.reason || new Error('Unhandled Promise Rejection'));
+        });
+
+        function showVisualError(err, context = '') {
+            let error = err;
+            if (!err) {
+                error = new Error('Unknown Error');
+            } else if (!(err instanceof Error)) {
+                error = new Error(typeof err === 'object' ? JSON.stringify(err) : String(err));
+            }
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.style.position = 'fixed';
+            errorDiv.style.bottom = '20px';
+            errorDiv.style.left = '20px';
+            errorDiv.style.right = '20px';
+            errorDiv.style.background = '#fef2f2';
+            errorDiv.style.color = '#991b1b';
+            errorDiv.style.border = '2px solid #ef4444';
+            errorDiv.style.padding = '1.5rem';
+            errorDiv.style.borderRadius = '12px';
+            errorDiv.style.zIndex = '99999';
+            errorDiv.style.fontFamily = 'monospace';
+            errorDiv.style.fontSize = '0.85rem';
+            errorDiv.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            errorDiv.innerHTML = `
+                <div style="font-weight:bold; font-size:1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                    <span>⚠️ Uncaught Dashboard Error</span>
+                    <span style="font-size:0.75rem; font-weight:normal; background:#fee2e2; padding:0.1rem 0.4rem; border-radius:4px;">${context}</span>
+                </div>
+                <div style="white-space:pre-wrap; word-break:break-all; font-weight:600;">${error.name}: ${error.message}</div>
+                <div style="font-size:0.75rem; color:#b91c1c; margin-top:0.75rem; border-top:1px solid #fee2e2; padding-top:0.5rem; max-height:100px; overflow-y:auto;">
+                    ${error.stack ? error.stack.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'No stack trace available.'}
+                </div>
+            `;
+            document.body.appendChild(errorDiv);
+        }
+
+        let currentFile = 'workflow.yaml';
+        let filesCache = {};
+
+        // Tab Navigation
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Activate button
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(tabId));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            // Activate content
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            if (tabId === 'workflow') {
+                loadWorkflowFiles();
+            }
+            if (tabId === 'gmail') {
+                loadGmailReport();
+            }
+        }
+
+        // Copy Code utility
+        function copyCode(elementId) {
+            const code = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+
+        // API Helpers
+        function getHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            const key = document.getElementById('apiKeyInput').value;
+            const base = document.getElementById('apiBaseInput').value;
+            return { headers, key, base };
+        }
+
+        // --- JSON HEALER ACTIONS ---
+        async function runHeal() {
+            const rawJson = document.getElementById('rawJsonInput').value;
+            let schemaDict = null;
+            
+            const schemaText = document.getElementById('healerSchemaInput').value.trim();
+            if (document.getElementById('healerSchemaInput').value.trim()) {
+                try {
+                    schemaDict = JSON.parse(document.getElementById('healerSchemaInput').value);
+                } catch(e) {
+                    alert('Invalid JSON Schema: ' + e.message);
+                    return;
+                }
+            }
+
+            try {
+                const res = await fetch('/api/heal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ raw_json: rawJson, schema_dict: schemaDict })
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error(data.detail || 'Failed to heal JSON');
+
+                // Render metrics
+                document.getElementById('healStatus').innerText = data.was_healed ? 'YES' : 'NO';
+                document.getElementById('healStatus').className = `metric-value ${data.was_healed ? 'warning' : 'success'}`;
+                
+                document.getElementById('healConfidence').innerText = (data.confidence * 100).toFixed(0) + '%';
+                
+                document.getElementById('coercedStatus').innerText = data.was_coerced ? 'YES' : 'NO';
+                document.getElementById('coercedStatus').className = `metric-value ${data.was_coerced ? 'success' : ''}`;
+
+                // Render flags
+                const flagsCont = document.getElementById('flagsContainer');
+                flagsCont.innerHTML = '';
+                if (data.flags && data.flags.length > 0) {
+                    data.flags.forEach(flag => {
+                        const span = document.createElement('span');
+                        span.className = 'flag-tag';
+                        span.innerText = flag;
+                        flagsCont.appendChild(span);
+                    });
+                } else {
+                    flagsCont.innerHTML = '<span style="color: var(--success); font-size: 0.85rem;">✓ Valid JSON (No repairs needed)</span>';
+                }
+
+                // Render diffs
+                document.getElementById('diffOriginal').innerText = data.raw_input;
+                document.getElementById('diffHealed').innerText = JSON.stringify(data.coerced_value || data.healed_value, null, 2);
+
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // --- COMPLETION ACTIONS ---
+        async function runComplete() {
+            const prompt = document.getElementById('promptInput').value;
+            const model = document.getElementById('completionModel').value;
+            let schemaDict = null;
+
+            if (document.getElementById('schemaInput').value.trim()) {
+                try {
+                    schemaDict = JSON.parse(document.getElementById('schemaInput').value);
+                } catch(e) {
+                    alert('Invalid Schema JSON: ' + e.message);
+                    return;
+                }
+            }
+
+            const { headers, key, base } = getHeaders();
+            const btnText = document.getElementById('completeBtnText');
+            btnText.innerHTML = '<span class="loader"></span> Executing...';
+
+            try {
+                const res = await fetch('/api/complete', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        prompt,
+                        model,
+                        schema_dict: schemaDict,
+                        api_key: key,
+                        api_base: base
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Failed completion');
+
+                document.getElementById('completionOutput').innerText = JSON.stringify(JSON.parse(data.content), null, 2);
+                document.getElementById('completeLatency').innerText = data.latency_ms ? `${data.latency_ms} ms` : '- ms';
+
+            } catch (err) {
+                document.getElementById('completionOutput').innerText = 'ERROR: ' + err.message;
+            } finally {
+                btnText.innerText = 'Execute Completion';
+            }
+        }
+
+        // --- WORKFLOW STUDIO ACTIONS ---
+        async function loadWorkflowFiles() {
+            try {
+                const res = await fetch('/api/files');
+                const data = await res.json();
+                filesCache = data;
+                document.getElementById('editorContent').value = filesCache[currentFile];
+            } catch(e) {
+                console.error('Failed to load files:', e);
+            }
+        }
+
+        function selectEditorFile(filename) {
+            // Save active to cache
+            filesCache[currentFile] = document.getElementById('editorContent').value;
+            
+            // Switch tabs
+            currentFile = filename;
+            document.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+            if (filename === 'workflow.yaml') {
+                document.getElementById('btn-workflow-yaml').classList.add('active');
+            } else {
+                document.getElementById('btn-handlers-py').classList.add('active');
+            }
+
+            document.getElementById('editorContent').value = filesCache[currentFile] || '';
+        }
+
+        async function saveEditorFile() {
+            const content = document.getElementById('editorContent').value;
+            try {
+                const res = await fetch('/api/files', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename: currentFile, content })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    filesCache[currentFile] = content;
+                    alert(`Saved ${currentFile} successfully!`);
+                } else {
+                    alert('Error saving file: ' + data.detail);
+                }
+            } catch(e) {
+                alert('Save request failed: ' + e.message);
+            }
+        }
+
+        async function runWorkflow() {
+            const query = document.getElementById('workflowInputQuery').value;
+            const { headers, key, base } = getHeaders();
+            const consoleEl = document.getElementById('workflowConsole');
+            consoleEl.innerText = 'Initializing workflow...\nEvaluating graph constraints...';
+            document.getElementById('wfStatus').innerText = 'RUNNING';
+
+            // Clear visual nodes
+            document.querySelectorAll('.wf-node').forEach(node => node.className = 'wf-node');
+            document.getElementById('edge-1').className = 'wf-edge-line';
+            document.getElementById('edge-2').className = 'wf-edge-line';
+
+            try {
+                // Highlight entry node
+                document.getElementById('node-classifier').className = 'wf-node active';
+                
+                const res = await fetch('/api/run-workflow', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ query, api_key: key, api_base: base })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Workflow run failed');
+
+                // Simulation visualization updates based on real trace
+                const trace = data.trace || [];
+                consoleEl.innerText = `Status: ${data.status.toUpperCase()}\n`;
+                consoleEl.innerText += `Trace Path: ${trace.join(' -> ')}\n\n`;
+                consoleEl.innerText += `Outputs Per Node:\n${JSON.stringify(data.outputs, null, 2)}`;
+
+                document.getElementById('wfStatus').innerText = data.status.toUpperCase();
+
+                // Step-by-step color updates
+                if (trace.includes('classifier')) {
+                    document.getElementById('node-classifier').className = 'wf-node completed';
+                }
+                if (trace.length > 1) {
+                    document.getElementById('edge-1').className = 'wf-edge-line active';
+                    document.getElementById('node-router').className = 'wf-node completed';
+                }
+                if (trace.length > 2) {
+                    document.getElementById('edge-2').className = 'wf-edge-line active';
+                    const targetNodeId = trace[2]; // e.g. support_handler, sales_handler, feedback_handler
+                    const targetEl = document.getElementById(`node-${targetNodeId}`);
+                    if (targetEl) {
+                        targetEl.className = 'wf-node completed';
+                    }
+                }
+
+            } catch (err) {
+                consoleEl.innerText = 'Execution Failed:\n' + err.message;
+                document.getElementById('wfStatus').innerText = 'FAILED';
+                document.querySelectorAll('.wf-node').forEach(node => node.className = 'wf-node');
+            }
+        }
+
+        // --- GMAIL ANALYST ACTIONS ---
+        async function loadGmailReport() {
+            try {
+                const res = await fetch('/api/gmail-report');
+                const data = await res.json();
+                updateGmailDashboard(data);
+            } catch (e) {
+                console.error('Failed to load Gmail report:', e);
+                showVisualError(e, 'loadGmailReport');
+            }
+        }
+
+        async function runGmailAnalysis() {
+            const { headers, key, base } = getHeaders();
+            const btnText = document.getElementById('gmailBtnText');
+            btnText.innerHTML = '<span class="loader"></span> Auditing Inbox...';
+            document.getElementById('btnRunGmail').disabled = true;
+
+            try {
+                const res = await fetch('/api/run-gmail-analysis', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ api_key: key, api_base: base, query: "gmail_pipeline" })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Gmail analysis failed');
+
+                updateGmailDashboard(data);
+                alert('Gmail inbox audit and analysis successfully completed!');
+            } catch (err) {
+                alert('Analysis failed: ' + err.message);
+            } finally {
+                btnText.innerText = 'Analyze Inbox (Last 7 Days)';
+                document.getElementById('btnRunGmail').disabled = false;
+            }
+        }
+
+        function updateGmailDashboard(data) {
+            if (!data || !data.meta) return;
+
+            const meta = data.meta;
+            const emails = data.emails || [];
+            const dist = meta.distribution || {};
+
+            // Update Metric Counts
+            document.getElementById('gmailTotalCount').innerText = meta.total_emails || 0;
+            document.getElementById('gmailCareerCount').innerText = dist.career_growth || 0;
+            document.getElementById('gmailLearningCount').innerText = dist.continuous_learning || 0;
+            document.getElementById('gmailSalesCount').innerText = dist.sales_opportunity || 0;
+
+            // Generate Category Chart Bar & Legend
+            const chartBar = document.getElementById('gmailChartBar');
+            const chartLegend = document.getElementById('gmailChartLegend');
+            chartBar.innerHTML = '';
+            chartLegend.innerHTML = '';
+
+            const colors = {
+                career_growth: '#10b981',
+                continuous_learning: '#a855f7',
+                sales_opportunity: '#f59e0b',
+                spam: '#ef4444',
+                standard_work: '#475569'
+            };
+
+            const labels = {
+                career_growth: 'Career Growth',
+                continuous_learning: 'Learning',
+                sales_opportunity: 'Sales Lead',
+                spam: 'Spam / Promo',
+                standard_work: 'General Work'
+            };
+
+            let total = meta.total_emails || 0;
+
+            if (total > 0) {
+                Object.keys(colors).forEach(cat => {
+                    const count = dist[cat] || 0;
+                    if (count > 0) {
+                        const pct = (count / total) * 100;
+                        
+                        // Append Segment Bar
+                        const segment = document.createElement('div');
+                        segment.style.width = `${pct}%`;
+                        segment.style.backgroundColor = colors[cat];
+                        segment.style.height = '100%';
+                        segment.title = `${labels[cat]}: ${count} (${pct.toFixed(1)}%)`;
+                        chartBar.appendChild(segment);
+
+                        // Append Legend Tag
+                        const legendItem = document.createElement('div');
+                        legendItem.style.display = 'flex';
+                        legendItem.style.alignItems = 'center';
+                        legendItem.style.gap = '0.35rem';
+                        legendItem.innerHTML = `
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:${colors[cat]};"></span>
+                            <span>${labels[cat]}: <strong>${count}</strong> (${pct.toFixed(0)}%)</span>
+                        `;
+                        chartLegend.appendChild(legendItem);
+                    }
+                });
+            } else {
+                chartBar.innerHTML = '<div style="width:100%; text-align:center; line-height:24px; font-size:0.75rem; color:var(--text-muted);">No analytical data available</div>';
+            }
+
+            // Populate Priority Action Items (Career + Learning)
+            const actionContainer = document.getElementById('gmailActionItemsContainer');
+            actionContainer.innerHTML = '';
+            let actionItems = [];
+
+            emails.forEach(item => {
+                const c = item.classification || {};
+                if ((c.category === 'career_growth' || c.category === 'continuous_learning') && c.key_action_item && String(c.key_action_item).toLowerCase() !== 'none') {
+                    actionItems.push(item);
+                }
+            });
+
+            // Sort by relevance score desc
+            actionItems.sort((a, b) => ((b.classification?.relevance_score || 0) - (a.classification?.relevance_score || 0)));
+
+            if (actionItems.length > 0) {
+                actionItems.forEach(item => {
+                    const c = item.classification || {};
+                    const div = document.createElement('div');
+                    div.style.background = 'rgba(255,255,255,0.02)';
+                    div.style.border = '1px solid var(--card-border)';
+                    div.style.borderRadius = '10px';
+                    div.style.padding = '1rem';
+                    
+                    const safeCategory = c.category || 'career_growth';
+                    const safeLabel = labels[safeCategory] || 'Career Growth';
+                    const safeScore = c.relevance_score || 0;
+                    const safeAction = c.key_action_item || 'None';
+                    const safeSender = (item.sender || 'Unknown').replace(/</g, '&lt;');
+                    const safeSubject = (item.subject || 'No Subject').replace(/</g, '&lt;');
+
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                            <span class="flag-tag" style="background:${safeCategory === 'career_growth' ? 'rgba(16,185,129,0.1)' : 'rgba(168,85,247,0.1)'}; color:${safeCategory === 'career_growth' ? '#10b981' : '#a855f7'}; border:none; margin:0;">
+                                ${safeLabel.toUpperCase()}
+                            </span>
+                            <span style="font-weight:700; color:var(--primary); font-size:0.8rem;">Relevance: ${safeScore}/10</span>
+                        </div>
+                        <div style="font-weight:600; font-size:0.85rem; margin-bottom:0.25rem;">${safeAction.replace(/</g, '&lt;')}</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Sender: ${safeSender}</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); font-style:italic; margin-top:0.25rem;">Context: "${safeSubject}"</div>
+                    `;
+                    actionContainer.appendChild(div);
+                });
+            } else {
+                actionContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem;">No priority action items extracted in this run.</span>';
+            }
+
+            // Populate Inbound Sales Drafts Column
+            const salesContainer = document.getElementById('gmailSalesDraftsContainer');
+            salesContainer.innerHTML = '';
+            let salesLeads = emails.filter(item => item.classification?.category === 'sales_opportunity');
+
+            if (salesLeads.length > 0) {
+                salesLeads.forEach((item, sIdx) => {
+                    const draft = item.sales_draft || {};
+                    const div = document.createElement('div');
+                    div.style.background = 'rgba(255,255,255,0.02)';
+                    div.style.border = '1px solid var(--card-border)';
+                    div.style.borderRadius = '10px';
+                    div.style.padding = '1rem';
+                    
+                    const draftId = `sales_draft_${sIdx}`;
+                    const safeSender = (item.sender || 'Unknown').replace(/</g, '&lt;');
+                    const safeSubject = (item.subject || 'No Subject').replace(/</g, '&lt;');
+                    
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                            <span class="flag-tag" style="background:rgba(245,158,11,0.1); color:#f59e0b; border:none; margin:0;">
+                                SALES OPPORTUNITY
+                            </span>
+                            <span style="font-weight:700; color:var(--success); font-size:0.8rem;">Next Action: ${(draft.next_step || 'Follow up').replace(/</g, '&lt;')}</span>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">From: <strong>${safeSender}</strong> ("${safeSubject}")</div>
+                        
+                        <div style="position:relative; background:#080c14; border:1px solid #141c2f; border-radius:8px; padding:0.75rem; margin-top:0.5rem;">
+                            <button class="copy-btn" onclick="copyCode('${draftId}')" style="top:0.5rem; right:0.5rem; padding:0.2rem 0.5rem; font-size:0.65rem;">Copy Draft</button>
+                            <pre id="${draftId}" style="font-family:var(--font-main); font-size:0.8rem; white-space:pre-wrap; margin:0; padding-right:4rem; color:#e2e8f0;">${(draft.draft_reply || 'No draft generated.').replace(/</g, '&lt;')}</pre>
+                        </div>
+                    `;
+                    salesContainer.appendChild(div);
+                });
+            } else {
+                salesContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem;">No inbound sales leads detected in this audit.</span>';
+            }
+
+            // Populate Audited History Table Rows
+            const tableBody = document.getElementById('gmailTableBody');
+            tableBody.innerHTML = '';
+
+            if (emails.length > 0) {
+                emails.forEach(item => {
+                    const c = item.classification || {};
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
+                    row.style.verticalAlign = 'top';
+
+                    const safeCat = c.category || 'spam';
+                    const cleanCat = labels[safeCat] || safeCat;
+                    const cleanSender = (item.sender || 'Unknown').split('<')[0].trim().replace(/</g, '&lt;');
+                    const cleanDate = (item.date || 'Unknown').split(',').slice(0, 2).join(',').replace(/</g, '&lt;');
+                    const cleanSubject = (item.subject || 'No Subject').replace(/</g, '&lt;');
+                    const cleanSummary = (c.summary || 'No summary.').replace(/</g, '&lt;');
+                    const cleanScore = c.relevance_score || 0;
+
+                    row.innerHTML = `
+                        <td style="padding: 1rem 0.75rem; font-weight:700; color:${colors[safeCat] || '#fff'};">
+                            ${cleanCat.toUpperCase()}
+                        </td>
+                        <td style="padding: 1rem 0.75rem;">
+                            <div style="font-weight:600; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${cleanSender}</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">${cleanDate}</div>
+                        </td>
+                        <td style="padding: 1rem 0.75rem;">
+                            <div style="font-weight:600; margin-bottom:0.25rem;">${cleanSubject}</div>
+                            <div style="color:var(--text-muted); line-height:1.3;">${cleanSummary}</div>
+                        </td>
+                        <td style="padding: 1rem 0.75rem; text-align:center; font-weight:700; font-family:var(--font-code); color:var(--primary);">
+                            ${cleanScore}/10
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                            No recent email logs found. Click "Analyze Inbox" to audit Gmail.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

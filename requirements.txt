@@ -1,0 +1,6 @@
+simple-agents-py
+fastapi
+uvicorn
+python-dotenv
+jinja2
+python-multipart
