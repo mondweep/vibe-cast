@@ -16,6 +16,8 @@ from simple_agents_py.workflow_request import (
 )
 
 load_dotenv(override=True)
+dotenv_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=dotenv_path, override=True)
 
 KEY = os.environ.get("OPENAI_API_KEY")
 BASE = os.environ.get("WORKFLOW_API_BASE")
