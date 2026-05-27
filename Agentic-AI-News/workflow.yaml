@@ -1,0 +1,368 @@
+id: agentic-ai-news-digest
+version: 1.0.0
+entry_node: news_collector
+
+nodes:
+  - id: news_collector
+    node_type:
+      llm_call:
+        model: openai/gpt-4o-mini
+        messages_path: input.messages
+        heal: true
+    config:
+      output_schema:
+        type: object
+        properties:
+          news_items:
+            type: array
+            items:
+              type: object
+              properties:
+                headline:
+                  type: string
+                source:
+                  type: string
+                date:
+                  type: string
+                region:
+                  type: string
+                  enum: [north_america, uk, europe, india, china, japan]
+                summary:
+                  type: string
+                url:
+                  type: string
+              required: [headline, source, date, region, summary, url]
+        required: [news_items]
+        additionalProperties: false
+      user_input_prompt: |
+        Search the web for the latest Agentic AI news across multiple regions: North America, UK, Europe, India, China, and Japan.
+        Focus on news from the past 7 days related to:
+        - Enterprise AI adoption in large organizations
+        - AI automation and agentic systems implementation challenges
+        - Business opportunities in AI agents
+        - Evolving trends in autonomous AI systems
+
+        For each region, search using terms like: "agentic AI enterprise 2025", "AI agents adoption [region]", "autonomous AI business trends [region]", etc.
+
+        Return a JSON array of news items (up to 50 total) with these fields:
+        - headline: The news headline
+        - source: Publication name
+        - date: Publication date (YYYY-MM-DD format)
+        - region: One of north_america, uk, europe, india, china, japan
+        - summary: 2-3 sentence summary of the news
+        - url: Source URL
+
+        Return JSON only with the news_items array.
+
+  - id: news_router
+    node_type:
+      switch:
+        branches:
+          - condition: '$.nodes.news_collector.output.news_items'
+            target: news_classifier
+        default: digest_generator
+
+  - id: news_classifier
+    node_type:
+      llm_call:
+        model: openai/gpt-4o-mini
+        messages_path: input.messages
+        heal: true
+    config:
+      output_schema:
+        type: object
+        properties:
+          categorized_news:
+            type: object
+            properties:
+              enterprise_adoption:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    headline:
+                      type: string
+                    source:
+                      type: string
+                    date:
+                      type: string
+                    region:
+                      type: string
+                    summary:
+                      type: string
+                    url:
+                      type: string
+                    impact_score:
+                      type: integer
+                      minimum: 1
+                      maximum: 10
+                  required: [headline, source, date, region, summary, url, impact_score]
+              challenges:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    headline:
+                      type: string
+                    source:
+                      type: string
+                    date:
+                      type: string
+                    region:
+                      type: string
+                    summary:
+                      type: string
+                    url:
+                      type: string
+                    severity:
+                      type: string
+                      enum: [low, medium, high]
+                  required: [headline, source, date, region, summary, url, severity]
+              opportunities:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    headline:
+                      type: string
+                    source:
+                      type: string
+                    date:
+                      type: string
+                    region:
+                      type: string
+                    summary:
+                      type: string
+                    url:
+                      type: string
+                    market_potential:
+                      type: string
+                      enum: [low, medium, high]
+                  required: [headline, source, date, region, summary, url, market_potential]
+              evolving_trends:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    headline:
+                      type: string
+                    source:
+                      type: string
+                    date:
+                      type: string
+                    region:
+                      type: string
+                    summary:
+                      type: string
+                    url:
+                      type: string
+                    trend_indicator:
+                      type: string
+                      enum: [emerging, growing, maturing]
+                  required: [headline, source, date, region, summary, url, trend_indicator]
+            required: [enterprise_adoption, challenges, opportunities, evolving_trends]
+          total_count:
+            type: integer
+        required: [categorized_news, total_count]
+        additionalProperties: false
+      user_input_prompt: |
+        You have collected news items about Agentic AI. Your task is to classify each news item into one of four categories and score/rank them:
+
+        Categories:
+        1. **enterprise_adoption** - News about enterprises implementing or scaling agentic AI solutions
+        2. **challenges** - News about difficulties, failures, risks, or concerns with agentic AI
+        3. **opportunities** - News about new business opportunities, investments, partnerships in agentic AI
+        4. **evolving_trends** - News about new developments, innovations, or shifting landscape in agentic AI
+
+        For each news item, also assign:
+        - impact_score (1-10) for enterprise_adoption
+        - severity (low/medium/high) for challenges
+        - market_potential (low/medium/high) for opportunities
+        - trend_indicator (emerging/growing/maturing) for evolving_trends
+
+        Return a JSON object with categorized_news containing arrays for each category, plus total_count of all items. Return JSON only.
+
+  - id: top_news_filter
+    node_type:
+      custom_worker:
+        handler: filter_top_news
+        handler_file: handlers.py
+    config:
+      payload:
+        categories: '{{nodes.news_classifier.output.categorized_news}}'
+        max_per_category: 12
+        max_total: 50
+
+  - id: digest_generator
+    node_type:
+      llm_call:
+        model: openai/gpt-4o-mini
+        messages_path: input.messages
+        heal: true
+    config:
+      output_schema:
+        type: object
+        properties:
+          digest:
+            type: object
+            properties:
+              title:
+                type: string
+              publication_date:
+                type: string
+              executive_summary:
+                type: string
+              sections:
+                type: object
+                properties:
+                  enterprise_adoption:
+                    type: object
+                    properties:
+                      section_title:
+                        type: string
+                      intro:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            headline:
+                              type: string
+                            summary:
+                              type: string
+                            source:
+                              type: string
+                            date:
+                              type: string
+                            region:
+                              type: string
+                            url:
+                              type: string
+                          required: [headline, summary, source, date, region, url]
+                  challenges:
+                    type: object
+                    properties:
+                      section_title:
+                        type: string
+                      intro:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            headline:
+                              type: string
+                            summary:
+                              type: string
+                            severity:
+                              type: string
+                            source:
+                              type: string
+                            date:
+                              type: string
+                            region:
+                              type: string
+                            url:
+                              type: string
+                          required: [headline, summary, severity, source, date, region, url]
+                  opportunities:
+                    type: object
+                    properties:
+                      section_title:
+                        type: string
+                      intro:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            headline:
+                              type: string
+                            summary:
+                              type: string
+                            market_potential:
+                              type: string
+                            source:
+                              type: string
+                            date:
+                              type: string
+                            region:
+                              type: string
+                            url:
+                              type: string
+                          required: [headline, summary, market_potential, source, date, region, url]
+                  evolving_trends:
+                    type: object
+                    properties:
+                      section_title:
+                        type: string
+                      intro:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            headline:
+                              type: string
+                            summary:
+                              type: string
+                            trend_indicator:
+                              type: string
+                            source:
+                              type: string
+                            date:
+                              type: string
+                            region:
+                              type: string
+                            url:
+                              type: string
+                          required: [headline, summary, trend_indicator, source, date, region, url]
+                required: [enterprise_adoption, challenges, opportunities, evolving_trends]
+              footer:
+                type: string
+        required: [digest]
+        additionalProperties: false
+      user_input_prompt: |
+        You have collected and classified Agentic AI news. Generate a professional newsletter digest with the following structure:
+
+        1. **Title**: "Agentic AI Weekly Digest" with the current date
+        2. **Executive Summary**: 3-4 sentence overview of the week's most important developments
+        3. **Four Sections** (one for each category):
+           - Enterprise Adoption
+           - Challenges
+           - Opportunities
+           - Evolving Trends
+
+        Each section should have:
+        - A section title
+        - A 1-2 sentence intro
+        - 5-8 news items with headline, summary (2 sentences), severity/market_potential/trend_indicator, source, date, region, and URL
+
+        Format the digest for a professional newsletter audience. Make it scannable and valuable for executives and decision-makers interested in AI.
+
+        Return the complete digest as JSON with the structure shown in the schema. Return JSON only.
+
+  - id: finalizer
+    node_type:
+      custom_worker:
+        handler: finalize_digest
+        handler_file: handlers.py
+    config:
+      payload:
+        status: complete
+
+edges:
+  - from: news_collector
+    to: news_router
+  - from: news_router
+    to: news_classifier
+  - from: news_classifier
+    to: top_news_filter
+  - from: top_news_filter
+    to: digest_generator
+  - from: digest_generator
+    to: finalizer
