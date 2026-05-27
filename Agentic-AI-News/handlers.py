@@ -288,7 +288,7 @@ def filter_top_news(**kwargs):
 
 def finalize_digest(**kwargs):
     """
-    Finalizes the digest - parses string arrays and saves to file.
+    Finalizes the digest - saves JSON and generates PDF with credits.
     """
     import json
     from datetime import datetime
@@ -315,12 +315,106 @@ def finalize_digest(**kwargs):
         "generated_at": datetime.now().isoformat(),
     }
 
-    output_file = Path("/Users/mondweep/.gemini/antigravity/scratch/simple-agents-studio/Agentic-AI-News/newsletter_digest.json")
-    with open(output_file, "w", encoding="utf-8") as f:
+    json_file = Path("/Users/mondweep/.gemini/antigravity/scratch/simple-agents-studio/Agentic-AI-News/newsletter_digest.json")
+    with open(json_file, "w", encoding="utf-8") as f:
         json.dump(digest_data, f, indent=2, ensure_ascii=False)
-    print(f"[Custom Worker] Digest saved to: {output_file}")
+    print(f"[Custom Worker] JSON saved to: {json_file}")
+
+    generate_pdf(digest_data)
 
     return digest_data
+
+
+def generate_pdf(digest_data):
+    """Generate a formatted PDF newsletter digest."""
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+        from reportlab.lib.colors import HexColor, black, white
+        from reportlab.lib import colors
+    except ImportError:
+        print("[PDF] reportlab not installed, skipping PDF generation")
+        print("[PDF] Run: uv pip install reportlab")
+        return
+
+    output_file = Path("/Users/mondweep/.gemini/antigravity/scratch/simple-agents-studio/Agentic-AI-News/newsletter_digest.pdf")
+
+    doc = SimpleDocTemplate(str(output_file), pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=24, spaceAfter=6, textColor=HexColor('#1a1a2e'))
+    subtitle_style = ParagraphStyle('Subtitle', parent=styles['Normal'], fontSize=11, textColor=HexColor('#4a4a68'), spaceAfter=20)
+    section_style = ParagraphStyle('Section', parent=styles['Heading2'], fontSize=14, textColor=HexColor('#16213e'), spaceBefore=16, spaceAfter=8)
+    headline_style = ParagraphStyle('Headline', parent=styles['Normal'], fontSize=11, fontName='Helvetica-Bold', spaceBefore=8, spaceAfter=2)
+    meta_style = ParagraphStyle('Meta', parent=styles['Normal'], fontSize=9, textColor=HexColor('#666666'), spaceAfter=2)
+    summary_style = ParagraphStyle('Summary', parent=styles['Normal'], fontSize=10, spaceAfter=6, leading=13)
+    link_style = ParagraphStyle('Link', parent=styles['Normal'], fontSize=8, textColor=HexColor('#0066cc'))
+    credit_style = ParagraphStyle('Credit', parent=styles['Normal'], fontSize=9, textColor=HexColor('#888888'), alignment=1)
+    footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, textColor=HexColor('#999999'), spaceBefore=20)
+
+    story = []
+
+    story.append(Paragraph(digest_data.get("title", "Agentic AI Weekly Digest"), title_style))
+    story.append(Paragraph(f"Published: {digest_data.get('publication_date', datetime.now().strftime('%Y-%m-%d'))} | Curated by Mondweep Chakravorty", subtitle_style))
+    story.append(HRFlowable(width="100%", thickness=1, color=HexColor('#e0e0e0'), spaceAfter=12))
+
+    story.append(Paragraph("<b>Executive Summary</b>", section_style))
+    story.append(Paragraph(digest_data.get("executive_summary", ""), summary_style))
+    story.append(Spacer(1, 12))
+
+    categories = [
+        ("Enterprise Adoption", digest_data.get("enterprise_adoption", []), "#2563eb"),
+        ("Challenges", digest_data.get("challenges", []), "#dc2626"),
+        ("Opportunities", digest_data.get("opportunities", []), "#16a34a"),
+        ("Evolving Trends", digest_data.get("evolving_trends", []), "#9333ea"),
+    ]
+
+    for cat_name, items, color in categories:
+        story.append(Spacer(1, 8))
+        story.append(Paragraph(f"<b>{cat_name}</b>", section_style))
+        story.append(HRFlowable(width="100%", thickness=2, color=HexColor(color), spaceAfter=8))
+
+        for item in items[:6]:
+            story.append(Paragraph(item.get("headline", ""), headline_style))
+            meta_parts = [
+                item.get("source", "Unknown"),
+                item.get("region", "").replace("_", " ").title(),
+            ]
+            if item.get("severity"):
+                meta_parts.append(f"Severity: {item['severity'].upper()}")
+            elif item.get("market_potential"):
+                meta_parts.append(f"Potential: {item['market_potential'].upper()}")
+            elif item.get("trend_indicator"):
+                meta_parts.append(f"Trend: {item['trend_indicator'].upper()}")
+            story.append(Paragraph(" | ".join(meta_parts), meta_style))
+            story.append(Paragraph(item.get("summary", ""), summary_style))
+            if item.get("url"):
+                story.append(Paragraph(f'<link href="{item["url"]}" color="blue">{item["url"][:80]}...</link>', link_style))
+            story.append(Spacer(1, 6))
+
+    story.append(Spacer(1, 20))
+    story.append(HRFlowable(width="100%", thickness=1, color=HexColor('#e0e0e0'), spaceAfter=12))
+
+    story.append(Paragraph("About This Digest", section_style))
+    story.append(Paragraph(
+        f'<b>Curator:</b> Mondweep Chakravorty | <link href="https://linkedin.com/in/mondweepchakravorty/">LinkedIn</link>',
+        credit_style
+    ))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph(
+        f'<b>Workflow Powered by:</b> <link href="https://yamslam.craftsmanlabs.net/">SimpleAgents</link> by Craftsman Labs',
+        credit_style
+    ))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph(
+        f'Generated: {digest_data.get("generated_at", datetime.now().isoformat())}',
+        footer_style
+    ))
+
+    doc.build(story)
+    print(f"[Custom Worker] PDF saved to: {output_file}")
 
 
 def log_complete(**kwargs):
