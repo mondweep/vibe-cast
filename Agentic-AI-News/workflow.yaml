@@ -43,7 +43,9 @@ nodes:
                   type: string
                 url:
                   type: string
-              required: [headline, summary, source, region]
+                date:
+                  type: string
+              required: [headline, summary, source, region, url, date]
           challenges:
             type: array
             items:
@@ -61,7 +63,9 @@ nodes:
                   type: string
                 url:
                   type: string
-              required: [headline, summary, severity, source, region]
+                date:
+                  type: string
+              required: [headline, summary, severity, source, region, url, date]
           opportunities:
             type: array
             items:
@@ -79,7 +83,9 @@ nodes:
                   type: string
                 url:
                   type: string
-              required: [headline, summary, market_potential, source, region]
+                date:
+                  type: string
+              required: [headline, summary, market_potential, source, region, url, date]
           evolving_trends:
             type: array
             items:
@@ -97,40 +103,54 @@ nodes:
                   type: string
                 url:
                   type: string
-              required: [headline, summary, trend_indicator, source, region]
+                date:
+                  type: string
+              required: [headline, summary, trend_indicator, source, region, url, date]
           footer:
             type: string
         required: [title, publication_date, executive_summary, enterprise_adoption, challenges, opportunities, evolving_trends]
       user_input_prompt: |
         Generate a professional "Agentic AI Weekly Digest" newsletter from the collected news below.
 
-        Collected news:
+        Collected news (each item has headline, url, source, date, region, and raw_content):
         {{nodes.news_collector.output.news_items}}
 
-        Your task:
-        1. Classify each news item into ONE of these categories:
-           - enterprise_adoption: companies deploying AI agents at scale
-           - challenges: problems, risks, failures, regulation issues
-           - opportunities: investments, partnerships, new markets
-           - evolving_trends: new technologies, innovations, shifts
+        TODAY'S DATE IS: 2026-05-27
 
-        2. Score and rank within each category:
-           - enterprise_adoption: impact_score 1-10
-           - challenges: severity low/medium/high
-           - opportunities: market_potential low/medium/high
-           - evolving_trends: trend_indicator emerging/growing/maturing
+        STRICT RULES - VIOLATING ANY WILL PRODUCE INVALID OUTPUT:
+        1. ONLY include items where date is within last 3 days (2026-05-25 to 2026-05-27)
+        2. ONLY use items from the collected news above - do NOT invent, fabricate, or create new items
+        3. Every url MUST be a COMPLETE valid URL from the source data (e.g. https://example.com/page)
+        4. Any item with a truncated, incomplete, or placeholder URL (like "https:****") must be EXCLUDED
+        5. The date field must be EXACTLY as provided in source data
+        6. Generate a 2-3 sentence summary from the raw_content for each item
+        7. Do NOT use headlines as summaries
 
-        3. Create the JSON output with these fields:
-        - title: "Agentic AI Weekly Digest - YYYY-MM-DD"
-        - publication_date: today's date
+        If there are fewer than 5 items in a category, return only what exists - do NOT fabricate items.
+
+        Classification:
+        - enterprise_adoption: companies deploying AI agents at scale
+        - challenges: problems, risks, failures, regulation issues
+        - opportunities: investments, partnerships, new markets
+        - evolving_trends: new technologies, innovations, shifts
+
+        Scoring:
+        - enterprise_adoption: impact_score 1-10
+        - challenges: severity low/medium/high
+        - opportunities: market_potential low/medium/high
+        - evolving_trends: trend_indicator emerging/growing/maturing
+
+        Output JSON:
+        - title: "Agentic AI Weekly Digest - 2026-05-27"
+        - publication_date: "2026-05-27"
         - executive_summary: 3-4 sentences on key themes
-        - enterprise_adoption: top 5 items (headline, summary, source, region, url)
-        - challenges: top 4 items (headline, summary, severity, source, region, url)
-        - opportunities: top 5 items (headline, summary, market_potential, source, region, url)
-        - evolving_trends: top 5 items (headline, summary, trend_indicator, source, region, url)
+        - enterprise_adoption: items with (headline, summary, source, region, url, date)
+        - challenges: items with (headline, summary, severity, source, region, url, date)
+        - opportunities: items with (headline, summary, market_potential, source, region, url, date)
+        - evolving_trends: items with (headline, summary, trend_indicator, source, region, url, date)
         - footer: "Generated by SimpleAgents"
 
-        IMPORTANT: Include a url field for each item if available from the source news. Return JSON only.
+        Return JSON only. No commentary.
 
   - id: finalizer
     node_type:

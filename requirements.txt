@@ -4,3 +4,5 @@ uvicorn
 python-dotenv
 jinja2
 python-multipart
+reportlab
+supabase
