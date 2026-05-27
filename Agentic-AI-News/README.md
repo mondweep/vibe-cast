@@ -1,50 +1,112 @@
 # Agentic AI News Digest
 
-Automated newsletter workflow using SimpleAgents framework.
+Automated newsletter generation workflow using SimpleAgents framework with real-time web search, LLM-powered classification, and Supabase storage.
 
 ## Overview
 
-This workflow searches for Agentic AI news across 6 global regions (North America, UK, Europe, India, China, Japan), classifies them into 4 categories, and generates a publishable newsletter digest.
+This workflow searches for Agentic AI news across 6 global regions (North America, UK, Europe, India, China, Japan), classifies them into 4 categories, and generates a publishable newsletter digest — all verified with source URLs and recent publication dates.
 
-## Workflow Categories
+## Architecture
 
-1. **Enterprise Adoption** - Enterprises implementing/scaling agentic AI
-2. **Challenges** - Difficulties, risks, failures with agentic AI
-3. **Opportunities** - Business opportunities, investments, partnerships
-4. **Evolving Trends** - New developments and innovations
+```mermaid
+flowchart TD
+    A[(Tavily API)] -->|30 verified articles| B[news_collector<br/>Custom Worker]
+    B -->|news_items| C[digest_generator<br/>LLM Call]
+    C -->|categorized JSON| D[finalizer<br/>Custom Worker]
+    D -->|JSON + PDF| E[(Local Files)]
+    D -->|digests + news_items| F[(Supabase DB)]
+```
 
-## Files
+## Workflow Pipeline
 
-- `workflow.yaml` - YAML workflow definition for SimpleAgents
-- `handlers.py` - Custom Python worker functions
-- `run_news_digest.py` - Script to execute the workflow
-- `.env` - Environment variables (API key)
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ news_collector  │────►│ digest_generator│────►│   finalizer     │
+│ (Custom Worker) │     │   (LLM Call)     │     │ (Custom Worker) │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+        │                                               │
+        ▼                                               ▼
+┌─────────────────┐                           ┌─────────────────────────┐
+│  Tavily Search  │                           │  Outputs:               │
+│  - 6 queries    │                           │  - newsletter_digest.json
+│  - 3-day filter │                           │  - newsletter_digest.pdf│
+│  - URL validate │                           │  - Supabase records    │
+└─────────────────┘                           └─────────────────────────┘
+```
 
-## Setup
+## Categories
 
-1. Create a `.env` file with your API key:
+| Category | Description | Scoring |
+|----------|-------------|---------|
+| **Enterprise Adoption** | Companies deploying AI agents at scale | impact_score 1-10 |
+| **Challenges** | Problems, risks, failures, regulation | severity: low/medium/high |
+| **Opportunities** | Investments, partnerships, new markets | market_potential: low/medium/high |
+| **Evolving Trends** | New technologies, innovations | trend_indicator: emerging/growing/maturing |
+
+## Environment Variables
+
 ```env
-OPENAI_API_KEY=your_api_key_here
-WORKFLOW_API_BASE=https://api.requesty.ai/v1  # Optional
+# Required
+OPENAI_API_KEY=your_openai_key
+
+# Requesty gateway (optional, for cost optimization)
+WORKFLOW_API_BASE=https://router.requesty.ai/v1
+
+# News search
+TAVILY_API_KEY=your_tavily_key
+
+# Database storage
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_anon_key
 ```
 
-2. Install dependencies (from parent directory):
-```bash
-cd ..
-uv pip install -r requirements.txt
+## Supabase Schema
+
 ```
+agentic_ai_news/
+├── digests/
+│   ├── id (uuid, pk)
+│   ├── title
+│   ├── publication_date
+│   ├── executive_summary
+│   ├── footer
+│   └── generated_at
+└── news_items/
+    ├── id (uuid, pk)
+    ├── digest_id (fk)
+    ├── headline, summary, source, region, url, date
+    ├── category (enterprise_adoption/challenges/opportunities/evolving_trends)
+    └── Scoring fields (impact_score/severity/market_potential/trend_indicator)
+```
+
+Run `schema.sql` in Supabase SQL Editor to create.
 
 ## Usage
 
 ```bash
+# Install dependencies
+cd ..
+uv pip install -r requirements.txt
+
+# Run the workflow
 cd Agentic-AI-News
 python run_news_digest.py
 ```
 
-Output is saved to `newsletter_digest.json`.
+## Output
 
-## Notes
+- `newsletter_digest.json` — Full structured digest
+- `newsletter_digest_YYYY-MM-DD.pdf` — Formatted PDF with clickable URLs
+- Supabase records in `agentic_ai_news.digests` + `agentic_ai_news.news_items`
 
-- The workflow uses `gpt-4o-mini` with `heal: true` for auto-correcting malformed JSON
-- News is deduplicated and filtered to top 50 items
-- Each item is scored/ranked within its category
+## Quality Guarantees
+
+- **Zero hallucinations**: Every news item is from verified Tavily search results
+- **Date filtering**: Only articles published within last 3 days
+- **URL validation**: Fabricated/truncated URLs are excluded
+- **LLM summarization**: Summaries generated from raw content, not copied headlines
+
+## Credits
+
+Curated by **Mondweep Chakravorty** | LinkedIn: https://www.linkedin.com/in/mondweepchakravorty/
+Workflow powered by **SimpleAgents** by Craftsman Labs | https://yamslam.craftsmanlabs.net/
