@@ -422,9 +422,9 @@ Cognitum Seed (RPi Zero 2 W, cognitum-2c3c.local:8443)
         │   uses publishable key (NOT service_role — migrated 2026-05-28)
         ↓ HTTPS POST + INSERT-only RLS policy
 Supabase project ertsvhwtaeityanbmyzw (eu-west-1)
-   ├─ public.swarm_vitals      (telemetry, ~300K rows growing)
-   ├─ public.chat_messages     (still has permissive RLS — Risk A unresolved)
-   ├─ public.learner_profiles  (PII; outreach_list view now revoked from anon)
+   ├─ public.swarm_vitals      (telemetry, ~300K rows growing; anon INSERT scoped to node_id IN (1,2))
+   ├─ public.chat_messages     (locked down to service_role after Risk A migration)
+   ├─ public.learner_profiles  (anon INSERT-only with consent flag; outreach_list view anon SELECT revoked)
    └─ realtime channel (postgres_changes on swarm_vitals)
         │
         ↓ WebSocket + REST
@@ -442,16 +442,18 @@ Netlify dashboard (enchanting-mochi-6090de.netlify.app)
 | `vibe-cast` GitHub repo (any branch) | **NONE** | All scripts load from env; HTML loads from `config.local.js` (gitignored) |
 | Local dev `.env` (gitignored) | as needed | |
 
-### RLS state (as of 2026-05-28)
+### RLS state (post-Risk-A hardening, 2026-05-28 end-of-day)
 
-| Table | Anon access | Status |
+| Table / view | Anon access | Status |
 |---|---|---|
-| `public.swarm_vitals` | SELECT (public), INSERT (added 2026-05-28) | UPDATE/DELETE not granted ✅ |
-| `public.outreach_list` (view) | SELECT REVOKED for anon, authenticated | PII protected ✅ |
-| `public.chat_messages`, `public.chat_sessions` | Still `USING (true) WITH CHECK (true)` for ALL | **Known gap — Risk A unresolved** |
-| `public.learner_profiles` | Still `INSERT WITH CHECK (true)` | Spammable inserts — Risk A unresolved |
-| `agentic_ai_news.digests`, `agentic_ai_news.news_items` | Still `INSERT WITH CHECK (true)` | Spammable — Risk A unresolved |
-| `public.session_summary`, `topic_frequency`, `cost_by_country` | SELECT via SECURITY DEFINER view | **Risk A unresolved** |
+| `public.swarm_vitals` | SELECT public; INSERT scoped to `node_id IN (1, 2)` | ✅ Seed-only writes |
+| `public.outreach_list` (view) | SELECT REVOKED | ✅ PII protected |
+| `public.chat_messages` | None — only `service_role` policy remains | ✅ Locked down |
+| `public.chat_sessions` | None — only `service_role` policy remains | ✅ Locked down |
+| `public.learner_profiles` | INSERT only with `wants_updates IS NOT NULL` (opt-in) | ✅ Signups OK, no read/update/delete |
+| `agentic_ai_news.digests`, `news_items` | SELECT public; INSERT only via service_role | ✅ Public-read content, service-write |
+| `public.session_summary`, `topic_frequency`, `cost_by_country` | SELECT REVOKED for anon, authenticated | ✅ Analytics protected |
+| `public.rls_auto_enable()` function | EXECUTE revoked from anon, authenticated, PUBLIC | ✅ Locked down |
 
 ### Disabled credentials
 
