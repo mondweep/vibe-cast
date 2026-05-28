@@ -115,10 +115,10 @@ nodes:
         Collected news (each item has headline, url, source, date, region, and raw_content):
         {{nodes.news_collector.output.news_items}}
 
-        TODAY'S DATE IS: 2026-05-27
+        TODAY'S DATE IS: 2026-05-28
 
         STRICT RULES - VIOLATING ANY WILL PRODUCE INVALID OUTPUT:
-        1. ONLY include items where date is within last 3 days (2026-05-25 to 2026-05-27)
+        1. ONLY include items where date is within last 3 days (2026-05-25 to 2026-05-28)
         2. ONLY use items from the collected news above - do NOT invent, fabricate, or create new items
         3. Every url MUST be a COMPLETE valid URL from the source data (e.g. https://example.com/page)
         4. Any item with a truncated, incomplete, or placeholder URL (like "https:****") must be EXCLUDED
@@ -141,8 +141,8 @@ nodes:
         - evolving_trends: trend_indicator emerging/growing/maturing
 
         Output JSON:
-        - title: "Agentic AI Weekly Digest - 2026-05-27"
-        - publication_date: "2026-05-27"
+        - title: "Agentic AI Weekly Digest - 2026-05-28"
+        - publication_date: "2026-05-28"
         - executive_summary: 3-4 sentences on key themes
         - enterprise_adoption: items with (headline, summary, source, region, url, date)
         - challenges: items with (headline, summary, severity, source, region, url, date)
