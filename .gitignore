@@ -1,5 +1,27 @@
+missfont.log
+*.log
+.walk_start_epoch
+.walk2_start_line
+.DS_Store
+
+# Private versions (contain WiFi SSID and Mac IP). Use the *-public.* variants instead.
+wifi-csi-sensing-paper.md
+wifi-csi-sensing-paper.pdf
+
+.git_backup/
+.antigravitycli/
+
+# Local credentials / runtime config — never commit
 .env
 .env.local
 config.local.js
+
+# Python bytecode cache
 __pycache__/
 *.pyc
+
+# Firmware release artifacts belong in GitHub Releases, not the tree
+*.bin
+
+# Local Netlify deploy artifact — config.local.js inside is gitignored anyway
+netlify-deploy/

@@ -1,0 +1,35 @@
+# gitleaks configuration for vibe-cast.
+#
+# Extends the default ruleset (so we still catch new secrets), and adds
+# project-specific allowlists for credentials that were leaked, *then revoked*.
+# Once a credential is disabled at the source, its literal string in git
+# history is no longer exploitable — but gitleaks will still flag it forever.
+# Allowlisting by regex here means "any commit on any branch containing this
+# specific dead string is OK", without listing every commit fingerprint
+# individually (the repo has 70+ branches; that list would be huge).
+#
+# RULE: never add a regex here without the underlying credential being
+# revoked or rotated first. Allowlisting a live secret = committing it.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Revoked credentials from the 2026-05-28 anon-key leak incident"
+regexes = [
+  # Supabase legacy anon JWT for project ertsvhwtaeityanbmyzw.
+  # Disabled in the Supabase dashboard on 2026-05-28. The signature
+  # (last segment of the JWT) is unique enough to match the whole token
+  # without false positives.
+  '''iikB9E0gKC4goI7GszNCF1rsUccyqU-RYeX3iT2H5S0''',
+
+  # Supabase legacy service_role JWT for the same project.
+  # Disabled 2026-05-28; was only on the Seed device, never in the repo,
+  # but listed here for safety in case it ever surfaces.
+  '''Iwx3sBao_0cCGXupFegDSw24tX0KO103QrxLTYrdJs0''',
+
+  # Cognitum Seed bearer token (LAN-only device). Was hardcoded as a
+  # COGNITUM_TOKEN env-var default in tamper_evidence_demo.py.
+  # If this token is ever rotated on the Seed, remove this entry.
+  '''GcF5W2VU9x1_HrULg6ajDFHpInSHkMhcKuzDQn8kNRc''',
+]
