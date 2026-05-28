@@ -220,8 +220,12 @@
     };
 
     // Auto-connect on load if credentials present
-    if (localStorage.getItem("sub_url") && localStorage.getItem("sub_key")) {
-      initializeDashboard(localStorage.getItem("sub_url"), localStorage.getItem("sub_key"));
+    // Auto-connect from localStorage (returning visitor) or from
+    // window.SUPABASE_* (set by config.local.js, e.g. injected at deploy time).
+    const initialUrl = localStorage.getItem("sub_url") || (window.SUPABASE_URL || "");
+    const initialKey = localStorage.getItem("sub_key") || (window.SUPABASE_KEY || "");
+    if (initialUrl && initialKey) {
+      initializeDashboard(initialUrl, initialKey);
     }
 
     async function initializeDashboard(url, key) {

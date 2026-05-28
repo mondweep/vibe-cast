@@ -1,0 +1,43 @@
+# Netlify build config for the vibe-cast Supabase dashboard.
+#
+# This file exists so the deployed site never has Supabase credentials
+# hardcoded in source. At build time Netlify reads SUPABASE_URL and
+# SUPABASE_KEY from its env-vars panel and writes them into a generated
+# config.local.js — which the HTML loads at runtime.
+#
+# To use:
+#   1. In Netlify dashboard → Site settings → Environment variables, set:
+#        SUPABASE_URL  = https://ertsvhwtaeityanbmyzw.supabase.co
+#        SUPABASE_KEY  = sb_publishable_kRKd9lfuKlMR9d94mt0keQ_CQZEoImN
+#      (Use the publishable key, not the legacy anon or service_role JWT.
+#       Publishable keys are designed to live in client-side code.)
+#   2. Trigger a redeploy. The build step below generates config.local.js.
+#   3. Visitors clear their localStorage once (if they had stale legacy creds)
+#      and the dashboard auto-connects with the publishable key.
+
+[build]
+  publish = "."
+  command = """
+    set -e
+    if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+      echo 'ERROR: SUPABASE_URL and SUPABASE_KEY env vars must be set in Netlify.' >&2
+      exit 1
+    fi
+    cat > config.local.js <<EOF
+// Generated at deploy time from Netlify env vars. Do not commit this file.
+window.SUPABASE_URL = "${SUPABASE_URL}";
+window.SUPABASE_KEY = "${SUPABASE_KEY}";
+EOF
+    echo 'config.local.js generated.'
+  """
+
+# Cache-bust: never serve a stale dashboard with old keys.
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/config.local.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
