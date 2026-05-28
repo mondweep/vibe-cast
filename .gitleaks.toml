@@ -15,7 +15,7 @@
 useDefault = true
 
 [allowlist]
-description = "Revoked credentials from the 2026-05-28 anon-key leak incident"
+description = "Revoked credentials + the active publishable key (which is by design client-visible)"
 regexes = [
   # Supabase legacy anon JWT for project ertsvhwtaeityanbmyzw.
   # Disabled in the Supabase dashboard on 2026-05-28. The signature
@@ -32,4 +32,11 @@ regexes = [
   # COGNITUM_TOKEN env-var default in tamper_evidence_demo.py.
   # If this token is ever rotated on the Seed, remove this entry.
   '''GcF5W2VU9x1_HrULg6ajDFHpInSHkMhcKuzDQn8kNRc''',
+
+  # Active Supabase publishable key (NOT a secret — designed to live
+  # in browser-side code per Supabase architecture; gated by RLS, not
+  # by being unpredictable). Referenced in Security-FAQ.md §8 and in
+  # netlify.toml setup docs. If this key is ever rotated, remove this
+  # entry so gitleaks catches stale references.
+  '''sb_publishable_kRKd9lfuKlMR9d94mt0keQ_CQZEoImN''',
 ]
