@@ -1,6 +1,7 @@
 import os
+import re
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 env_path = Path(__file__).parent / ".env"
@@ -45,7 +46,7 @@ def collect_news(**kwargs):
                     "query": query,
                     "search_depth": "basic",
                     "max_results": 5,
-                    "days": 3,
+                    "days": 7,
                     "include_answer": False,
                     "include_raw_content": True,
                     "include_images": False,
@@ -61,25 +62,62 @@ def collect_news(**kwargs):
                         if url.startswith("https://www.google") or "javascript" in url.lower():
                             continue
                         raw_content = r.get("raw_content", "") or ""
-                        published_date = r.get("published_date", "")
+                        published_date = r.get("published_date", "").strip()
+
+                        # --- Date verification ---
+                        is_recent = False
+                        date_verified = False
+                        pub_dt = None
+
+                        # Signal 1: Tavily published_date
                         if published_date:
                             try:
                                 pub_dt = datetime.fromisoformat(published_date.replace("Z", "+00:00"))
-                                age_days = (datetime.now(pub_dt.tzinfo) - pub_dt).days
-                                if age_days > 3:
-                                    continue
+                                age_days = (datetime.now(pub_dt.tzinfo or timezone.utc) - pub_dt).days
+                                if age_days <= 3:
+                                    is_recent = True
+                                    date_verified = True
+                                else:
+                                    continue  # Explicitly too old
                             except:
                                 pass
+
+                        # Signal 2: URL contains /2025/ or /2024/ → too old
+                        if not is_recent:
+                            url_year_match = re.search(r'/20(2[0-5]|1[0-9])/', url)
+                            if url_year_match:
+                                continue  # URL says 2020-2025, too old
+
+                        # Signal 3: raw_content mentions old years in date context
+                        if not is_recent and raw_content:
+                            content_years = re.findall(r'\b(202[0-4]|2025)\b', raw_content[:500])
+                            if content_years:
+                                continue  # Content references 2020-2025, likely old
+
+                        # Signal 4: URL pattern like /2025/06 or /06/2025
+                        if not is_recent:
+                            url_date_match = re.search(r'/(20\d{2})/(\d{2})/', url)
+                            if url_date_match:
+                                year = int(url_date_match.group(1))
+                                month = int(url_date_match.group(2))
+                                if year < 2026 or (year == 2026 and month < 5):
+                                    continue  # Before May 2026, too old
+
+                        # If no signal ruled it out, keep it
                         headline = r.get("title", "").strip()
                         if not headline or len(headline) < 10:
                             continue
+
+                        # Use verified date or flag as unverified
+                        final_date = published_date if date_verified else ""
                         all_results.append({
                             "headline": headline,
                             "source": r.get("source", "Web"),
-                            "date": published_date if published_date else publication_date,
+                            "date": final_date,
                             "region": region,
                             "url": url,
                             "raw_content": raw_content[:2000],
+                            "date_verified": date_verified,
                         })
                     print(f"[Tavily] '{query[:25]}...' -> {len(results)} results")
                 else:

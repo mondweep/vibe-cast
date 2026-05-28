@@ -112,19 +112,21 @@ nodes:
       user_input_prompt: |
         Generate a professional "Agentic AI Weekly Digest" newsletter from the collected news below.
 
-        Collected news (each item has headline, url, source, date, region, and raw_content):
+        Collected news (each item has headline, url, source, date, region, raw_content, and date_verified):
         {{nodes.news_collector.output.news_items}}
 
         TODAY'S DATE IS: 2026-05-28
 
         STRICT RULES - VIOLATING ANY WILL PRODUCE INVALID OUTPUT:
-        1. ONLY include items where date is within last 3 days (2026-05-25 to 2026-05-28)
-        2. ONLY use items from the collected news above - do NOT invent, fabricate, or create new items
-        3. Every url MUST be a COMPLETE valid URL from the source data (e.g. https://example.com/page)
-        4. Any item with a truncated, incomplete, or placeholder URL (like "https:****") must be EXCLUDED
-        5. The date field must be EXACTLY as provided in source data
-        6. Generate a 2-3 sentence summary from the raw_content for each item
-        7. Do NOT use headlines as summaries
+        1. Items with date_verified=true AND date within last 3 days (2026-05-25 to 2026-05-28) — always include
+        2. Items with date_verified=false — check the raw_content and URL carefully. If the content references 2024, 2025, or early 2026 events/products, EXCLUDE. Only include if content clearly discusses current (May 2026) topics
+        3. Check every URL for year patterns — if URL contains /2024/, /2025/, or /2026/ followed by Jan-Apr, EXCLUDE the item
+        4. ONLY use items from the collected news above - do NOT invent, fabricate, or create new items
+        5. Every url MUST be a COMPLETE valid URL from the source data (e.g. https://example.com/page)
+        6. Any item with a truncated, incomplete, or placeholder URL (like "https:****") must be EXCLUDED
+        7. The date field must be EXACTLY as provided in source data (may be empty for unverified items)
+        8. Generate a 2-3 sentence summary from the raw_content for each item
+        9. Do NOT use headlines as summaries
 
         If there are fewer than 5 items in a category, return only what exists - do NOT fabricate items.
 
