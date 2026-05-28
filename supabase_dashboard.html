@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cognitum Swarm Vitals — Cloud Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #06080d;
+      --card: #0c101b;
+      --bd: #1a2235;
+      --t1: #f3f6fa;
+      --t2: #94a3b8;
+      --teal: #14b8a6;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --green: #10b981;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--t1);
+      font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased;
+      line-height: 1.5; padding: 24px;
+    }
+    .container { max-width: 1280px; margin: 0 auto; }
+    
+    /* Config Panel */
+    .config-panel {
+      background: var(--card); border: 1px solid var(--bd); border-radius: 16px;
+      padding: 20px; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
+    }
+    .config-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
+    .config-field label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--t2); }
+    .config-field input {
+      background: #000; border: 1px solid var(--bd); color: var(--t1); padding: 10px 12px;
+      border-radius: 8px; font-family: ui-monospace, monospace; font-size: 13px;
+    }
+    .config-panel button {
+      background: var(--teal); color: #021a16; border: 0; padding: 10px 20px;
+      border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s;
+    }
+    .config-panel button:hover { opacity: 0.9; }
+
+    header {
+      margin-bottom: 32px; border-bottom: 1px solid var(--bd); padding-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;
+    }
+    h1 {
+      font-family: 'Outfit', sans-serif; font-size: 28px; margin: 0 0 6px 0; font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, var(--teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .subtitle { color: var(--t2); font-size: 14px; margin: 0; }
+    .badge {
+      background: rgba(20, 184, 166, 0.1); color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.2);
+      padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .badge-dot { width: 6px; height: 6px; background: var(--teal); border-radius: 50%; box-shadow: 0 0 8px var(--teal); }
+    .badge-dot.live-pulse {
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.7); }
+      70% { transform: scale(1.1); opacity: 0.5; box-shadow: 0 0 0 6px rgba(20, 184, 166, 0); }
+      100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
+    }
+    
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--bd); border-radius: 16px; padding: 20px;
+    }
+    .stat-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--t2); margin-bottom: 8px; }
+    .stat-card .value { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: var(--t1); line-height: 1; }
+    .stat-card .value span { font-size: 14px; color: var(--t2); font-weight: 400; margin-left: 4px; }
+    .stat-card .sub { font-size: 12px; margin-top: 8px; color: var(--t2); }
+    
+    /* Charts layout */
+    .chart-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .chart-card { background: var(--card); border: 1px solid var(--bd); border-radius: 16px; padding: 24px; }
+    .chart-card h3 {
+      font-family: 'Outfit', sans-serif; font-size: 16px; margin: 0 0 20px 0; font-weight: 600;
+    }
+    .chart-container { position: relative; height: 320px; width: 100%; }
+    
+    .node-details { display: flex; flex-direction: column; gap: 12px; }
+    .node-row {
+      border: 1px solid var(--bd); border-radius: 12px; padding: 14px; background: rgba(13, 18, 31, 0.5);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .node-row-header { display: flex; justify-content: space-between; align-items: center; }
+    .node-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .node-pill { padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+    .node-pill.n1 { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
+    .node-pill.n2 { background: rgba(245, 158, 11, 0.1); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.2); }
+    
+    .node-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px; }
+    .node-grid-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+    .node-grid-item:last-child { border-bottom: 0; }
+    .node-grid-item .k { color: var(--t2); }
+    
+    @media (max-width: 1024px) {
+      .chart-section { grid-template-columns: 1fr; }
+    }
+    footer {
+      margin-top: 48px; border-top: 1px solid var(--bd); padding-top: 24px;
+      color: var(--t2); font-size: 12px; display: flex; justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Supabase Connection Panel -->
+    <div class="config-panel" id="configPanel">
+      <div class="config-field">
+        <label>Supabase Project URL</label>
+        <input id="subUrl" placeholder="https://your-project-id.supabase.co" />
+      </div>
+      <div class="config-field">
+        <label>Supabase Anon Key</label>
+        <input id="subKey" type="password" placeholder="paste your supabase anon key" />
+      </div>
+      <button id="connectBtn">Connect Dashboard</button>
+    </div>
+
+    <header>
+      <div>
+        <h1>Cognitum WiFi-CSI Swarm Vitals</h1>
+        <p class="subtitle">Supabase Real-Time Cloud Telemetry — Live Dashboard</p>
+      </div>
+      <div class="badge" id="liveBadge" style="display:none">
+        <span class="badge-dot live-pulse"></span> WebSockets Live Feed
+      </div>
+    </header>
+
+    <div id="dashboardContent" style="display:none">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="label">Total Points Stored</div>
+          <div class="value" id="statFrames">—</div>
+          <div class="sub">Postgres Cloud Table</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Latest Swarm BPM</div>
+          <div class="value" id="statBpm">—<span>BPM</span></div>
+          <div class="sub" id="statBpmSub">Waiting for stream...</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Active Swarm Nodes</div>
+          <div class="value" id="statNodes">—</div>
+          <div class="sub" style="color: var(--green);">Online & Syncing</div>
+        </div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-card">
+          <h3>Live Swarm Breathing Trends (BPM)</h3>
+          <div class="chart-container">
+            <canvas id="breathingChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Swarm Nodes Status</h3>
+          <div class="node-details" id="nodeRows">
+            <!-- Node Rows get drawn dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-card">
+          <h3>Live Swarm Spatial Motion & Presence</h3>
+          <div class="chart-container">
+            <canvas id="motionChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Swarm Signal Strength (RSSI)</h3>
+          <div class="chart-container">
+            <canvas id="rssiChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div>Supabase Cloud Realtime Client · SSL Encrypted</div>
+      <div id="statusFooter">Disconnected</div>
+    </footer>
+  </div>
+
+  <script>
+    let supabaseClient = null;
+    let bChart, mChart, rChart;
+    const historyData = {}; // nodeId -> array of records
+    const MAX_CHART_POINTS = 50;
+
+    // Load credentials from LocalStorage
+    document.getElementById("subUrl").value = localStorage.getItem("sub_url") || "https://ertsvhwtaeityanbmyzw.supabase.co";
+    document.getElementById("subKey").value = localStorage.getItem("sub_key") || "***REMOVED***";
+
+    document.getElementById("connectBtn").onclick = () => {
+      const url = document.getElementById("subUrl").value.trim();
+      const key = document.getElementById("subKey").value.trim();
+      if (!url || !key) return alert("Please supply both credentials.");
+      
+      localStorage.setItem("sub_url", url);
+      localStorage.setItem("sub_key", key);
+      
+      initializeDashboard(url, key);
+    };
+
+    // Auto-connect on load if credentials present
+    if (localStorage.getItem("sub_url") && localStorage.getItem("sub_key")) {
+      initializeDashboard(localStorage.getItem("sub_url"), localStorage.getItem("sub_key"));
+    }
+
+    async function initializeDashboard(url, key) {
+      document.getElementById("configPanel").style.display = "none";
+      document.getElementById("dashboardContent").style.display = "block";
+      document.getElementById("liveBadge").style.display = "inline-flex";
+      document.getElementById("statusFooter").textContent = "Connecting to Supabase...";
+      
+      supabaseClient = supabase.createClient(url, key);
+      
+      // 1. Fetch initial history (last 4 hours)
+      const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabaseClient
+        .from('swarm_vitals')
+        .select('*')
+        .gte('timestamp', fourHoursAgo)
+        .order('timestamp', { ascending: true });
+        
+      if (error) {
+        alert("Error loading Supabase history: " + error.message);
+        document.getElementById("configPanel").style.display = "flex";
+        return;
+      }
+      
+      document.getElementById("statusFooter").textContent = "Connected. Realtime Active.";
+      
+      // Process history
+      data.forEach(rec => appendRecord(rec, false));
+      
+      // Create Charts
+      createCharts();
+      updateDashboardUI();
+      
+      // 2. Subscribe to Real-Time inserts
+      supabaseClient
+        .channel('realtime_vitals')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'swarm_vitals' },
+          payload => {
+            appendRecord(payload.new, true);
+          }
+        )
+        .subscribe();
+    }
+
+    function appendRecord(rec, isLive) {
+      const nid = rec.node_id;
+      if (!historyData[nid]) historyData[nid] = [];
+      
+      // Parse ISO timestamp to human format
+      const t = new Date(rec.timestamp);
+      const timeStr = t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      
+      const pt = {
+        time: timeStr,
+        breathing: rec.breathing_bpm,
+        motion: rec.motion,
+        presence: rec.presence,
+        rssi: rec.rssi_dbm,
+        fall: rec.fall
+      };
+      
+      historyData[nid].push(pt);
+      if (historyData[nid].length > MAX_CHART_POINTS) {
+        historyData[nid].shift();
+      }
+      
+      if (isLive) {
+        updateChartsLive(nid, pt);
+        updateDashboardUI();
+      }
+    }
+
+    function updateDashboardUI() {
+      const nodeIds = Object.keys(historyData).sort();
+      document.getElementById("statNodes").textContent = nodeIds.length;
+      
+      // Compute total frames
+      let total = 0;
+      let latestPt = null;
+      let latestNode = null;
+      
+      nodeIds.forEach(id => {
+        total += historyData[id].length;
+        if (historyData[id].length) {
+          const pt = historyData[id][historyData[id].length - 1];
+          latestPt = pt;
+          latestNode = id;
+        }
+      });
+      
+      document.getElementById("statFrames").textContent = total;
+      
+      if (latestPt) {
+        document.getElementById("statBpm").innerHTML = `${latestPt.breathing}<span>BPM</span>`;
+        document.getElementById("statBpmSub").textContent = `Node ${latestNode} · just now`;
+      }
+      
+      // Update Node Rows
+      const rowsEl = document.getElementById("nodeRows");
+      rowsEl.innerHTML = nodeIds.map(id => {
+        const list = historyData[id];
+        const pt = list[list.length - 1] || {};
+        return `
+          <div class="node-row">
+            <div class="node-row-header">
+              <span class="node-title">
+                <span class="node-pill ${id === "1" ? "n1" : "n2"}">Node ${id}</span>
+                ESP32 CSI Swarm Node
+              </span>
+              <span class="badge" style="padding: 2px 8px; font-size: 10px; border-color: rgba(16, 185, 129, 0.2); color: var(--green); background: rgba(16, 185, 129, 0.1);">ONLINE</span>
+            </div>
+            <div class="node-grid">
+              <div class="node-grid-item"><span class="k">Last Breathing</span><span class="v" style="font-weight:600;">${pt.breathing || 0} BPM</span></div>
+              <div class="node-grid-item"><span class="k">Signal Quality</span><span class="v">${pt.rssi || 0} dBm</span></div>
+              <div class="node-grid-item"><span class="k">Motion Level</span><span class="v">${pt.motion || 0}</span></div>
+              <div class="node-grid-item"><span class="k">Falls Detected</span><span class="v" style="color: ${pt.fall ? "var(--red)" : "var(--t2)"}; font-weight: ${pt.fall ? 600 : 400};">${pt.fall ? "⚠ FALL" : "0"}</span></div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    function createCharts() {
+      const nodeIds = Object.keys(historyData).sort();
+      
+      // X-Axis labels from Node 1 (or first available)
+      const defaultNode = nodeIds[0];
+      const labels = defaultNode ? historyData[defaultNode].map(p => p.time) : [];
+
+      const nColors = {
+        "1": { stroke: "#38bdf8", fill: "rgba(56, 189, 248, 0.05)" },
+        "2": { stroke: "#f59e0b", fill: "rgba(245, 158, 11, 0.05)" }
+      };
+
+      // 1. Breathing Chart
+      bChart = new Chart(document.getElementById('breathingChart'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: nodeIds.map(id => ({
+            label: 'Node ' + id + ' Breathing',
+            data: historyData[id].map(p => p.breathing),
+            borderColor: nColors[id]?.stroke || '#14b8a6',
+            backgroundColor: 'transparent',
+            borderWidth: 2.5,
+            tension: 0.3,
+            spanGaps: true
+          }))
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#94a3b8' } } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' }, min: 5, max: 25 }
+          }
+        }
+      });
+
+      // 2. Motion Chart
+      mChart = new Chart(document.getElementById('motionChart'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: nodeIds.flatMap(id => [
+            {
+              label: 'Node ' + id + ' (Presence)',
+              data: historyData[id].map(p => p.presence),
+              borderColor: id === "1" ? "#06b6d4" : "#d97706",
+              backgroundColor: 'transparent',
+              borderWidth: 1.5,
+              borderDash: [4, 4],
+              pointRadius: 0,
+              tension: 0.3
+            },
+            {
+              label: 'Node ' + id + ' (Motion)',
+              data: historyData[id].map(p => p.motion),
+              borderColor: nColors[id]?.stroke || '#10b981',
+              backgroundColor: nColors[id]?.fill || 'transparent',
+              fill: true,
+              borderWidth: 2,
+              pointRadius: 1,
+              tension: 0.3
+            }
+          ])
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#94a3b8' } } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' }, min: 0, max: 1.1 }
+          }
+        }
+      });
+
+      // 3. RSSI Chart
+      rChart = new Chart(document.getElementById('rssiChart'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: nodeIds.map(id => ({
+            label: 'Node ' + id + ' RSSI',
+            data: historyData[id].map(p => p.rssi),
+            borderColor: nColors[id]?.stroke || '#a855f7',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.2
+          }))
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#94a3b8' } } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' }, min: -95, max: -30 }
+          }
+        }
+      });
+    }
+
+    function updateChartsLive(nodeId, pt) {
+      if (!bChart) return;
+      
+      // Update X labels based on the active node
+      const activeData = historyData[nodeId];
+      const labels = activeData.map(p => p.time);
+      
+      bChart.data.labels = labels;
+      mChart.data.labels = labels;
+      rChart.data.labels = labels;
+
+      // Update datasets
+      const datasetIndexMap = { "1": 0, "2": 1 }; // breathing dataset index map
+      const idx = datasetIndexMap[nodeId];
+      
+      if (idx !== undefined) {
+        bChart.data.datasets[idx].data = activeData.map(p => p.breathing);
+        rChart.data.datasets[idx].data = activeData.map(p => p.rssi);
+        
+        // Motion chart has 2 datasets per node (index: 2*idx for presence, 2*idx+1 for motion)
+        mChart.data.datasets[2 * idx].data = activeData.map(p => p.presence);
+        mChart.data.datasets[2 * idx + 1].data = activeData.map(p => p.motion);
+      }
+
+      bChart.update('none');
+      mChart.update('none');
+      rChart.update('none');
+    }
+  </script>
+</body>
+</html>

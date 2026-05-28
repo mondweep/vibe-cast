@@ -1,0 +1,2 @@
+2a69d3bc464a768f9f6f33f436b6a56d501e6df414c5a6663ed78efacd3490e8 *cognitum-esp32s3-v0.6.3.bin
+0c7facb27dc648392b732d6fecd47d3019cd6a5b09e73ccf8c6064c65fd0762e *cognitum-esp32s3-4mb-v0.6.3.bin

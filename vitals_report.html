@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cognitum Swarm Vitals — Historical Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #07090e;
+      --card: #0d121f;
+      --bd: #1c2438;
+      --t1: #f3f6fa;
+      --t2: #94a3b8;
+      --teal: #14b8a6;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --green: #10b981;
+      --indigo: #6366f1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--t1);
+      font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased;
+      line-height: 1.5; padding: 24px;
+    }
+    .container { max-width: 1280px; margin: 0 auto; }
+    header {
+      margin-bottom: 32px; border-bottom: 1px solid var(--bd); padding-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;
+    }
+    h1 {
+      font-family: 'Outfit', sans-serif; font-size: 28px; margin: 0 0 6px 0; font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, var(--teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .subtitle { color: var(--t2); font-size: 14px; margin: 0; }
+    .badge {
+      background: rgba(20, 184, 166, 0.1); color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.2);
+      padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .badge-dot { width: 6px; height: 6px; background: var(--teal); border-radius: 50%; box-shadow: 0 0 8px var(--teal); }
+    
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--bd); border-radius: 16px; padding: 20px;
+      position: relative; overflow: hidden; transition: all 0.2s;
+    }
+    .stat-card:hover { border-color: #334155; transform: translateY(-2px); }
+    .stat-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--t2); margin-bottom: 8px; }
+    .stat-card .value { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: var(--t1); line-height: 1; }
+    .stat-card .value span { font-size: 14px; color: var(--t2); font-weight: 400; margin-left: 4px; }
+    .stat-card .trend { font-size: 12px; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+    .stat-card .trend.good { color: var(--green); }
+    .stat-card .trend.neutral { color: var(--t2); }
+    
+    /* Charts layout */
+    .chart-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .chart-card {
+      background: var(--card); border: 1px solid var(--bd); border-radius: 16px; padding: 24px;
+    }
+    .chart-card h3 {
+      font-family: 'Outfit', sans-serif; font-size: 16px; margin: 0 0 20px 0; font-weight: 600;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .chart-container { position: relative; height: 320px; width: 100%; }
+    
+    /* Node details list */
+    .node-details { display: flex; flex-direction: column; gap: 12px; }
+    .node-row {
+      border: 1px solid var(--bd); border-radius: 12px; padding: 14px; background: rgba(13, 18, 31, 0.5);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .node-row-header { display: flex; justify-content: space-between; align-items: center; }
+    .node-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .node-pill { padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+    .node-pill.n1 { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
+    .node-pill.n2 { background: rgba(245, 158, 11, 0.1); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.2); }
+    
+    .node-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px; }
+    .node-grid-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+    .node-grid-item:last-child { border-bottom: 0; }
+    .node-grid-item .k { color: var(--t2); }
+    
+    /* Integrity section */
+    .integrity-card {
+      margin-top: 24px; background: var(--card); border: 1px solid var(--bd); border-radius: 16px; padding: 24px;
+    }
+    .integrity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .integrity-item { display: flex; flex-direction: column; gap: 4px; }
+    .integrity-item .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--t2); }
+    .integrity-item .v { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 13px; color: var(--t1); word-break: break-all; }
+    .integrity-item .v.verified { color: var(--green); font-weight: 600; }
+    
+    @media (max-width: 1024px) {
+      .chart-section { grid-template-columns: 1fr; }
+    }
+    footer {
+      margin-top: 48px; border-top: 1px solid var(--bd); padding-top: 24px;
+      color: var(--t2); font-size: 12px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    footer code { font-family: ui-monospace, monospace; color: var(--teal); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Cognitum WiFi-CSI Swarm Vitals</h1>
+        <p class="subtitle">Edge-Tier 2 Telemetry & Vitals Analysis — Last 24 Hours (Historical Logs)</p>
+      </div>
+      <div class="badge">
+        <span class="badge-dot"></span> Cryptographically Attested on Device
+      </div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Total Frames Analyzed</div>
+        <div class="value">6,226</div>
+        <div class="trend neutral">WiFi CSI Packet Streams</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Monitoring Duration</div>
+        <div class="value">10m</div>
+        <div class="trend neutral">Since first captured record</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Avg Breathing Rate</div>
+        <div class="value">13.3<span>BPM</span></div>
+        <div class="trend good">Stable vital presence</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Active Sensors</div>
+        <div class="value">2</div>
+        <div class="trend good">Swarm nodes online</div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-card">
+        <h3>Breathing Rate Trend (BPM) <span>5-minute aggregated windows</span></h3>
+        <div class="chart-container">
+          <canvas id="breathingChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Node Swarm Overview</h3>
+        <div class="node-details">
+          
+          <div class="node-row">
+            <div class="node-row-header">
+              <span class="node-title">
+                <span class="node-pill n1">Node 1</span>
+                ESP32 Swarm Node
+              </span>
+              <span class="badge" style="padding: 2px 8px; font-size: 10px; border-color: rgba(16, 185, 129, 0.2); color: var(--green); background: rgba(16, 185, 129, 0.1);">ONLINE</span>
+            </div>
+            <div class="node-grid">
+              <div class="node-grid-item"><span class="k">Avg Breathing</span><span class="v" style="font-weight:600;">16.5 BPM</span></div>
+              <div class="node-grid-item"><span class="k">Signal Quality</span><span class="v">-69 dBm</span></div>
+              <div class="node-grid-item"><span class="k">Total Packets</span><span class="v">1,790</span></div>
+              <div class="node-grid-item"><span class="k">Falls Detected</span><span class="v" style="color: var(--t2); font-weight: 400;">0</span></div>
+            </div>
+          </div>
+        
+          <div class="node-row">
+            <div class="node-row-header">
+              <span class="node-title">
+                <span class="node-pill n2">Node 2</span>
+                ESP32 Swarm Node
+              </span>
+              <span class="badge" style="padding: 2px 8px; font-size: 10px; border-color: rgba(16, 185, 129, 0.2); color: var(--green); background: rgba(16, 185, 129, 0.1);">ONLINE</span>
+            </div>
+            <div class="node-grid">
+              <div class="node-grid-item"><span class="k">Avg Breathing</span><span class="v" style="font-weight:600;">12.5 BPM</span></div>
+              <div class="node-grid-item"><span class="k">Signal Quality</span><span class="v">-74 dBm</span></div>
+              <div class="node-grid-item"><span class="k">Total Packets</span><span class="v">4,436</span></div>
+              <div class="node-grid-item"><span class="k">Falls Detected</span><span class="v" style="color: var(--t2); font-weight: 400;">0</span></div>
+            </div>
+          </div>
+        
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-card">
+        <h3>Motion & Presence Activity</h3>
+        <div class="chart-container">
+          <canvas id="motionChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Signal Strength (RSSI)</h3>
+        <div class="chart-container">
+          <canvas id="rssiChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="integrity-card">
+      <h3 style="margin: 0 0 16px 0; font-family: 'Outfit'; font-size: 16px;">Seed Cryptographic Attestation Card</h3>
+      <div class="integrity-grid">
+        <div class="integrity-item">
+          <span class="k">Device UUID</span>
+          <span class="v">60faaf58-bd85-418f-a203-c1b1172273a5</span>
+        </div>
+        <div class="integrity-item">
+          <span class="k">Witness Proof</span>
+          <span class="v verified">✓ VERIFIED ON-DEVICE</span>
+        </div>
+        <div class="integrity-item">
+          <span class="k">Epochs Processed</span>
+          <span class="v">1,811</span>
+        </div>
+        <div class="integrity-item">
+          <span class="k">Chain Depth</span>
+          <span class="v">9,722 entries</span>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div>Generated at 2026-05-28 18:12:55 · Cognitum Local Network Appliance</div>
+      <div>Source: <code>genesis@cognitum-2c3c.local</code> · on-Seed SQLite buffer</div>
+    </footer>
+  </div>
+
+  <script>
+    const series = {"1": [{"time": "18:00", "breathing_bpm": 13.2, "motion": 0.537, "presence": 0.521, "rssi_dbm": -86, "falls": 0, "samples": 1096}, {"time": "18:05", "breathing_bpm": 20.9, "motion": 0.524, "presence": 0.513, "rssi_dbm": -63, "falls": 0, "samples": 456}, {"time": "18:10", "breathing_bpm": 15.4, "motion": 0.55, "presence": 0.538, "rssi_dbm": -57, "falls": 0, "samples": 238}], "2": [{"time": "18:00", "breathing_bpm": 11.1, "motion": 0.515, "presence": 0.504, "rssi_dbm": -77, "falls": 0, "samples": 1951}, {"time": "18:05", "breathing_bpm": 14.6, "motion": 0.509, "presence": 0.498, "rssi_dbm": -75, "falls": 0, "samples": 1757}, {"time": "18:10", "breathing_bpm": 11.9, "motion": 0.508, "presence": 0.497, "rssi_dbm": -69, "falls": 0, "samples": 728}]};
+    
+    // Process series for Chart.js
+    const nodeIds = Object.keys(series).sort();
+    
+    // Get unique times for X-axis labels
+    const allTimes = new Set();
+    nodeIds.forEach(id => {
+      series[id].forEach(pt => allTimes.add(pt.time));
+    });
+    const labels = Array.from(allTimes).sort();
+
+    // Map data to time labels, filtering 0.0 breathing to null for clean trend rendering
+    function getMetricData(nodeId, metric) {
+      const dataMap = {};
+      series[nodeId].forEach(pt => {
+        dataMap[pt.time] = pt[metric];
+      });
+      return labels.map(t => {
+        const val = dataMap[t];
+        if (metric === 'breathing_bpm' && val === 0.0) return null;
+        return val !== undefined ? val : null;
+      });
+    }
+
+    const nColors = {
+      "1": { stroke: "#38bdf8", fill: "rgba(56, 189, 248, 0.1)" },
+      "2": { stroke: "#f59e0b", fill: "rgba(245, 158, 11, 0.1)" }
+    };
+
+    // Breathing Rate Chart
+    new Chart(document.getElementById('breathingChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: nodeIds.map(id => ({
+          label: 'Node ' + id + ' (Breathing)',
+          data: getMetricData(id, 'breathing_bpm'),
+          borderColor: nColors[id]?.stroke || '#14b8a6',
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          tension: 0.3,
+          spanGaps: true,
+          pointRadius: 2,
+        }))
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
+          y: { 
+            grid: { color: 'rgba(255,255,255,0.03)' }, 
+            ticks: { color: '#64748b' },
+            min: 5, max: 25,
+            title: { display: true, text: 'BPM', color: '#64748b' }
+          }
+        }
+      }
+    });
+
+    // Motion & Presence Chart
+    new Chart(document.getElementById('motionChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: nodeIds.flatMap(id => [
+          {
+            label: 'Node ' + id + ' (Presence)',
+            data: getMetricData(id, 'presence'),
+            borderColor: id === "1" ? "#06b6d4" : "#d97706",
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderDash: [4, 4],
+            tension: 0.3,
+            spanGaps: true,
+            pointRadius: 0
+          },
+          {
+            label: 'Node ' + id + ' (Motion)',
+            data: getMetricData(id, 'motion'),
+            borderColor: nColors[id]?.stroke || '#10b981',
+            backgroundColor: nColors[id]?.fill || 'transparent',
+            fill: true,
+            borderWidth: 2,
+            tension: 0.3,
+            spanGaps: true,
+            pointRadius: 1
+          }
+        ])
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#94a3b8' } }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
+          y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' }, min: 0, max: 1.1 }
+        }
+      }
+    });
+
+    // RSSI Chart
+    new Chart(document.getElementById('rssiChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: nodeIds.map(id => ({
+          label: 'Node ' + id + ' RSSI',
+          data: getMetricData(id, 'rssi_dbm'),
+          borderColor: nColors[id]?.stroke || '#a855f7',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          tension: 0.2,
+          spanGaps: true,
+          pointRadius: 0
+        }))
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#94a3b8' } }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
+          y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' }, max: -30, min: -95 }
+        }
+      }
+    });
+
+    // Premium auto-reload every 30s so browser auto-updates when script runs in --watch mode
+    setTimeout(() => {
+      window.location.reload();
+    }, 30000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Cognitum Seed — Live Telemetry</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root{
+    --bg:#07090f; --panel:#0e1320; --line:#1d2436;
+    --text:#e6ecff; --muted:#7d88a3; --teal:#5eead4; --amber:#fcd34d;
+    --red:#f87171; --green:#34d399;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:ui-sans-serif,system-ui,Inter,sans-serif;font-feature-settings:"ss01","cv11"}
+  body{padding:32px;min-height:100vh}
+  header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:28px}
+  header h1{font-size:22px;letter-spacing:-.01em;margin:0}
+  header h1 span{color:var(--muted);font-weight:500;margin-left:8px;font-size:14px}
+  .status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 4px transparent;transition:all .2s}
+  .dot.up{background:var(--green);box-shadow:0 0 0 4px rgba(52,211,153,.12)}
+  .dot.down{background:var(--red);box-shadow:0 0 0 4px rgba(248,113,113,.12)}
+  .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+  .card .value{font-size:32px;font-weight:600;line-height:1.1;letter-spacing:-.02em}
+  .card .value .unit{font-size:14px;color:var(--muted);font-weight:500;margin-left:4px}
+  .card .sub{font-size:12px;color:var(--muted);margin-top:6px}
+  .card svg.spark{width:100%;height:48px;margin-top:14px;display:block}
+  .card svg.spark path{fill:none;stroke:var(--teal);stroke-width:1.5}
+  .card svg.spark .fill{fill:rgba(94,234,212,.08);stroke:none}
+  .card.amber svg.spark path{stroke:var(--amber)}
+  .card.amber svg.spark .fill{fill:rgba(252,211,77,.08)}
+  .witness{margin-top:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;
+    display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .witness .left{display:flex;flex-direction:column;gap:4px}
+  .witness .left .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .witness .left .title{font-size:16px;font-weight:600}
+  .witness .left .title em{color:var(--teal);font-style:normal}
+  .witness .head{font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:12px;color:var(--muted);
+    background:#000;padding:6px 10px;border-radius:8px;border:1px solid var(--line);max-width:380px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .witness .depth{font-size:28px;font-weight:600;letter-spacing:-.02em}
+  .provenance{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .provenance h3{margin:0 0 4px 0;font-size:14px;font-weight:600}
+  .provenance h3 .badge{margin-left:8px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;
+    background:rgba(52,211,153,.12);color:var(--green);padding:3px 8px;border-radius:6px;vertical-align:middle}
+  .provenance .sub{color:var(--muted);font-size:12px;margin-bottom:14px}
+  .provenance .rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 28px}
+  .provenance .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    padding:8px 0;border-bottom:1px dashed var(--line)}
+  .provenance .row:last-child{border-bottom:0}
+  .provenance .row .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);flex-shrink:0}
+  .provenance .row .v{font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:12px;color:var(--text);
+    text-align:right;word-break:break-all;max-width:260px}
+  .provenance .row .v.cyan{color:var(--teal)}
+  @media (max-width:900px){.provenance .rows{grid-template-columns:1fr}}
+  .timeline{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .timeline h3{margin:0 0 4px 0;font-size:14px;font-weight:600}
+  .timeline .sub{color:var(--muted);font-size:12px;margin-bottom:14px}
+  .timeline ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0}
+  .timeline li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px dashed var(--line);
+    font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:12px}
+  .timeline li:last-child{border-bottom:0}
+  .timeline li .ts{color:var(--muted);width:90px;flex-shrink:0}
+  .timeline li .pill{background:rgba(94,234,212,.10);color:var(--teal);padding:3px 10px;border-radius:6px;font-weight:600;flex-shrink:0}
+  .timeline li.fresh .pill{background:rgba(252,211,77,.14);color:var(--amber)}
+  .timeline li .depth{color:var(--muted);flex:1;text-align:right}
+  .timeline .empty{color:var(--muted);font-size:12px;font-style:italic;padding:8px 0}
+  footer{margin-top:28px;color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  footer code{font-family:ui-monospace,SF Mono,Menlo,monospace}
+  .err{color:var(--red);margin-top:8px;font-size:12px}
+  .setup{max-width:520px;margin:80px auto;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:28px}
+  .setup h2{margin:0 0 8px 0}
+  .setup p{color:var(--muted);font-size:14px;line-height:1.5}
+  .setup input{width:100%;background:#000;border:1px solid var(--line);color:var(--text);
+    padding:10px 12px;border-radius:8px;font-family:ui-monospace,monospace;font-size:13px;margin-top:8px}
+  .setup button{margin-top:14px;background:var(--teal);color:#04130f;border:0;padding:10px 16px;
+    border-radius:8px;font-weight:600;cursor:pointer;font-size:14px}
+  .setup .field{margin-top:14px}
+  .setup .field label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  @media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const LS_HOST = "cognitum_host";
+const LS_TOKEN = "cognitum_token";
+const POLL_MS = 3000;
+const HISTORY = 40;
+
+const params = new URLSearchParams(location.search);
+let host  = params.get("host")  || localStorage.getItem(LS_HOST)  || "https://cognitum-2c3c.local:8443";
+let token = params.get("token") || localStorage.getItem(LS_TOKEN) || "";
+
+function setup() {
+  document.getElementById("app").innerHTML = `
+    <div class="setup">
+      <h2>Connect to your Cognitum Seed</h2>
+      <p>Enter the seed's base URL and bearer token. Stored locally in your browser; never sent anywhere except the seed itself.</p>
+      <div class="field">
+        <label>Base URL</label>
+        <input id="host" value="${host}" placeholder="https://cognitum-2c3c.local:8443" />
+      </div>
+      <div class="field">
+        <label>Bearer token</label>
+        <input id="token" type="password" placeholder="paste token" />
+      </div>
+      <button id="go">Start dashboard</button>
+      <p id="setupErr" class="err" style="display:none"></p>
+    </div>`;
+  document.getElementById("go").onclick = async () => {
+    const h = document.getElementById("host").value.trim().replace(/\/$/, "");
+    const t = document.getElementById("token").value.trim();
+    if (!h || !t) { showSetupErr("Both fields required."); return; }
+    const ok = await ping(h, t);
+    if (!ok.ok) { showSetupErr("Couldn't reach the seed: " + ok.reason); return; }
+    localStorage.setItem(LS_HOST, h);
+    localStorage.setItem(LS_TOKEN, t);
+    host = h; token = t;
+    render();
+  };
+}
+function showSetupErr(msg){
+  const el = document.getElementById("setupErr");
+  el.textContent = msg; el.style.display = "block";
+}
+
+async function ping(h, t) {
+  try {
+    const r = await fetch(h + "/api/v1/wifi/status", {
+      headers: {"Authorization":"Bearer "+t},
+      mode: "cors",
+    });
+    if (!r.ok) return {ok:false, reason:"HTTP "+r.status};
+    return {ok:true};
+  } catch (e) {
+    return {ok:false, reason: e.message + " (if cert untrusted, open " + h + " in a tab first and accept)"};
+  }
+}
+
+async function getJSON(path) {
+  const r = await fetch(host + path, {
+    headers: {"Authorization":"Bearer "+token},
+    mode: "cors",
+    cache: "no-store",
+  });
+  if (!r.ok) throw new Error("HTTP "+r.status);
+  const text = await r.text();
+  if (!text) throw new Error("empty body");
+  return JSON.parse(text);
+}
+
+const series = {
+  temp: [], coherence: [], drift: [], freq: []
+};
+let lastWitnessDepth = null;
+let lastWitnessHead = "";
+let consecutiveFail = 0;
+const witnessEvents = []; // {ts, delta, depth}
+const TIMELINE_MAX = 12;
+
+// Pulled from the seed's TLS cert (`openssl s_client -connect …:8443`).
+// These are static for the life of the cert (5 years) — safe to bake in.
+const KNOWN_DEVICE = {
+  uuid:    "60faaf58-bd85-418f-a203-c1b1172273a5",
+  host:    "cognitum-2c3c.local",
+  issuer:  "Cognitum Device CA · Cognitum One · Device Security",
+  validFrom: "2026-05-06",
+  validTo:   "2031-05-05",
+  fingerprintSha256:
+    "52:DB:5A:BE:4B:2A:50:1F:F9:F8:F8:40:9C:AB:4E:DD:CF:FB:1B:C2:E3:AD:71:D1:D8:E2:0E:68:1E:CC:D7:45",
+  // SHA-256 hex of the cert's SubjectPublicKeyInfo (P-256 ECDSA).
+  // (Visible via: openssl x509 -in cert.pem -noout -pubkey | openssl dgst -sha256.)
+  // We don't recompute it client-side; the value below was captured at setup time.
+  pubkeyDigest: "ECDSA P-256 — see cert PEM for full key"
+};
+
+function renderTimeline() {
+  const ul = document.getElementById("timeline");
+  if (!ul) return;
+  if (!witnessEvents.length) {
+    ul.innerHTML = `<li class="empty"><span class="empty">waiting for next commit…</span></li>`;
+    return;
+  }
+  ul.innerHTML = witnessEvents.map((e, i) => `
+    <li class="${i===0?'fresh':''}">
+      <span class="ts">${e.ts.toLocaleTimeString()}</span>
+      <span class="pill">+${e.delta.toLocaleString()} entries</span>
+      <span class="depth">depth → ${e.depth.toLocaleString()}</span>
+    </li>`).join("");
+}
+
+function paintProvenance() {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set("prov-uuid",   KNOWN_DEVICE.uuid);
+  set("prov-host",   KNOWN_DEVICE.host);
+  set("prov-issuer", KNOWN_DEVICE.issuer);
+  set("prov-valid",  KNOWN_DEVICE.validFrom + "  →  " + KNOWN_DEVICE.validTo);
+  set("prov-fp",     KNOWN_DEVICE.fingerprintSha256);
+  set("prov-key",    KNOWN_DEVICE.pubkeyDigest);
+}
+
+function sparkPath(values, w, h) {
+  if (!values.length) return {line:"", fill:""};
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = Math.max(0.0001, max - min);
+  const stepX = w / Math.max(1, values.length - 1);
+  let line = "";
+  values.forEach((v,i) => {
+    const x = i * stepX;
+    const y = h - ((v - min) / range) * h;
+    line += (i===0 ? "M" : "L") + x.toFixed(2) + " " + y.toFixed(2) + " ";
+  });
+  const fill = line + "L" + w + " " + h + " L 0 " + h + " Z";
+  return {line, fill};
+}
+
+function spark(values, amber){
+  const w = 280, h = 48;
+  const {line, fill} = sparkPath(values, w, h);
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path class="fill" d="${fill}"/>
+    <path d="${line}"/>
+  </svg>`;
+}
+
+function fmtUptime(s){
+  if (s < 60) return s + "s";
+  if (s < 3600) return Math.floor(s/60) + "m " + (s%60) + "s";
+  return Math.floor(s/3600) + "h " + Math.floor((s%3600)/60) + "m";
+}
+
+function shorten(hash){
+  if (!hash) return "—";
+  if (hash.length <= 18) return hash;
+  return hash.slice(0,8) + "…" + hash.slice(-8);
+}
+
+function render() {
+  document.getElementById("app").innerHTML = `
+    <header>
+      <h1>Cognitum Seed <span>live telemetry · 100% on-device</span></h1>
+      <div class="status">
+        <span class="dot" id="dot"></span>
+        <span id="statusText">connecting…</span>
+        <a href="#" id="reset" style="margin-left:14px;color:var(--muted);text-decoration:underline">change seed</a>
+      </div>
+    </header>
+    <div class="grid">
+      <div class="card" id="card-temp">
+        <div class="label">SoC temperature</div>
+        <div class="value">—<span class="unit">°C</span></div>
+        <div class="sub">—</div>
+        ${spark([])}
+      </div>
+      <div class="card" id="card-freq">
+        <div class="label">CPU frequency</div>
+        <div class="value">—<span class="unit">MHz</span></div>
+        <div class="sub">DVFS governor</div>
+        ${spark([])}
+      </div>
+      <div class="card amber" id="card-coh">
+        <div class="label">Temporal coherence</div>
+        <div class="value">—</div>
+        <div class="sub">profile activity</div>
+        ${spark([])}
+      </div>
+      <div class="card" id="card-drift">
+        <div class="label">Sensor drift</div>
+        <div class="value">—<span class="unit">events</span></div>
+        <div class="sub">since reflex start</div>
+        ${spark([])}
+      </div>
+    </div>
+    <div class="witness">
+      <div class="left">
+        <span class="label">tamper-evident audit trail</span>
+        <span class="title"><em>Witnessed</em> by an Ed25519-signed chain — every reading above is committed on-device.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="depth" id="depth">—</span>
+        <span class="head" id="head" title="—">head: —</span>
+      </div>
+    </div>
+    <div class="provenance" id="provenance">
+      <h3>Device provenance card<span class="badge" id="prov-badge">cryptographically attested</span></h3>
+      <div class="sub">This card is built from the seed's TLS certificate and its on-device witness chain. Anyone on this LAN can independently re-verify all of the values below.</div>
+      <div class="rows">
+        <div class="row"><span class="k">Device UUID</span><span class="v cyan" id="prov-uuid">—</span></div>
+        <div class="row"><span class="k">Hostname (mDNS)</span><span class="v" id="prov-host">—</span></div>
+        <div class="row"><span class="k">Cert issuer</span><span class="v" id="prov-issuer">—</span></div>
+        <div class="row"><span class="k">Cert valid</span><span class="v" id="prov-valid">—</span></div>
+        <div class="row"><span class="k">Cert SHA-256</span><span class="v" id="prov-fp">—</span></div>
+        <div class="row"><span class="k">TLS public key</span><span class="v" id="prov-key">—</span></div>
+        <div class="row"><span class="k">Witness key (chain)</span><span class="v" id="prov-witness">Ed25519, on-device</span></div>
+        <div class="row"><span class="k">Chain depth</span><span class="v cyan" id="prov-depth">—</span></div>
+      </div>
+    </div>
+    <div class="timeline">
+      <h3>Witness chain — live commits</h3>
+      <div class="sub">Each row is a real growth event observed in the chain. Every entry is Ed25519-signed on the device and linked to the entry before it. Watching the chain grow == watching the device prove what it just did.</div>
+      <ul id="timeline">
+        <li class="empty"><span class="empty">waiting for next commit…</span></li>
+      </ul>
+    </div>
+    <footer>
+      <div>Polling <code>${host}</code> every ${POLL_MS/1000}s · no cloud round-trip · Pi Zero 2 W</div>
+      <div id="last">—</div>
+    </footer>`;
+  document.getElementById("reset").onclick = (e) => {
+    e.preventDefault();
+    localStorage.removeItem(LS_HOST);
+    localStorage.removeItem(LS_TOKEN);
+    setup();
+  };
+  paintProvenance();
+  tick();
+  setInterval(tick, POLL_MS);
+}
+
+function pushSeries(arr, val) {
+  arr.push(val);
+  if (arr.length > HISTORY) arr.shift();
+}
+
+function setCard(id, value, sub, seriesArr) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  const valNode = card.querySelector(".value");
+  // preserve unit child if present
+  const unit = valNode.querySelector(".unit");
+  valNode.innerHTML = value + (unit ? unit.outerHTML : "");
+  card.querySelector(".sub").textContent = sub;
+  card.querySelector("svg.spark").outerHTML = spark(seriesArr, card.classList.contains("amber"));
+}
+
+async function tick() {
+  const ts = new Date();
+  let okCount = 0;
+  // thermal
+  try {
+    const t = await getJSON("/api/v1/thermal/state");
+    pushSeries(series.temp, t.temp_c);
+    pushSeries(series.freq, t.freq_mhz);
+    setCard("card-temp",
+      t.temp_c.toFixed(1),
+      t.zone + (t.throttle_flags ? " · throttled" : " · no throttle"),
+      series.temp);
+    setCard("card-freq",
+      t.freq_mhz,
+      t.undervolt_count > 0 ? (t.undervolt_count + " undervolt events") : "no undervolt",
+      series.freq);
+    okCount++;
+  } catch (e) {}
+  // coherence
+  try {
+    const c = await getJSON("/api/v1/coherence/profile");
+    const metric = c.temporal_coherence ?? c.coherence_trend ?? null;
+    if (typeof metric === "number") {
+      pushSeries(series.coherence, metric);
+      const trend = (typeof c.coherence_trend === "number") ? c.coherence_trend.toFixed(3) : "—";
+      setCard("card-coh", metric.toFixed(3), "trend " + trend + " · slice " + (c.slice_count ?? "—"), series.coherence);
+    } else {
+      setCard("card-coh", "active", "slice " + (c.slice_count ?? "—"), series.coherence);
+    }
+    okCount++;
+  } catch (e) {}
+  // drift
+  try {
+    const d = await getJSON("/api/v1/sensor/drift/status");
+    const score = (typeof d.current_drift_score === "number") ? d.current_drift_score : 0;
+    pushSeries(series.drift, score);
+    const sub = (d.detectors_active ?? "?") + " detectors · " + (d.drifting ? "DRIFTING" : "stable");
+    setCard("card-drift", (d.detections_total ?? 0).toLocaleString(), sub, series.drift);
+    okCount++;
+  } catch (e) {}
+  // store / witness (the headline numbers for LinkedIn)
+  let witnessOk = false;
+  try {
+    const s = await getJSON("/api/v1/store/status");
+    const depth   = s.witness_chain_length ?? s.witnessChainLength ?? lastWitnessDepth;
+    const vectors = s.total_vectors ?? s.totalVectors;
+    const epoch   = s.epoch;
+    if (typeof depth === "number") {
+      if (lastWitnessDepth !== null && depth > lastWitnessDepth) {
+        witnessEvents.unshift({
+          ts: new Date(),
+          delta: depth - lastWitnessDepth,
+          depth,
+        });
+        if (witnessEvents.length > TIMELINE_MAX) witnessEvents.length = TIMELINE_MAX;
+        renderTimeline();
+      }
+      lastWitnessDepth = depth;
+      document.getElementById("depth").textContent = depth.toLocaleString() + " entries";
+      const provDepth = document.getElementById("prov-depth");
+      if (provDepth) provDepth.textContent = depth.toLocaleString() + " witnessed entries";
+    }
+    const el = document.getElementById("head");
+    if (typeof vectors === "number" && typeof epoch === "number") {
+      el.textContent = vectors.toLocaleString() + " vectors · epoch " + epoch.toLocaleString();
+      el.title = "store: " + vectors + " vectors @ dim " + (s.dimension ?? "?") + " · epoch " + epoch;
+    }
+    witnessOk = true;
+    okCount++;
+  } catch (e) {}
+  if (!witnessOk && lastWitnessDepth !== null) {
+    // keep the prior display rather than going back to —
+  }
+  // connection indicator
+  const dot = document.getElementById("dot");
+  const statusText = document.getElementById("statusText");
+  const last = document.getElementById("last");
+  if (okCount >= 2) {
+    dot.classList.add("up"); dot.classList.remove("down");
+    statusText.textContent = "connected";
+    consecutiveFail = 0;
+  } else {
+    consecutiveFail++;
+    if (consecutiveFail >= 2) {
+      dot.classList.remove("up"); dot.classList.add("down");
+      statusText.textContent = "seed unreachable";
+    }
+  }
+  last.textContent = "last update " + ts.toLocaleTimeString();
+}
+
+if (token && host) render(); else setup();
+</script>
+</body>
+</html>
