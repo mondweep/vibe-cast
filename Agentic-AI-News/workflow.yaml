@@ -117,16 +117,13 @@ nodes:
 
         TODAY'S DATE IS: 2026-05-28
 
-        STRICT RULES - VIOLATING ANY WILL PRODUCE INVALID OUTPUT:
-        1. Items with date_verified=true AND date within last 3 days (2026-05-25 to 2026-05-28) — always include
-        2. Items with date_verified=false — check the raw_content. Is the article describing CURRENT or very recent events? If the article specifically says "in 2024" or "last year (2025)" as its primary topic, EXCLUDE. If it briefly references 2025 for context but is clearly a current article, INCLUDE
-        3. Check every URL for year patterns — if URL contains /2024/ or /2025/ (not preceded by "20" context), EXCLUDE the item
-        4. ONLY use items from the collected news above - do NOT invent, fabricate, or create new items
-        5. Every url MUST be a COMPLETE valid URL from the source data (e.g. https://example.com/page)
-        6. Any item with a truncated, incomplete, or placeholder URL (like "https:****") must be EXCLUDED
-        7. Generate a 2-3 sentence summary from the raw_content for each item
-        8. Do NOT use headlines as summaries
-        9. Focus on QUALITY over quantity — better to have fewer items than stale ones
+        STRICT RULES:
+        1. FIRST: Read each item's raw_content. If content specifically discusses events from 2025 or earlier as its main topic, EXCLUDE. If it briefly references past data for context but is clearly current, INCLUDE
+        2. NEXT: Extract the most specific date from the raw_content for each item you include (e.g. "May 27, 2026", "March 2026"). If no explicit date is found, use "2026-05-28" (today) as default
+        3. The "url" field must be the EXACT url from the source data — NEVER modify, truncate, or fabricate a URL
+        4. NEVER create a URL like "https:****" or any placeholder — skip the item instead
+        5. Generate a 2-3 sentence summary from the raw_content for each item (do not copy headlines)
+        6. Return a mix across all 4 categories — aim for 2-5 items per category, but never fabricate items
 
         If there are fewer than 5 items in a category, return only what exists - do NOT fabricate items.
 
