@@ -245,6 +245,24 @@
         .order('timestamp', { ascending: true });
         
       if (error) {
+        // Self-heal stale localStorage: if the credentials that just failed
+        // came from localStorage AND config.local.js (window.SUPABASE_*) holds
+        // different values, the cached creds are likely revoked/disabled.
+        // Clear them and retry with whatever the deployed config provides.
+        const cachedUrl = localStorage.getItem("sub_url");
+        const cachedKey = localStorage.getItem("sub_key");
+        const usingCached = (url === cachedUrl) && (key === cachedKey);
+        const configHasOther = window.SUPABASE_URL && window.SUPABASE_KEY &&
+          (window.SUPABASE_URL !== cachedUrl || window.SUPABASE_KEY !== cachedKey);
+        if (usingCached && configHasOther) {
+          console.warn("Cached Supabase credentials failed (" + error.message +
+                       "); clearing localStorage and retrying with config.local.js values.");
+          localStorage.removeItem("sub_url");
+          localStorage.removeItem("sub_key");
+          document.getElementById("subUrl").value = window.SUPABASE_URL;
+          document.getElementById("subKey").value = window.SUPABASE_KEY;
+          return initializeDashboard(window.SUPABASE_URL, window.SUPABASE_KEY);
+        }
         alert("Error loading Supabase history: " + error.message);
         document.getElementById("configPanel").style.display = "flex";
         return;
