@@ -7,6 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Pan/zoom on time-series charts so visitors can scroll back through history. -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0"></script>
   <!-- Local dev: copy config.example.js -> config.local.js (gitignored) and fill in
        window.SUPABASE_URL / window.SUPABASE_KEY. The dashboard also accepts manual
        entry below if config.local.js is absent. -->
@@ -135,8 +137,16 @@
         <h1>Cognitum WiFi-CSI Swarm Vitals</h1>
         <p class="subtitle">Supabase Real-Time Cloud Telemetry — Live Dashboard</p>
       </div>
-      <div class="badge" id="liveBadge" style="display:none">
-        <span class="badge-dot live-pulse"></span> WebSockets Live Feed
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button id="resetZoomBtn"
+                title="Reset zoom and snap back to the latest data"
+                style="display:none; background:transparent; color:var(--teal);
+                       border:1px solid rgba(20,184,166,0.4); padding:4px 12px;
+                       border-radius:9999px; font-size:12px; font-weight:600;
+                       cursor:pointer;">↻ Latest</button>
+        <div class="badge" id="liveBadge" style="display:none">
+          <span class="badge-dot live-pulse"></span> WebSockets Live Feed
+        </div>
       </div>
     </header>
 
@@ -200,7 +210,9 @@
     let supabaseClient = null;
     let bChart, mChart, rChart;
     const historyData = {}; // nodeId -> array of records
-    const MAX_CHART_POINTS = 50;
+    // Per-node ring buffer. Larger = more scroll-back history; latest is always
+    // at the right edge of the chart. WebSocket inserts keep appending new points.
+    const MAX_CHART_POINTS = 300;
 
     // Credential precedence: LocalStorage > config.local.js > blank (manual entry).
     document.getElementById("subUrl").value =
@@ -236,13 +248,18 @@
       
       supabaseClient = supabase.createClient(url, key);
       
-      // 1. Fetch initial history (last 4 hours)
-      const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+      // 1. Fetch the LATEST N records (descending), then reverse client-side
+      // so historyData is chronological (oldest -> newest). Ordering ascending
+      // and relying on a time filter hits PostgREST's 1000-row default limit
+      // and returns the oldest rows in the window — the bug visitors saw where
+      // the chart started at 4-hour-old data and crept forward.
+      const FETCH_LIMIT = MAX_CHART_POINTS * 2; // 2 nodes ~= MAX_CHART_POINTS per node
       const { data, error } = await supabaseClient
         .from('swarm_vitals')
         .select('*')
-        .gte('timestamp', fourHoursAgo)
-        .order('timestamp', { ascending: true });
+        .order('timestamp', { ascending: false })
+        .limit(FETCH_LIMIT);
+      if (data) data.reverse();
         
       if (error) {
         // Self-heal stale localStorage: if the credentials that just failed
@@ -269,6 +286,12 @@
       }
       
       document.getElementById("statusFooter").textContent = "Connected. Realtime Active.";
+      document.getElementById("resetZoomBtn").style.display = "inline-block";
+      document.getElementById("resetZoomBtn").onclick = () => {
+        if (bChart) bChart.resetZoom();
+        if (mChart) mChart.resetZoom();
+        if (rChart) rChart.resetZoom();
+      };
       
       // Process history
       data.forEach(rec => appendRecord(rec, false));
@@ -396,7 +419,21 @@
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94a3b8' } } },
+          plugins: {
+            legend: { labels: { color: '#94a3b8' } },
+            zoom: {
+              pan:  { enabled: true, mode: 'x' },
+              zoom: {
+                wheel: { enabled: true },
+                pinch: { enabled: true },
+                drag:  { enabled: true,
+                         backgroundColor: 'rgba(20, 184, 166, 0.15)',
+                         borderColor:     'rgba(20, 184, 166, 0.5)',
+                         borderWidth:     1 },
+                mode: 'x'
+              }
+            }
+          },
           scales: {
             x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
             y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' }, min: 5, max: 25 }
@@ -434,7 +471,21 @@
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94a3b8' } } },
+          plugins: {
+            legend: { labels: { color: '#94a3b8' } },
+            zoom: {
+              pan:  { enabled: true, mode: 'x' },
+              zoom: {
+                wheel: { enabled: true },
+                pinch: { enabled: true },
+                drag:  { enabled: true,
+                         backgroundColor: 'rgba(20, 184, 166, 0.15)',
+                         borderColor:     'rgba(20, 184, 166, 0.5)',
+                         borderWidth:     1 },
+                mode: 'x'
+              }
+            }
+          },
           scales: {
             x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
             y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' }, min: 0, max: 1.1 }
@@ -459,7 +510,21 @@
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94a3b8' } } },
+          plugins: {
+            legend: { labels: { color: '#94a3b8' } },
+            zoom: {
+              pan:  { enabled: true, mode: 'x' },
+              zoom: {
+                wheel: { enabled: true },
+                pinch: { enabled: true },
+                drag:  { enabled: true,
+                         backgroundColor: 'rgba(20, 184, 166, 0.15)',
+                         borderColor:     'rgba(20, 184, 166, 0.5)',
+                         borderWidth:     1 },
+                mode: 'x'
+              }
+            }
+          },
           scales: {
             x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
             y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' }, min: -95, max: -30 }
