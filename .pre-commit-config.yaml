@@ -1,0 +1,32 @@
+# Pre-commit hooks — catch secrets and other issues before they leave the dev machine.
+# Setup once per fresh clone:
+#   brew install pre-commit gitleaks
+#   pre-commit install
+# After that, every `git commit` runs these checks automatically.
+
+repos:
+  # gitleaks — scans the staged diff for secrets (Supabase JWTs, AWS keys, etc.)
+  # We use a local hook calling the brew-installed gitleaks binary, NOT the
+  # upstream pre-commit hook, because the upstream hook builds gitleaks from
+  # source via Go and that breaks on some local Go installs (go.mod parser
+  # mismatch). Brew gitleaks stays current; bump via `brew upgrade gitleaks`.
+  - repo: local
+    hooks:
+      - id: gitleaks
+        name: gitleaks (staged diff)
+        entry: gitleaks protect --staged --verbose --redact
+        language: system
+        pass_filenames: false
+        description: Scan staged changes for secrets
+
+  # General hygiene — trailing whitespace, EOF newlines, big-file accidents
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']  # warn at 1 MB; firmware bins go in Releases, not git
+      - id: check-yaml
+      - id: check-json
