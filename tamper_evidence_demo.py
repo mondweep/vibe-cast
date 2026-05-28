@@ -26,8 +26,12 @@ import time
 import urllib.request
 
 DEFAULTS = {
-    "base":  os.environ.get("COGNITUM_BASE",  "https://169.254.42.1:8443"),
-    "token": os.environ.get("COGNITUM_TOKEN", "***REMOVED***"),
+    # COGNITUM_BASE default tracks the WiFi-resolvable Seed mDNS host. Old USB IP
+    # 169.254.42.1 is dead; use --base or COGNITUM_BASE to override.
+    "base":  os.environ.get("COGNITUM_BASE",  "https://cognitum-2c3c.local:8443"),
+    # No hardcoded token: must be supplied via env (COGNITUM_TOKEN) or --token.
+    "token": os.environ.get("COGNITUM_TOKEN", ""),
+    # Cert fingerprint is public verification material (not a secret); keep as default.
     "pin":   os.environ.get("COGNITUM_CERT_FINGERPRINT",
         "52:db:5a:be:4b:2a:50:1f:f9:f8:f8:40:9c:ab:4e:dd:cf:fb:1b:c2:e3:ad:71:d1:d8:e2:0e:68:1e:cc:d7:45"),
 }
@@ -66,8 +70,11 @@ def hr(label):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base",  default=DEFAULTS["base"],  help="seed base URL (https://host:8443)")
-    ap.add_argument("--token", default=DEFAULTS["token"], help="bearer token")
+    ap.add_argument("--token", default=DEFAULTS["token"], help="bearer token (or set COGNITUM_TOKEN)")
     args = ap.parse_args()
+
+    if not args.token:
+        sys.exit("ERROR: bearer token required — set COGNITUM_TOKEN env var or pass --token.")
 
     print(f"Cognitum tamper-evidence demo")
     print(f"  seed: {args.base}")

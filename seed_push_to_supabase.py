@@ -7,8 +7,9 @@ import os, re, subprocess, json, sys, time, urllib.request
 from datetime import datetime
 
 # ─── CONFIGURATION ───
-SUPABASE_URL = "https://ertsvhwtaeityanbmyzw.supabase.co"
-SUPABASE_KEY = "***REMOVED***"
+# Loaded from environment (or .env on the Seed). See .env.example.
+SUPABASE_URL = ""
+SUPABASE_KEY = ""
 
 LOG_LINE_RE = re.compile(
     r"^([0-9-T:+-]+)\s+\S+\s+python3\[\d+\]:.*node=(\d+).*features=\[([0-9.eE+\- ,]+)\]"
@@ -111,10 +112,33 @@ def main():
             
     print(f"✓ Successfully synced {success_count}/{len(records)} records with Supabase.")
 
+def load_env_file(path=".env"):
+    """Load KEY=VAL pairs from a .env file into os.environ if present."""
+    try:
+        with open(path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k, v = k.strip(), v.strip()
+                if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
+                    v = v[1:-1]
+                os.environ.setdefault(k, v)
+    except FileNotFoundError:
+        pass
+
 if __name__ == "__main__":
-    # Allow credentials override via env variables
-    SUPABASE_URL = os.environ.get("SUPABASE_URL", SUPABASE_URL)
-    SUPABASE_KEY = os.environ.get("SUPABASE_KEY", SUPABASE_KEY)
+    # On the Seed this runs under systemd which loads /etc/cognitum/seed.env.
+    # For ad-hoc local runs we also accept a .env in the current directory.
+    load_env_file()
+
+    SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
+    SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("ERROR: SUPABASE_URL and SUPABASE_KEY must be set (env or .env). See .env.example.",
+              file=sys.stderr)
+        sys.exit(1)
 
     # Simple continuous watch loop (designed to be managed by systemd)
     import argparse

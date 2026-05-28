@@ -11,3 +11,11 @@ wifi-csi-sensing-paper.pdf
 .git_backup/
 .antigravitycli/
 
+# Local credentials and runtime config — never commit
+.env
+.env.local
+config.local.js
+
+# Firmware release artifacts belong in GitHub Releases, not the tree
+*.bin
+

@@ -5,12 +5,12 @@ Pushes parsed vital telemetry from the Seed LAN device to a Supabase Cloud Datab
 import os, re, subprocess, json, sys, time, urllib.request
 from datetime import datetime
 
-SEED = "genesis@cognitum-2c3c.local"
+SEED = os.environ.get("SEED_HOST", "genesis@cognitum-2c3c.local")
 
 # ─── CONFIGURATION ───
-# Replace these with your Supabase credentials (or set them in your environment)
-SUPABASE_URL = "https://ertsvhwtaeityanbmyzw.supabase.co"
-SUPABASE_KEY = "***REMOVED***"
+# Loaded from environment or .env (see .env.example). No hardcoded credentials.
+SUPABASE_URL = ""
+SUPABASE_KEY = ""
 
 LOG_LINE_RE = re.compile(
     r"^([0-9-T:+-]+)\s+\S+\s+python3\[\d+\]:.*node=(\d+).*features=\[([0-9.eE+\- ,]+)\]"
@@ -140,13 +140,14 @@ if __name__ == "__main__":
     # Load credentials from .env if present
     load_env()
 
-    # Allow credentials override via env variables
-    SUPABASE_URL = os.environ.get("SUPABASE_URL", SUPABASE_URL)
-    SUPABASE_KEY = os.environ.get("SUPABASE_KEY", SUPABASE_KEY)
+    # Resolve SEED_HOST and Supabase credentials strictly from environment.
+    SEED = os.environ.get("SEED_HOST", SEED)
+    SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
+    SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
 
-    if SUPABASE_URL.startswith("https://your-") or SUPABASE_KEY == "your-anon-or-service-role-key":
-        print("ERROR: Please configure your SUPABASE_KEY (anon or service key) first.")
-        print("You can add it to your .env file as SUPABASE_KEY=your_key_here")
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("ERROR: SUPABASE_URL and SUPABASE_KEY must be set (env or .env). See .env.example.",
+              file=sys.stderr)
         sys.exit(1)
 
     if args.watch:

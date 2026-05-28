@@ -87,6 +87,8 @@
 <body>
 <div id="app"></div>
 
+<!-- Optional: copy config.example.js -> config.local.js (gitignored) to preset host/token. -->
+<script src="config.local.js" onerror="void 0"></script>
 <script>
 const LS_HOST = "cognitum_host";
 const LS_TOKEN = "cognitum_token";
@@ -94,8 +96,10 @@ const POLL_MS = 3000;
 const HISTORY = 40;
 
 const params = new URLSearchParams(location.search);
-let host  = params.get("host")  || localStorage.getItem(LS_HOST)  || "https://cognitum-2c3c.local:8443";
-let token = params.get("token") || localStorage.getItem(LS_TOKEN) || "";
+let host  = params.get("host")  || localStorage.getItem(LS_HOST)
+            || window.COGNITUM_HOST  || "https://cognitum-2c3c.local:8443";
+let token = params.get("token") || localStorage.getItem(LS_TOKEN)
+            || window.COGNITUM_TOKEN || "";
 
 function setup() {
   document.getElementById("app").innerHTML = `

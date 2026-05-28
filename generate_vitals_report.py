@@ -6,8 +6,8 @@ and outputs a beautiful, interactive HTML dashboard.
 import re, subprocess, json, sys, os
 from datetime import datetime
 
-SEED = "genesis@cognitum-2c3c.local"
-OUTPUT_FILE = "vitals_report.html"
+SEED = os.environ.get("SEED_HOST", "genesis@cognitum-2c3c.local")
+OUTPUT_FILE = os.environ.get("VITALS_REPORT_FILE", "vitals_report.html")
 
 # Regex to parse journal logs in short-iso format
 # Example: 2026-05-28T12:16:04-04:00 cognitum-2c3c python3[1992]: 12:16:04 [DEBUG] node=1 seq=0 id=89b41098 features=[0.500, 0.500, 0.000, 0.000, 0.500, 0.500, 0.000, 1.000]

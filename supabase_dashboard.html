@@ -7,6 +7,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Local dev: copy config.example.js -> config.local.js (gitignored) and fill in
+       window.SUPABASE_URL / window.SUPABASE_KEY. The dashboard also accepts manual
+       entry below if config.local.js is absent. -->
+  <script src="config.local.js" onerror="void 0"></script>
   <style>
     :root {
       --bg: #06080d;
@@ -198,9 +202,11 @@
     const historyData = {}; // nodeId -> array of records
     const MAX_CHART_POINTS = 50;
 
-    // Load credentials from LocalStorage
-    document.getElementById("subUrl").value = localStorage.getItem("sub_url") || "https://ertsvhwtaeityanbmyzw.supabase.co";
-    document.getElementById("subKey").value = localStorage.getItem("sub_key") || "***REMOVED***";
+    // Credential precedence: LocalStorage > config.local.js > blank (manual entry).
+    document.getElementById("subUrl").value =
+      localStorage.getItem("sub_url") || (window.SUPABASE_URL || "");
+    document.getElementById("subKey").value =
+      localStorage.getItem("sub_key") || (window.SUPABASE_KEY || "");
 
     document.getElementById("connectBtn").onclick = () => {
       const url = document.getElementById("subUrl").value.trim();

@@ -9,11 +9,11 @@ RuView feature spec, and serves a per-node dashboard at http://localhost:8765 .
 Run:  python3 vitals_dashboard.py   →   open http://localhost:8765
 Requires: bridge running with --verbose (it is), SSH key access to the Seed.
 """
-import json, re, subprocess, threading, time, http.server, socketserver
+import os, json, re, subprocess, threading, time, http.server, socketserver
 from collections import deque, defaultdict
 
-SEED = "genesis@cognitum-2c3c.local"
-PORT = 8765
+SEED = os.environ.get("SEED_HOST", "genesis@cognitum-2c3c.local")
+PORT = int(os.environ.get("VITALS_PORT", "8765"))
 HIST = 240  # samples of history per node (~ a few minutes)
 
 LINE = re.compile(r"node=(\d+).*?features=\[([0-9.eE+\- ,]+)\]")

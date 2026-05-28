@@ -9,11 +9,11 @@ http://localhost:8765 . Pure stdlib.
 Run:  python3 ruview_dashboard.py
 Then open http://localhost:8765 in a browser.
 """
-import json, subprocess, threading, time, http.server, socketserver
+import os, json, subprocess, threading, time, http.server, socketserver
 
-SEED = "genesis@cognitum-2c3c.local"
-LOG  = "/var/lib/cognitum/apps/ruview-densepose/output.log"
-PORT = 8765
+SEED = os.environ.get("SEED_HOST", "genesis@cognitum-2c3c.local")
+LOG  = os.environ.get("RUVIEW_LOG_PATH", "/var/lib/cognitum/apps/ruview-densepose/output.log")
+PORT = int(os.environ.get("RUVIEW_PORT", "8765"))
 
 _latest = {"status": "connecting", "keypoints": [], "avg_confidence": 0,
            "raw_features": 0, "timestamp": 0, "rx": 0}
