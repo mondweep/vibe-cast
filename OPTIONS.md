@@ -1,6 +1,6 @@
 # Way Forward — Strategic Options
 
-> Companion to `docs/prd/PRD-001-pan-india-customer-voice-platform.md`.
+> Companion to `docs/prd/PRD-001-project-sarathi.md`.
 > This document lists the macro options for *how* to deliver the PRD.
 > It does **not** select one — that selection is captured later in
 > `docs/adr/ADR-001-build-vs-buy-vs-hybrid.md` once the PRD is approved.

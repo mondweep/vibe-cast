@@ -1,7 +1,11 @@
-# Pan-India Customer Voice & Service Platform (vibe-cast)
+# Project Sarathi — Pan-India Automotive Omnichannel CX Platform (vibe-cast)
 
-> Working repository for designing an AI-first Voice-of-Customer (VoC) and digital
-> customer-service platform for an automotive OEM operating across India.
+> Working repository for designing an AI-first omnichannel customer-experience
+> platform — "Project Sarathi" — for an automotive OEM operating across India.
+>
+> The canonical PRD is
+> [`docs/prd/PRD-001-project-sarathi.md`](docs/prd/PRD-001-project-sarathi.md),
+> provided by the Head of Customer Service as the source of truth for v1.0.
 
 This branch is an **orphan branch** scaffolded with the
 [BHIL AI-First Development Toolkit](https://github.com/camalus/BHIL-AI-First-Development-Toolkit)
