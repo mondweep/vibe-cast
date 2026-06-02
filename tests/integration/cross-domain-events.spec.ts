@@ -1,20 +1,31 @@
 /**
  * Cross-Domain Events Integration Tests
- * 
+ *
  * Tests event propagation across domain boundaries:
- * - Badge event (Certification domain) → Community.onBadgeIssued (Community domain)
+ * - Badge event (Certification domain) published via REAL EventBus
+ * - Handlers in Community and Profile domains receive and process event
  * - Validates handler subscription and event routing
  * - Verifies causationId chaining across domains
- * 
+ *
  * London School TDD Approach:
- * - Mock EventBus, BadgeService, CommunityService
- * - Verify inter-domain service interactions
+ * - Use REAL EventBus, mock BadgeService, CommunityService, ProfileService
+ * - Call bus.publish(badgeIssuedEvent) to trigger cross-domain handlers
+ * - Verify inter-domain service interactions via event handler invocation
  * - Test event routing and handler resolution
  * - Validate causation ID propagation
+ *
+ * REWRITE NOTES:
+ * - Changed from mocking EventBus to using real instance
+ * - Register real handlers for Community and Profile domains
+ * - Call bus.publish(badgeIssuedEvent) to trigger handlers
+ * - Verify handlers receive event across domain boundaries
+ * - Tests will be RED until developer-w10 implements EventBus.publish (Phase 1)
  */
 
 import { DomainEvent } from '../../src/shared/domain/DomainEvent';
 import { EventHandler } from '../../src/shared/domain/EventHandler';
+import { EventBus } from '../../src/shared/infrastructure/events/EventBus';
+import { ConsoleLogger } from '../../src/shared/infrastructure/logging/Logger';
 
 /**
  * Cross-domain event definitions
@@ -98,34 +109,51 @@ class MockProfileHandler implements EventHandler {
 }
 
 /**
- * Mock EventBus with subscription tracking
+ * Real Community domain handler that listens to BadgeIssued
  */
-class MockEventBus {
-  private subscriptions: Map<string, EventHandler[]> = new Map();
+class RealCommunityHandler implements EventHandler {
+  private receivedEvents: DomainEvent[] = [];
 
-  subscribe = jest.fn((eventType: string, handler: EventHandler) => {
-    if (!this.subscriptions.has(eventType)) {
-      this.subscriptions.set(eventType, []);
-    }
-    this.subscriptions.get(eventType)!.push(handler);
-  });
+  async handle(event: DomainEvent): Promise<void> {
+    this.receivedEvents.push(event);
+    // Handler would normally invoke CommunityService.onBadgeIssued()
+  }
 
-  getSubscribersFor = jest.fn((eventType: string) => {
-    return this.subscriptions.get(eventType) || [];
-  });
+  canHandle(event: DomainEvent): boolean {
+    return event.getEventName() === 'BadgeIssued';
+  }
 
-  publishEvent = jest.fn(async (event: DomainEvent, correlationId: string) => {
-    const handlers = this.getSubscribersFor(event.getEventName());
-    return Promise.all(handlers.map(h => h.handle(event)));
-  });
+  getReceivedEvents(): DomainEvent[] {
+    return this.receivedEvents;
+  }
 
-  getAllSubscriptions = jest.fn(() => {
-    const result: Record<string, number> = {};
-    this.subscriptions.forEach((handlers, eventType) => {
-      result[eventType] = handlers.length;
-    });
-    return result;
-  });
+  reset(): void {
+    this.receivedEvents = [];
+  }
+}
+
+/**
+ * Real Profile domain handler that listens to BadgeIssued
+ */
+class RealProfileHandler implements EventHandler {
+  private receivedEvents: DomainEvent[] = [];
+
+  async handle(event: DomainEvent): Promise<void> {
+    this.receivedEvents.push(event);
+    // Handler would normally invoke ProfileService.displayBadge()
+  }
+
+  canHandle(event: DomainEvent): boolean {
+    return event.getEventName() === 'BadgeIssued';
+  }
+
+  getReceivedEvents(): DomainEvent[] {
+    return this.receivedEvents;
+  }
+
+  reset(): void {
+    this.receivedEvents = [];
+  }
 }
 
 /**
