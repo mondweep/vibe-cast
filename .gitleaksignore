@@ -1,0 +1,35 @@
+# Allowlisted gitleaks findings.
+#
+# Each line is a fingerprint: <commit-sha>:<path>:<rule>:<line>
+# Add a comment above the line explaining WHY it's allowlisted.
+#
+# Rule: never add a new fingerprint here without the underlying credential
+# being revoked/rotated. Allowlisting an active secret is the same as
+# committing it.
+
+# ─── 2026-05-28 anon JWT leak (remediated) ───
+# The Supabase legacy anon JWT for project ertsvhwtaeityanbmyzw was
+# accidentally hardcoded in three files and pushed to the vibe-cast
+# repo. Key was DISABLED in the Supabase dashboard on 2026-05-28; the
+# string in git history is now a dead credential. The
+# `cognitum-one-get-started-20260506-214243` branch was history-rewritten
+# (commit 860cbb02 was scrubbed there); main retains the original
+# commit, which is why these still appear in scans.
+860cbb025f2c305aa7560dbf71cccff43139c750:push_to_supabase.py:jwt:13
+860cbb025f2c305aa7560dbf71cccff43139c750:seed_push_to_supabase.py:jwt:11
+860cbb025f2c305aa7560dbf71cccff43139c750:supabase_dashboard.html:jwt:203
+
+# ─── 2026-05-28 Cognitum Seed bearer token leak (remediated) ───
+# Bearer token for the LAN-only Seed device HTTPS API was hardcoded as a
+# COGNITUM_TOKEN env-var default. The Seed device is on LAN only, but the
+# token was still leaked. The publishable/Seed config is now env-injected.
+860cbb025f2c305aa7560dbf71cccff43139c750:tamper_evidence_demo.py:generic-api-key:30
+
+# ─── Security-FAQ.md intentionally documents the publishable key ───
+# The Supabase publishable key (sb_publishable_kRKd9...) is by design
+# embedded in client-side code (config.local.js served by Netlify), and
+# we reference it in §8 of the FAQ for project-specific documentation.
+# Publishable keys are not secrets — they're gated by RLS, not by being
+# unpredictable. If the publishable key is ever rotated, update the FAQ
+# AND remove this allowlist entry so gitleaks catches the next docs slip.
+Security-FAQ.md:generic-api-key:460

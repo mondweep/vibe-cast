@@ -1,42 +1,31 @@
-# Dependencies
-node_modules/
-npm-debug.log
-yarn-error.log
-pnpm-lock.yaml
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+missfont.log
+*.log
+.walk_start_epoch
+.walk2_start_line
 .DS_Store
 
-# Build
-dist/
-build/
-*.tsbuildinfo
+# Private versions (contain WiFi SSID and Mac IP). Use the *-public.* variants instead.
+wifi-csi-sensing-paper.md
+wifi-csi-sensing-paper.pdf
 
-# Test coverage
-coverage/
-.nyc_output/
+.git_backup/
+.antigravitycli/
 
-# Logs
-logs/
-*.log
+# Local credentials / runtime config — never commit
+.env
+.env.local
+config.local.js
 
-# Temporary
-tmp/
-temp/
-.tmp/
+# Python bytecode cache
+__pycache__/
+*.pyc
 
-# agentic-qe configuration
+# Firmware release artifacts belong in GitHub Releases, not the tree
+*.bin
+
+# Local Netlify deploy artifact — config.local.js inside is gitignored anyway
+netlify-deploy/
+
+# Agent and build tools configuration
 .agentic-qe/
-
-# Docker
-docker-compose.override.yml
+.claude-flow/
