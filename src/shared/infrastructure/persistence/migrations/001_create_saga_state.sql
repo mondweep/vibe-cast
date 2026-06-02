@@ -1,66 +1,71 @@
 -- SAGA State Table
 -- Tracks the execution state of each SAGA instance
--- Provides idempotency guarantees and audit trail
--- 
--- IMPLEMENTATION STATUS: Awaiting architect-w10 specifications
--- Phase 2 will finalize:
--- - Exact column names and types
--- - Indexing strategy
--- - Retention policy
--- - Partitioning strategy
+-- Implements optimistic locking via version column
+-- Phase 2 implementation per SagaRepository specifications
 
 CREATE TABLE IF NOT EXISTS saga_state (
   -- Primary key: unique saga instance identifier
-  saga_id UUID PRIMARY KEY,
-  
-  -- Saga status tracking
-  state VARCHAR(50) NOT NULL,
-  current_step VARCHAR(255),
-  started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  completed_at TIMESTAMP,
-  
-  -- Context data
-  saga_type VARCHAR(100) NOT NULL,
+  id UUID PRIMARY KEY,
+
+  -- Workflow and status tracking
+  workflow_type VARCHAR(100) NOT NULL,
+  status VARCHAR(50) NOT NULL CHECK (status IN ('RUNNING', 'WAITING', 'COMPLETED', 'FAILED', 'COMPENSATED')),
+  current_step VARCHAR(255) NOT NULL,
+
+  -- Correlations and context
+  learner_id UUID NOT NULL,
+  enrollment_id UUID NOT NULL,
+  certification_id UUID,
   correlation_id UUID NOT NULL,
-  
-  -- Idempotency tracking
-  processed_event_ids TEXT[] DEFAULT ARRAY[]::TEXT[],
-  
-  -- Error tracking and compensation
-  error_message TEXT,
-  is_compensated BOOLEAN DEFAULT FALSE,
-  compensation_attempts INT DEFAULT 0,
-  
-  -- Audit trail
-  created_by VARCHAR(255),
-  updated_by VARCHAR(255),
-  metadata JSONB
+
+  -- SAGA state data (serialized context)
+  saga_data JSONB NOT NULL DEFAULT '{}',
+
+  -- Optimistic locking
+  version INT NOT NULL DEFAULT 1,
+
+  -- Timestamps
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indices for query performance
-CREATE INDEX idx_saga_state_type ON saga_state(saga_type);
-CREATE INDEX idx_saga_state_state ON saga_state(state);
+CREATE INDEX idx_saga_state_workflow ON saga_state(workflow_type);
+CREATE INDEX idx_saga_state_status ON saga_state(status);
+CREATE INDEX idx_saga_state_enrollment ON saga_state(enrollment_id, current_step);
 CREATE INDEX idx_saga_state_correlation ON saga_state(correlation_id);
-CREATE INDEX idx_saga_state_started ON saga_state(started_at DESC);
 
 -- SAGA Step History Table
 -- Audit trail of all steps executed in each SAGA
-CREATE TABLE IF NOT EXISTS saga_step_history (
+CREATE TABLE IF NOT EXISTS saga_steps (
   id BIGSERIAL PRIMARY KEY,
-  saga_id UUID NOT NULL REFERENCES saga_state(saga_id) ON DELETE CASCADE,
+  saga_id UUID NOT NULL REFERENCES saga_state(id) ON DELETE CASCADE,
   step_name VARCHAR(255) NOT NULL,
-  step_status VARCHAR(50) NOT NULL,
-  executed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  result_data JSONB,
+  status VARCHAR(50) NOT NULL CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED')),
+  result JSONB,
   error_message TEXT,
-  execution_time_ms INT,
-  
-  FOREIGN KEY (saga_id) REFERENCES saga_state(saga_id) ON DELETE CASCADE
+  retry_count INT NOT NULL DEFAULT 0,
+  compensating_step VARCHAR(255),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_saga_history_saga ON saga_step_history(saga_id);
-CREATE INDEX idx_saga_history_executed ON saga_step_history(executed_at DESC);
+CREATE INDEX idx_saga_steps_saga ON saga_steps(saga_id);
+CREATE INDEX idx_saga_steps_created ON saga_steps(created_at ASC);
+
+-- SAGA Processed Events Table
+-- Tracks which events have been processed by each SAGA for idempotency
+CREATE TABLE IF NOT EXISTS saga_processed_events (
+  id BIGSERIAL PRIMARY KEY,
+  saga_id UUID NOT NULL REFERENCES saga_state(id) ON DELETE CASCADE,
+  event_id UUID NOT NULL,
+  processed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE(saga_id, event_id)
+);
+
+CREATE INDEX idx_saga_processed_events_saga ON saga_processed_events(saga_id);
+CREATE INDEX idx_saga_processed_events_event ON saga_processed_events(event_id);
 
 -- Dead Letter Queue Table
 -- Events that failed all handler attempts
@@ -80,17 +85,3 @@ CREATE TABLE IF NOT EXISTS dead_letter_queue (
 CREATE INDEX idx_dlq_event_type ON dead_letter_queue(event_type);
 CREATE INDEX idx_dlq_correlation ON dead_letter_queue(correlation_id);
 CREATE INDEX idx_dlq_unresolved ON dead_letter_queue(resolved_at) WHERE resolved_at IS NULL;
-
--- Idempotency Key Table
--- Prevents duplicate event handler execution
-CREATE TABLE IF NOT EXISTS event_idempotency (
-  id BIGSERIAL PRIMARY KEY,
-  event_id UUID NOT NULL UNIQUE,
-  handler_id VARCHAR(255) NOT NULL,
-  processed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  
-  UNIQUE(event_id, handler_id)
-);
-
-CREATE INDEX idx_idempotency_event ON event_idempotency(event_id);
-CREATE INDEX idx_idempotency_handler ON event_idempotency(handler_id);

@@ -110,23 +110,54 @@ export class SagaRepository {
     });
 
     try {
-      // TODO: Execute SQL query with optimistic lock check
-      // Expected SQL:
-      // INSERT INTO saga_state (
-      //   id, workflow_type, status, learner_id, enrollment_id, certification_id,
-      //   current_step, saga_data, correlation_id, version, created_at, updated_at
-      // ) VALUES (...)
-      // ON CONFLICT (id) DO UPDATE SET
-      //   status = EXCLUDED.status,
-      //   current_step = EXCLUDED.current_step,
-      //   saga_data = EXCLUDED.saga_data,
-      //   version = version + 1,
-      //   updated_at = EXCLUDED.updated_at
-      // WHERE saga_state.version = @currentVersion
-      //
-      // If no rows affected and record exists: throw OptimisticLockError
+      if (!this.databaseConnection) {
+        this.logger.debug('SAGA state persisted (no DB connection)', { sagaId });
+        return;
+      }
 
-      // For now, log the operation
+      const query = `
+        INSERT INTO saga_state (
+          id, workflow_type, status, learner_id, enrollment_id, certification_id,
+          current_step, saga_data, correlation_id, version, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+        )
+        ON CONFLICT (id) DO UPDATE SET
+          status = EXCLUDED.status,
+          current_step = EXCLUDED.current_step,
+          saga_data = EXCLUDED.saga_data,
+          version = saga_state.version + 1,
+          updated_at = EXCLUDED.updated_at
+        WHERE saga_state.version = $10
+      `;
+
+      const params = [
+        sagaId,
+        workflowType,
+        status,
+        learnerId,
+        enrollmentId,
+        certificationId || null,
+        currentStep,
+        JSON.stringify(sagaData),
+        correlationId,
+        currentVersion,
+        timestamp,
+        timestamp
+      ];
+
+      const result = await this.databaseConnection.query(query, params);
+
+      if (result.rowCount === 0) {
+        // Check if record exists to determine if it's a version conflict
+        const checkQuery = 'SELECT version FROM saga_state WHERE id = $1';
+        const checkResult = await this.databaseConnection.query(checkQuery, [sagaId]);
+        if (checkResult.rowCount > 0) {
+          const actualVersion = checkResult.rows[0].version;
+          throw new OptimisticLockError(sagaId, currentVersion, actualVersion);
+        }
+      }
+
       this.logger.debug('SAGA state persisted', {
         sagaId,
         newVersion: currentVersion + 1,
@@ -164,11 +195,33 @@ export class SagaRepository {
     });
 
     try {
-      // TODO: Execute SQL INSERT into saga_steps table
-      // INSERT INTO saga_steps (
-      //   id, saga_id, step_name, status, result, error_message,
-      //   retry_count, compensating_step, created_at, updated_at
-      // ) VALUES (...)
+      if (!this.databaseConnection) {
+        this.logger.debug('Step result recorded (no DB connection)', { sagaId, stepName: step.stepName });
+        return;
+      }
+
+      const query = `
+        INSERT INTO saga_steps (
+          saga_id, step_name, status, result, error_message,
+          retry_count, compensating_step, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9
+        )
+      `;
+
+      const params = [
+        sagaId,
+        step.stepName,
+        step.status,
+        step.result ? JSON.stringify(step.result) : null,
+        step.errorMessage || null,
+        step.retryCount,
+        step.compensatingStep || null,
+        step.createdAt,
+        step.updatedAt
+      ];
+
+      await this.databaseConnection.query(query, params);
 
       this.logger.debug('Step result recorded', {
         sagaId,
@@ -209,14 +262,40 @@ export class SagaRepository {
     });
 
     try {
-      // TODO: Execute SQL query
-      // SELECT * FROM saga_state
-      // WHERE enrollment_id = $enrollmentId
-      // AND current_step = $currentStep
-      // AND status IN ('RUNNING', 'WAITING')
-      // LIMIT 1
+      if (!this.databaseConnection) {
+        this.logger.debug('SAGA query returned undefined (no DB connection)', { enrollmentId });
+        return undefined;
+      }
 
-      return undefined;
+      const query = `
+        SELECT * FROM saga_state
+        WHERE enrollment_id = $1
+        AND current_step = $2
+        AND status IN ('RUNNING', 'WAITING')
+        LIMIT 1
+      `;
+
+      const result = await this.databaseConnection.query(query, [enrollmentId, currentStep]);
+
+      if (result.rowCount === 0) {
+        return undefined;
+      }
+
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        workflowType: row.workflow_type,
+        status: row.status,
+        learnerId: row.learner_id,
+        enrollmentId: row.enrollment_id,
+        certificationId: row.certification_id,
+        currentStep: row.current_step,
+        sagaData: row.saga_data || {},
+        correlationId: row.correlation_id,
+        version: row.version,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -242,10 +321,33 @@ export class SagaRepository {
     this.logger.info('Querying SAGA by ID', { sagaId });
 
     try {
-      // TODO: Execute SQL query
-      // SELECT * FROM saga_state WHERE id = $sagaId
+      if (!this.databaseConnection) {
+        this.logger.debug('SAGA query returned undefined (no DB connection)', { sagaId });
+        return undefined;
+      }
 
-      return undefined;
+      const query = 'SELECT * FROM saga_state WHERE id = $1';
+      const result = await this.databaseConnection.query(query, [sagaId]);
+
+      if (result.rowCount === 0) {
+        return undefined;
+      }
+
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        workflowType: row.workflow_type,
+        status: row.status,
+        learnerId: row.learner_id,
+        enrollmentId: row.enrollment_id,
+        certificationId: row.certification_id,
+        currentStep: row.current_step,
+        sagaData: row.saga_data || {},
+        correlationId: row.correlation_id,
+        version: row.version,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -275,10 +377,18 @@ export class SagaRepository {
     this.logger.info('Marking event as processed', { sagaId, eventId });
 
     try {
-      // TODO: Execute SQL INSERT into saga_processed_events
-      // INSERT INTO saga_processed_events (saga_id, event_id, processed_at)
-      // VALUES ($sagaId, $eventId, CURRENT_TIMESTAMP)
-      // ON CONFLICT DO NOTHING
+      if (!this.databaseConnection) {
+        this.logger.debug('Event marked as processed (no DB connection)', { sagaId, eventId });
+        return;
+      }
+
+      const query = `
+        INSERT INTO saga_processed_events (saga_id, event_id, processed_at)
+        VALUES ($1, $2, CURRENT_TIMESTAMP)
+        ON CONFLICT (saga_id, event_id) DO NOTHING
+      `;
+
+      await this.databaseConnection.query(query, [sagaId, eventId]);
 
       this.logger.debug('Event marked as processed', { sagaId, eventId });
     } catch (error) {
@@ -309,12 +419,19 @@ export class SagaRepository {
     this.logger.info('Checking if event was processed', { sagaId, eventId });
 
     try {
-      // TODO: Execute SQL query
-      // SELECT 1 FROM saga_processed_events
-      // WHERE saga_id = $sagaId AND event_id = $eventId
-      // LIMIT 1
+      if (!this.databaseConnection) {
+        this.logger.debug('Event processing check returned false (no DB connection)', { sagaId, eventId });
+        return false;
+      }
 
-      return false;
+      const query = `
+        SELECT 1 FROM saga_processed_events
+        WHERE saga_id = $1 AND event_id = $2
+        LIMIT 1
+      `;
+
+      const result = await this.databaseConnection.query(query, [sagaId, eventId]);
+      return result.rowCount > 0;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -346,13 +463,34 @@ export class SagaRepository {
     this.logger.info('Querying SAGAs by status', { status, limit });
 
     try {
-      // TODO: Execute SQL query
-      // SELECT * FROM saga_state
-      // WHERE status = $status
-      // ORDER BY updated_at DESC
-      // LIMIT $limit
+      if (!this.databaseConnection) {
+        this.logger.debug('SAGAs query returned empty array (no DB connection)', { status });
+        return [];
+      }
 
-      return [];
+      const query = `
+        SELECT * FROM saga_state
+        WHERE status = $1
+        ORDER BY updated_at DESC
+        LIMIT $2
+      `;
+
+      const result = await this.databaseConnection.query(query, [status, limit]);
+
+      return result.rows.map((row: any) => ({
+        id: row.id,
+        workflowType: row.workflow_type,
+        status: row.status,
+        learnerId: row.learner_id,
+        enrollmentId: row.enrollment_id,
+        certificationId: row.certification_id,
+        currentStep: row.current_step,
+        sagaData: row.saga_data || {},
+        correlationId: row.correlation_id,
+        version: row.version,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      }));
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -376,12 +514,29 @@ export class SagaRepository {
     this.logger.info('Retrieving step history', { sagaId });
 
     try {
-      // TODO: Execute SQL query
-      // SELECT * FROM saga_steps
-      // WHERE saga_id = $sagaId
-      // ORDER BY created_at ASC
+      if (!this.databaseConnection) {
+        this.logger.debug('Step history returned empty array (no DB connection)', { sagaId });
+        return [];
+      }
 
-      return [];
+      const query = `
+        SELECT * FROM saga_steps
+        WHERE saga_id = $1
+        ORDER BY created_at ASC
+      `;
+
+      const result = await this.databaseConnection.query(query, [sagaId]);
+
+      return result.rows.map((row: any) => ({
+        stepName: row.step_name,
+        status: row.status,
+        result: row.result ? JSON.parse(row.result) : undefined,
+        errorMessage: row.error_message,
+        retryCount: row.retry_count,
+        compensatingStep: row.compensating_step,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      }));
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

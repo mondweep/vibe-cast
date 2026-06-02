@@ -27,7 +27,7 @@ export class MetricsRecorded extends DomainEvent {
     id?: string;
   }) {
     super(
-      learnerId,
+      data.learnerId,
       'metrics.event',
       data.correlationId,
       data.id,
