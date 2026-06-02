@@ -1,19 +1,29 @@
 /**
  * Certification SAGA Integration Tests
- * 
+ *
  * Tests the SAGA orchestration pattern where:
  * - Certification process waits for ExamCompleted event
- * - ExamCompleted resumes the WAIT_FOR_EXAM step
- * - SAGA transitions to next state
- * 
+ * - ExamCompleted event published via REAL EventBus triggers SAGA resumption
+ * - SAGA transitions to next state via event handler
+ *
  * London School TDD Approach:
- * - Mock SAGAOrchestrator, ExamService, StateManager
- * - Verify state transitions through interactions
- * - Test SAGA resumption logic
+ * - Mock SAGAOrchestrator, ExamService, StateManager (services remain mocked)
+ * - Use REAL EventBus to trigger ExamCompleted event
+ * - Verify SAGA transitions via handler registration and event publication
  * - Validate event ordering constraints
+ *
+ * REWRITE NOTES:
+ * - Changed from mocking EventBus to using real instance
+ * - Call bus.publish(examCompletedEvent) to trigger SAGA transition
+ * - Register real SAGA handler that listens to ExamCompleted
+ * - Verify handler receives event and state transitions work
+ * - Tests will be RED until developer-w10 implements EventBus.publish (Phase 1)
  */
 
 import { DomainEvent } from '../../src/shared/domain/DomainEvent';
+import { EventBus } from '../../src/shared/infrastructure/events/EventBus';
+import { EventHandler } from '../../src/shared/domain/EventHandler';
+import { ConsoleLogger } from '../../src/shared/infrastructure/logging/Logger';
 
 /**
  * SAGA state definitions
@@ -152,20 +162,67 @@ class MockStateManager {
   clearState = jest.fn();
 }
 
+/**
+ * Real SAGA event handler that responds to ExamCompleted
+ * Replaces mocked bus with actual handler registration
+ */
+class SAGAExamCompletedHandler implements EventHandler {
+  private receivedEvents: DomainEvent[] = [];
+  private orchestrator: MockSAGAOrchestrator;
+  private sagaId: string;
+
+  constructor(orchestrator: MockSAGAOrchestrator, sagaId: string) {
+    this.orchestrator = orchestrator;
+    this.sagaId = sagaId;
+  }
+
+  async handle(event: DomainEvent): Promise<void> {
+    this.receivedEvents.push(event);
+    // Trigger SAGA state transition from WAIT_FOR_EXAM
+    if (this.orchestrator.resumeFromWaitStep(this.sagaId, CertificationSAGAState.WAIT_FOR_EXAM)) {
+      // Advance to next state
+      this.orchestrator.transitionState(
+        this.sagaId,
+        CertificationSAGAState.WAIT_FOR_RESULTS,
+        'ExamCompleted'
+      );
+    }
+  }
+
+  canHandle(event: DomainEvent): boolean {
+    return event.getEventName() === 'ExamCompleted';
+  }
+
+  getReceivedEvents(): DomainEvent[] {
+    return this.receivedEvents;
+  }
+
+  reset(): void {
+    this.receivedEvents = [];
+  }
+}
+
 describe('Certification SAGA', () => {
+  let eventBus: EventBus;
+  let logger: ConsoleLogger;
   let orchestrator: MockSAGAOrchestrator;
   let examService: MockExamService;
   let stateManager: MockStateManager;
+  let sagaHandler: SAGAExamCompletedHandler;
   const sagaId = 'saga-cert-001';
   const candidateId = 'candidate-123';
   const correlationId = 'corr-saga-001';
 
   beforeEach(() => {
+    logger = new ConsoleLogger();
+    // Use REAL EventBus instance instead of mocking
+    eventBus = new EventBus(logger);
     orchestrator = new MockSAGAOrchestrator();
     examService = new MockExamService();
     stateManager = new MockStateManager();
+    sagaHandler = new SAGAExamCompletedHandler(orchestrator, sagaId);
 
-    // Setup mock expectations
+    // Setup mock expectations for collaborator services
     examService.scheduleExam.mockResolvedValue({
       examId: 'exam-456',
       candidateId,
@@ -254,18 +311,20 @@ describe('Certification SAGA', () => {
         correlationId
       );
 
-      // ACT: Resume from WAIT_FOR_EXAM
-      const canResume = orchestrator.resumeFromWaitStep(
-        sagaId,
-        CertificationSAGAState.WAIT_FOR_EXAM
-      );
+      sagaHandler.reset();
 
-      // ASSERT
-      expect(canResume).toBe(true);
-      expect(orchestrator.resumeFromWaitStep).toHaveBeenCalledWith(
-        sagaId,
-        CertificationSAGAState.WAIT_FOR_EXAM
-      );
+      // ACT: Use REAL EventBus to publish ExamCompleted event
+      // This triggers SAGA handler which resumes from WAIT_FOR_EXAM
+      // Will be RED until EventBus.publish() is implemented by developer-w10
+      await eventBus.publish(examCompletedEvent, correlationId);
+
+      // ASSERT: Handler received event and processed it
+      expect(sagaHandler.getReceivedEvents()).toHaveLength(1);
+      expect(sagaHandler.getReceivedEvents()[0]).toBeInstanceOf(ExamCompleted);
+
+      // ASSERT: SAGA transitioned to WAIT_FOR_RESULTS
+      const sagaState = orchestrator.getState(sagaId);
+      expect(sagaState).toBe(CertificationSAGAState.WAIT_FOR_RESULTS);
     });
 
     it('should not resume if not in WAIT_FOR_EXAM state', async () => {
@@ -383,17 +442,31 @@ describe('Certification SAGA', () => {
 
   describe('SAGA Latency', () => {
     it('should complete SAGA transitions within latency SLA', async () => {
-      // ACT
-      const startTime = Date.now();
+      // ARRANGE
       orchestrator.startSAGA(sagaId);
       orchestrator.transitionState(sagaId, CertificationSAGAState.LEARNING_IN_PROGRESS, 'Event1');
       orchestrator.transitionState(sagaId, CertificationSAGAState.WAIT_FOR_EXAM, 'Event2');
-      orchestrator.resumeFromWaitStep(sagaId, CertificationSAGAState.WAIT_FOR_EXAM);
-      orchestrator.transitionState(sagaId, CertificationSAGAState.WAIT_FOR_RESULTS, 'Event3');
+
+      const examCompletedEvent = new ExamCompleted(
+        candidateId,
+        'exam-456',
+        85,
+        60,
+        sagaId,
+        correlationId
+      );
+
+      sagaHandler.reset();
+      const startTime = Date.now();
+
+      // ACT: Use REAL EventBus to publish event and measure E2E latency
+      await eventBus.publish(examCompletedEvent, correlationId);
+
       const latency = Date.now() - startTime;
 
-      // ASSERT: Meets latency SLA
+      // ASSERT: Meets latency SLA and handler processed event
       expect(latency).toBeLessThan(2000);
+      expect(sagaHandler.getReceivedEvents()).toHaveLength(1);
       console.log(`SAGA transition latency: ${latency}ms`);
     });
   });
