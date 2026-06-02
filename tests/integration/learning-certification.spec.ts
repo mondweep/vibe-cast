@@ -113,6 +113,9 @@ describe('Learning → Certification Event Flow', () => {
     certificationHandler = new CertificationEnrollmentHandler();
     capturedEvents = [];
 
+    // Register handler with EventBus for event propagation
+    eventBus.subscribe('EnrollmentCompleted', certificationHandler);
+
     // Setup mock expectations for collaborator services
     mockUserRepository.findByCandidateId.mockResolvedValue({
       id: 'candidate-123',
@@ -146,7 +149,7 @@ describe('Learning → Certification Event Flow', () => {
 
       // Publish EnrollmentCompleted event to REAL EventBus
       // This will be RED until EventBus.publish() is implemented by developer-w10
-      await eventBus.publish(enrollmentEvent, correlationId);
+      await eventBus.publish(enrollmentEvent);
 
       const latency = Date.now() - startTime;
 
@@ -248,7 +251,7 @@ describe('Learning → Certification Event Flow', () => {
 
       // ACT: Use REAL EventBus to publish event
       // Handler will be invoked via real EventBus.publish()
-      await eventBus.publish(enrollmentEvent, correlationId);
+      await eventBus.publish(enrollmentEvent);
 
       // Simulate downstream processing (mocked services remain mocked)
       await mockUserRepository.findByCandidateId('candidate-123');

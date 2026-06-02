@@ -222,6 +222,9 @@ describe('Certification SAGA', () => {
     stateManager = new MockStateManager();
     sagaHandler = new SAGAExamCompletedHandler(orchestrator, sagaId);
 
+    // Register handler with EventBus for event propagation
+    eventBus.subscribe('ExamCompleted', sagaHandler);
+
     // Setup mock expectations for collaborator services
     examService.scheduleExam.mockResolvedValue({
       examId: 'exam-456',
@@ -316,7 +319,7 @@ describe('Certification SAGA', () => {
       // ACT: Use REAL EventBus to publish ExamCompleted event
       // This triggers SAGA handler which resumes from WAIT_FOR_EXAM
       // Will be RED until EventBus.publish() is implemented by developer-w10
-      await eventBus.publish(examCompletedEvent, correlationId);
+      await eventBus.publish(examCompletedEvent);
 
       // ASSERT: Handler received event and processed it
       expect(sagaHandler.getReceivedEvents()).toHaveLength(1);
@@ -460,7 +463,7 @@ describe('Certification SAGA', () => {
       const startTime = Date.now();
 
       // ACT: Use REAL EventBus to publish event and measure E2E latency
-      await eventBus.publish(examCompletedEvent, correlationId);
+      await eventBus.publish(examCompletedEvent);
 
       const latency = Date.now() - startTime;
 

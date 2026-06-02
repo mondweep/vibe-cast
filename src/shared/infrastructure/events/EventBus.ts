@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
  * - Health monitoring
  *
  * PHASE 1 IMPLEMENTATION:
- * - registerHandler: returns subscriptionId
+ * - subscribe: returns subscriptionId
  * - publish: idempotency + error isolation + DLQ fallback
  * - DLQ retry: exponential backoff [1s, 2s, 4s, 8s] with max 3 retries
  * - Correlation ID threading for distributed tracing
@@ -45,7 +45,7 @@ export class EventBus implements IEventBus {
    * Register a handler for a specific event type
    * Returns a unique subscription ID for later unsubscription
    */
-  registerHandler(eventType: string, handler: EventHandler): string {
+  subscribe(eventType: string, handler: EventHandler): string {
     const subscriptionId = uuidv4();
 
     if (!this.handlers.has(eventType)) {
