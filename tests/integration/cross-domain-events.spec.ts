@@ -175,26 +175,29 @@ class MockProfileService {
 }
 
 describe('Cross-Domain Event Propagation', () => {
-  let eventBus: MockEventBus;
+  let eventBus: EventBus;
+  let logger: ConsoleLogger;
   let badgeService: MockBadgeService;
   let communityService: MockCommunityService;
   let profileService: MockProfileService;
   let badgeHandler: MockBadgeHandler;
-  let communityHandler: MockCommunityHandler;
-  let profileHandler: MockProfileHandler;
+  let communityHandler: RealCommunityHandler;
+  let profileHandler: RealProfileHandler;
   const correlationId = 'corr-cross-domain-001';
   const candidateId = 'candidate-456';
 
   beforeEach(() => {
-    eventBus = new MockEventBus();
+    logger = new ConsoleLogger();
+    // Use REAL EventBus instance instead of mocking
+    eventBus = new EventBus(logger);
     badgeService = new MockBadgeService();
     communityService = new MockCommunityService();
     profileService = new MockProfileService();
     badgeHandler = new MockBadgeHandler();
-    communityHandler = new MockCommunityHandler();
-    profileHandler = new MockProfileHandler();
+    communityHandler = new RealCommunityHandler();
+    profileHandler = new RealProfileHandler();
 
-    // Setup mock expectations
+    // Setup mock expectations for collaborator services
     badgeService.issueBadge.mockResolvedValue({
       badgeId: 'badge-gold-001',
       badgeName: 'Gold Member',
