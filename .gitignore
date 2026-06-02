@@ -25,3 +25,7 @@ __pycache__/
 
 # Local Netlify deploy artifact — config.local.js inside is gitignored anyway
 netlify-deploy/
+
+# Agent and build tools configuration
+.agentic-qe/
+.claude-flow/
