@@ -44,6 +44,16 @@ class TestEvent extends DomainEvent {
   getEventName(): string {
     return 'TestEvent';
   }
+
+  toPrimitives() {
+    return {
+      data: this.data,
+      aggregateId: this.aggregateId,
+      correlationId: this.correlationId,
+      id: this.id,
+      timestamp: this.timestamp,
+    };
+  }
 }
 
 /**

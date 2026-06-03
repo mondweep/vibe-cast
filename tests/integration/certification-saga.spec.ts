@@ -68,6 +68,19 @@ class ExamCompleted extends DomainEvent {
   getEventName(): string {
     return 'ExamCompleted';
   }
+
+  toPrimitives() {
+    return {
+      candidateId: this.candidateId,
+      examId: this.examId,
+      score: this.score,
+      passingScore: this.passingScore,
+      aggregateId: this.aggregateId,
+      correlationId: this.correlationId,
+      id: this.id,
+      timestamp: this.timestamp,
+    };
+  }
 }
 
 class ExamScheduled extends DomainEvent {
@@ -84,6 +97,18 @@ class ExamScheduled extends DomainEvent {
   getEventName(): string {
     return 'ExamScheduled';
   }
+
+  toPrimitives() {
+    return {
+      candidateId: this.candidateId,
+      examId: this.examId,
+      scheduledDate: this.scheduledDate,
+      aggregateId: this.aggregateId,
+      correlationId: this.correlationId,
+      id: this.id,
+      timestamp: this.timestamp,
+    };
+  }
 }
 
 class CertificationCompleted extends DomainEvent {
@@ -99,6 +124,18 @@ class CertificationCompleted extends DomainEvent {
 
   getEventName(): string {
     return 'CertificationCompleted';
+  }
+
+  toPrimitives() {
+    return {
+      candidateId: this.candidateId,
+      certificationId: this.certificationId,
+      score: this.score,
+      aggregateId: this.aggregateId,
+      correlationId: this.correlationId,
+      id: this.id,
+      timestamp: this.timestamp,
+    };
   }
 }
 

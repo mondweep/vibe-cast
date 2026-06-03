@@ -45,6 +45,19 @@ class BadgeIssued extends DomainEvent {
   getEventName(): string {
     return 'BadgeIssued';
   }
+
+  toPrimitives() {
+    return {
+      candidateId: this.candidateId,
+      badgeId: this.badgeId,
+      badgeName: this.badgeName,
+      badgeImageUrl: this.badgeImageUrl,
+      aggregateId: this.aggregateId,
+      correlationId: this.correlationId,
+      id: this.id,
+      timestamp: this.timestamp,
+    };
+  }
 }
 
 class CommunityAnnouncement extends DomainEvent {
@@ -62,6 +75,19 @@ class CommunityAnnouncement extends DomainEvent {
   getEventName(): string {
     return 'CommunityAnnouncement';
   }
+
+  toPrimitives() {
+    return {
+      candidateId: this.candidateId,
+      badgeId: this.badgeId,
+      announcement: this.announcement,
+      causationEventId: this.causationEventId,
+      aggregateId: this.aggregateId,
+      correlationId: this.correlationId,
+      id: this.id,
+      timestamp: this.timestamp,
+    };
+  }
 }
 
 class BadgeDisplayed extends DomainEvent {
@@ -78,6 +104,19 @@ class BadgeDisplayed extends DomainEvent {
 
   getEventName(): string {
     return 'BadgeDisplayed';
+  }
+
+  toPrimitives() {
+    return {
+      candidateId: this.candidateId,
+      badgeId: this.badgeId,
+      displayedAt: this.displayedAt,
+      causationEventId: this.causationEventId,
+      aggregateId: this.aggregateId,
+      correlationId: this.correlationId,
+      id: this.id,
+      timestamp: this.timestamp,
+    };
   }
 }
 

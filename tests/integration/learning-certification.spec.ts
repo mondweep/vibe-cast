@@ -41,6 +41,18 @@ class EnrollmentCompleted extends DomainEvent {
   getEventName(): string {
     return 'EnrollmentCompleted';
   }
+
+  toPrimitives() {
+    return {
+      candidateId: this.candidateId,
+      courseId: this.courseId,
+      enrollmentDate: this.enrollmentDate,
+      aggregateId: this.aggregateId,
+      correlationId: this.correlationId,
+      id: this.id,
+      timestamp: this.timestamp,
+    };
+  }
 }
 
 class CandidateQualified extends DomainEvent {
@@ -56,6 +68,18 @@ class CandidateQualified extends DomainEvent {
 
   getEventName(): string {
     return 'CandidateQualified';
+  }
+
+  toPrimitives() {
+    return {
+      candidateId: this.candidateId,
+      qualificationLevel: this.qualificationLevel,
+      causationEventId: this.causationEventId,
+      aggregateId: this.aggregateId,
+      correlationId: this.correlationId,
+      id: this.id,
+      timestamp: this.timestamp,
+    };
   }
 }
 
