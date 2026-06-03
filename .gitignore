@@ -29,3 +29,6 @@ netlify-deploy/
 # Agent and build tools configuration
 .agentic-qe/
 .claude-flow/
+
+# Node.js dependencies
+node_modules/
