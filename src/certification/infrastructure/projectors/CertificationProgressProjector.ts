@@ -1,16 +1,22 @@
-import { EventHandler } from '../../../shared/infrastructure/events/EventHandler';
-import { DomainEvent } from '../../../shared/domain/events/DomainEvent';
+import { EventHandler } from '../../../shared/domain/EventHandler';
+import { DomainEvent } from '../../../shared/domain/DomainEvent';
 import { IReadModelRepository } from '../../../shared/infrastructure/readmodels/IReadModelRepository';
 import { CertificationProgressReadModel, ExamAttemptSnapshot } from '../../../shared/infrastructure/readmodels/ReadModels';
 import { UUID } from '../../../shared/domain/ValueObjects';
 
-export class CertificationProgressProjector implements EventHandler<DomainEvent> {
+export class CertificationProgressProjector implements EventHandler {
   constructor(private readModelRepository: IReadModelRepository) {}
 
+  canHandle(event: DomainEvent): boolean {
+    const eventType = event.getEventName();
+    return eventType === 'ExamCompleted' || eventType === 'BadgeIssued';
+  }
+
   async handle(event: DomainEvent): Promise<void> {
-    if (event.constructor.name === 'ExamCompleted') {
+    const eventType = event.getEventName();
+    if (eventType === 'ExamCompleted') {
       await this.handleExamCompleted(event);
-    } else if (event.constructor.name === 'BadgeIssued') {
+    } else if (eventType === 'BadgeIssued') {
       await this.handleBadgeIssued(event);
     }
   }

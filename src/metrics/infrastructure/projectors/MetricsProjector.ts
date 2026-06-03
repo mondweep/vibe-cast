@@ -1,16 +1,20 @@
-import { EventHandler } from '../../../shared/infrastructure/events/EventHandler';
-import { DomainEvent } from '../../../shared/domain/events/DomainEvent';
+import { EventHandler } from '../../../shared/domain/EventHandler';
+import { DomainEvent } from '../../../shared/domain/DomainEvent';
 import { IReadModelRepository } from '../../../shared/infrastructure/readmodels/IReadModelRepository';
 import { MetricsReadModel } from '../../../shared/infrastructure/readmodels/ReadModels';
 import { v4 as uuidv4 } from 'uuid';
 
-export class MetricsProjector implements EventHandler<DomainEvent> {
+export class MetricsProjector implements EventHandler {
   private eventTimestamps: Map<string, number> = new Map(); // eventId -> timestamp
 
   constructor(private readModelRepository: IReadModelRepository) {}
 
+  canHandle(event: DomainEvent): boolean {
+    return true; // MetricsProjector handles all events
+  }
+
   async handle(event: DomainEvent): Promise<void> {
-    const eventType = event.constructor.name;
+    const eventType = event.getEventName();
     const createdAtStr = new Date().toISOString();
     const createdAt = new Date(createdAtStr);
     const dateKey = createdAt.toISOString().split('T')[0]; // YYYY-MM-DD
