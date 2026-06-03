@@ -1,4 +1,5 @@
 import { Logger } from '../logging/Logger';
+import { DatabaseAdapter } from './DatabaseAdapter';
 
 /**
  * SAGA Step result
@@ -55,9 +56,9 @@ export interface SagaStateRecord {
  */
 export class SagaRepository {
   private logger: Logger;
-  private databaseConnection: any; // TODO: Inject actual DB connection
+  private databaseConnection: DatabaseAdapter | undefined;
 
-  constructor(logger: Logger, databaseConnection?: any) {
+  constructor(logger: Logger, databaseConnection?: DatabaseAdapter) {
     this.logger = logger;
     this.databaseConnection = databaseConnection;
   }
@@ -548,6 +549,19 @@ export class SagaRepository {
 
       throw error;
     }
+  }
+
+  /**
+   * Factory method to create SagaRepository with Supabase database connection
+   *
+   * @param logger Logger instance
+   * @returns SagaRepository configured with Supabase
+   */
+  static createWithSupabase(logger: Logger): SagaRepository {
+    const { SupabaseClient } = require('./SupabaseClient');
+    const postgresClient = SupabaseClient.getInstance();
+    const dbAdapter = new DatabaseAdapter(postgresClient);
+    return new SagaRepository(logger, dbAdapter);
   }
 }
 

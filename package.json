@@ -26,6 +26,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "postgres": "^3.4.9",
     "uuid": "^9.0.1"
   }
 }
