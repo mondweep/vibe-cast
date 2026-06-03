@@ -176,6 +176,9 @@ describe('Event Idempotency and DLQ Handling', () => {
     dlqHandler = new MockDLQHandler();
     retryCalculator = new RetryPolicyCalculator();
     flakyHandler = new FlakyEventHandler(3); // Fails twice, succeeds on 3rd
+
+    // Register handler with EventBus
+    eventBus.registerHandler('TestEvent', flakyHandler);
   });
 
   describe('Exponential Backoff Retry', () => {
@@ -209,7 +212,7 @@ describe('Event Idempotency and DLQ Handling', () => {
 
       // ASSERT
       expect(backoff1).toBe(100);
-      expect(backoff5).toBe(1600); // Would be 1600 without cap
+      expect(backoff5).toBe(1000); // Capped at maxBackoff
       expect(backoff10).toBeLessThanOrEqual(policy.maxBackoff); // Capped at maxBackoff
     });
 
@@ -366,17 +369,18 @@ describe('Event Idempotency and DLQ Handling', () => {
 
       // ACT: Publish to REAL EventBus and simulate retry loop
       // Will be RED until EventBus.publish() is implemented
-      await eventBus.publish(event, correlationId);
+      await eventBus.publish(event);
 
       // Simulate retry attempts with exponential backoff
       let lastError: Error | null = null;
-      let attempt = 0;
+      let attempt = 1; // Account for initial publish() invocation as attempt 1
       const maxAttempts = 3;
 
       while (attempt < maxAttempts) {
         attempt++;
         try {
           await flakyHandler.handle(event);
+          lastError = null; // Clear error on success
           break; // Success
         } catch (err) {
           lastError = err as Error;
