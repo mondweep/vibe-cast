@@ -1,12 +1,17 @@
-import { EventHandler } from '../../../shared/infrastructure/events/EventHandler';
-import { DomainEvent } from '../../../shared/domain/events/DomainEvent';
+import { EventHandler } from '../../../shared/domain/EventHandler';
+import { DomainEvent } from '../../../shared/domain/DomainEvent';
 import { IReadModelRepository } from '../../../shared/infrastructure/readmodels/IReadModelRepository';
 import { LearnerProfileReadModel, BadgeSnapshot, SkillSnapshot } from '../../../shared/infrastructure/readmodels/ReadModels';
 import { UUID } from '../../../shared/domain/ValueObjects';
 import { v4 as uuidv4 } from 'uuid';
 
-export class LearnerProfileProjector implements EventHandler<DomainEvent> {
+export class LearnerProfileProjector implements EventHandler {
   constructor(private readModelRepository: IReadModelRepository) {}
+
+  canHandle(event: DomainEvent): boolean {
+    const eventType = event.getEventName();
+    return eventType === 'EnrollmentCompleted' || eventType === 'BadgeIssued' || eventType === 'ExerciseCompleted';
+  }
 
   async handle(event: DomainEvent): Promise<void> {
     const learnerId = (event as any).learnerId;
@@ -19,11 +24,12 @@ export class LearnerProfileProjector implements EventHandler<DomainEvent> {
     }
 
     // Update based on event type
-    if (event.constructor.name === 'EnrollmentCompleted') {
+    const eventType = event.getEventName();
+    if (eventType === 'EnrollmentCompleted') {
       this.updateFromEnrollmentCompleted(profile, event);
-    } else if (event.constructor.name === 'BadgeIssued') {
+    } else if (eventType === 'BadgeIssued') {
       this.updateFromBadgeIssued(profile, event);
-    } else if (event.constructor.name === 'ExerciseCompleted') {
+    } else if (eventType === 'ExerciseCompleted') {
       this.updateFromExerciseCompleted(profile, event);
     }
 
@@ -112,9 +118,10 @@ export class LearnerProfileProjector implements EventHandler<DomainEvent> {
       return newScore;
     }
 
-    // Simple average: (previous_total + new_score) / (count + 1)
-    const previousTotal = profile.average_score * profile.completed_enrollment_count;
+    // completed_enrollment_count has already been incremented at this point
+    const previousCount = profile.completed_enrollment_count - 1;
+    const previousTotal = profile.average_score * previousCount;
     const newTotal = previousTotal + newScore;
-    return newTotal / (profile.completed_enrollment_count + 1);
+    return newTotal / profile.completed_enrollment_count;
   }
 }

@@ -1,11 +1,16 @@
-import { EventHandler } from '../../../shared/infrastructure/events/EventHandler';
-import { DomainEvent } from '../../../shared/domain/events/DomainEvent';
+import { EventHandler } from '../../../shared/domain/EventHandler';
+import { DomainEvent } from '../../../shared/domain/DomainEvent';
 import { IReadModelRepository } from '../../../shared/infrastructure/readmodels/IReadModelRepository';
 import { CommunityProfileReadModel, BadgeDetail, SkillDetail } from '../../../shared/infrastructure/readmodels/ReadModels';
 import { UUID } from '../../../shared/domain/ValueObjects';
 
-export class CommunityProfileProjector implements EventHandler<DomainEvent> {
+export class CommunityProfileProjector implements EventHandler {
   constructor(private readModelRepository: IReadModelRepository) {}
+
+  canHandle(event: DomainEvent): boolean {
+    const eventType = event.getEventName();
+    return eventType === 'BadgeEarned' || eventType === 'SkillAchieved';
+  }
 
   async handle(event: DomainEvent): Promise<void> {
     const learnerId = (event as any).learnerId;
@@ -16,9 +21,10 @@ export class CommunityProfileProjector implements EventHandler<DomainEvent> {
       profile = this.createEmptyCommunityProfile(learnerId);
     }
 
-    if (event.constructor.name === 'BadgeEarned') {
+    const eventType = event.getEventName();
+    if (eventType === 'BadgeEarned') {
       this.updateFromBadgeEarned(profile, event);
-    } else if (event.constructor.name === 'SkillAchieved') {
+    } else if (eventType === 'SkillAchieved') {
       this.updateFromSkillAchieved(profile, event);
     }
 
