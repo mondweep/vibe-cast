@@ -13,7 +13,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA ruflo_demo GRANT INSERT, UPDATE ON TABLES TO 
 -- ============================================================
 -- 1. Learner Profile Read Model
 -- ============================================================
-CREATE TABLE IF NOT EXISTS ruflo_demo.learner_profile_read_model (
+CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_learner_profile_read_model (
   learner_id UUID PRIMARY KEY,
   enrollment_ids UUID[] NOT NULL DEFAULT '{}',
   completed_enrollment_count INTEGER NOT NULL DEFAULT 0,
@@ -29,38 +29,38 @@ CREATE TABLE IF NOT EXISTS ruflo_demo.learner_profile_read_model (
 );
 
 CREATE INDEX IF NOT EXISTS idx_learner_profile_last_activity
-  ON ruflo_demo.learner_profile_read_model(last_activity_at DESC);
+  ON ruflo_demo.ruflo_demo_learner_profile_read_model(last_activity_at DESC);
 CREATE INDEX IF NOT EXISTS idx_learner_profile_updated
-  ON ruflo_demo.learner_profile_read_model(updated_at DESC);
+  ON ruflo_demo.ruflo_demo_learner_profile_read_model(updated_at DESC);
 
 -- Enable RLS on learner profile
-ALTER TABLE ruflo_demo.learner_profile_read_model ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ruflo_demo.ruflo_demo_learner_profile_read_model ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Learners can only view their own profile
 CREATE POLICY learner_profile_own_read
-  ON ruflo_demo.learner_profile_read_model FOR SELECT
+  ON ruflo_demo.ruflo_demo_learner_profile_read_model FOR SELECT
   USING (auth.uid()::uuid = learner_id OR auth.role() = 'service_role');
 
 -- RLS Policy: Authenticated users can read all profiles (public data)
 CREATE POLICY learner_profile_authenticated_read
-  ON ruflo_demo.learner_profile_read_model FOR SELECT
+  ON ruflo_demo.ruflo_demo_learner_profile_read_model FOR SELECT
   USING (auth.role() IN ('authenticated', 'service_role'));
 
 -- RLS Policy: Service role can update (projectors)
 CREATE POLICY learner_profile_service_update
-  ON ruflo_demo.learner_profile_read_model FOR UPDATE
+  ON ruflo_demo.ruflo_demo_learner_profile_read_model FOR UPDATE
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
 -- RLS Policy: Service role can insert
 CREATE POLICY learner_profile_service_insert
-  ON ruflo_demo.learner_profile_read_model FOR INSERT
+  ON ruflo_demo.ruflo_demo_learner_profile_read_model FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
 
 -- ============================================================
 -- 2. Certification Progress Read Model
 -- ============================================================
-CREATE TABLE IF NOT EXISTS ruflo_demo.certification_progress_read_model (
+CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_certification_progress_read_model (
   enrollment_id UUID PRIMARY KEY,
   learner_id UUID NOT NULL,
   certification_id UUID NOT NULL,
@@ -76,37 +76,37 @@ CREATE TABLE IF NOT EXISTS ruflo_demo.certification_progress_read_model (
 );
 
 CREATE INDEX IF NOT EXISTS idx_cert_progress_learner
-  ON ruflo_demo.certification_progress_read_model(learner_id);
+  ON ruflo_demo.ruflo_demo_certification_progress_read_model(learner_id);
 CREATE INDEX IF NOT EXISTS idx_cert_progress_status
-  ON ruflo_demo.certification_progress_read_model(enrollment_status);
+  ON ruflo_demo.ruflo_demo_certification_progress_read_model(enrollment_status);
 CREATE INDEX IF NOT EXISTS idx_cert_progress_certification
-  ON ruflo_demo.certification_progress_read_model(certification_id);
+  ON ruflo_demo.ruflo_demo_certification_progress_read_model(certification_id);
 
 -- Enable RLS
-ALTER TABLE ruflo_demo.certification_progress_read_model ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ruflo_demo.ruflo_demo_certification_progress_read_model ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
 CREATE POLICY cert_progress_own_read
-  ON ruflo_demo.certification_progress_read_model FOR SELECT
+  ON ruflo_demo.ruflo_demo_certification_progress_read_model FOR SELECT
   USING (auth.uid()::uuid = learner_id OR auth.role() = 'service_role');
 
 CREATE POLICY cert_progress_authenticated_read
-  ON ruflo_demo.certification_progress_read_model FOR SELECT
+  ON ruflo_demo.ruflo_demo_certification_progress_read_model FOR SELECT
   USING (auth.role() IN ('authenticated', 'service_role'));
 
 CREATE POLICY cert_progress_service_update
-  ON ruflo_demo.certification_progress_read_model FOR UPDATE
+  ON ruflo_demo.ruflo_demo_certification_progress_read_model FOR UPDATE
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
 CREATE POLICY cert_progress_service_insert
-  ON ruflo_demo.certification_progress_read_model FOR INSERT
+  ON ruflo_demo.ruflo_demo_certification_progress_read_model FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
 
 -- ============================================================
 -- 3. Community Profile Read Model
 -- ============================================================
-CREATE TABLE IF NOT EXISTS ruflo_demo.community_profile_read_model (
+CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_community_profile_read_model (
   learner_id UUID PRIMARY KEY,
   display_name VARCHAR(255),
   badge_count INTEGER NOT NULL DEFAULT 0,
@@ -120,31 +120,31 @@ CREATE TABLE IF NOT EXISTS ruflo_demo.community_profile_read_model (
 );
 
 CREATE INDEX IF NOT EXISTS idx_community_profile_reputation
-  ON ruflo_demo.community_profile_read_model(reputation_score DESC);
+  ON ruflo_demo.ruflo_demo_community_profile_read_model(reputation_score DESC);
 CREATE INDEX IF NOT EXISTS idx_community_profile_badge_count
-  ON ruflo_demo.community_profile_read_model(badge_count DESC);
+  ON ruflo_demo.ruflo_demo_community_profile_read_model(badge_count DESC);
 
 -- Enable RLS
-ALTER TABLE ruflo_demo.community_profile_read_model ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ruflo_demo.ruflo_demo_community_profile_read_model ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies - Community profiles are public read, service role can write
 CREATE POLICY community_profile_public_read
-  ON ruflo_demo.community_profile_read_model FOR SELECT
+  ON ruflo_demo.ruflo_demo_community_profile_read_model FOR SELECT
   USING (true); -- Public read for community visibility
 
 CREATE POLICY community_profile_service_update
-  ON ruflo_demo.community_profile_read_model FOR UPDATE
+  ON ruflo_demo.ruflo_demo_community_profile_read_model FOR UPDATE
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
 CREATE POLICY community_profile_service_insert
-  ON ruflo_demo.community_profile_read_model FOR INSERT
+  ON ruflo_demo.ruflo_demo_community_profile_read_model FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
 
 -- ============================================================
 -- 4. Metrics Read Model
 -- ============================================================
-CREATE TABLE IF NOT EXISTS ruflo_demo.metrics_read_model (
+CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_metrics_read_model (
   metrics_id UUID PRIMARY KEY,
   period VARCHAR(50) NOT NULL,
   date TIMESTAMP NOT NULL,
@@ -160,25 +160,25 @@ CREATE TABLE IF NOT EXISTS ruflo_demo.metrics_read_model (
 );
 
 CREATE INDEX IF NOT EXISTS idx_metrics_period_date
-  ON ruflo_demo.metrics_read_model(period, date DESC);
+  ON ruflo_demo.ruflo_demo_metrics_read_model(period, date DESC);
 CREATE INDEX IF NOT EXISTS idx_metrics_date
-  ON ruflo_demo.metrics_read_model(date DESC);
+  ON ruflo_demo.ruflo_demo_metrics_read_model(date DESC);
 
 -- Enable RLS - Metrics are admin/analytics only
-ALTER TABLE ruflo_demo.metrics_read_model ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ruflo_demo.ruflo_demo_metrics_read_model ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
 CREATE POLICY metrics_service_read
-  ON ruflo_demo.metrics_read_model FOR SELECT
+  ON ruflo_demo.ruflo_demo_metrics_read_model FOR SELECT
   USING (auth.role() = 'service_role');
 
 CREATE POLICY metrics_service_update
-  ON ruflo_demo.metrics_read_model FOR UPDATE
+  ON ruflo_demo.ruflo_demo_metrics_read_model FOR UPDATE
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
 CREATE POLICY metrics_service_insert
-  ON ruflo_demo.metrics_read_model FOR INSERT
+  ON ruflo_demo.ruflo_demo_metrics_read_model FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
 
 -- ============================================================

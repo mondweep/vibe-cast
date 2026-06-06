@@ -15,7 +15,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findLearnerProfile(learnerId: UUID): Promise<LearnerProfileReadModel | null> {
     const { data, error } = await this.supabase
-      .from('learner_profile_read_model')
+      .from('ruflo_demo_learner_profile_read_model')
       .select('*')
       .eq('learner_id', learnerId)
       .single();
@@ -29,7 +29,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async saveLearnerProfile(profile: LearnerProfileReadModel): Promise<void> {
     const { error } = await this.supabase
-      .from('learner_profile_read_model')
+      .from('ruflo_demo_learner_profile_read_model')
       .upsert({
         learner_id: profile.learner_id,
         enrollment_ids: profile.enrollment_ids,
@@ -51,7 +51,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findLearnerProfiles(learnerIds?: UUID[]): Promise<LearnerProfileReadModel[]> {
     let query = this.supabase
-      .from('learner_profile_read_model')
+      .from('ruflo_demo_learner_profile_read_model')
       .select('*');
 
     if (learnerIds && learnerIds.length > 0) {
@@ -65,7 +65,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findTopLearnersByActivity(limit: number): Promise<LearnerProfileReadModel[]> {
     const { data, error } = await this.supabase
-      .from('learner_profile_read_model')
+      .from('ruflo_demo_learner_profile_read_model')
       .select('*')
       .order('last_activity_at', { ascending: false })
       .limit(limit);
@@ -78,7 +78,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findCertificationProgress(enrollmentId: UUID): Promise<CertificationProgressReadModel | null> {
     const { data, error } = await this.supabase
-      .from('certification_progress_read_model')
+      .from('ruflo_demo_certification_progress_read_model')
       .select('*')
       .eq('enrollment_id', enrollmentId)
       .single();
@@ -92,7 +92,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async saveCertificationProgress(progress: CertificationProgressReadModel): Promise<void> {
     const { error } = await this.supabase
-      .from('certification_progress_read_model')
+      .from('ruflo_demo_certification_progress_read_model')
       .upsert({
         enrollment_id: progress.enrollment_id,
         learner_id: progress.learner_id,
@@ -114,7 +114,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findCertificationProgressByLearner(learnerId: UUID): Promise<CertificationProgressReadModel[]> {
     const { data, error } = await this.supabase
-      .from('certification_progress_read_model')
+      .from('ruflo_demo_certification_progress_read_model')
       .select('*')
       .eq('learner_id', learnerId);
 
@@ -124,7 +124,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findCompletedCertifications(learnerId: UUID): Promise<CertificationProgressReadModel[]> {
     const { data, error } = await this.supabase
-      .from('certification_progress_read_model')
+      .from('ruflo_demo_certification_progress_read_model')
       .select('*')
       .eq('learner_id', learnerId)
       .eq('badge_status', 'ISSUED');
@@ -137,7 +137,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findCommunityProfile(learnerId: UUID): Promise<CommunityProfileReadModel | null> {
     const { data, error } = await this.supabase
-      .from('community_profile_read_model')
+      .from('ruflo_demo_community_profile_read_model')
       .select('*')
       .eq('learner_id', learnerId)
       .single();
@@ -151,7 +151,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async saveCommunityProfile(profile: CommunityProfileReadModel): Promise<void> {
     const { error } = await this.supabase
-      .from('community_profile_read_model')
+      .from('ruflo_demo_community_profile_read_model')
       .upsert({
         learner_id: profile.learner_id,
         display_name: profile.display_name,
@@ -171,7 +171,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findTopLearnersByReputation(limit: number): Promise<CommunityProfileReadModel[]> {
     const { data, error } = await this.supabase
-      .from('community_profile_read_model')
+      .from('ruflo_demo_community_profile_read_model')
       .select('*')
       .order('reputation_score', { ascending: false })
       .limit(limit);
@@ -182,7 +182,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findTopLearnersByBadgeCount(limit: number): Promise<CommunityProfileReadModel[]> {
     const { data, error } = await this.supabase
-      .from('community_profile_read_model')
+      .from('ruflo_demo_community_profile_read_model')
       .select('*')
       .order('badge_count', { ascending: false })
       .limit(limit);
@@ -193,7 +193,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findLearnersByMinimumSkillCount(minimumSkills: number): Promise<CommunityProfileReadModel[]> {
     const { data, error } = await this.supabase
-      .from('community_profile_read_model')
+      .from('ruflo_demo_community_profile_read_model')
       .select('*')
       .gte('skill_count', minimumSkills)
       .order('skill_count', { ascending: false });
@@ -206,7 +206,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findMetricsForPeriod(period: 'DAILY' | 'WEEKLY' | 'MONTHLY', date: string): Promise<MetricsReadModel | null> {
     const { data, error } = await this.supabase
-      .from('metrics_read_model')
+      .from('ruflo_demo_metrics_read_model')
       .select('*')
       .eq('period', period)
       .eq('date', date)
@@ -221,7 +221,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async saveMetrics(metrics: MetricsReadModel): Promise<void> {
     const { error } = await this.supabase
-      .from('metrics_read_model')
+      .from('ruflo_demo_metrics_read_model')
       .upsert({
         metrics_id: metrics.metrics_id,
         period: metrics.period,
@@ -243,7 +243,7 @@ export class SupabaseReadModelRepository implements IReadModelRepository {
 
   async findMetricsForDateRange(period: string, startDate: string, endDate: string): Promise<MetricsReadModel[]> {
     const { data, error } = await this.supabase
-      .from('metrics_read_model')
+      .from('ruflo_demo_metrics_read_model')
       .select('*')
       .eq('period', period)
       .gte('date', startDate)
