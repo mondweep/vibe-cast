@@ -14,6 +14,7 @@ wifi-csi-sensing-paper.pdf
 # Local credentials / runtime config — never commit
 .env
 .env.local
+.env.*.local
 config.local.js
 
 # Python bytecode cache
