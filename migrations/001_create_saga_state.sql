@@ -14,8 +14,9 @@
 -- Ensure schema exists
 CREATE SCHEMA IF NOT EXISTS ruflo_demo;
 
+-- ============================================================
 -- Create saga_state table
--- Stores the current state of each saga orchestration
+-- ============================================================
 CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_saga_state (
   id UUID PRIMARY KEY,
   saga_id UUID NOT NULL UNIQUE,
@@ -28,15 +29,22 @@ CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_saga_state (
   saga_data JSONB DEFAULT '{}',
   version INTEGER NOT NULL DEFAULT 1,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  INDEX idx_enrollment_id (enrollment_id),
-  INDEX idx_learner_id (learner_id),
-  INDEX idx_state (state),
-  INDEX idx_correlation_id (correlation_id)
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Indexes for saga_state
+CREATE INDEX IF NOT EXISTS idx_saga_state_enrollment_id
+  ON ruflo_demo.ruflo_demo_saga_state(enrollment_id);
+CREATE INDEX IF NOT EXISTS idx_saga_state_learner_id
+  ON ruflo_demo.ruflo_demo_saga_state(learner_id);
+CREATE INDEX IF NOT EXISTS idx_saga_state_state
+  ON ruflo_demo.ruflo_demo_saga_state(state);
+CREATE INDEX IF NOT EXISTS idx_saga_state_correlation_id
+  ON ruflo_demo.ruflo_demo_saga_state(correlation_id);
+
+-- ============================================================
 -- Create saga_steps table
--- Stores the history of step execution
+-- ============================================================
 CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_saga_steps (
   id UUID PRIMARY KEY,
   saga_id UUID NOT NULL,
@@ -46,25 +54,35 @@ CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_saga_steps (
   error_message TEXT,
   started_at TIMESTAMP NOT NULL,
   completed_at TIMESTAMP,
-  INDEX idx_saga_id (saga_id),
-  INDEX idx_status (status),
   FOREIGN KEY (saga_id) REFERENCES ruflo_demo.ruflo_demo_saga_state(saga_id)
 );
 
+-- Indexes for saga_steps
+CREATE INDEX IF NOT EXISTS idx_saga_steps_saga_id
+  ON ruflo_demo.ruflo_demo_saga_steps(saga_id);
+CREATE INDEX IF NOT EXISTS idx_saga_steps_status
+  ON ruflo_demo.ruflo_demo_saga_steps(status);
+
+-- ============================================================
 -- Create saga_idempotency table
--- Tracks processed events to prevent duplicate processing
+-- ============================================================
 CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_saga_idempotency (
   id UUID PRIMARY KEY,
   saga_id UUID NOT NULL,
   event_id UUID NOT NULL UNIQUE,
   processed_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  INDEX idx_saga_id (saga_id),
-  INDEX idx_event_id (event_id),
   FOREIGN KEY (saga_id) REFERENCES ruflo_demo.ruflo_demo_saga_state(saga_id)
 );
 
+-- Indexes for saga_idempotency
+CREATE INDEX IF NOT EXISTS idx_saga_idempotency_saga_id
+  ON ruflo_demo.ruflo_demo_saga_idempotency(saga_id);
+CREATE INDEX IF NOT EXISTS idx_saga_idempotency_event_id
+  ON ruflo_demo.ruflo_demo_saga_idempotency(event_id);
+
+-- ============================================================
 -- Create dlq_events table
--- Dead Letter Queue for events that failed all handler attempts
+-- ============================================================
 CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_dlq_events (
   id UUID PRIMARY KEY,
   event_id UUID NOT NULL UNIQUE,
@@ -76,22 +94,32 @@ CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_dlq_events (
   next_retry_at TIMESTAMP NOT NULL,
   error_message TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  INDEX idx_event_id (event_id),
-  INDEX idx_next_retry_at (next_retry_at),
-  INDEX idx_correlation_id (correlation_id)
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Indexes for dlq_events
+CREATE INDEX IF NOT EXISTS idx_dlq_events_event_id
+  ON ruflo_demo.ruflo_demo_dlq_events(event_id);
+CREATE INDEX IF NOT EXISTS idx_dlq_events_next_retry_at
+  ON ruflo_demo.ruflo_demo_dlq_events(next_retry_at);
+CREATE INDEX IF NOT EXISTS idx_dlq_events_correlation_id
+  ON ruflo_demo.ruflo_demo_dlq_events(correlation_id);
+
+-- ============================================================
 -- Create event_processing table
--- Tracks processed events across all handlers for idempotency
+-- ============================================================
 CREATE TABLE IF NOT EXISTS ruflo_demo.ruflo_demo_event_processing (
   id UUID PRIMARY KEY,
   event_id UUID NOT NULL UNIQUE,
   handler_name VARCHAR(100) NOT NULL,
-  processed_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  INDEX idx_event_id (event_id),
-  INDEX idx_handler_name (handler_name)
+  processed_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+-- Indexes for event_processing
+CREATE INDEX IF NOT EXISTS idx_event_processing_event_id
+  ON ruflo_demo.ruflo_demo_event_processing(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_processing_handler_name
+  ON ruflo_demo.ruflo_demo_event_processing(handler_name);
 
 -- ============================================================
 -- Row Level Security Policies
@@ -104,7 +132,9 @@ ALTER TABLE ruflo_demo.ruflo_demo_saga_idempotency ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ruflo_demo.ruflo_demo_dlq_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ruflo_demo.ruflo_demo_event_processing ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies: Service role only (backend operations)
+-- ============================================================
+-- saga_state policies
+-- ============================================================
 CREATE POLICY saga_state_service_read
   ON ruflo_demo.ruflo_demo_saga_state FOR SELECT
   USING (auth.role() = 'service_role');
@@ -117,6 +147,9 @@ CREATE POLICY saga_state_service_update
   ON ruflo_demo.ruflo_demo_saga_state FOR UPDATE
   WITH CHECK (auth.role() = 'service_role');
 
+-- ============================================================
+-- saga_steps policies
+-- ============================================================
 CREATE POLICY saga_steps_service_select
   ON ruflo_demo.ruflo_demo_saga_steps FOR SELECT
   USING (auth.role() = 'service_role');
@@ -133,6 +166,9 @@ CREATE POLICY saga_steps_service_delete
   ON ruflo_demo.ruflo_demo_saga_steps FOR DELETE
   USING (auth.role() = 'service_role');
 
+-- ============================================================
+-- saga_idempotency policies
+-- ============================================================
 CREATE POLICY saga_idempotency_service_select
   ON ruflo_demo.ruflo_demo_saga_idempotency FOR SELECT
   USING (auth.role() = 'service_role');
@@ -145,6 +181,9 @@ CREATE POLICY saga_idempotency_service_delete
   ON ruflo_demo.ruflo_demo_saga_idempotency FOR DELETE
   USING (auth.role() = 'service_role');
 
+-- ============================================================
+-- dlq_events policies
+-- ============================================================
 CREATE POLICY dlq_events_service_select
   ON ruflo_demo.ruflo_demo_dlq_events FOR SELECT
   USING (auth.role() = 'service_role');
@@ -157,6 +196,9 @@ CREATE POLICY dlq_events_service_update
   ON ruflo_demo.ruflo_demo_dlq_events FOR UPDATE
   WITH CHECK (auth.role() = 'service_role');
 
+-- ============================================================
+-- event_processing policies
+-- ============================================================
 CREATE POLICY event_processing_service_select
   ON ruflo_demo.ruflo_demo_event_processing FOR SELECT
   USING (auth.role() = 'service_role');
