@@ -109,28 +109,60 @@ CREATE POLICY saga_state_service_read
   ON ruflo_demo.ruflo_demo_saga_state FOR SELECT
   USING (auth.role() = 'service_role');
 
-CREATE POLICY saga_state_service_write
-  ON ruflo_demo.ruflo_demo_saga_state FOR INSERT, UPDATE
+CREATE POLICY saga_state_service_insert
+  ON ruflo_demo.ruflo_demo_saga_state FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
 
-CREATE POLICY saga_steps_service_all
-  ON ruflo_demo.ruflo_demo_saga_steps FOR ALL
-  USING (auth.role() = 'service_role')
+CREATE POLICY saga_state_service_update
+  ON ruflo_demo.ruflo_demo_saga_state FOR UPDATE
   WITH CHECK (auth.role() = 'service_role');
 
-CREATE POLICY saga_idempotency_service_all
-  ON ruflo_demo.ruflo_demo_saga_idempotency FOR ALL
-  USING (auth.role() = 'service_role')
+CREATE POLICY saga_steps_service_select
+  ON ruflo_demo.ruflo_demo_saga_steps FOR SELECT
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY saga_steps_service_insert
+  ON ruflo_demo.ruflo_demo_saga_steps FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
 
-CREATE POLICY dlq_events_service_all
-  ON ruflo_demo.ruflo_demo_dlq_events FOR ALL
-  USING (auth.role() = 'service_role')
+CREATE POLICY saga_steps_service_update
+  ON ruflo_demo.ruflo_demo_saga_steps FOR UPDATE
   WITH CHECK (auth.role() = 'service_role');
 
-CREATE POLICY event_processing_service_all
-  ON ruflo_demo.ruflo_demo_event_processing FOR ALL
-  USING (auth.role() = 'service_role')
+CREATE POLICY saga_steps_service_delete
+  ON ruflo_demo.ruflo_demo_saga_steps FOR DELETE
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY saga_idempotency_service_select
+  ON ruflo_demo.ruflo_demo_saga_idempotency FOR SELECT
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY saga_idempotency_service_insert
+  ON ruflo_demo.ruflo_demo_saga_idempotency FOR INSERT
+  WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY saga_idempotency_service_delete
+  ON ruflo_demo.ruflo_demo_saga_idempotency FOR DELETE
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY dlq_events_service_select
+  ON ruflo_demo.ruflo_demo_dlq_events FOR SELECT
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY dlq_events_service_insert
+  ON ruflo_demo.ruflo_demo_dlq_events FOR INSERT
+  WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY dlq_events_service_update
+  ON ruflo_demo.ruflo_demo_dlq_events FOR UPDATE
+  WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY event_processing_service_select
+  ON ruflo_demo.ruflo_demo_event_processing FOR SELECT
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY event_processing_service_insert
+  ON ruflo_demo.ruflo_demo_event_processing FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
 
 -- ============================================================
