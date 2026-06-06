@@ -32,3 +32,6 @@ netlify-deploy/
 
 # Node.js dependencies
 node_modules/
+
+# Test coverage reports
+coverage/
