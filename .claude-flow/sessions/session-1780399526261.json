@@ -1,0 +1,15 @@
+{
+  "id": "session-1780399526261",
+  "startedAt": "2026-06-02T11:25:26.261Z",
+  "cwd": "/home/user/vibe-cast",
+  "context": {},
+  "metrics": {
+    "edits": 0,
+    "commands": 0,
+    "tasks": 0,
+    "errors": 0
+  },
+  "restoredAt": "2026-06-02T11:25:49.690Z",
+  "endedAt": "2026-06-02T11:25:50.492Z",
+  "duration": 24231
+}

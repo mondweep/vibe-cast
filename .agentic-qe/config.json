@@ -1,0 +1,367 @@
+{
+  "version": "1.0.0",
+  "testFramework": "jest",
+  "testRunner": "ts-jest",
+  "coverage": {
+    "targetPercentage": 80,
+    "thresholds": {
+      "statements": 80,
+      "branches": 75,
+      "functions": 80,
+      "lines": 80
+    }
+  },
+  "domains": {
+    "skillLab": {
+      "path": "src/skill-lab",
+      "testPath": "tests/unit/skill-lab",
+      "contractPath": "tests/contracts",
+      "models": [
+        {
+          "name": "Exercise",
+          "file": "src/skill-lab/domain/models/Exercise.ts",
+          "testFile": "tests/unit/skill-lab/Exercise.spec.ts",
+          "contractFile": "tests/contracts/Exercise.contract.ts",
+          "targetCoverage": 85,
+          "interactions": [
+            {
+              "name": "ExerciseRepository.save",
+              "verified": "mockRepository.save called once with exercise"
+            },
+            {
+              "name": "ExerciseRepository.findById",
+              "verified": "mockRepository.findById returns exercise or null"
+            },
+            {
+              "name": "ExerciseValidator.validatePublishableStatus",
+              "verified": "mockValidator.validatePublishableStatus called before publish"
+            }
+          ]
+        },
+        {
+          "name": "LabSession",
+          "file": "src/skill-lab/domain/models/LabSession.ts",
+          "testFile": "tests/unit/skill-lab/LabSession.spec.ts",
+          "contractFile": "tests/contracts/LabSession.contract.ts",
+          "targetCoverage": 85,
+          "sagas": [
+            {
+              "name": "LabSessionCompletionSaga",
+              "trigger": "OutcomeRecorded event with successRate >= 0.75",
+              "steps": [
+                "getOutcomes() from repository",
+                "calculateSuccessRate() via validator",
+                "completionCheck: successRate >= 0.75",
+                "emit LabSessionCompleted event"
+              ],
+              "verified": "mockEventBus.publish called with LabSessionCompleted payload"
+            }
+          ],
+          "interactions": [
+            {
+              "name": "LabSessionRepository.recordOutcome",
+              "verified": "mockRepository.recordOutcome called with outcome"
+            },
+            {
+              "name": "LabSessionRepository.getOutcomes",
+              "verified": "mockRepository.getOutcomes returns all outcomes"
+            },
+            {
+              "name": "OutcomeValidator.calculateSuccessRate",
+              "verified": "mockValidator.calculateSuccessRate called with testsPassed, testsTotal"
+            }
+          ]
+        }
+      ]
+    },
+    "community": {
+      "path": "src/community",
+      "testPath": "tests/unit/community",
+      "contractPath": "tests/contracts",
+      "models": [
+        {
+          "name": "Member",
+          "file": "src/community/domain/models/Member.ts",
+          "testFile": "tests/unit/community/Member.spec.ts",
+          "contractFile": "tests/contracts/Member.contract.ts",
+          "targetCoverage": 85,
+          "sagas": [
+            {
+              "name": "BadgeAwardSaga",
+              "trigger": "reputation reaches threshold",
+              "thresholds": {
+                "LEARNER": 50,
+                "CONTRIBUTOR": 150,
+                "REVIEWER": 300,
+                "MENTOR": 500
+              },
+              "reputationBonuses": {
+                "LEARNER": 10,
+                "CONTRIBUTOR": 25,
+                "REVIEWER": 50,
+                "MENTOR": 75
+              },
+              "steps": [
+                "checkThreshold: reputation >= category threshold",
+                "findBadge: from BadgeRepository by category",
+                "awardBadge: mockBadgeRepository.award called",
+                "bonusReputation: add category bonus to reputation",
+                "emit BadgeAwarded event"
+              ],
+              "verified": "mockBadgeRepository.award called, mockEventBus.publish called with BadgeAwarded"
+            },
+            {
+              "name": "FollowSaga",
+              "trigger": "member follows another member",
+              "steps": [
+                "recordFollow: mockRepository.recordFollow(followerId, targetMemberId)",
+                "updateFollowerCounts: increment following on follower",
+                "updateTargetCounts: increment followers on target",
+                "emit MemberFollowed event"
+              ],
+              "verified": "mockRepository.recordFollow called, counts incremented, event published"
+            }
+          ],
+          "interactions": [
+            {
+              "name": "MemberRepository.save",
+              "verified": "mockRepository.save called once with member"
+            },
+            {
+              "name": "ReputationService.validateChange",
+              "verified": "mockReputationService.validateChange called before update"
+            },
+            {
+              "name": "ReputationService.recordHistory",
+              "verified": "mockReputationService.recordHistory called with memberId, points, reason"
+            },
+            {
+              "name": "BadgeRepository.findByCategory",
+              "verified": "mockBadgeRepository.findByCategory called with category"
+            }
+          ]
+        },
+        {
+          "name": "Discussion",
+          "file": "src/community/domain/models/Discussion.ts",
+          "testFile": "tests/unit/community/Discussion.spec.ts",
+          "contractFile": "tests/contracts/Discussion.contract.ts",
+          "targetCoverage": 85,
+          "sagas": [
+            {
+              "name": "DiscussionVoteSaga",
+              "trigger": "user votes upvote/downvote",
+              "steps": [
+                "checkPreviousVote: mockVoteTracker.hasUpvoted or hasDownvoted",
+                "switchVoteIfNeeded: clear previous vote if opposite",
+                "recordVote: mockVoteTracker.recordUpvote or recordDownvote",
+                "updateVoteCount: increment/decrement upvotes/downvotes",
+                "emit DiscussionUpvoted or DiscussionDownvoted event"
+              ],
+              "idempotency": "same user voting twice prevents double count",
+              "verified": "mockVoteTracker called in correct sequence, counts updated once, event emitted"
+            },
+            {
+              "name": "DiscussionReplySaga",
+              "trigger": "user submits reply",
+              "steps": [
+                "statusCheck: discussion status allows replies (not CLOSED/HIDDEN)",
+                "validateContent: mockModerationService.validateContent",
+                "replyCreated: new reply with id, authorId, timestamp",
+                "recordReply: mockRepository.recordReply",
+                "updateReplyCount: increment reply count",
+                "emit ReplyPosted event"
+              ],
+              "verified": "mockRepository.recordReply called, reply count incremented, event published"
+            },
+            {
+              "name": "DiscussionModerationSaga",
+              "trigger": "moderation action (flag/hide/unhide)",
+              "steps": [
+                "statusCheck: validate current moderation status",
+                "actionApplied: call hide/unhide/flag on moderation service",
+                "statusUpdated: change discussion status to HIDDEN/OPEN",
+                "emit DiscussionHidden/DiscussionUnhidden/DiscussionFlagged event"
+              ],
+              "verified": "mockModerationService method called, status changed, event emitted"
+            }
+          ],
+          "interactions": [
+            {
+              "name": "DiscussionRepository.save",
+              "verified": "mockRepository.save called once with discussion"
+            },
+            {
+              "name": "ModerationService.validateContent",
+              "verified": "mockModerationService.validateContent called before posting/replying"
+            },
+            {
+              "name": "VoteTracker.recordVote",
+              "verified": "mockVoteTracker.recordUpvote or recordDownvote called on vote"
+            },
+            {
+              "name": "ModerationService.hideContent",
+              "verified": "mockModerationService.hideContent called on moderation flag"
+            }
+          ]
+        }
+      ]
+    },
+    "eventBus": {
+      "path": "src/shared/infrastructure/events",
+      "testPath": "tests/unit/infrastructure",
+      "contractPath": "tests/contracts",
+      "models": [
+        {
+          "name": "EventBus",
+          "file": "src/shared/infrastructure/events/EventBus.ts",
+          "contractFile": "tests/contracts/EventBus.contract.ts",
+          "targetCoverage": 85,
+          "sagas": [
+            {
+              "name": "EventPublishingSaga",
+              "trigger": "domain aggregate publishes event",
+              "steps": [
+                "metadataValidated: correlationId, aggregateVersion, domain checked",
+                "idempotencyCheck: mockIdempotencyTracker.hasProcessed(eventId)",
+                "markedProcessed: mockIdempotencyTracker.markProcessed(eventId)",
+                "subscribersFound: all handlers subscribed to eventType",
+                "handlersExecuted: concurrent execution of all handlers",
+                "dlqAddition: on failure, mockDeadLetterQueue.addEvent called",
+                "eventEmitted: EventPublished or EventProcessingFailed"
+              ],
+              "idempotency": "duplicate events detected and rejected",
+              "verified": "idempotency tracker prevents duplicate processing, DLQ updated on failure"
+            },
+            {
+              "name": "RetryPublishingSaga",
+              "trigger": "manual retry of DLQ event",
+              "steps": [
+                "eventRetrieved: mockDeadLetterQueue.getEvent(dlqEventId)",
+                "retryLimitCheck: mockRetryPolicy.canRetry(currentRetries)",
+                "backoffCalculated: mockRetryPolicy.getBackoffDelay(retryAttempt)",
+                "unmarkProcessed: mockIdempotencyTracker.unmarkProcessed(eventId)",
+                "republished: mockEventBus.publish(event)",
+                "dlqRemoval: on success, mockDeadLetterQueue.removeEvent(dlqEventId)",
+                "retryMetadataUpdated: retry count and nextRetryAt recorded"
+              ],
+              "exponentialBackoff": "1s, 2s, 4s, 8s delays per retry attempt",
+              "verified": "DLQ event retrieved, backoff delay applied, event republished, DLQ cleaned on success"
+            }
+          ],
+          "interactions": [
+            {
+              "name": "EventBus.publish",
+              "verified": "mockEventBus.publish called with domain event"
+            },
+            {
+              "name": "EventBus.subscribe",
+              "verified": "mockEventBus.subscribe returns subscriptionId"
+            },
+            {
+              "name": "IdempotencyTracker.hasProcessed",
+              "verified": "called before handler execution to prevent duplicates"
+            },
+            {
+              "name": "DeadLetterQueue.addEvent",
+              "verified": "called on handler failure with error and stack"
+            },
+            {
+              "name": "RetryPolicy.getBackoffDelay",
+              "verified": "called to calculate exponential backoff between retries"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "testGeneration": {
+    "rules": [
+      {
+        "type": "aggregate",
+        "template": "London School TDD - interaction testing",
+        "requirements": [
+          "Mock all dependencies (repositories, services, event bus)",
+          "Verify method calls (not state)",
+          "Check call order and arguments",
+          "Test SAGA workflows",
+          "Verify event publishing"
+        ]
+      },
+      {
+        "type": "repository",
+        "template": "CRUD operations with ORM",
+        "requirements": [
+          "Mock database layer",
+          "Verify save/load/query operations",
+          "Test error handling",
+          "Verify transaction semantics"
+        ]
+      },
+      {
+        "type": "saga",
+        "template": "Multi-step workflow coordination",
+        "requirements": [
+          "Define trigger condition",
+          "Verify each step in sequence",
+          "Test failure paths",
+          "Verify compensating transactions"
+        ]
+      },
+      {
+        "type": "event",
+        "template": "Domain event publishing",
+        "requirements": [
+          "Verify event emitted with correct payload",
+          "Check event metadata (correlationId, timestamp)",
+          "Test event handler registration",
+          "Verify pub/sub delivery"
+        ]
+      }
+    ],
+    "contractReferences": {
+      "Exercise": "tests/contracts/Exercise.contract.ts",
+      "LabSession": "tests/contracts/LabSession.contract.ts",
+      "Member": "tests/contracts/Member.contract.ts",
+      "Discussion": "tests/contracts/Discussion.contract.ts",
+      "EventBus": "tests/contracts/EventBus.contract.ts"
+    }
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/tests",
+      "<rootDir>/src"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.ts",
+      "**/tests/**/*.spec.ts"
+    ],
+    "moduleFileExtensions": ["ts", "js", "json"],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/**/index.ts"
+    ]
+  },
+  "agentCoordination": {
+    "skillab-dev": {
+      "task": "Implement Exercise and LabSession models",
+      "waitFor": ["testing-lead"],
+      "sendTo": ["testing-lead"],
+      "message": "SkillLab models ready. Mock contracts defined. Ready for unit tests."
+    },
+    "community-dev": {
+      "task": "Implement Member and Discussion models",
+      "waitFor": ["testing-lead"],
+      "sendTo": ["testing-lead"],
+      "message": "Community models ready. Mock contracts defined. Ready for unit tests."
+    },
+    "testing-lead": {
+      "task": "Create mock contracts and test stubs",
+      "sendTo": ["knowledge-lead"],
+      "message": "Mock contract infrastructure complete. 5 contract files, 4 test stub files, agentic-qe config ready."
+    }
+  }
+}
