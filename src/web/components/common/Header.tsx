@@ -24,10 +24,10 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">V</span>
+              <span className="text-white font-bold text-sm">lr</span>
             </div>
             <span className="text-xl font-bold text-gray-900 hidden sm:inline">
-              Vibe-Cast
+              learn-ruflo
             </span>
           </Link>
 

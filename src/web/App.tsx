@@ -13,6 +13,9 @@ import { LeaderboardPage } from '@/pages/LeaderboardPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
+import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
+import { TermsPage } from '@/pages/TermsPage';
+import { ContactPage } from '@/pages/ContactPage';
 import { LearningPathsPage } from '@/pages/LearningPathsPage';
 import { PathDetailPage } from '@/pages/PathDetailPage';
 import { LessonPage } from '@/pages/LessonPage';
@@ -63,6 +66,19 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
       <Header />
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         {children}
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+// Public, readable layout for long-form content pages (legal, contact).
+function PublicLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <Header />
+      <main className="flex-1">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">{children}</div>
       </main>
       <Footer />
     </div>
@@ -204,6 +220,11 @@ export function App() {
           </AuthLayout>
         }
       />
+
+      {/* Legal & contact (public) */}
+      <Route path="/privacy" element={<PublicLayout><PrivacyPolicyPage /></PublicLayout>} />
+      <Route path="/terms" element={<PublicLayout><TermsPage /></PublicLayout>} />
+      <Route path="/contact" element={<PublicLayout><ContactPage /></PublicLayout>} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -16,12 +16,13 @@ export function Footer() {
           <div className="md:col-span-1">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">V</span>
+                <span className="text-white font-bold text-sm">lr</span>
               </div>
-              <span className="text-xl font-bold">Vibe-Cast</span>
+              <span className="text-xl font-bold">learn-ruflo</span>
             </div>
             <p className="text-gray-400 text-sm">
-              Empowering learners through modern certifications
+              Enabling learners to master Ruflo, the advanced Agentic AI
+              orchestration layer
             </p>
           </div>
 
@@ -92,28 +93,28 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/privacy"
                   className="text-gray-400 hover:text-white transition text-sm"
                 >
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/terms"
                   className="text-gray-400 hover:text-white transition text-sm"
                 >
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/contact"
                   className="text-gray-400 hover:text-white transition text-sm"
                 >
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

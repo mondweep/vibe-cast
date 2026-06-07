@@ -79,8 +79,8 @@ export function LoginPage() {
       </h1>
       <p className="text-gray-600 mb-6">
         {mode === 'signin'
-          ? 'Sign in to continue to Vibe-Cast'
-          : 'Sign up to start learning with Vibe-Cast'}
+          ? 'Sign in to continue to learn-ruflo'
+          : 'Sign up to start learning with learn-ruflo'}
       </p>
 
       {!supabaseConfigured && (
