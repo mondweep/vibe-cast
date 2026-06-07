@@ -6,8 +6,11 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies. Regenerate the lockfile inside the Linux builder so
+# platform-native optional deps (e.g. @rollup/rollup-linux-x64-musl on Alpine)
+# resolve correctly — works around the npm optional-deps bug (npm/cli#4828) that
+# omits non-host platform binaries when the lock is generated on macOS.
+RUN rm -f package-lock.json && npm install --no-audit --no-fund
 
 # Copy source code
 COPY src ./src
