@@ -1,127 +1,80 @@
-# Vibe Cast
+# Ruflo Agent Orchestration Learning Platform
 
-> Build-in-public learning lab by **[Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty)**.
-> AI, agents, trading, multimedia, IoT, regional/cultural tech, and everything in between.
+> Branch: **`ruflo-demonstration`** · part of the [vibe-cast](./MASTER-README.md) build-in-public lab by **[Mondweep Chakravorty](https://www.linkedin.com/in/mondweepchakravorty)**.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/mondweepchakravorty)
+A full-stack learning platform that teaches **real [Ruflo](https://github.com/ruvnet/ruflo) agent orchestration** — learning paths, source-grounded lessons, progress tracking, and an in-app GraphRAG AI tutor. Built with DDD + CQRS + TDD against `PRD_RUFLO_LEARNING_PLATFORM.md`.
 
----
-
-## What is this repository?
-
-**Vibe Cast is a single repository with many lives.** Each branch is a separate project — a working prototype, a research notebook, a production demo, a hackathon entry, or a learning sprint. I use it as a public lab to explore ideas end-to-end, share my journey, and invite others to follow along, fork, and contribute.
-
-The `main` branch is intentionally minimal (only `LICENSE`, this `README.md`, and the navigation file `MASTER-README.md`). The actual code, demos, and writeups live in the ~100+ feature branches.
-
-If you stumbled here looking for one specific thing, jump straight to **[MASTER-README.md](./MASTER-README.md)** — it's the full catalogue of every branch with descriptions, tech stacks, and run instructions.
+**🌐 Live:** https://vibe-cast-xijtfcuhyq-nw.a.run.app  ·  **Stack:** Fastify + tsx (Node 20) · Vite + React + react-query · Supabase (Auth/Postgres/RLS, `ruflo_demo` schema) · pgvector · Cloud Run (`europe-west2`)
 
 ---
 
-## Why a single repo with many branches?
+## 📋 Project Status — as of close of day, Sunday 7 June 2026
 
-- **Cross-pollination**: ideas from a trading experiment often inform an agent framework, and vice versa.
-- **Build-in-public**: every direction I explore is visible — including the abandoned ones.
-- **Low friction**: a new idea = a new branch. No new repo, no new CI to configure.
-- **One place to follow**: subscribe once, see everything.
+**Headline:** the product spine is **live in production and demonstrable end-to-end** — a learner can sign in, browse 3 paths / 38 accurate lessons, track progress, and use the AI tutor. Against the *full* PRD (5 bounded contexts), roughly **45–55%** is built; three domains remain greenfield but now each has an ADR.
 
----
-
-## Flagship Showcase Projects (External Repositories)
-
-A few projects live in separate private repositories but are part of the same journey. Full writeups in [MASTER-README.md](./MASTER-README.md#showcase-projects-external-repositories).
-
-| Project | What it is | Live demo |
+### ✅ Completed & live
+| Area | PRD | State |
 |---|---|---|
-| **Rugby Line-Out Intelligence** | AI rugby analysis — turns match footage into tactical scouting reports using Google Gemini vision, on Azure Container Apps. v2.2.0, Azure migration complete. | [staging](https://lineout-frontend-staging.delightfulflower-38f4c743.uksouth.azurecontainerapps.io/) |
-| **MAESTRO — Securing the Agentic Frontier** | Agentic-AI security research presented to ~150 CISOs at Rela8 Group's CISO London Summit 2025. 23 vulns across 7 layers; 3 zero-day live demos. | [demo](https://maestro-agentic-ai-security-demo-mon.netlify.app/) |
-| **Driftwise** | Serendipitous local-history PoC built with Claude Agent SDK. | [demo](https://driftwise-mmp.vercel.app/) |
-| **Agentic Deal-Team Workforce (UK PE)** | Multi-tenant SaaS for mid-market private-equity DD — six memory-sharing agents, Gemini tool-use, Supabase + pgvector + RLS, Azure Container Apps; integrates Lexius (1,456 articles / 8,123 facts) and a 128-bit Corp Finance engine. Boutique-consultancy sales-enablement build. | (private) |
-| **Intelligent Automation — UK Water Utility** | Social-tariff onboarding pipeline reducing application processing from hours to minutes for ~4,000 customers — SFTP ingestion, validation, schema transformation, Gemini-driven error analysis, Gmail/Slack notifications. | (private) |
+| **Learning Domain** | §4 | **~95%** — full **38-lesson curriculum** (Beginner 12 · Intermediate 14 · Advanced 12), all authored & verified against the real Ruflo source (0 hallucinated APIs); paths, lessons, progress dashboard, prerequisite chain Beginner→Intermediate→Advanced. |
+| **Knowledge Graph + AI Tutor** | ADR-014 | 166-node graph + embeddings; GraphRAG tutor with citations; **multi-provider BYOK** (Anthropic / OpenAI / Requesty / Gemini — env var or in-browser key). |
+| **Certification (read side)** | §6 | Frontend↔backend contract gaps closed: certifications list/detail, learner badges, leaderboard + current-user rank, member search, single enrollment. |
+| **Platform / quality** | — | Supabase JWT auth bridge + CORS; deployed to Cloud Run; tsc clean (0 errors); 22/22 Learning-domain tests pass; ADRs 013–017 written. |
+
+### 🟡 Partially done
+- **Learning Domain — write actions.** Read/browse is fully live. **Mark-lesson-complete / enroll** and owner-scoped reads (your badges, a single enrollment) are coded but need the **Supabase secret key** set in Cloud Run Secret Manager + a redeploy.
+- **Certification.** Read endpoints + exam/badge models exist; the full exam-taking and capstone-review flow is not built.
+- **Test suite.** 91 pre-existing failures remain — genuine API-drift bugs in the *original* scaffolding (EventBus constructor/`subscribe` signature, empty stub specs), not introduced by recent work.
+
+### ⬜ Not started (each now has an ADR so it can be built without drift)
+| Domain | PRD | ADR |
+|---|---|---|
+| **Skill Lab** — agent simulator + guided exercises | §5 | [ADR-015](./docs/adr/ADR-015-Skill-Lab-Domain.md) |
+| **Community** — pattern repository + peer code review | §7 | [ADR-016](./docs/adr/ADR-016-Community-Domain.md) |
+| **Metrics** — learner/cohort analytics dashboard | §8 | [ADR-017](./docs/adr/ADR-017-Metrics-Domain.md) |
+| **KG-5** (optional) — regenerate lessons v2 from the graph | ADR-014 | — |
+
+### ⏭️ Immediate next steps
+1. **Wire the Supabase secret key** (Secret Manager) → unlocks lesson-complete/enroll writes (~10 min).
+2. **Clear the 91 legacy test failures** (isolated source-contract fixes).
+3. **Build the deferred domains** (Skill Lab / Community / Metrics / full Certification flow) per their ADRs.
 
 ---
 
-## Highlights — Some Things You'll Find In This Repository
+## Architecture
 
-| Area | Pick-a-project starting point |
-|---|---|
-| **Real-time chat & collab** | `claude/pubnub-tinkering-*` (chat), `tribe-knowledgeGraph` (3D collaborative graph) |
-| **Agentic AI & Claude Flow V3** | `claude/qe-framework-session-id-JB4dj`, `claude/ikenna-forge-YbUEZ`, `claude-flow-browser` |
-| **AI security** | `aidms-tinkering` — AI Manipulation Defense System demo |
-| **Algorithmic trading** | `claude/neural-trading-setup-*`, `cognitum-one-neuraltrader` |
-| **DeFi & on-chain** | `aave-mcp` (Rust MCP for Aave), `claude/create-defi-orphan-branch-MwFdJ` (Next.js DeFi tutor) |
-| **Multimedia & music** | `song-translation-working`, `claude/sanskrit-english-songs-*`, `claude/sheet-music-player-*` |
-| **IoT & edge** | `esb32-tinker-ruview` (ESP32 + WiFi-CSI), `tcl-move-platform` (Tata MOVE) |
-| **Genomics** | `genomics-exploration` (full-stack AI genomics) |
-| **India / Assam / regional** | `claude/assamese-travel-companion-*`, `NMC-2026-assam`, `claude/rari-jaipur-ai-summit-2026-*` |
-| **Structured learning** | `aws-advanced-networking`, `claude/learning-rust-basics-*`, `claude/ai-architecture-analysis-*` |
-| **Hackathons & meetups** | `42-london-demo`, `london-meetup-8Apr`, `hackathon-tv5monde-guidance` |
+- **Backend** (`src/api`, `src/learning`, `src/shared`): Fastify run via `tsx` (ESM). DDD aggregates (`LearningPath`, `Lesson`, `PathProgress`) with domain events; CQRS read models in Supabase (`ruflo_demo` schema, RLS, `projection_version`/`last_synced_event_id`).
+- **Frontend** (`src/web`): Vite + React + react-router + @tanstack/react-query; Supabase JS auth; lessons render `ContentBlock[]` (objectives/prose/code/callout/capstone/quiz).
+- **Knowledge graph + tutor**: `kg_node`/`kg_edge`/`lesson_concept` + pgvector; Transformers.js (`Xenova/all-MiniLM-L6-v2`, 384-dim) embeddings; `kg_search` RPC; provider-agnostic synthesis (`src/api/services/llmProvider.ts`).
+- **Migrations**: `migrations/001`–`010` (curriculum, KG, progress, certification/community read models).
+- **Decisions**: see [`docs/adr/`](./docs/adr/) — ADR-009 EventBus, ADR-011 CQRS, ADR-012 K8s, ADR-013 Learning Domain, ADR-014 KG/Tutor, ADR-015 Skill Lab, ADR-016 Community, ADR-017 Metrics.
 
-A full categorised catalogue lives in **[MASTER-README.md](./MASTER-README.md)**.
-
----
-
-## Getting Started
+## Run locally
 
 ```bash
-# 1. Clone
-git clone https://github.com/mondweep/vibe-cast.git
-cd vibe-cast
-
-# 2. List every branch
-git fetch --all
-git branch -r
-
-# 3. Open the catalogue
-$EDITOR MASTER-README.md
-
-# 4. Check out a branch that interests you
-git checkout <branch-name>
-
-# 5. Follow that branch's README for setup
-#    (commonly: npm install / pip install -r requirements.txt / cargo build)
+npm install
+# .env (gitignored) needs: SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, DATABASE_SCHEMA=ruflo_demo
+#   (optional) SUPABASE_SECRET_KEY for writes; LLM_PROVIDER + a provider key for the tutor
+npm run build            # vite build (frontend)
+npx tsx src/api/server.ts   # backend + serves the SPA on :3000
+npm run dev              # frontend dev server (Vite), if developing the UI
+npm test                 # vitest
 ```
 
-Most web projects in this repo ship with a `netlify.toml`, `vercel.json`, `railway.toml`, or `Dockerfile`, so you can deploy them with one click after forking.
+## Deploy (Cloud Run)
+
+```bash
+gcloud run deploy vibe-cast --source . --project=vibe-cast-492722 --region=europe-west2 \
+  --allow-unauthenticated \
+  --set-env-vars "SUPABASE_URL=…,SUPABASE_PUBLISHABLE_KEY=sb_publishable_…,DATABASE_SCHEMA=ruflo_demo,NODE_ENV=production"
+```
+
+> The runtime image is **`node:20-slim` (glibc)** — required because the tutor's `@xenova/transformers` → `onnxruntime-node` ships glibc-only native binaries (Alpine/musl fails to start). Client-safe Vite vars are embedded at build via `.env.production`; **never** put the Supabase secret key or any LLM key in the repo or env-vars — use Secret Manager.
+
+## Security notes
+- `.env` is gitignored; only client-safe publishable keys ship in the frontend bundle.
+- Tutor BYOK keys are used transiently per request and never logged or persisted.
+- Curriculum content is verified against the real Ruflo source — no invented commands/tools/APIs.
 
 ---
 
-## Repository Conventions
-
-- **`main`** — intentionally minimal. Holds only `LICENSE`, `README.md`, and `MASTER-README.md`.
-- **`claude/<slug>-<id>`** — branches created during a Claude Code session. The slug describes the experiment.
-- **`<topic>` / `<topic>-tinkering`** — manually-created exploration branches.
-- **`agentics/*`**, **`claude-flow-*`** — agentic-system experiments and integrations.
-- Each branch contains its own `README.md`, dependency manifest, and (where relevant) deployment config.
-
----
-
-## Following the Journey
-
-I treat Vibe Cast as a notebook in the open. The most reliable place to follow what I'm working on, why, and what I'm learning is LinkedIn:
-
-- **LinkedIn**: <https://www.linkedin.com/in/mondweepchakravorty>
-- **GitHub**: <https://github.com/mondweep/vibe-cast>
-
----
-
-## Contributing
-
-This is primarily a personal lab, but contributions are very welcome — especially if a particular branch sparks ideas for you. The flow:
-
-1. Identify the branch your contribution targets (most contributions are branch-local).
-2. Fork the repo, then create a feature branch *from that project branch*.
-3. Open an issue first if the change is non-trivial.
-4. Submit a PR back to the project branch (not `main`).
-
-Please be kind, curious, and patient — many of these branches are works-in-progress or learning artifacts rather than polished products.
-
----
-
-## License
-
-This repository is licensed under the [MIT License](LICENSE).
-
----
-
-**See the full catalogue → [MASTER-README.md](./MASTER-README.md)**
+> Part of the **vibe-cast** repository — see the full multi-branch catalogue in **[MASTER-README.md](./MASTER-README.md)**. Licensed under [MIT](./LICENSE).
