@@ -32,6 +32,7 @@ export const ROUTES = {
   DASHBOARD: '/',
   PATHS: '/paths',
   PATH_DETAIL: '/paths/:pathId',
+  KNOWLEDGE_GRAPH: '/knowledge-graph',
   ENROLLMENT: '/enrollment',
   EXAM: '/exam/:enrollmentId',
   BADGES: '/badges',

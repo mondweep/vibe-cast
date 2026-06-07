@@ -50,6 +50,7 @@ export function createAuthMiddleware(
       '/api/v1/learning/paths',
       '/api/v1/learning/lessons',
       '/api/v1/certification/certifications',
+      '/api/v1/kg',
     ];
     if (
       request.method === 'GET' &&

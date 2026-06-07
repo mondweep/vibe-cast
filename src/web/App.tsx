@@ -21,6 +21,9 @@ import { PathDetailPage } from '@/pages/PathDetailPage';
 import { LessonPage } from '@/pages/LessonPage';
 import { Loader } from 'lucide-react';
 
+// Lazy-loaded so the graph visualisation library only loads on this tab.
+const KnowledgeGraphPage = React.lazy(() => import('@/pages/KnowledgeGraphPage'));
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
 
@@ -130,6 +133,25 @@ export function App() {
           <ProtectedRoute>
             <AppLayout>
               <PathDetailPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/knowledge-graph"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <React.Suspense
+                fallback={
+                  <div className="flex justify-center py-24">
+                    <Loader className="animate-spin text-primary-600" size={36} />
+                  </div>
+                }
+              >
+                <KnowledgeGraphPage />
+              </React.Suspense>
             </AppLayout>
           </ProtectedRoute>
         }

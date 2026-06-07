@@ -35,6 +35,8 @@ import {
 import { LearningProgressController } from './controllers/learningProgress';
 import { registerLearningProgressRoutes } from './routes/learningProgress';
 import { registerContractGapReadRoutes } from './routes/contractGapReads';
+import { KnowledgeGraphController } from './controllers/knowledgeGraph';
+import { registerKnowledgeGraphRoutes } from './routes/knowledgeGraph';
 
 // ESM equivalents of CommonJS __filename/__dirname (this runs under tsx as ESM)
 const __filename = fileURLToPath(import.meta.url);
@@ -170,6 +172,11 @@ export class ApiServer {
         // single enrollment) — closes the frontend↔backend audit gaps.
         await registerContractGapReadRoutes(this.fastify, supabaseClient, this.logger);
         this.logger.info('Contract-gap read routes registered');
+
+        // Knowledge graph read API (ADR-014) — powers the Knowledge Graph tab.
+        const kgController = new KnowledgeGraphController(supabaseClient, this.logger);
+        await registerKnowledgeGraphRoutes(this.fastify, kgController);
+        this.logger.info('Knowledge graph routes registered');
       } else {
         this.logger.warn(
           'Learning catalog routes NOT registered (set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY)',
