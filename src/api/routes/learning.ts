@@ -35,13 +35,11 @@ export async function registerLearningRoutes(
   );
 
   /**
-   * Get learner profile
-   * GET /api/v1/learning/learners/:id/profile
+   * NOTE: GET /api/v1/learning/learners/:id/profile is now served by the
+   * repaired LearningCatalogController (see registerLearningPathRoutes). The
+   * legacy handler here relied on a generic readModelRepository.findById that
+   * the repository never implemented, so it could only ever 500.
    */
-  fastify.get(
-    '/api/v1/learning/learners/:id/profile',
-    (request, reply) => controller.getLearnerProfile(request, reply)
-  );
 
   /**
    * Complete enrollment

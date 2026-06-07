@@ -4,12 +4,17 @@ import { useAuth } from '@/auth/AuthContext';
 import { Header } from '@/components/common/Header';
 import { Sidebar } from '@/components/common/Sidebar';
 import { Footer } from '@/components/common/Footer';
+import { TutorDrawer } from '@/components/common/TutorDrawer';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { EnrollmentPage } from '@/pages/EnrollmentPage';
 import { ExamPage } from '@/pages/ExamPage';
 import { BadgesPage } from '@/pages/BadgesPage';
 import { LeaderboardPage } from '@/pages/LeaderboardPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { LoginPage } from '@/pages/LoginPage';
+import { LearningPathsPage } from '@/pages/LearningPathsPage';
+import { PathDetailPage } from '@/pages/PathDetailPage';
+import { LessonPage } from '@/pages/LessonPage';
 import { Loader } from 'lucide-react';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -46,6 +51,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <Footer />
+      <TutorDrawer />
     </div>
   );
 }
@@ -85,6 +91,39 @@ export function App() {
           <ProtectedRoute>
             <AppLayout>
               <DashboardPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/paths"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <LearningPathsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/paths/:pathId"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <PathDetailPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/lessons/:lessonId"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <LessonPage />
             </AppLayout>
           </ProtectedRoute>
         }
@@ -145,22 +184,12 @@ export function App() {
         }
       />
 
-      {/* Public Routes - Placeholder */}
+      {/* Public Routes */}
       <Route
         path="/login"
         element={
           <AuthLayout>
-            <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                Sign In
-              </h1>
-              <p className="text-gray-600 mb-4">
-                Sign in with Supabase to continue
-              </p>
-              <p className="text-sm text-gray-500 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                Login UI would be implemented using Supabase Auth
-              </p>
-            </div>
+            <LoginPage />
           </AuthLayout>
         }
       />

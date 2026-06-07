@@ -30,6 +30,8 @@ export const EXAM = {
 
 export const ROUTES = {
   DASHBOARD: '/',
+  PATHS: '/paths',
+  PATH_DETAIL: '/paths/:pathId',
   ENROLLMENT: '/enrollment',
   EXAM: '/exam/:enrollmentId',
   BADGES: '/badges',

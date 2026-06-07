@@ -11,6 +11,7 @@ RUN npm ci
 
 # Copy source code
 COPY src ./src
+COPY index.html ./
 COPY tsconfig.json vite.config.ts tailwind.config.js postcss.config.js ./
 
 # Build frontend
@@ -45,5 +46,5 @@ EXPOSE ${PORT}
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start API server which also serves the SPA frontend
-CMD ["node", "src/api/server.ts"]
+# Start API server (via tsx, which runs TypeScript directly) — also serves the SPA frontend
+CMD ["npx", "tsx", "src/api/server.ts"]

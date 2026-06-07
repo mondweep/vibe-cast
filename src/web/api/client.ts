@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { API_V1_BASE, API_TIMEOUT } from '@/config/constants';
+import { supabase } from '@/auth/AuthContext';
 
 interface RequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -21,9 +22,19 @@ class ApiClient {
   }
 
   private setupInterceptors(): void {
-    // Request interceptor - add API key if available
+    // Request interceptor - attach the Supabase session JWT (primary auth that
+    // the backend now verifies), plus a legacy X-API-Key if one is set.
     this.instance.interceptors.request.use(
-      (config: RequestConfig) => {
+      async (config: RequestConfig) => {
+        try {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token;
+          if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+          }
+        } catch {
+          // no session — request proceeds unauthenticated
+        }
         const apiKey = localStorage.getItem('apiKey');
         if (apiKey) {
           config.headers['X-API-Key'] = apiKey;
@@ -39,11 +50,13 @@ class ApiClient {
       async (error: AxiosError) => {
         const config = error.config as RequestConfig;
 
-        // Handle 401 Unauthorized - redirect to login
+        // A 401 from the API (e.g. the legacy X-API-Key check) must NOT force a
+        // navigation. Auth and routing are driven by the Supabase session via
+        // ProtectedRoute / LoginPage. Forcing window.location here caused an
+        // infinite redirect loop between "/" and "/login" (the dashboard's data
+        // calls 401, redirect to /login, LoginPage sees a session, redirect to
+        // /, repeat). Surface the error and let react-query handle it.
         if (error.response?.status === 401) {
-          localStorage.removeItem('apiKey');
-          localStorage.removeItem('authToken');
-          window.location.href = '/login';
           return Promise.reject(error);
         }
 

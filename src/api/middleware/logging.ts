@@ -33,31 +33,42 @@ export function createLoggingMiddleware(logger: Logger) {
       ip: request.ip,
     });
 
-    // Hook into response to log after response is sent
-    reply.addHook('onResponse', (request, reply, done) => {
-      const duration = Date.now() - startTime;
-      const statusCode = reply.statusCode;
+    // Stash start time so the onResponse hook can compute duration
+    (request as any).startTime = startTime;
+  };
+}
 
-      // Log response
-      logger.info('Request completed', {
+/**
+ * Response Logging Hook
+ *
+ * Registered as an instance-level `onResponse` hook (via fastify.addHook).
+ * `addHook` only exists on the Fastify instance — not on the reply object —
+ * so response logging must live here rather than inside the preHandler.
+ */
+export function createResponseLoggingHook(logger: Logger) {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    const startTime = (request as any).startTime ?? Date.now();
+    const correlationId = (request as any).correlationId;
+    const duration = Date.now() - startTime;
+    const statusCode = reply.statusCode;
+
+    // Log response
+    logger.info('Request completed', {
+      correlationId,
+      method: request.method,
+      path: request.url,
+      statusCode,
+      duration: `${duration}ms`,
+    });
+
+    // Log warnings for slow requests (>1s)
+    if (duration > 1000) {
+      logger.warn('Slow request detected', {
         correlationId,
         method: request.method,
         path: request.url,
-        statusCode,
         duration: `${duration}ms`,
       });
-
-      // Log warnings for slow requests (>1s)
-      if (duration > 1000) {
-        logger.warn('Slow request detected', {
-          correlationId,
-          method: request.method,
-          path: request.url,
-          duration: `${duration}ms`,
-        });
-      }
-
-      done();
-    });
+    }
   };
 }

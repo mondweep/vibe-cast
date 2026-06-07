@@ -1,15 +1,17 @@
+import 'dotenv/config';
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import staticPlugin from '@fastify/static';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { Logger, ConsoleLogger } from '../shared/infrastructure/logging/Logger';
 import { EventBus } from '../shared/infrastructure/events/EventBus';
 import { IEventBus } from '../shared/infrastructure/events/IEventBus';
 import { IReadModelRepository } from '../shared/infrastructure/readmodels/IReadModelRepository';
 import { SupabaseReadModelRepository } from '../shared/infrastructure/readmodels/SupabaseReadModelRepository';
 import { createAuthMiddleware } from './middleware/auth';
-import { createLoggingMiddleware } from './middleware/logging';
+import { createLoggingMiddleware, createResponseLoggingHook } from './middleware/logging';
 import { registerErrorHandler } from './middleware/error';
 import { registerLearningRoutes } from './routes/learning';
 import { registerCertificationRoutes } from './routes/certification';
@@ -18,6 +20,25 @@ import { LearningController } from './controllers/learning';
 import { CertificationController } from './controllers/certification';
 import { CommunityController } from './controllers/community';
 import { successResponse } from './utils/response';
+import {
+  LearningCatalogRepository,
+  createCatalogSupabaseClient,
+} from '../learning/infrastructure/repositories/LearningCatalogRepository';
+import { LearningCatalogController } from './controllers/learningCatalog';
+import { registerLearningPathRoutes } from './routes/learningPaths';
+import { TutorController } from './controllers/tutor';
+import { registerTutorRoutes } from './routes/tutor';
+import {
+  ProgressReadRepository,
+  createProgressSupabaseClient,
+} from '../learning/infrastructure/repositories/ProgressReadRepository';
+import { LearningProgressController } from './controllers/learningProgress';
+import { registerLearningProgressRoutes } from './routes/learningProgress';
+import { registerContractGapReadRoutes } from './routes/contractGapReads';
+
+// ESM equivalents of CommonJS __filename/__dirname (this runs under tsx as ESM)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Vibe-Cast REST API Server
@@ -58,7 +79,7 @@ export class ApiServer {
       origin: process.env.CORS_ORIGIN || '*',
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'X-API-Key', 'X-Correlation-ID'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Correlation-ID'],
     });
 
     // Register security headers
@@ -67,15 +88,20 @@ export class ApiServer {
     });
 
     // Register static file serving for SPA frontend
-    const distPath = path.join(__dirname, '../../web/dist');
+    const distPath = path.join(__dirname, '../../dist');
     await this.fastify.register(staticPlugin, {
       root: distPath,
       prefix: '/',
     });
 
+    // One Supabase client serves both JWT verification (auth) and catalog reads.
+    // Null if env is absent — auth then falls back to X-API-Key, catalog disables.
+    const supabaseClient = createCatalogSupabaseClient();
+
     // Register custom middleware
     this.fastify.addHook('preHandler', createLoggingMiddleware(this.logger));
-    this.fastify.addHook('preHandler', createAuthMiddleware(this.logger));
+    this.fastify.addHook('onResponse', createResponseLoggingHook(this.logger));
+    this.fastify.addHook('preHandler', createAuthMiddleware(this.logger, supabaseClient));
 
     // Register global error handler
     registerErrorHandler(this.fastify, this.logger);
@@ -108,6 +134,49 @@ export class ApiServer {
     await registerLearningRoutes(this.fastify, learningController);
     await registerCertificationRoutes(this.fastify, certificationController);
     await registerCommunityRoutes(this.fastify, communityController);
+
+    // Learning curriculum catalog + learner reads (read side, ADR-013 Phase 3).
+    // Wrapped so a client/config failure can never crash server boot.
+    try {
+      if (supabaseClient) {
+        const catalogRepo = new LearningCatalogRepository(supabaseClient);
+        const catalogController = new LearningCatalogController(catalogRepo, this.logger);
+        await registerLearningPathRoutes(this.fastify, catalogController);
+        this.logger.info('Learning catalog routes registered');
+
+        // GraphRAG tutor (ADR-014 KG-3) — reuses the same Supabase client
+        const tutorController = new TutorController(supabaseClient, this.logger);
+        await registerTutorRoutes(this.fastify, tutorController);
+        this.logger.info('Tutor routes registered');
+
+        // Learner progress read models + dashboard (PRD §4.3, ADR-011).
+        // Prefers a service client for the enroll/complete write path; reads
+        // work with the publishable key.
+        const progressSupabase = createProgressSupabaseClient() ?? supabaseClient;
+        const progressRepo = new ProgressReadRepository(progressSupabase);
+        const progressController = new LearningProgressController(
+          progressRepo,
+          catalogRepo,
+          this.logger,
+        );
+        await registerLearningProgressRoutes(this.fastify, progressController);
+        this.logger.info('Learning progress routes registered');
+
+        // Contract-gap read endpoints (certifications, badges, community,
+        // single enrollment) — closes the frontend↔backend audit gaps.
+        await registerContractGapReadRoutes(this.fastify, supabaseClient, this.logger);
+        this.logger.info('Contract-gap read routes registered');
+      } else {
+        this.logger.warn(
+          'Learning catalog routes NOT registered (set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY)',
+        );
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn('Learning catalog routes NOT registered (initialization failed)', {
+        error: message,
+      });
+    }
 
     this.logger.info('API server initialized', {
       port: process.env.PORT || 3000,
@@ -232,11 +301,8 @@ async function main() {
   });
 }
 
-// Export for both CLI and testing
-export { ApiServer };
-
-// Run if called directly
-if (require.main === module) {
+// Run if called directly (ESM entry-point check; ApiServer is already exported above)
+if (process.argv[1] === __filename) {
   main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);

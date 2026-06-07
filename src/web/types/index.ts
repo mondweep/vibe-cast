@@ -28,6 +28,31 @@ export interface Certification {
   createdAt: string;
 }
 
+export interface LearningPath {
+  id: string;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  title: string;
+  description: string;
+  estimatedHours: number;
+  lessonCount: number;
+  orderedLessonIds: string[];
+  prerequisitePathId: string | null;
+  status: string;
+}
+
+export interface Lesson {
+  id: string;
+  pathId: string;
+  order: number;
+  title: string;
+  topics: string[];
+  estimatedHours: number;
+  capstone: string;
+  prerequisiteLessonId: string | null;
+  content: unknown[];
+  status: string;
+}
+
 export interface Enrollment {
   id: string;
   learnerId: string;

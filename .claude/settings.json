@@ -166,7 +166,7 @@
       "Bash(npx @claude-flow*)",
       "Bash(npx claude-flow*)",
       "Bash(node .claude/*)",
-      "mcp__claude-flow__:*"
+      "mcp__claude-flow"
     ],
     "deny": [
       "Read(./.env)",
