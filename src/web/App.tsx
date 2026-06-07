@@ -12,6 +12,7 @@ import { BadgesPage } from '@/pages/BadgesPage';
 import { LeaderboardPage } from '@/pages/LeaderboardPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { LoginPage } from '@/pages/LoginPage';
+import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 import { LearningPathsPage } from '@/pages/LearningPathsPage';
 import { PathDetailPage } from '@/pages/PathDetailPage';
 import { LessonPage } from '@/pages/LessonPage';
@@ -190,6 +191,16 @@ export function App() {
         element={
           <AuthLayout>
             <LoginPage />
+          </AuthLayout>
+        }
+      />
+
+      {/* Password recovery landing (Supabase reset email redirects here) */}
+      <Route
+        path="/reset-password"
+        element={
+          <AuthLayout>
+            <ResetPasswordPage />
           </AuthLayout>
         }
       />

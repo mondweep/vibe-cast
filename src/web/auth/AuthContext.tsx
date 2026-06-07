@@ -12,6 +12,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -116,12 +117,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetPassword: async (email: string) => {
       try {
         setError(null);
+        // Send the user back to THIS origin's /reset-password route (so the
+        // link works in prod, not just localhost). The target must also be in
+        // the Supabase Auth "Redirect URLs" allowlist, else Supabase falls back
+        // to the project Site URL.
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(
           email,
+          { redirectTo: `${window.location.origin}/reset-password` },
         );
         if (resetError) throw resetError;
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Reset failed');
+        setError(error);
+        throw error;
+      }
+    },
+    updatePassword: async (newPassword: string) => {
+      try {
+        setError(null);
+        // The recovery link establishes a temporary session (supabase-js parses
+        // the URL hash on load), so updateUser applies to the recovering user.
+        const { error: updateError } = await supabase.auth.updateUser({
+          password: newPassword,
+        });
+        if (updateError) throw updateError;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Password update failed');
         setError(error);
         throw error;
       }
