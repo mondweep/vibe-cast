@@ -11,6 +11,13 @@
 // the password). The service key must be the modern sb_secret_... key.
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
+
+// supabase-js initialises a Realtime client which needs a global WebSocket;
+// Node < 22 has none. Polyfill it (mirrors the app's Supabase clients).
+if (typeof globalThis.WebSocket === 'undefined') {
+  globalThis.WebSocket = ws;
+}
 
 const url = process.env.SUPABASE_URL;
 const serviceKey =
