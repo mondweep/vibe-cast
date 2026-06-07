@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Github, Twitter, Linkedin } from 'lucide-react';
+import { Linkedin, Heart } from 'lucide-react';
+
+const LINKEDIN_URL = 'https://www.linkedin.com/in/mondweepchakravorty/';
+const PAYPAL_URL = 'https://www.paypal.com/paypalme/mondweep';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -116,33 +119,72 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Social Links */}
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">
-            Copyright &copy; {currentYear} Vibe-Cast Learning Platform. All
-            rights reserved.
+        {/* Support / contribution call-to-action */}
+        <div className="border-t border-gray-800 pt-8 mb-8">
+          <div className="bg-gray-800/60 border border-gray-700 rounded-xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <Heart className="text-pink-400 flex-shrink-0 mt-0.5" size={22} />
+              <div>
+                <p className="font-semibold text-white">Found this useful?</p>
+                <p className="text-gray-400 text-sm">
+                  This learning platform is built and shared in the open. If it
+                  helps you, please consider supporting the work — it keeps it
+                  free and growing.
+                </p>
+              </div>
+            </div>
+            <a
+              href={PAYPAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 whitespace-nowrap px-5 py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-medium rounded-lg transition"
+            >
+              <Heart size={16} /> Support this work
+            </a>
+          </div>
+        </div>
+
+        {/* Copyright + social */}
+        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-gray-400 text-sm text-center md:text-left">
+            Copyright &copy; {currentYear}{' '}
+            <a
+              href={LINKEDIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white hover:text-primary-400 font-medium transition"
+            >
+              Mondweep Chakravorty
+            </a>
+            . All rights reserved. Built in public — please consider{' '}
+            <a
+              href={PAYPAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-pink-400 hover:text-pink-300 font-medium transition"
+            >
+              supporting the work
+            </a>
+            .
           </p>
-          <div className="flex space-x-4 mt-4 md:mt-0">
+          <div className="flex space-x-4">
             <a
-              href="#"
-              aria-label="GitHub"
-              className="text-gray-400 hover:text-white transition"
-            >
-              <Github size={20} />
-            </a>
-            <a
-              href="#"
-              aria-label="Twitter"
-              className="text-gray-400 hover:text-white transition"
-            >
-              <Twitter size={20} />
-            </a>
-            <a
-              href="#"
-              aria-label="LinkedIn"
+              href={LINKEDIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn — Mondweep Chakravorty"
               className="text-gray-400 hover:text-white transition"
             >
               <Linkedin size={20} />
+            </a>
+            <a
+              href={PAYPAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Support via PayPal"
+              className="text-gray-400 hover:text-pink-400 transition"
+            >
+              <Heart size={20} />
             </a>
           </div>
         </div>

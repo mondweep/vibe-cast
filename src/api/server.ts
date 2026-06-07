@@ -92,6 +92,10 @@ export class ApiServer {
     await this.fastify.register(staticPlugin, {
       root: distPath,
       prefix: '/',
+      // wildcard:false serves real files only and lets unmatched paths fall
+      // through to setNotFoundHandler (the SPA fallback below), so client-side
+      // routes like /login, /paths, /reset-password and page refreshes work.
+      wildcard: false,
     });
 
     // One Supabase client serves both JWT verification (auth) and catalog reads.
@@ -177,6 +181,19 @@ export class ApiServer {
         error: message,
       });
     }
+
+    // SPA fallback: any non-API GET that didn't match a static file or API
+    // route returns index.html, so client-side routes and deep links (e.g. the
+    // Supabase password-recovery link to /reset-password, or a refresh on
+    // /paths) load the app instead of 404ing.
+    this.fastify.setNotFoundHandler((request, reply) => {
+      if (request.method === 'GET' && !request.url.startsWith('/api/')) {
+        return reply.type('text/html').sendFile('index.html');
+      }
+      return reply
+        .status(404)
+        .send({ status: 'error', message: 'Not found', code: 'NOT_FOUND' });
+    });
 
     this.logger.info('API server initialized', {
       port: process.env.PORT || 3000,
