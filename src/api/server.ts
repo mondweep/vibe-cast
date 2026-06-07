@@ -318,8 +318,10 @@ async function main() {
   });
 }
 
-// Run if called directly (ESM entry-point check; ApiServer is already exported above)
-if (process.argv[1] === __filename) {
+// Run if called directly (ESM entry-point check; ApiServer is already exported
+// above). Resolve argv[1] so a relative invocation (e.g. `node dist/server/
+// server.mjs`) still matches the absolute __filename.
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);

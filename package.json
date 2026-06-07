@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:server": "esbuild src/api/server.ts --bundle --platform=node --target=node20 --format=esm --packages=external --outfile=dist/server/server.mjs",
     "preview": "vite preview",
     "lint": "eslint src/web --ext .ts,.tsx",
     "type-check": "tsc --noEmit",

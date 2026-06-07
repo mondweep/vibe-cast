@@ -22,8 +22,11 @@ COPY tsconfig.json vite.config.ts tailwind.config.js postcss.config.js ./
 # Vite auto-loads .env.production in production build mode and inlines VITE_* vars.
 COPY .env.production ./
 
-# Build frontend
-RUN npm run build
+# Build frontend (-> dist/) and bundle the backend to a single ESM file
+# (-> dist/server/server.mjs). Bundling inlines all our imports so the runtime
+# runs plain `node` with NO tsx — eliminating the intermittent tsx ESM resolver
+# race (ERR_MODULE_NOT_FOUND on extensionless imports) that crashed startups.
+RUN npm run build && npm run build:server
 
 # Runtime stage - run full stack app (Debian/glibc — see builder note)
 FROM node:20-slim
@@ -57,5 +60,5 @@ EXPOSE ${PORT}
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start API server (via tsx, which runs TypeScript directly) — also serves the SPA frontend
-CMD ["npx", "tsx", "src/api/server.ts"]
+# Start the prebundled API server with plain node (no tsx) — also serves the SPA.
+CMD ["node", "dist/server/server.mjs"]
