@@ -1,5 +1,7 @@
 # Build stage - build frontend
-FROM node:20-alpine AS builder
+# Debian (glibc) base — @xenova/transformers -> onnxruntime-node ships glibc-only
+# native binaries (needs ld-linux-x86-64.so.2), so Alpine/musl cannot run them.
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
@@ -7,9 +9,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies. Regenerate the lockfile inside the Linux builder so
-# platform-native optional deps (e.g. @rollup/rollup-linux-x64-musl on Alpine)
-# resolve correctly — works around the npm optional-deps bug (npm/cli#4828) that
-# omits non-host platform binaries when the lock is generated on macOS.
+# platform-native optional deps (e.g. @rollup/rollup-linux-x64-gnu) resolve
+# correctly — works around the npm optional-deps bug (npm/cli#4828) that omits
+# non-host platform binaries when the lock is generated on macOS.
 RUN rm -f package-lock.json && npm install --no-audit --no-fund
 
 # Copy source code
@@ -23,19 +25,22 @@ COPY .env.production ./
 # Build frontend
 RUN npm run build
 
-# Runtime stage - run full stack app
-FROM node:20-alpine
+# Runtime stage - run full stack app (Debian/glibc — see builder note)
+FROM node:20-slim
 
 WORKDIR /app
 
 # Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends dumb-init \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Install production dependencies only (regenerate lock to avoid cross-platform
+# optional-dep gaps from the macOS-generated lock; --omit=dev keeps it lean)
+RUN rm -f package-lock.json && npm install --omit=dev --no-audit --no-fund
 
 # Copy built frontend from builder
 COPY --from=builder /app/dist ./dist
