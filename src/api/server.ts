@@ -1,6 +1,8 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import staticPlugin from '@fastify/static';
+import path from 'path';
 import { Logger, ConsoleLogger } from '../shared/infrastructure/logging/Logger';
 import { EventBus } from '../shared/infrastructure/events/EventBus';
 import { IEventBus } from '../shared/infrastructure/events/IEventBus';
@@ -62,6 +64,13 @@ export class ApiServer {
     // Register security headers
     await this.fastify.register(helmet, {
       contentSecurityPolicy: false,
+    });
+
+    // Register static file serving for SPA frontend
+    const distPath = path.join(__dirname, '../../web/dist');
+    await this.fastify.register(staticPlugin, {
+      root: distPath,
+      prefix: '/',
     });
 
     // Register custom middleware

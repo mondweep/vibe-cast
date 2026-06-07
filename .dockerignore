@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.gitignore
+.env.local
+.env.*.local
+.DS_Store
+*.log
+npm-debug.log*
+.vscode
+.idea
+*.swp
+.claude-flow
+.claude
+tests
