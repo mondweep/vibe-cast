@@ -17,6 +17,16 @@ export function Header() {
     }
   };
 
+  // Single source of truth for nav so desktop + mobile never drift apart.
+  const navItems = [
+    { label: 'Dashboard', to: '/' },
+    { label: 'Learning Paths', to: '/paths' },
+    { label: 'Knowledge Graph', to: '/knowledge-graph' },
+    { label: 'Enrollments', to: '/enrollment' },
+    { label: 'Badges', to: '/badges' },
+    { label: 'Leaderboard', to: '/leaderboard' },
+  ];
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,31 +42,16 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/"
-              className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/enrollment"
-              className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-            >
-              Enrollments
-            </Link>
-            <Link
-              to="/badges"
-              className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-            >
-              Badges
-            </Link>
-            <Link
-              to="/leaderboard"
-              className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-            >
-              Leaderboard
-            </Link>
+          <div className="hidden md:flex items-center space-x-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
 
           {/* User Menu */}
@@ -95,34 +90,21 @@ export function Header() {
         {/* Mobile Navigation */}
         {menuOpen && (
           <div className="md:hidden pb-4 space-y-2">
-            <Link
-              to="/"
-              className="block px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/enrollment"
-              className="block px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm"
-            >
-              Enrollments
-            </Link>
-            <Link
-              to="/badges"
-              className="block px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm"
-            >
-              Badges
-            </Link>
-            <Link
-              to="/leaderboard"
-              className="block px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm"
-            >
-              Leaderboard
-            </Link>
+            {navItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setMenuOpen(false)}
+                className="block px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm"
+              >
+                {item.label}
+              </Link>
+            ))}
             {user && (
               <>
                 <Link
                   to="/profile"
+                  onClick={() => setMenuOpen(false)}
                   className="block px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm"
                 >
                   Profile

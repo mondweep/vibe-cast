@@ -127,10 +127,27 @@ export function TutorDrawer() {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [turns, busy]);
 
-  const send = async () => {
-    const q = input.trim();
+  // Open the drawer and ask a question when another component dispatches
+  // `ruflo:ask-tutor` (e.g. the "Ask the tutor" button on the Knowledge Graph).
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const q = (e as CustomEvent).detail?.question as string | undefined;
+      setOpen(true);
+      setShowSettings(false);
+      if (q) {
+        setInput(q);
+        setTimeout(() => send(q), 0);
+      }
+    };
+    window.addEventListener('ruflo:ask-tutor', handler);
+    return () => window.removeEventListener('ruflo:ask-tutor', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const send = async (override?: string) => {
+    const q = (override ?? input).trim();
     if (!q || busy) return;
-    setInput('');
+    if (override === undefined) setInput('');
     setTurns((t) => [...t, { role: 'user', text: q }]);
     setBusy(true);
     try {

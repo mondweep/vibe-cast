@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ForceGraph2D from 'react-force-graph-2d';
-import { Loader, Search, X, BookOpen, FileCode } from 'lucide-react';
+import { Loader, Search, X, BookOpen, FileCode, Sparkles } from 'lucide-react';
 import { useKnowledgeGraph } from '@/hooks/useKnowledgeGraph';
 import type { KGNode } from '@/api/knowledgeGraph';
 
@@ -179,6 +179,21 @@ export function KnowledgeGraphPage() {
               </div>
 
               {selected.summary && <p className="text-sm text-gray-700 leading-relaxed">{selected.summary}</p>}
+
+              <button
+                onClick={() =>
+                  window.dispatchEvent(
+                    new CustomEvent('ruflo:ask-tutor', {
+                      detail: {
+                        question: `Explain "${selected.name}" (${KIND_META[selected.kind]?.label || selected.kind}) in Ruflo and how it's used.`,
+                      },
+                    }),
+                  )
+                }
+                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 transition"
+              >
+                <Sparkles size={15} /> Ask the tutor about this
+              </button>
 
               {selected.lessons?.length > 0 && (
                 <div>
