@@ -64,7 +64,7 @@ class ApiClient {
         if (
           config &&
           !config._retry &&
-          (error.response?.status >= 500 || error.code === 'ECONNABORTED')
+          ((error.response?.status ?? 0) >= 500 || error.code === 'ECONNABORTED')
         ) {
           config._retry = true;
           // Wait 1 second before retrying

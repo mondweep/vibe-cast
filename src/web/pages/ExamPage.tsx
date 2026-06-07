@@ -120,12 +120,14 @@ export function ExamPage() {
       <ExamForm
         exam={mockExam}
         onSubmit={(answers, score) =>
-          submitExamMutation.mutateAsync({
-            enrollmentId: enrollment.id,
-            examId: mockExam.id,
-            answers,
-            score,
-          })
+          submitExamMutation
+            .mutateAsync({
+              enrollmentId: enrollment.id,
+              examId: mockExam.id,
+              answers,
+              score,
+            })
+            .then(() => undefined)
         }
         isSubmitting={submitExamMutation.isPending}
       />

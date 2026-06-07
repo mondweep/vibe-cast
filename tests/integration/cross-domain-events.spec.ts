@@ -85,27 +85,27 @@ class BadgeDisplayed extends DomainEvent {
  * Mock Event Handlers
  */
 class MockBadgeHandler implements EventHandler {
-  handle = jest.fn(async (event: DomainEvent) => {
+  handle = vi.fn(async (event: DomainEvent) => {
     // Handler logic
   });
 
-  canHandle = jest.fn((event: DomainEvent) => event.getEventName() === 'BadgeIssued');
+  canHandle = vi.fn((event: DomainEvent) => event.getEventName() === 'BadgeIssued');
 }
 
 class MockCommunityHandler implements EventHandler {
-  handle = jest.fn(async (event: DomainEvent) => {
+  handle = vi.fn(async (event: DomainEvent) => {
     // Handler logic
   });
 
-  canHandle = jest.fn((event: DomainEvent) => event.getEventName() === 'BadgeIssued');
+  canHandle = vi.fn((event: DomainEvent) => event.getEventName() === 'BadgeIssued');
 }
 
 class MockProfileHandler implements EventHandler {
-  handle = jest.fn(async (event: DomainEvent) => {
+  handle = vi.fn(async (event: DomainEvent) => {
     // Handler logic
   });
 
-  canHandle = jest.fn((event: DomainEvent) => event.getEventName() === 'BadgeIssued');
+  canHandle = vi.fn((event: DomainEvent) => event.getEventName() === 'BadgeIssued');
 }
 
 /**
@@ -160,18 +160,18 @@ class RealProfileHandler implements EventHandler {
  * Mock services
  */
 class MockBadgeService {
-  issueBadge = jest.fn();
-  getBadgeDetails = jest.fn();
+  issueBadge = vi.fn();
+  getBadgeDetails = vi.fn();
 }
 
 class MockCommunityService {
-  onBadgeIssued = jest.fn();
-  announceNewMember = jest.fn();
+  onBadgeIssued = vi.fn();
+  announceNewMember = vi.fn();
 }
 
 class MockProfileService {
-  displayBadge = jest.fn();
-  updateProfilePicture = jest.fn();
+  displayBadge = vi.fn();
+  updateProfilePicture = vi.fn();
 }
 
 describe('Cross-Domain Event Propagation', () => {

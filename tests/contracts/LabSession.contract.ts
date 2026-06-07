@@ -32,10 +32,10 @@ export interface MockLabOutcome {
  * Validates that submission results meet requirements
  */
 export interface MockOutcomeValidator {
-  validateTestResults: jest.MockedFunction<(testsPassed: number, testsTotal: number) => boolean>;
-  validateExecutionTime: jest.MockedFunction<(ms: number) => boolean>;
-  validateFeedback: jest.MockedFunction<(feedback: string) => boolean>;
-  calculateSuccessRate: jest.MockedFunction<(testsPassed: number, testsTotal: number) => number>;
+  validateTestResults: vi.MockedFunction<(testsPassed: number, testsTotal: number) => boolean>;
+  validateExecutionTime: vi.MockedFunction<(ms: number) => boolean>;
+  validateFeedback: vi.MockedFunction<(feedback: string) => boolean>;
+  calculateSuccessRate: vi.MockedFunction<(testsPassed: number, testsTotal: number) => number>;
 }
 
 /**
@@ -43,10 +43,10 @@ export interface MockOutcomeValidator {
  */
 export function createMockOutcomeValidator(): MockOutcomeValidator {
   return {
-    validateTestResults: jest.fn().mockReturnValue(true),
-    validateExecutionTime: jest.fn().mockReturnValue(true),
-    validateFeedback: jest.fn().mockReturnValue(true),
-    calculateSuccessRate: jest.fn().mockReturnValue(0.85),
+    validateTestResults: vi.fn().mockReturnValue(true),
+    validateExecutionTime: vi.fn().mockReturnValue(true),
+    validateFeedback: vi.fn().mockReturnValue(true),
+    calculateSuccessRate: vi.fn().mockReturnValue(0.85),
   };
 }
 
@@ -55,12 +55,12 @@ export function createMockOutcomeValidator(): MockOutcomeValidator {
  * Defines how LabSession persists and retrieves session data
  */
 export interface MockLabSessionRepository {
-  save: jest.MockedFunction<(session: any) => Promise<any>>;
-  findById: jest.MockedFunction<(id: string) => Promise<any | null>>;
-  findByLearner: jest.MockedFunction<(learnerId: string) => Promise<any[]>>;
-  findActive: jest.MockedFunction<(learnerId: string) => Promise<any | null>>;
-  recordOutcome: jest.MockedFunction<(outcome: MockLabOutcome) => Promise<void>>;
-  getOutcomes: jest.MockedFunction<(labSessionId: string) => Promise<MockLabOutcome[]>>;
+  save: vi.MockedFunction<(session: any) => Promise<any>>;
+  findById: vi.MockedFunction<(id: string) => Promise<any | null>>;
+  findByLearner: vi.MockedFunction<(learnerId: string) => Promise<any[]>>;
+  findActive: vi.MockedFunction<(learnerId: string) => Promise<any | null>>;
+  recordOutcome: vi.MockedFunction<(outcome: MockLabOutcome) => Promise<void>>;
+  getOutcomes: vi.MockedFunction<(labSessionId: string) => Promise<MockLabOutcome[]>>;
 }
 
 /**
@@ -68,18 +68,18 @@ export interface MockLabSessionRepository {
  */
 export function createMockLabSessionRepository(): MockLabSessionRepository {
   return {
-    save: jest.fn().mockResolvedValue({
+    save: vi.fn().mockResolvedValue({
       id: `lab-${Date.now()}`,
       learnerId: 'learner-123',
       exerciseId: 'ex-123',
       startedAt: new Date(),
       status: 'IN_PROGRESS',
     }),
-    findById: jest.fn().mockResolvedValue(null),
-    findByLearner: jest.fn().mockResolvedValue([]),
-    findActive: jest.fn().mockResolvedValue(null),
-    recordOutcome: jest.fn().mockResolvedValue(undefined),
-    getOutcomes: jest.fn().mockResolvedValue([]),
+    findById: vi.fn().mockResolvedValue(null),
+    findByLearner: vi.fn().mockResolvedValue([]),
+    findActive: vi.fn().mockResolvedValue(null),
+    recordOutcome: vi.fn().mockResolvedValue(undefined),
+    getOutcomes: vi.fn().mockResolvedValue([]),
   };
 }
 

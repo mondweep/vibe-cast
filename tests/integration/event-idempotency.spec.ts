@@ -62,19 +62,19 @@ interface RetryPolicy {
 class MockIdempotencyStore {
   private store: Map<string, { eventId: string; result: any; timestamp: Date }> = new Map();
 
-  storeResult = jest.fn(async (idempotencyKey: string, eventId: string, result: any) => {
+  storeResult = vi.fn(async (idempotencyKey: string, eventId: string, result: any) => {
     this.store.set(idempotencyKey, { eventId, result, timestamp: new Date() });
   });
 
-  getResult = jest.fn(async (idempotencyKey: string) => {
+  getResult = vi.fn(async (idempotencyKey: string) => {
     return this.store.get(idempotencyKey);
   });
 
-  hasProcessed = jest.fn(async (idempotencyKey: string) => {
+  hasProcessed = vi.fn(async (idempotencyKey: string) => {
     return this.store.has(idempotencyKey);
   });
 
-  getAllKeys = jest.fn(() => Array.from(this.store.keys()));
+  getAllKeys = vi.fn(() => Array.from(this.store.keys()));
 }
 
 /**
@@ -97,13 +97,13 @@ class RetryPolicyCalculator {
 class MockDLQHandler {
   private dlq: Array<{ event: DomainEvent; reason: string; timestamp: Date }> = [];
 
-  addToDLQ = jest.fn(async (event: DomainEvent, reason: string) => {
+  addToDLQ = vi.fn(async (event: DomainEvent, reason: string) => {
     this.dlq.push({ event, reason, timestamp: new Date() });
   });
 
-  getEvents = jest.fn(() => this.dlq);
+  getEvents = vi.fn(() => this.dlq);
 
-  removeFromDLQ = jest.fn(async (eventId: string) => {
+  removeFromDLQ = vi.fn(async (eventId: string) => {
     const index = this.dlq.findIndex(item => item.event.id === eventId);
     if (index > -1) {
       this.dlq.splice(index, 1);
@@ -112,12 +112,12 @@ class MockDLQHandler {
     return false;
   });
 
-  retryEvent = jest.fn(async (eventId: string) => {
+  retryEvent = vi.fn(async (eventId: string) => {
     const item = this.dlq.find(x => x.event.id === eventId);
     return item ? { event: item.event, success: true } : null;
   });
 
-  size = jest.fn(() => this.dlq.length);
+  size = vi.fn(() => this.dlq.length);
 }
 
 /**
@@ -268,7 +268,7 @@ describe('Event Idempotency and DLQ Handling', () => {
       const idempotencyKey = `${event.id}-${event.getEventName()}`;
 
       // ACT: First execution
-      const handler1Called = jest.fn().mockResolvedValue(true);
+      const handler1Called = vi.fn().mockResolvedValue(true);
       await handler1Called();
 
       // Store result

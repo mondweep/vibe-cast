@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
 import { EventBus } from '../../src/shared/infrastructure/events/EventBus';
 import { ConsoleLogger } from '../../src/shared/infrastructure/logging/Logger';

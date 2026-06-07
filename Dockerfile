@@ -13,6 +13,9 @@ RUN npm ci
 COPY src ./src
 COPY index.html ./
 COPY tsconfig.json vite.config.ts tailwind.config.js postcss.config.js ./
+# Client-safe Vite build-time env (Supabase publishable key + public URLs).
+# Vite auto-loads .env.production in production build mode and inlines VITE_* vars.
+COPY .env.production ./
 
 # Build frontend
 RUN npm run build

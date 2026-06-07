@@ -22,7 +22,7 @@ describe('Member Aggregate', () => {
     mockRepository = createMockMemberRepository();
     mockReputationService = createMockReputationService();
     mockBadgeRepository = createMockBadgeRepository();
-    mockEventBus = { publish: jest.fn().mockResolvedValue(undefined) };
+    mockEventBus = { publish: vi.fn().mockResolvedValue(undefined) };
   });
 
   describe('Member Creation and Initialization', () => {

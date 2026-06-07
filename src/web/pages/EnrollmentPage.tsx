@@ -245,7 +245,7 @@ export function EnrollmentPage() {
               certifications={certifications}
               isLoading={loadingCerts}
               onSubmit={(certId) =>
-                createEnrollmentMutation.mutateAsync(certId)
+                createEnrollmentMutation.mutateAsync(certId).then(() => undefined)
               }
               onCancel={() => setShowForm(false)}
             />

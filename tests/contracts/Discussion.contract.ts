@@ -16,15 +16,15 @@ import { Discussion, DiscussionStatus, Reply } from '../../src/community/domain/
  * Persists discussions and manages thread operations
  */
 export interface MockDiscussionRepository {
-  save: jest.MockedFunction<(discussion: Discussion) => Promise<Discussion>>;
-  findById: jest.MockedFunction<(id: string) => Promise<Discussion | null>>;
-  findByCreator: jest.MockedFunction<(createdBy: string) => Promise<Discussion[]>>;
-  findByStatus: jest.MockedFunction<(status: DiscussionStatus) => Promise<Discussion[]>>;
-  findRecent: jest.MockedFunction<(limit: number) => Promise<Discussion[]>>;
-  recordVote: jest.MockedFunction<(discussionId: string, voterId: string, voteType: 'upvote' | 'downvote') => Promise<void>>;
-  removeVote: jest.MockedFunction<(discussionId: string, voterId: string) => Promise<void>>;
-  recordReply: jest.MockedFunction<(discussionId: string, reply: Reply) => Promise<void>>;
-  getReplyCount: jest.MockedFunction<(discussionId: string) => Promise<number>>;
+  save: vi.MockedFunction<(discussion: Discussion) => Promise<Discussion>>;
+  findById: vi.MockedFunction<(id: string) => Promise<Discussion | null>>;
+  findByCreator: vi.MockedFunction<(createdBy: string) => Promise<Discussion[]>>;
+  findByStatus: vi.MockedFunction<(status: DiscussionStatus) => Promise<Discussion[]>>;
+  findRecent: vi.MockedFunction<(limit: number) => Promise<Discussion[]>>;
+  recordVote: vi.MockedFunction<(discussionId: string, voterId: string, voteType: 'upvote' | 'downvote') => Promise<void>>;
+  removeVote: vi.MockedFunction<(discussionId: string, voterId: string) => Promise<void>>;
+  recordReply: vi.MockedFunction<(discussionId: string, reply: Reply) => Promise<void>>;
+  getReplyCount: vi.MockedFunction<(discussionId: string) => Promise<number>>;
 }
 
 /**
@@ -32,7 +32,7 @@ export interface MockDiscussionRepository {
  */
 export function createMockDiscussionRepository(): MockDiscussionRepository {
   return {
-    save: jest.fn().mockResolvedValue({
+    save: vi.fn().mockResolvedValue({
       id: `discussion-${Date.now()}`,
       createdBy: 'user-123',
       title: 'Test Discussion',
@@ -48,14 +48,14 @@ export function createMockDiscussionRepository(): MockDiscussionRepository {
       isModerated: false,
       moderatorNotes: '',
     }),
-    findById: jest.fn().mockResolvedValue(null),
-    findByCreator: jest.fn().mockResolvedValue([]),
-    findByStatus: jest.fn().mockResolvedValue([]),
-    findRecent: jest.fn().mockResolvedValue([]),
-    recordVote: jest.fn().mockResolvedValue(undefined),
-    removeVote: jest.fn().mockResolvedValue(undefined),
-    recordReply: jest.fn().mockResolvedValue(undefined),
-    getReplyCount: jest.fn().mockResolvedValue(0),
+    findById: vi.fn().mockResolvedValue(null),
+    findByCreator: vi.fn().mockResolvedValue([]),
+    findByStatus: vi.fn().mockResolvedValue([]),
+    findRecent: vi.fn().mockResolvedValue([]),
+    recordVote: vi.fn().mockResolvedValue(undefined),
+    removeVote: vi.fn().mockResolvedValue(undefined),
+    recordReply: vi.fn().mockResolvedValue(undefined),
+    getReplyCount: vi.fn().mockResolvedValue(0),
   };
 }
 
@@ -64,12 +64,12 @@ export function createMockDiscussionRepository(): MockDiscussionRepository {
  * Handles content moderation and visibility
  */
 export interface MockModerationService {
-  validateContent: jest.MockedFunction<(content: string) => Promise<boolean>>;
-  flagForReview: jest.MockedFunction<(discussionId: string, reason: string) => Promise<void>>;
-  approveFlaggedContent: jest.MockedFunction<(discussionId: string) => Promise<void>>;
-  hideContent: jest.MockedFunction<(discussionId: string, moderatorNotes: string) => Promise<void>>;
-  unhideContent: jest.MockedFunction<(discussionId: string) => Promise<void>>;
-  generateModerationReport: jest.MockedFunction<(discussionId: string) => Promise<any>>;
+  validateContent: vi.MockedFunction<(content: string) => Promise<boolean>>;
+  flagForReview: vi.MockedFunction<(discussionId: string, reason: string) => Promise<void>>;
+  approveFlaggedContent: vi.MockedFunction<(discussionId: string) => Promise<void>>;
+  hideContent: vi.MockedFunction<(discussionId: string, moderatorNotes: string) => Promise<void>>;
+  unhideContent: vi.MockedFunction<(discussionId: string) => Promise<void>>;
+  generateModerationReport: vi.MockedFunction<(discussionId: string) => Promise<any>>;
 }
 
 /**
@@ -77,12 +77,12 @@ export interface MockModerationService {
  */
 export function createMockModerationService(): MockModerationService {
   return {
-    validateContent: jest.fn().mockResolvedValue(true),
-    flagForReview: jest.fn().mockResolvedValue(undefined),
-    approveFlaggedContent: jest.fn().mockResolvedValue(undefined),
-    hideContent: jest.fn().mockResolvedValue(undefined),
-    unhideContent: jest.fn().mockResolvedValue(undefined),
-    generateModerationReport: jest.fn().mockResolvedValue({}),
+    validateContent: vi.fn().mockResolvedValue(true),
+    flagForReview: vi.fn().mockResolvedValue(undefined),
+    approveFlaggedContent: vi.fn().mockResolvedValue(undefined),
+    hideContent: vi.fn().mockResolvedValue(undefined),
+    unhideContent: vi.fn().mockResolvedValue(undefined),
+    generateModerationReport: vi.fn().mockResolvedValue({}),
   };
 }
 
@@ -91,12 +91,12 @@ export function createMockModerationService(): MockModerationService {
  * Tracks voting history to ensure idempotency and prevent double votes
  */
 export interface MockVoteTracker {
-  hasUpvoted: jest.MockedFunction<(discussionId: string, voterId: string) => Promise<boolean>>;
-  hasDownvoted: jest.MockedFunction<(discussionId: string, voterId: string) => Promise<boolean>>;
-  recordUpvote: jest.MockedFunction<(discussionId: string, voterId: string) => Promise<void>>;
-  recordDownvote: jest.MockedFunction<(discussionId: string, voterId: string) => Promise<void>>;
-  clearVote: jest.MockedFunction<(discussionId: string, voterId: string) => Promise<void>>;
-  getVoteCount: jest.MockedFunction<(discussionId: string) => Promise<{upvotes: number; downvotes: number}>>;
+  hasUpvoted: vi.MockedFunction<(discussionId: string, voterId: string) => Promise<boolean>>;
+  hasDownvoted: vi.MockedFunction<(discussionId: string, voterId: string) => Promise<boolean>>;
+  recordUpvote: vi.MockedFunction<(discussionId: string, voterId: string) => Promise<void>>;
+  recordDownvote: vi.MockedFunction<(discussionId: string, voterId: string) => Promise<void>>;
+  clearVote: vi.MockedFunction<(discussionId: string, voterId: string) => Promise<void>>;
+  getVoteCount: vi.MockedFunction<(discussionId: string) => Promise<{upvotes: number; downvotes: number}>>;
 }
 
 /**
@@ -104,12 +104,12 @@ export interface MockVoteTracker {
  */
 export function createMockVoteTracker(): MockVoteTracker {
   return {
-    hasUpvoted: jest.fn().mockResolvedValue(false),
-    hasDownvoted: jest.fn().mockResolvedValue(false),
-    recordUpvote: jest.fn().mockResolvedValue(undefined),
-    recordDownvote: jest.fn().mockResolvedValue(undefined),
-    clearVote: jest.fn().mockResolvedValue(undefined),
-    getVoteCount: jest.fn().mockResolvedValue({upvotes: 0, downvotes: 0}),
+    hasUpvoted: vi.fn().mockResolvedValue(false),
+    hasDownvoted: vi.fn().mockResolvedValue(false),
+    recordUpvote: vi.fn().mockResolvedValue(undefined),
+    recordDownvote: vi.fn().mockResolvedValue(undefined),
+    clearVote: vi.fn().mockResolvedValue(undefined),
+    getVoteCount: vi.fn().mockResolvedValue({upvotes: 0, downvotes: 0}),
   };
 }
 

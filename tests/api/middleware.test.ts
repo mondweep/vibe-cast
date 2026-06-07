@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import { createAuthMiddleware } from '../../src/api/middleware/auth';
 import { createLoggingMiddleware } from '../../src/api/middleware/logging';

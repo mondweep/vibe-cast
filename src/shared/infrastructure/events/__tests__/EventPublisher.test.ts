@@ -89,7 +89,7 @@ describe('EventPublisher', () => {
 
   describe('publishEventsFrom', () => {
     it('should publish all unpublished events from aggregate', async () => {
-      const handler = jest.fn();
+      const handler = vi.fn();
       eventBus.subscribe('TestEvent', handler);
 
       const event1 = new TestEvent('agg-1', 1, metadata, 'event1');
@@ -209,7 +209,7 @@ describe('EventPublisher', () => {
     });
 
     it('should be idempotent', async () => {
-      const handler = jest.fn();
+      const handler = vi.fn();
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'event1');
@@ -243,7 +243,7 @@ describe('EventPublisher', () => {
 
   describe('publishEvent (direct)', () => {
     it('should publish a single event directly', async () => {
-      const handler = jest.fn();
+      const handler = vi.fn();
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'direct event');
@@ -277,7 +277,7 @@ describe('EventPublisher', () => {
 
     it('should allow direct subscription on returned bus', async () => {
       const bus = publisher.getEventBus();
-      const handler = jest.fn();
+      const handler = vi.fn();
 
       bus.subscribe('TestEvent', handler);
 
@@ -290,7 +290,7 @@ describe('EventPublisher', () => {
 
   describe('integration', () => {
     it('should publish events after aggregate state change', async () => {
-      const handler = jest.fn();
+      const handler = vi.fn();
       eventBus.subscribe('TestEvent', handler);
 
       // Simulate domain operation
@@ -304,7 +304,7 @@ describe('EventPublisher', () => {
     });
 
     it('should handle multiple events in single publish', async () => {
-      const handler = jest.fn();
+      const handler = vi.fn();
       eventBus.subscribe('TestEvent', handler);
 
       // Multiple events from one operation

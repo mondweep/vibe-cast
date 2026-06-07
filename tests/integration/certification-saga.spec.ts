@@ -109,12 +109,12 @@ class MockSAGAOrchestrator {
   private currentState: Map<string, CertificationSAGAState> = new Map();
   private sagaHistory: Map<string, SAGAStep[]> = new Map();
 
-  startSAGA = jest.fn((sagaId: string) => {
+  startSAGA = vi.fn((sagaId: string) => {
     this.currentState.set(sagaId, CertificationSAGAState.STARTED);
     return { sagaId, state: CertificationSAGAState.STARTED };
   });
 
-  transitionState = jest.fn((sagaId: string, newState: CertificationSAGAState, eventType: string) => {
+  transitionState = vi.fn((sagaId: string, newState: CertificationSAGAState, eventType: string) => {
     const previousState = this.currentState.get(sagaId);
     this.currentState.set(sagaId, newState);
     
@@ -133,33 +133,33 @@ class MockSAGAOrchestrator {
     return { sagaId, state: newState };
   });
 
-  resumeFromWaitStep = jest.fn((sagaId: string, waitState: CertificationSAGAState) => {
+  resumeFromWaitStep = vi.fn((sagaId: string, waitState: CertificationSAGAState) => {
     if (this.currentState.get(sagaId) === waitState) {
       return true;
     }
     return false;
   });
 
-  getState = jest.fn((sagaId: string) => this.currentState.get(sagaId));
-  getHistory = jest.fn((sagaId: string) => this.sagaHistory.get(sagaId) || []);
+  getState = vi.fn((sagaId: string) => this.currentState.get(sagaId));
+  getHistory = vi.fn((sagaId: string) => this.sagaHistory.get(sagaId) || []);
 }
 
 /**
  * Mock Exam service
  */
 class MockExamService {
-  scheduleExam = jest.fn();
-  completeExam = jest.fn();
-  getExamStatus = jest.fn();
+  scheduleExam = vi.fn();
+  completeExam = vi.fn();
+  getExamStatus = vi.fn();
 }
 
 /**
  * Mock State Manager
  */
 class MockStateManager {
-  setState = jest.fn();
-  getState = jest.fn();
-  clearState = jest.fn();
+  setState = vi.fn();
+  getState = vi.fn();
+  clearState = vi.fn();
 }
 
 /**

@@ -15,13 +15,13 @@ import { DomainEvent, EventMetadata } from '../../src/shared/infrastructure/even
  * Mock Event Handler interface
  * Handlers are async functions that process domain events
  */
-export type MockEventHandler = jest.MockedFunction<(event: any) => Promise<void>>;
+export type MockEventHandler = vi.MockedFunction<(event: any) => Promise<void>>;
 
 /**
  * Factory for creating mock event handler
  */
 export function createMockEventHandler(): MockEventHandler {
-  return jest.fn().mockResolvedValue(undefined);
+  return vi.fn().mockResolvedValue(undefined);
 }
 
 /**
@@ -39,12 +39,12 @@ export interface MockSubscription {
  * Tracks failed events with retry metadata
  */
 export interface MockDeadLetterQueue {
-  addEvent: jest.MockedFunction<(event: any, error: string, stack?: string) => Promise<void>>;
-  getEvent: jest.MockedFunction<(dlqEventId: string) => Promise<any | null>>;
-  getAllEvents: jest.MockedFunction<() => Promise<any[]>>;
-  removeEvent: jest.MockedFunction<(dlqEventId: string) => Promise<void>>;
-  getSize: jest.MockedFunction<() => Promise<number>>;
-  clear: jest.MockedFunction<() => Promise<void>>;
+  addEvent: vi.MockedFunction<(event: any, error: string, stack?: string) => Promise<void>>;
+  getEvent: vi.MockedFunction<(dlqEventId: string) => Promise<any | null>>;
+  getAllEvents: vi.MockedFunction<() => Promise<any[]>>;
+  removeEvent: vi.MockedFunction<(dlqEventId: string) => Promise<void>>;
+  getSize: vi.MockedFunction<() => Promise<number>>;
+  clear: vi.MockedFunction<() => Promise<void>>;
 }
 
 /**
@@ -52,12 +52,12 @@ export interface MockDeadLetterQueue {
  */
 export function createMockDeadLetterQueue(): MockDeadLetterQueue {
   return {
-    addEvent: jest.fn().mockResolvedValue(undefined),
-    getEvent: jest.fn().mockResolvedValue(null),
-    getAllEvents: jest.fn().mockResolvedValue([]),
-    removeEvent: jest.fn().mockResolvedValue(undefined),
-    getSize: jest.fn().mockResolvedValue(0),
-    clear: jest.fn().mockResolvedValue(undefined),
+    addEvent: vi.fn().mockResolvedValue(undefined),
+    getEvent: vi.fn().mockResolvedValue(null),
+    getAllEvents: vi.fn().mockResolvedValue([]),
+    removeEvent: vi.fn().mockResolvedValue(undefined),
+    getSize: vi.fn().mockResolvedValue(0),
+    clear: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -66,9 +66,9 @@ export function createMockDeadLetterQueue(): MockDeadLetterQueue {
  * Defines exponential backoff configuration
  */
 export interface MockRetryPolicy {
-  validateMaxRetries: jest.MockedFunction<(count: number) => boolean>;
-  getBackoffDelay: jest.MockedFunction<(retryCount: number) => number>;
-  canRetry: jest.MockedFunction<(currentRetries: number) => boolean>;
+  validateMaxRetries: vi.MockedFunction<(count: number) => boolean>;
+  getBackoffDelay: vi.MockedFunction<(retryCount: number) => number>;
+  canRetry: vi.MockedFunction<(currentRetries: number) => boolean>;
 }
 
 /**
@@ -76,9 +76,9 @@ export interface MockRetryPolicy {
  */
 export function createMockRetryPolicy(): MockRetryPolicy {
   return {
-    validateMaxRetries: jest.fn().mockReturnValue(true),
-    getBackoffDelay: jest.fn().mockReturnValue(1000),
-    canRetry: jest.fn().mockReturnValue(true),
+    validateMaxRetries: vi.fn().mockReturnValue(true),
+    getBackoffDelay: vi.fn().mockReturnValue(1000),
+    canRetry: vi.fn().mockReturnValue(true),
   };
 }
 
@@ -87,10 +87,10 @@ export function createMockRetryPolicy(): MockRetryPolicy {
  * Tracks which events have been processed to prevent duplicates
  */
 export interface MockIdempotencyTracker {
-  hasProcessed: jest.MockedFunction<(eventId: string) => Promise<boolean>>;
-  markProcessed: jest.MockedFunction<(eventId: string) => Promise<void>>;
-  unmarkProcessed: jest.MockedFunction<(eventId: string) => Promise<void>>;
-  getProcessedCount: jest.MockedFunction<() => Promise<number>>;
+  hasProcessed: vi.MockedFunction<(eventId: string) => Promise<boolean>>;
+  markProcessed: vi.MockedFunction<(eventId: string) => Promise<void>>;
+  unmarkProcessed: vi.MockedFunction<(eventId: string) => Promise<void>>;
+  getProcessedCount: vi.MockedFunction<() => Promise<number>>;
 }
 
 /**
@@ -98,10 +98,10 @@ export interface MockIdempotencyTracker {
  */
 export function createMockIdempotencyTracker(): MockIdempotencyTracker {
   return {
-    hasProcessed: jest.fn().mockResolvedValue(false),
-    markProcessed: jest.fn().mockResolvedValue(undefined),
-    unmarkProcessed: jest.fn().mockResolvedValue(undefined),
-    getProcessedCount: jest.fn().mockResolvedValue(0),
+    hasProcessed: vi.fn().mockResolvedValue(false),
+    markProcessed: vi.fn().mockResolvedValue(undefined),
+    unmarkProcessed: vi.fn().mockResolvedValue(undefined),
+    getProcessedCount: vi.fn().mockResolvedValue(0),
   };
 }
 
@@ -110,15 +110,15 @@ export function createMockIdempotencyTracker(): MockIdempotencyTracker {
  * Defines the core publish/subscribe contract
  */
 export interface MockEventBus {
-  publish: jest.MockedFunction<(event: any) => Promise<void>>;
-  subscribe: jest.MockedFunction<(eventType: string, handler: MockEventHandler) => string>;
-  unsubscribe: jest.MockedFunction<(subscriptionId: string) => void>;
-  retry: jest.MockedFunction<(dlqEventId: string) => Promise<boolean>>;
-  getDeadLetterQueue: jest.MockedFunction<() => any[]>;
-  getDeadLetterQueueSize: jest.MockedFunction<() => number>;
-  getProcessedEventCount: jest.MockedFunction<() => number>;
-  getSubscriptionCount: jest.MockedFunction<() => number>;
-  isHealthy: jest.MockedFunction<() => boolean>;
+  publish: vi.MockedFunction<(event: any) => Promise<void>>;
+  subscribe: vi.MockedFunction<(eventType: string, handler: MockEventHandler) => string>;
+  unsubscribe: vi.MockedFunction<(subscriptionId: string) => void>;
+  retry: vi.MockedFunction<(dlqEventId: string) => Promise<boolean>>;
+  getDeadLetterQueue: vi.MockedFunction<() => any[]>;
+  getDeadLetterQueueSize: vi.MockedFunction<() => number>;
+  getProcessedEventCount: vi.MockedFunction<() => number>;
+  getSubscriptionCount: vi.MockedFunction<() => number>;
+  isHealthy: vi.MockedFunction<() => boolean>;
 }
 
 /**
@@ -126,15 +126,15 @@ export interface MockEventBus {
  */
 export function createMockEventBus(): MockEventBus {
   return {
-    publish: jest.fn().mockResolvedValue(undefined),
-    subscribe: jest.fn().mockReturnValue(`sub-${Date.now()}`),
-    unsubscribe: jest.fn(),
-    retry: jest.fn().mockResolvedValue(true),
-    getDeadLetterQueue: jest.fn().mockReturnValue([]),
-    getDeadLetterQueueSize: jest.fn().mockReturnValue(0),
-    getProcessedEventCount: jest.fn().mockReturnValue(0),
-    getSubscriptionCount: jest.fn().mockReturnValue(0),
-    isHealthy: jest.fn().mockReturnValue(true),
+    publish: vi.fn().mockResolvedValue(undefined),
+    subscribe: vi.fn().mockReturnValue(`sub-${Date.now()}`),
+    unsubscribe: vi.fn(),
+    retry: vi.fn().mockResolvedValue(true),
+    getDeadLetterQueue: vi.fn().mockReturnValue([]),
+    getDeadLetterQueueSize: vi.fn().mockReturnValue(0),
+    getProcessedEventCount: vi.fn().mockReturnValue(0),
+    getSubscriptionCount: vi.fn().mockReturnValue(0),
+    isHealthy: vi.fn().mockReturnValue(true),
   };
 }
 
@@ -179,9 +179,9 @@ export class MockDomainEvent extends DomainEvent {
  * Handles publishing events with retry and error handling
  */
 export interface MockEventPublisher {
-  publishWithRetry: jest.MockedFunction<(event: any, retryCount?: number) => Promise<void>>;
-  publishBatch: jest.MockedFunction<(events: any[]) => Promise<void>>;
-  getPublishedCount: jest.MockedFunction<() => number>;
+  publishWithRetry: vi.MockedFunction<(event: any, retryCount?: number) => Promise<void>>;
+  publishBatch: vi.MockedFunction<(events: any[]) => Promise<void>>;
+  getPublishedCount: vi.MockedFunction<() => number>;
 }
 
 /**
@@ -189,9 +189,9 @@ export interface MockEventPublisher {
  */
 export function createMockEventPublisher(): MockEventPublisher {
   return {
-    publishWithRetry: jest.fn().mockResolvedValue(undefined),
-    publishBatch: jest.fn().mockResolvedValue(undefined),
-    getPublishedCount: jest.fn().mockReturnValue(0),
+    publishWithRetry: vi.fn().mockResolvedValue(undefined),
+    publishBatch: vi.fn().mockResolvedValue(undefined),
+    getPublishedCount: vi.fn().mockReturnValue(0),
   };
 }
 

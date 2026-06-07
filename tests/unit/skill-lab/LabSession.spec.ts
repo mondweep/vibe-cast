@@ -21,7 +21,7 @@ describe('LabSession Aggregate', () => {
   beforeEach(() => {
     mockRepository = createMockLabSessionRepository();
     mockValidator = createMockOutcomeValidator();
-    mockEventBus = { publish: jest.fn().mockResolvedValue(undefined) };
+    mockEventBus = { publish: vi.fn().mockResolvedValue(undefined) };
   });
 
   describe('LabSession Lifecycle', () => {

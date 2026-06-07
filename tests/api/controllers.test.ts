@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { LearningController } from '../../src/api/controllers/learning';
 import { CertificationController } from '../../src/api/controllers/certification';
 import { CommunityController } from '../../src/api/controllers/community';
@@ -72,13 +72,13 @@ describe('API Controllers', () => {
       };
 
       mockReply = {
-        status: jest.fn().mockReturnThis(),
-        send: jest.fn().mockReturnThis(),
+        status: vi.fn().mockReturnThis(),
+        send: vi.fn().mockReturnThis(),
       };
     });
 
     it('should create enrollment and publish event', async () => {
-      const publishSpy = jest.spyOn(eventBus, 'publish');
+      const publishSpy = vi.spyOn(eventBus, 'publish');
 
       mockRequest.validatedBody = {
         learnerId: '550e8400-e29b-41d4-a716-446655440000',
@@ -145,7 +145,7 @@ describe('API Controllers', () => {
         status: 'ACTIVE',
       });
 
-      const publishSpy = jest.spyOn(eventBus, 'publish');
+      const publishSpy = vi.spyOn(eventBus, 'publish');
 
       await controller.completeEnrollment(
         mockRequest as FastifyRequest,
@@ -175,13 +175,13 @@ describe('API Controllers', () => {
       };
 
       mockReply = {
-        status: jest.fn().mockReturnThis(),
-        send: jest.fn().mockReturnThis(),
+        status: vi.fn().mockReturnThis(),
+        send: vi.fn().mockReturnThis(),
       };
     });
 
     it('should issue badge and publish event', async () => {
-      const publishSpy = jest.spyOn(eventBus, 'publish');
+      const publishSpy = vi.spyOn(eventBus, 'publish');
 
       mockRequest.validatedBody = {
         learnerId: '550e8400-e29b-41d4-a716-446655440000',
@@ -243,7 +243,7 @@ describe('API Controllers', () => {
         certification_id: '550e8400-e29b-41d4-a716-446655440003',
       });
 
-      const publishSpy = jest.spyOn(eventBus, 'publish');
+      const publishSpy = vi.spyOn(eventBus, 'publish');
 
       await controller.submitExam(
         mockRequest as FastifyRequest,
@@ -269,8 +269,8 @@ describe('API Controllers', () => {
       };
 
       mockReply = {
-        status: jest.fn().mockReturnThis(),
-        send: jest.fn().mockReturnThis(),
+        status: vi.fn().mockReturnThis(),
+        send: vi.fn().mockReturnThis(),
       };
     });
 

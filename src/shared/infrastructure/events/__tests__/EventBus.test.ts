@@ -49,7 +49,7 @@ describe('EventBus', () => {
 
   describe('publish and subscribe', () => {
     it('should deliver published event to subscribers', async () => {
-      const handler = jest.fn();
+      const handler = vi.fn();
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'test data');
@@ -60,8 +60,8 @@ describe('EventBus', () => {
     });
 
     it('should deliver to multiple subscribers', async () => {
-      const handler1 = jest.fn();
-      const handler2 = jest.fn();
+      const handler1 = vi.fn();
+      const handler2 = vi.fn();
 
       eventBus.subscribe('TestEvent', handler1);
       eventBus.subscribe('TestEvent', handler2);
@@ -74,8 +74,8 @@ describe('EventBus', () => {
     });
 
     it('should not deliver to unrelated subscribers', async () => {
-      const handler1 = jest.fn();
-      const handler2 = jest.fn();
+      const handler1 = vi.fn();
+      const handler2 = vi.fn();
 
       eventBus.subscribe('TestEvent', handler1);
       eventBus.subscribe('OtherEvent', handler2);
@@ -88,7 +88,7 @@ describe('EventBus', () => {
     });
 
     it('should handle async handlers', async () => {
-      const handler = jest.fn(async () => {
+      const handler = vi.fn(async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
       });
 
@@ -103,7 +103,7 @@ describe('EventBus', () => {
 
   describe('unsubscribe', () => {
     it('should stop delivering after unsubscribe', async () => {
-      const handler = jest.fn();
+      const handler = vi.fn();
       const subId = eventBus.subscribe('TestEvent', handler);
 
       eventBus.unsubscribe(subId);
@@ -117,7 +117,7 @@ describe('EventBus', () => {
 
   describe('idempotency', () => {
     it('should reject duplicate events by ID', async () => {
-      const handler = jest.fn();
+      const handler = vi.fn();
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'test data');
@@ -132,7 +132,7 @@ describe('EventBus', () => {
   describe('error handling', () => {
     it('should catch handler errors and add to DLQ', async () => {
       const error = new Error('Handler failed');
-      const handler = jest.fn().mockRejectedValue(error);
+      const handler = vi.fn().mockRejectedValue(error);
 
       eventBus.subscribe('TestEvent', handler);
 
@@ -146,8 +146,8 @@ describe('EventBus', () => {
     });
 
     it('should not let one handler failure block other handlers', async () => {
-      const handler1 = jest.fn().mockRejectedValue(new Error('Failed'));
-      const handler2 = jest.fn();
+      const handler1 = vi.fn().mockRejectedValue(new Error('Failed'));
+      const handler2 = vi.fn();
 
       eventBus.subscribe('TestEvent', handler1);
       eventBus.subscribe('TestEvent', handler2);
@@ -160,7 +160,7 @@ describe('EventBus', () => {
     });
 
     it('should include stack trace in DLQ event', async () => {
-      const handler = jest.fn().mockRejectedValue(new Error('Test error'));
+      const handler = vi.fn().mockRejectedValue(new Error('Test error'));
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'test data');
@@ -173,7 +173,7 @@ describe('EventBus', () => {
 
   describe('dead-letter queue', () => {
     it('should store failed event in DLQ', async () => {
-      const handler = jest.fn().mockRejectedValue(new Error('Handler failed'));
+      const handler = vi.fn().mockRejectedValue(new Error('Handler failed'));
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'test data');
@@ -186,7 +186,7 @@ describe('EventBus', () => {
     });
 
     it('should track retry count and last retry time', async () => {
-      const handler = jest.fn().mockRejectedValue(new Error('Failed'));
+      const handler = vi.fn().mockRejectedValue(new Error('Failed'));
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'test data');
@@ -203,7 +203,7 @@ describe('EventBus', () => {
     });
 
     it('should clear DLQ', async () => {
-      const handler = jest.fn().mockRejectedValue(new Error('Failed'));
+      const handler = vi.fn().mockRejectedValue(new Error('Failed'));
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'test data');
@@ -217,7 +217,7 @@ describe('EventBus', () => {
     });
 
     it('should get DLQ size', async () => {
-      const handler = jest.fn().mockRejectedValue(new Error('Failed'));
+      const handler = vi.fn().mockRejectedValue(new Error('Failed'));
       eventBus.subscribe('TestEvent', handler);
 
       const event1 = new TestEvent('agg-1', 1, metadata, 'test');
@@ -233,7 +233,7 @@ describe('EventBus', () => {
   describe('retry', () => {
     it('should retry failed event from DLQ', async () => {
       let callCount = 0;
-      const handler = jest.fn(async () => {
+      const handler = vi.fn(async () => {
         callCount++;
         if (callCount < 2) {
           throw new Error('First attempt fails');
@@ -255,7 +255,7 @@ describe('EventBus', () => {
     });
 
     it('should return false if retry fails', async () => {
-      const handler = jest.fn().mockRejectedValue(new Error('Always fails'));
+      const handler = vi.fn().mockRejectedValue(new Error('Always fails'));
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'test data');
@@ -274,7 +274,7 @@ describe('EventBus', () => {
     });
 
     it('should increment retry count on failed retry', async () => {
-      const handler = jest.fn().mockRejectedValue(new Error('Always fails'));
+      const handler = vi.fn().mockRejectedValue(new Error('Always fails'));
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'test data');
@@ -290,7 +290,7 @@ describe('EventBus', () => {
     });
 
     it('should exceed max retries', async () => {
-      const handler = jest.fn().mockRejectedValue(new Error('Always fails'));
+      const handler = vi.fn().mockRejectedValue(new Error('Always fails'));
       eventBus.subscribe('TestEvent', handler);
 
       const event = new TestEvent('agg-1', 1, metadata, 'test data');
@@ -310,7 +310,7 @@ describe('EventBus', () => {
 
   describe('metrics and health', () => {
     it('should track processed event count', async () => {
-      const handler = jest.fn();
+      const handler = vi.fn();
       eventBus.subscribe('TestEvent', handler);
 
       const event1 = new TestEvent('agg-1', 1, metadata, 'test1');
@@ -340,7 +340,7 @@ describe('EventBus', () => {
     });
 
     it('should report health as unhealthy when DLQ overflows', async () => {
-      const handler = jest.fn().mockRejectedValue(new Error('Failed'));
+      const handler = vi.fn().mockRejectedValue(new Error('Failed'));
       eventBus.subscribe('TestEvent', handler);
 
       // Add many failed events to DLQ

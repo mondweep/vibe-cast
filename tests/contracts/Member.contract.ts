@@ -16,10 +16,10 @@ import { Member, Badge } from '../../src/community/domain/models/Member';
  * Validates reputation point changes and maintains history
  */
 export interface MockReputationService {
-  calculatePoints: jest.MockedFunction<(action: string) => number>;
-  validateChange: jest.MockedFunction<(points: number) => boolean>;
-  recordHistory: jest.MockedFunction<(memberId: string, points: number, reason: string) => Promise<void>>;
-  getHistory: jest.MockedFunction<(memberId: string) => Promise<Array<{points: number; reason: string; timestamp: Date}>>>;
+  calculatePoints: vi.MockedFunction<(action: string) => number>;
+  validateChange: vi.MockedFunction<(points: number) => boolean>;
+  recordHistory: vi.MockedFunction<(memberId: string, points: number, reason: string) => Promise<void>>;
+  getHistory: vi.MockedFunction<(memberId: string) => Promise<Array<{points: number; reason: string; timestamp: Date}>>>;
 }
 
 /**
@@ -27,10 +27,10 @@ export interface MockReputationService {
  */
 export function createMockReputationService(): MockReputationService {
   return {
-    calculatePoints: jest.fn().mockReturnValue(10),
-    validateChange: jest.fn().mockReturnValue(true),
-    recordHistory: jest.fn().mockResolvedValue(undefined),
-    getHistory: jest.fn().mockResolvedValue([]),
+    calculatePoints: vi.fn().mockReturnValue(10),
+    validateChange: vi.fn().mockReturnValue(true),
+    recordHistory: vi.fn().mockResolvedValue(undefined),
+    getHistory: vi.fn().mockResolvedValue([]),
   };
 }
 
@@ -39,11 +39,11 @@ export function createMockReputationService(): MockReputationService {
  * Manages badge persistence and award logic
  */
 export interface MockBadgeRepository {
-  save: jest.MockedFunction<(badge: Badge) => Promise<Badge>>;
-  findById: jest.MockedFunction<(id: string) => Promise<Badge | null>>;
-  findByCategory: jest.MockedFunction<(category: string) => Promise<Badge[]>>;
-  findEarnedByMember: jest.MockedFunction<(memberId: string) => Promise<Badge[]>>;
-  award: jest.MockedFunction<(memberId: string, badge: Badge) => Promise<void>>;
+  save: vi.MockedFunction<(badge: Badge) => Promise<Badge>>;
+  findById: vi.MockedFunction<(id: string) => Promise<Badge | null>>;
+  findByCategory: vi.MockedFunction<(category: string) => Promise<Badge[]>>;
+  findEarnedByMember: vi.MockedFunction<(memberId: string) => Promise<Badge[]>>;
+  award: vi.MockedFunction<(memberId: string, badge: Badge) => Promise<void>>;
 }
 
 /**
@@ -51,7 +51,7 @@ export interface MockBadgeRepository {
  */
 export function createMockBadgeRepository(): MockBadgeRepository {
   return {
-    save: jest.fn().mockResolvedValue({
+    save: vi.fn().mockResolvedValue({
       id: `badge-${Date.now()}`,
       name: 'Test Badge',
       description: 'A test badge',
@@ -59,10 +59,10 @@ export function createMockBadgeRepository(): MockBadgeRepository {
       earnedAt: new Date(),
       category: 'LEARNER',
     }),
-    findById: jest.fn().mockResolvedValue(null),
-    findByCategory: jest.fn().mockResolvedValue([]),
-    findEarnedByMember: jest.fn().mockResolvedValue([]),
-    award: jest.fn().mockResolvedValue(undefined),
+    findById: vi.fn().mockResolvedValue(null),
+    findByCategory: vi.fn().mockResolvedValue([]),
+    findEarnedByMember: vi.fn().mockResolvedValue([]),
+    award: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -71,14 +71,14 @@ export function createMockBadgeRepository(): MockBadgeRepository {
  * Persists member data and manages relationships
  */
 export interface MockMemberRepository {
-  save: jest.MockedFunction<(member: Member) => Promise<Member>>;
-  findById: jest.MockedFunction<(id: string) => Promise<Member | null>>;
-  findByUserId: jest.MockedFunction<(userId: string) => Promise<Member | null>>;
-  findActiveMembers: jest.MockedFunction<() => Promise<Member[]>>;
-  recordFollow: jest.MockedFunction<(followerId: string, followingId: string) => Promise<void>>;
-  recordUnfollow: jest.MockedFunction<(followerId: string, followingId: string) => Promise<void>>;
-  getFollowers: jest.MockedFunction<(memberId: string) => Promise<string[]>>;
-  getFollowing: jest.MockedFunction<(memberId: string) => Promise<string[]>>;
+  save: vi.MockedFunction<(member: Member) => Promise<Member>>;
+  findById: vi.MockedFunction<(id: string) => Promise<Member | null>>;
+  findByUserId: vi.MockedFunction<(userId: string) => Promise<Member | null>>;
+  findActiveMembers: vi.MockedFunction<() => Promise<Member[]>>;
+  recordFollow: vi.MockedFunction<(followerId: string, followingId: string) => Promise<void>>;
+  recordUnfollow: vi.MockedFunction<(followerId: string, followingId: string) => Promise<void>>;
+  getFollowers: vi.MockedFunction<(memberId: string) => Promise<string[]>>;
+  getFollowing: vi.MockedFunction<(memberId: string) => Promise<string[]>>;
 }
 
 /**
@@ -86,7 +86,7 @@ export interface MockMemberRepository {
  */
 export function createMockMemberRepository(): MockMemberRepository {
   return {
-    save: jest.fn().mockResolvedValue({
+    save: vi.fn().mockResolvedValue({
       id: `member-${Date.now()}`,
       userId: 'user-123',
       reputation: 100,
@@ -95,13 +95,13 @@ export function createMockMemberRepository(): MockMemberRepository {
       followersCount: 0,
       followingCount: 0,
     }),
-    findById: jest.fn().mockResolvedValue(null),
-    findByUserId: jest.fn().mockResolvedValue(null),
-    findActiveMembers: jest.fn().mockResolvedValue([]),
-    recordFollow: jest.fn().mockResolvedValue(undefined),
-    recordUnfollow: jest.fn().mockResolvedValue(undefined),
-    getFollowers: jest.fn().mockResolvedValue([]),
-    getFollowing: jest.fn().mockResolvedValue([]),
+    findById: vi.fn().mockResolvedValue(null),
+    findByUserId: vi.fn().mockResolvedValue(null),
+    findActiveMembers: vi.fn().mockResolvedValue([]),
+    recordFollow: vi.fn().mockResolvedValue(undefined),
+    recordUnfollow: vi.fn().mockResolvedValue(undefined),
+    getFollowers: vi.fn().mockResolvedValue([]),
+    getFollowing: vi.fn().mockResolvedValue([]),
   };
 }
 

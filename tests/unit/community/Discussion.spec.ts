@@ -23,7 +23,7 @@ describe('Discussion Aggregate', () => {
     mockRepository = createMockDiscussionRepository();
     mockModerationService = createMockModerationService();
     mockVoteTracker = createMockVoteTracker();
-    mockEventBus = { publish: jest.fn().mockResolvedValue(undefined) };
+    mockEventBus = { publish: vi.fn().mockResolvedValue(undefined) };
   });
 
   describe('Discussion Creation and Posting', () => {

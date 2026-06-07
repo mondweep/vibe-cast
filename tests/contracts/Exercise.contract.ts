@@ -18,12 +18,12 @@ import { DifficultyLevel } from '../../src/skill-lab/domain/value-objects/Exerci
  * Defines expected interactions when LabSession saves/retrieves exercises
  */
 export interface MockExerciseRepository {
-  save: jest.MockedFunction<(exercise: Exercise) => Promise<Exercise>>;
-  findById: jest.MockedFunction<(id: string) => Promise<Exercise | null>>;
-  findByDifficulty: jest.MockedFunction<(difficulty: DifficultyLevel) => Promise<Exercise[]>>;
-  findPublished: jest.MockedFunction<() => Promise<Exercise[]>>;
-  update: jest.MockedFunction<(exercise: Exercise) => Promise<void>>;
-  delete: jest.MockedFunction<(id: string) => Promise<void>>;
+  save: vi.MockedFunction<(exercise: Exercise) => Promise<Exercise>>;
+  findById: vi.MockedFunction<(id: string) => Promise<Exercise | null>>;
+  findByDifficulty: vi.MockedFunction<(difficulty: DifficultyLevel) => Promise<Exercise[]>>;
+  findPublished: vi.MockedFunction<() => Promise<Exercise[]>>;
+  update: vi.MockedFunction<(exercise: Exercise) => Promise<void>>;
+  delete: vi.MockedFunction<(id: string) => Promise<void>>;
 }
 
 /**
@@ -32,7 +32,7 @@ export interface MockExerciseRepository {
  */
 export function createMockExerciseRepository(): MockExerciseRepository {
   return {
-    save: jest.fn().mockResolvedValue(
+    save: vi.fn().mockResolvedValue(
       Exercise.create(
         'Test Exercise',
         'A test exercise for mocking',
@@ -41,11 +41,11 @@ export function createMockExerciseRepository(): MockExerciseRepository {
         'Complete this exercise'
       )
     ),
-    findById: jest.fn().mockResolvedValue(null),
-    findByDifficulty: jest.fn().mockResolvedValue([]),
-    findPublished: jest.fn().mockResolvedValue([]),
-    update: jest.fn().mockResolvedValue(undefined),
-    delete: jest.fn().mockResolvedValue(undefined),
+    findById: vi.fn().mockResolvedValue(null),
+    findByDifficulty: vi.fn().mockResolvedValue([]),
+    findPublished: vi.fn().mockResolvedValue([]),
+    update: vi.fn().mockResolvedValue(undefined),
+    delete: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -54,12 +54,12 @@ export function createMockExerciseRepository(): MockExerciseRepository {
  * Validates Exercise invariants before persistence
  */
 export interface MockExerciseValidator {
-  validateTitle: jest.MockedFunction<(title: string) => void>;
-  validateDescription: jest.MockedFunction<(description: string) => void>;
-  validateTimeLimit: jest.MockedFunction<(minutes: number) => void>;
-  validateInstructions: jest.MockedFunction<(instructions: string) => void>;
-  validateDifficulty: jest.MockedFunction<(difficulty: string) => DifficultyLevel>;
-  validatePublishableStatus: jest.MockedFunction<(exercise: Exercise) => boolean>;
+  validateTitle: vi.MockedFunction<(title: string) => void>;
+  validateDescription: vi.MockedFunction<(description: string) => void>;
+  validateTimeLimit: vi.MockedFunction<(minutes: number) => void>;
+  validateInstructions: vi.MockedFunction<(instructions: string) => void>;
+  validateDifficulty: vi.MockedFunction<(difficulty: string) => DifficultyLevel>;
+  validatePublishableStatus: vi.MockedFunction<(exercise: Exercise) => boolean>;
 }
 
 /**
@@ -68,12 +68,12 @@ export interface MockExerciseValidator {
  */
 export function createMockExerciseValidator(): MockExerciseValidator {
   return {
-    validateTitle: jest.fn(),
-    validateDescription: jest.fn(),
-    validateTimeLimit: jest.fn(),
-    validateInstructions: jest.fn(),
-    validateDifficulty: jest.fn().mockReturnValue('beginner'),
-    validatePublishableStatus: jest.fn().mockReturnValue(true),
+    validateTitle: vi.fn(),
+    validateDescription: vi.fn(),
+    validateTimeLimit: vi.fn(),
+    validateInstructions: vi.fn(),
+    validateDifficulty: vi.fn().mockReturnValue('beginner'),
+    validatePublishableStatus: vi.fn().mockReturnValue(true),
   };
 }
 
@@ -159,14 +159,14 @@ export class ExerciseTestBuilder {
  * Contracts for ExerciseDifficulty, TimeLimit, etc.
  */
 export interface MockDifficultyValidator {
-  isValidLevel: jest.MockedFunction<(level: string) => boolean>;
-  isMoreDifficultThan: jest.MockedFunction<(a: DifficultyLevel, b: DifficultyLevel) => boolean>;
+  isValidLevel: vi.MockedFunction<(level: string) => boolean>;
+  isMoreDifficultThan: vi.MockedFunction<(a: DifficultyLevel, b: DifficultyLevel) => boolean>;
 }
 
 export function createMockDifficultyValidator(): MockDifficultyValidator {
   return {
-    isValidLevel: jest.fn().mockReturnValue(true),
-    isMoreDifficultThan: jest.fn().mockReturnValue(false),
+    isValidLevel: vi.fn().mockReturnValue(true),
+    isMoreDifficultThan: vi.fn().mockReturnValue(false),
   };
 }
 
@@ -175,8 +175,8 @@ export function createMockDifficultyValidator(): MockDifficultyValidator {
  * For London School contract testing
  */
 export interface ExerciseRepositoryCalls {
-  saveCalls: jest.MockedFunction<any>[];
-  findByIdCalls: jest.MockedFunction<any>[];
+  saveCalls: vi.MockedFunction<any>[];
+  findByIdCalls: vi.MockedFunction<any>[];
   publishedExercisesRequested: boolean;
   lastSavedExercise: Exercise | null;
 }

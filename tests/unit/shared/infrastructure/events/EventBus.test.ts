@@ -96,14 +96,14 @@ describe('EventBus', () => {
 
   beforeEach(() => {
     mockLogger = new MockLogger();
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     eventBus = new EventBus(mockLogger);
   });
 
   afterEach(() => {
     eventBus.shutdown();
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   describe('registerHandler', () => {
@@ -492,13 +492,13 @@ describe('EventBus', () => {
       await eventBus.publish(event);
 
       // Advance time for retry
-      jest.advanceTimersByTime(2000); // Move past first backoff (1s)
+      vi.advanceTimersByTime(2000); // Move past first backoff (1s)
 
       // Fix the handler to succeed
       handler.handleError = null;
 
       // Run the scheduler manually
-      jest.advanceTimersByTime(5000); // Trigger scheduler poll
+      vi.advanceTimersByTime(5000); // Trigger scheduler poll
 
       // Give async operations time to complete
       await new Promise((resolve) => setTimeout(resolve, 100));

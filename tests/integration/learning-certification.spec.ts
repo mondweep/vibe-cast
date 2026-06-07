@@ -63,12 +63,12 @@ class CandidateQualified extends DomainEvent {
  * Mock service contracts
  */
 class MockUserRepository {
-  findByCandidateId = jest.fn();
-  updateQualificationStatus = jest.fn();
+  findByCandidateId = vi.fn();
+  updateQualificationStatus = vi.fn();
 }
 
 class MockCertificationService {
-  qualifyCandidate = jest.fn();
+  qualifyCandidate = vi.fn();
 }
 
 /**
