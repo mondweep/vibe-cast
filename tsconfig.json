@@ -22,6 +22,6 @@
       "@/*": ["src/web/*"]
     }
   },
-  "include": ["src/web", "tests/web"],
-  "exclude": ["node_modules"]
+  "include": ["src/web"],
+  "exclude": ["node_modules", "tests/**/*", "dist", "build"]
 }
