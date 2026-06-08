@@ -37,6 +37,8 @@ import { registerLearningProgressRoutes } from './routes/learningProgress';
 import { registerContractGapReadRoutes } from './routes/contractGapReads';
 import { KnowledgeGraphController } from './controllers/knowledgeGraph';
 import { registerKnowledgeGraphRoutes } from './routes/knowledgeGraph';
+import { FeedbackController } from './controllers/feedback';
+import { registerFeedbackRoutes } from './routes/feedback';
 
 // ESM equivalents of CommonJS __filename/__dirname (this runs under tsx as ESM)
 const __filename = fileURLToPath(import.meta.url);
@@ -177,6 +179,14 @@ export class ApiServer {
         const kgController = new KnowledgeGraphController(supabaseClient, this.logger);
         await registerKnowledgeGraphRoutes(this.fastify, kgController);
         this.logger.info('Knowledge graph routes registered');
+
+        // Feedback & contact submissions. Writes are RLS-protected: the
+        // `feedback_public_insert` policy lets the publishable (anon) key INSERT,
+        // and the insert-only path (no .select()) never needs read access — so
+        // the catalog publishable client is sufficient, no service key required.
+        const feedbackController = new FeedbackController(supabaseClient, this.logger);
+        await registerFeedbackRoutes(this.fastify, feedbackController);
+        this.logger.info('Feedback routes registered');
       } else {
         this.logger.warn(
           'Learning catalog routes NOT registered (set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY)',

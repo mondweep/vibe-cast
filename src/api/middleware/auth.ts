@@ -59,6 +59,12 @@ export function createAuthMiddleware(
       return;
     }
 
+    // Feedback submission is public — anyone (including anonymous visitors) may
+    // submit the "Feedback & contact" form. A signed-in learner still gets their
+    // identity attached below; an anonymous one is allowed through without a key.
+    const isPublicFeedback =
+      request.method === 'POST' && request.url.startsWith('/api/v1/feedback');
+
     // Primary auth: a Supabase session JWT from the frontend (Authorization:
     // Bearer <token>). If present and valid, the request is authenticated as
     // that user — no legacy X-API-Key needed. This bridges the frontend's
@@ -80,6 +86,9 @@ export function createAuthMiddleware(
           // fall through to the 401 below
         }
       }
+      // A bad token on a public endpoint shouldn't block submission — treat as
+      // anonymous rather than 401.
+      if (isPublicFeedback) return;
       logger.warn('Invalid or unverifiable session token', { path: request.url });
       return reply.status(401).send({
         status: 'error',
@@ -87,6 +96,9 @@ export function createAuthMiddleware(
         code: 'INVALID_TOKEN',
       });
     }
+
+    // No session token: public endpoints (feedback) proceed anonymously.
+    if (isPublicFeedback) return;
 
     // Fallback auth: legacy X-API-Key (service/programmatic clients).
     const apiKey = request.headers['x-api-key'];

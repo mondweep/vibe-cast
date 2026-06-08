@@ -1,5 +1,6 @@
 import React from 'react';
 import { Linkedin, Github, Heart, BookOpen } from 'lucide-react';
+import { FeedbackForm } from '@/components/common/FeedbackForm';
 
 const LINKEDIN_URL = 'https://www.linkedin.com/in/mondweepchakravorty/';
 const PAYPAL_URL = 'https://www.paypal.com/paypalme/mondweep';
@@ -7,9 +8,12 @@ const REPO_URL = 'https://github.com/mondweep/vibe-cast';
 
 export function ContactPage() {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-1">Contact</h1>
-      <p className="text-gray-500 text-sm mb-8">We'd love to hear from you.</p>
+    <div className="space-y-6">
+      <FeedbackForm />
+
+      <div className="bg-white rounded-lg shadow-sm p-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-1">Other ways to reach us</h2>
+      <p className="text-gray-500 text-sm mb-8">Prefer a direct channel? Here you go.</p>
 
       <p className="text-gray-700 text-sm leading-relaxed mb-8">
         <strong>learn-ruflo</strong> is built and curated by <strong>Mondweep Chakravorty</strong> as
@@ -72,6 +76,7 @@ export function ContactPage() {
           Contributions especially welcome: new or improved lessons, knowledge-graph accuracy fixes,
           accessibility improvements, and the planned Skill Lab, Community, and Metrics features.
         </p>
+      </div>
       </div>
     </div>
   );
