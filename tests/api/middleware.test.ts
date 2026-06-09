@@ -31,13 +31,14 @@ describe('API Middleware', () => {
     beforeEach(async () => {
       const authMiddleware = createAuthMiddleware(logger);
       fastify.addHook('preHandler', authMiddleware);
-      fastify.get('/protected', async () => ({ ok: true }));
+      // Routes must be under /api/ for auth middleware to activate
+      fastify.get('/api/protected', async () => ({ ok: true }));
     });
 
     it('should accept valid secret key', async () => {
       const response = await fastify.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           'x-api-key': 'sk_valid_secret_key_123',
         },
@@ -49,7 +50,7 @@ describe('API Middleware', () => {
     it('should accept valid publishable key for GET', async () => {
       const response = await fastify.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           'x-api-key': 'pk_valid_publishable_key_123',
         },
@@ -61,7 +62,7 @@ describe('API Middleware', () => {
     it('should reject missing API key', async () => {
       const response = await fastify.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
       });
 
       expect(response.statusCode).toBe(401);
@@ -72,7 +73,7 @@ describe('API Middleware', () => {
     it('should reject invalid API key format', async () => {
       const response = await fastify.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           'x-api-key': 'invalid_key_format',
         },
@@ -84,11 +85,11 @@ describe('API Middleware', () => {
     });
 
     it('should reject publishable key for POST', async () => {
-      fastify.post('/protected', async () => ({ created: true }));
+      fastify.post('/api/protected', async () => ({ created: true }));
 
       const response = await fastify.inject({
         method: 'POST',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           'x-api-key': 'pk_publishable_key_123',
         },
@@ -100,11 +101,11 @@ describe('API Middleware', () => {
     });
 
     it('should accept secret key for POST', async () => {
-      fastify.post('/protected', async () => ({ created: true }));
+      fastify.post('/api/protected', async () => ({ created: true }));
 
       const response = await fastify.inject({
         method: 'POST',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           'x-api-key': 'sk_secret_key_123',
         },
@@ -114,11 +115,11 @@ describe('API Middleware', () => {
     });
 
     it('should reject publishable key for PUT', async () => {
-      fastify.put('/protected', async () => ({ updated: true }));
+      fastify.put('/api/protected', async () => ({ updated: true }));
 
       const response = await fastify.inject({
         method: 'PUT',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           'x-api-key': 'pk_publishable_key_123',
         },
@@ -128,11 +129,11 @@ describe('API Middleware', () => {
     });
 
     it('should reject publishable key for DELETE', async () => {
-      fastify.delete('/protected', async () => ({ deleted: true }));
+      fastify.delete('/api/protected', async () => ({ deleted: true }));
 
       const response = await fastify.inject({
         method: 'DELETE',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           'x-api-key': 'pk_publishable_key_123',
         },

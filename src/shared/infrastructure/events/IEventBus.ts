@@ -47,15 +47,16 @@ export interface IEventBus {
   publish(event: DomainEvent): Promise<void>;
 
   /**
-   * Subscribe a handler for a specific event type (supports plain functions)
+   * Subscribe a handler for a specific event type.
    *
-   * @param eventType Event name to subscribe to (e.g., 'EnrollmentCompleted')
-   * @param handler Event handler (plain function or EventHandler)
+   * Form 1: subscribe(eventType, handler) — classic form
+   * Form 2: subscribe(handlerObject, eventType) — object-first form
+   *
    * @returns Unique subscription ID for later unsubscription
    */
   subscribe(
-    eventType: string,
-    handler: EventHandler | ((event: any) => void | Promise<void>)
+    eventTypeOrHandler: string | { handle: (event: any) => void | Promise<void> },
+    handlerOrEventType: EventHandler | ((event: any) => void | Promise<void>) | string
   ): string;
 
   /**

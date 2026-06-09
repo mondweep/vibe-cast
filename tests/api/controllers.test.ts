@@ -20,27 +20,52 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 class MockReadModelRepository implements IReadModelRepository {
   private data: Map<string, Map<string, any>> = new Map();
 
-  async findById(collection: string, id: string): Promise<any> {
-    return this.data.get(collection)?.get(id) || null;
-  }
-
-  async findByQuery(collection: string, query: any): Promise<any> {
-    return { data: [], total: 0 };
-  }
-
-  async save(collection: string, document: any): Promise<void> {
-    if (!this.data.has(collection)) {
-      this.data.set(collection, new Map());
-    }
-    this.data.get(collection)!.set(document.id, document);
-  }
-
   setMockData(collection: string, id: string, data: any): void {
     if (!this.data.has(collection)) {
       this.data.set(collection, new Map());
     }
     this.data.get(collection)!.set(id, data);
   }
+
+  // Learner Profile
+  async findLearnerProfile(learnerId: string): Promise<any> {
+    return this.data.get('LearnerProfile')?.get(learnerId) || null;
+  }
+  async saveLearnerProfile(_profile: any): Promise<void> {}
+  async findLearnerProfiles(_learnerIds?: string[]): Promise<any[]> { return []; }
+  async findTopLearnersByActivity(_limit: number): Promise<any[]> { return []; }
+
+  // Certification Progress - stored under 'Enrollment' collection in tests
+  async findCertificationProgress(enrollmentId: string): Promise<any> {
+    return this.data.get('Enrollment')?.get(enrollmentId) || null;
+  }
+  async saveCertificationProgress(_progress: any): Promise<void> {}
+  async findCertificationProgressByLearner(learnerId: string): Promise<any[]> {
+    // Return all certifications where learner_id matches
+    const results: any[] = [];
+    const collection = this.data.get('CertificationProgress');
+    if (collection) {
+      for (const item of collection.values()) {
+        if (item.learner_id === learnerId) results.push(item);
+      }
+    }
+    return results;
+  }
+  async findCompletedCertifications(_learnerId: string): Promise<any[]> { return []; }
+
+  // Community Profile
+  async findCommunityProfile(learnerId: string): Promise<any> {
+    return this.data.get('CommunityProfile')?.get(learnerId) || null;
+  }
+  async saveCommunityProfile(_profile: any): Promise<void> {}
+  async findTopLearnersByReputation(_limit: number): Promise<any[]> { return []; }
+  async findTopLearnersByBadgeCount(_limit: number): Promise<any[]> { return []; }
+  async findLearnersByMinimumSkillCount(_minimumSkills: number): Promise<any[]> { return []; }
+
+  // Metrics
+  async findMetricsForPeriod(_period: any, _date: string): Promise<any> { return null; }
+  async saveMetrics(_metrics: any): Promise<void> {}
+  async findMetricsForDateRange(_period: string, _startDate: string, _endDate: string): Promise<any[]> { return []; }
 }
 
 describe('API Controllers', () => {

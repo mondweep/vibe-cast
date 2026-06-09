@@ -141,9 +141,10 @@ export class LearningCatalogController {
     const learnerId = (request.params as any).id as string;
     try {
       const row = await this.repository.findLearnerProfile(learnerId);
-      // 200 with null when no profile yet — the SPA renders an empty state
-      // gracefully rather than treating a missing profile as an error.
-      reply.status(200).send(successResponse(row ? this.toLearner(row) : null));
+      if (!row) {
+        return reply.status(404).send(errorResponse('Learner not found', 'NOT_FOUND', undefined, correlationId));
+      }
+      reply.status(200).send(successResponse(this.toLearner(row)));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('Failed to fetch learner profile', { error: message, correlationId, learnerId });

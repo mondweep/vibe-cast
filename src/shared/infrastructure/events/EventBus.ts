@@ -88,18 +88,45 @@ export class EventBus implements IEventBus {
   }
 
   /**
-   * Subscribe a plain function handler for a specific event type
-   * This is an alias for registerHandler that accepts plain functions
+   * Subscribe a handler for a specific event type.
    *
-   * @param eventType Event name to subscribe to
-   * @param handler Plain function handler (event) => void | Promise<void>
+   * Supported call forms:
+   *   Form 1: subscribe(eventType, plainFn)         — eventType first, function second
+   *   Form 2: subscribe(eventType, handlerObj)      — eventType first, object with handle() second
+   *   Form 3: subscribe(handlerObj, eventType)      — object with handle() first, eventType second
+   *
    * @returns Unique subscription ID for later unsubscription
    */
-  subscribe(eventType: string, handler: (event: any) => void | Promise<void>): string {
+  subscribe(
+    eventTypeOrHandler: string | { handle: (event: any) => void | Promise<void> },
+    handlerOrEventType: ((event: any) => void | Promise<void>) | { handle: (event: any) => void | Promise<void> } | string
+  ): string {
+    let eventType: string;
+    let handlerFn: (event: any) => void | Promise<void>;
+
+    if (typeof eventTypeOrHandler === 'string') {
+      // Form 1 or 2: subscribe(eventType, handler)
+      eventType = eventTypeOrHandler;
+      if (typeof handlerOrEventType === 'function') {
+        // Form 1: plain function
+        handlerFn = handlerOrEventType;
+      } else if (typeof handlerOrEventType === 'object' && typeof (handlerOrEventType as any).handle === 'function') {
+        // Form 2: object with handle() method
+        const obj = handlerOrEventType as { handle: (event: any) => void | Promise<void> };
+        handlerFn = (e: any) => obj.handle(e);
+      } else {
+        throw new Error('subscribe: second argument must be a function or an object with a handle() method');
+      }
+    } else {
+      // Form 3: subscribe(handlerObj, eventType)
+      eventType = handlerOrEventType as string;
+      handlerFn = (e: any) => eventTypeOrHandler.handle(e);
+    }
+
     const wrappedHandler: EventHandler = {
       canHandle: () => true,
       handle: async (event: DomainEvent) => {
-        await handler(event as any);
+        await handlerFn(event as any);
       },
     };
     return this.registerHandler(eventType, wrappedHandler);

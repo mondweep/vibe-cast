@@ -105,11 +105,9 @@ export class CertificationController {
         learnerId,
       });
 
-      // Query read model for certification progress
-      const progress = await this.readModelRepository.findById(
-        'CertificationProgress',
-        learnerId
-      );
+      // Query read model for certification progress (first item for this learner)
+      const progressList = await this.readModelRepository.findCertificationProgressByLearner(learnerId);
+      const progress = progressList.length > 0 ? progressList[0] : null;
 
       if (!progress) {
         this.logger.warn('Certification progress not found', {
@@ -169,11 +167,8 @@ export class CertificationController {
         score: body.score,
       });
 
-      // Get enrollment from read model
-      const enrollment = await this.readModelRepository.findById(
-        'Enrollment',
-        body.enrollmentId
-      );
+      // Get enrollment from read model (using certification progress as enrollment record)
+      const enrollment = await this.readModelRepository.findCertificationProgress(body.enrollmentId);
 
       if (!enrollment) {
         this.logger.warn('Enrollment not found for exam submission', {

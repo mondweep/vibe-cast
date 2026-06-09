@@ -18,9 +18,6 @@
  *
  * This ensures: if state persists, events will eventually publish
  * (no orphaned events, no state without events)
- *
- * Week 9 MVP: Synchronous publishing (good enough for in-process EventBus)
- * Week 11 Upgrade: Batch publishing with RabbitMQ
  */
 
 import { DomainEvent, EventMetadata } from './DomainEvent';
@@ -69,18 +66,6 @@ export interface PublishOptions {
  * EventPublisher service
  *
  * Publishes domain events to the EventBus with proper metadata & sequencing.
- * Designed for simplicity in Week 9; scales to RabbitMQ in Week 11.
- *
- * Usage:
- * ```typescript
- * const aggregate = enrollment.enrollLearner(learnerId, pathId);
- * await repository.save(aggregate);  // Save state first
- * await publisher.publishEventsFrom(aggregate, {
- *   userId: currentUser.id,
- *   correlationId: request.id,
- *   ipAddress: request.ip,
- * });
- * ```
  */
 export class EventPublisher {
   /**
@@ -102,14 +87,6 @@ export class EventPublisher {
    * @param aggregate - Aggregate with unpublished events
    * @param options - Publishing options (userId, correlation ID, etc.)
    * @returns Count of events published
-   *
-   * Example:
-   * ```typescript
-   * const enrollment = new Enrollment();
-   * enrollment.enrollLearner(learnerId, pathId);  // Produces event
-   * const count = await publisher.publishEventsFrom(enrollment);
-   * // enrollment.getUnpublishedEvents() now returns []
-   * ```
    */
   async publishEventsFrom(
     aggregate: EventSourcedAggregate,
@@ -123,7 +100,7 @@ export class EventPublisher {
 
     // Enrich with default metadata if not provided
     const correlationId = options.correlationId || uuidv4();
-    const causationId = options.causationId || uuidv4();
+    const causationId = options.causationId;
 
     let publishedCount = 0;
 
@@ -146,81 +123,34 @@ export class EventPublisher {
   /**
    * Publish a single event with metadata enrichment
    *
-   * Internal method; called by publishEventsFrom()
-   * Enriches event metadata and publishes to EventBus
-   *
    * @param event - Domain event to publish
    * @param options - Publishing options for metadata
-   *
-   * @private
-   */
-  private async publishEvent(
-    event: DomainEvent,
-    options: PublishOptions,
-  ): Promise<void> {
-    // Enrich metadata
-    if (options.userId && !event.metadata.userId) {
-      event.metadata.userId = options.userId;
-    }
-    if (options.ipAddress && !event.metadata.ipAddress) {
-      event.metadata.ipAddress = options.ipAddress;
-    }
-    if (options.userAgent && !event.metadata.userAgent) {
-      event.metadata.userAgent = options.userAgent;
-    }
-    if (options.causationId && !event.metadata.causationId) {
-      event.metadata.causationId = options.causationId;
-    }
-
-    // Publish to bus
-    await this.eventBus.publish(event);
-
-    // Log for audit trail
-    console.debug(
-      `[EventPublisher] Published event: ${event.getEventType()} ` +
-      `(aggregate=${event.getAggregateId()}, correlationId=${event.metadata.correlationId})`,
-    );
-  }
-
-  /**
-   * Publish a raw event directly (used for testing & special cases)
-   *
-   * Normal flow: publishEventsFrom(aggregate)
-   * Special cases: publish events not from aggregates (e.g., external events)
-   *
-   * @param event - Domain event
-   * @param options - Publishing options
-   *
-   * Example:
-   * ```typescript
-   * const event = new ExternalSystemSyncEvent(...);
-   * await publisher.publishEvent(event, { userId: 'system' });
-   * ```
    */
   async publishEvent(
     event: DomainEvent,
     options: PublishOptions = {},
   ): Promise<void> {
-    // Enrich metadata
-    const metadata: EventMetadata = {
-      ...event.metadata,
-      userId: options.userId || event.metadata.userId,
-      ipAddress: options.ipAddress || event.metadata.ipAddress,
-      userAgent: options.userAgent || event.metadata.userAgent,
-      causationId: options.causationId || event.metadata.causationId,
-      correlationId: options.correlationId || event.metadata.correlationId,
-    };
-
-    // Create enriched event copy
-    event.metadata.userId = metadata.userId;
-    event.metadata.ipAddress = metadata.ipAddress;
-    event.metadata.userAgent = metadata.userAgent;
-    event.metadata.causationId = metadata.causationId;
+    // Enrich metadata - override with options values where provided
+    if (options.userId) {
+      event.metadata.userId = options.userId;
+    }
+    if (options.ipAddress) {
+      event.metadata.ipAddress = options.ipAddress;
+    }
+    if (options.userAgent) {
+      event.metadata.userAgent = options.userAgent;
+    }
+    if (options.causationId) {
+      event.metadata.causationId = options.causationId;
+    }
+    if (options.correlationId) {
+      event.metadata.correlationId = options.correlationId;
+    }
 
     await this.eventBus.publish(event);
 
     console.debug(
-      `[EventPublisher] Published event: ${event.getEventType()} ` +
+      `[EventPublisher] Published event: ${event.eventType} ` +
       `(correlationId=${event.metadata.correlationId})`,
     );
   }
@@ -236,23 +166,6 @@ export class EventPublisher {
 
 /**
  * Event Publishing Hook for Repositories
- *
- * Pattern: Call this after repository.save() to publish events
- *
- * Example:
- * ```typescript
- * class LearningPathRepository {
- *   async save(path: LearningPath): Promise<void> {
- *     await this.db.insert(path);
- *     await eventPublisher.publishEventsFrom(path);
- *   }
- * }
- * ```
- *
- * Benefits:
- * - Guarantees: state persisted before events published
- * - Idempotency: clearUnpublishedEvents() prevents re-publication
- * - Traceability: metadata tracks correlation across domains
  */
 export interface EventPublishingHook {
   /**
@@ -266,11 +179,7 @@ export interface EventPublishingHook {
 }
 
 /**
- * Outbox Pattern Helper (for Week 11 RabbitMQ upgrade)
- *
- * Currently unused; reserved for future implementation.
- * Enables transactional publication: events stored in outbox table,
- * then published by background job (prevents event loss on crash).
+ * Outbox Pattern Helper (for future RabbitMQ upgrade)
  */
 export interface OutboxEvent {
   id: string;

@@ -117,10 +117,7 @@ export class LearningController {
       });
 
       // Query read model
-      const profile = await this.readModelRepository.findById(
-        'LearnerProfile',
-        learnerId
-      );
+      const profile = await this.readModelRepository.findLearnerProfile(learnerId);
 
       if (!profile) {
         this.logger.warn('Learner profile not found', {
@@ -178,11 +175,8 @@ export class LearningController {
         finalScore: body.finalScore,
       });
 
-      // Get enrollment from read model
-      const enrollment = await this.readModelRepository.findById(
-        'Enrollment',
-        enrollmentId
-      );
+      // Get enrollment from read model (using certification progress as enrollment record)
+      const enrollment = await this.readModelRepository.findCertificationProgress(enrollmentId);
 
       if (!enrollment) {
         this.logger.warn('Enrollment not found', {

@@ -10,6 +10,7 @@ import { EventBus } from '../shared/infrastructure/events/EventBus';
 import { IEventBus } from '../shared/infrastructure/events/IEventBus';
 import { IReadModelRepository } from '../shared/infrastructure/readmodels/IReadModelRepository';
 import { SupabaseReadModelRepository } from '../shared/infrastructure/readmodels/SupabaseReadModelRepository';
+import { NullReadModelRepository } from '../shared/infrastructure/readmodels/NullReadModelRepository';
 import { createAuthMiddleware } from './middleware/auth';
 import { createLoggingMiddleware, createResponseLoggingHook } from './middleware/logging';
 import { registerErrorHandler } from './middleware/error';
@@ -49,8 +50,19 @@ import { MetricsReadRepository } from '../metrics/infrastructure/repositories/Me
 import { PatternRepository } from '../community/infrastructure/repositories/PatternRepository';
 
 // ESM equivalents of CommonJS __filename/__dirname (this runs under tsx as ESM)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Falls back gracefully for test environments
+let __filename_path = '';
+let __dirname_path = process.cwd();
+try {
+  if (typeof import.meta?.url === 'string' && typeof fileURLToPath === 'function') {
+    __filename_path = fileURLToPath(import.meta.url);
+    __dirname_path = path.dirname(__filename_path);
+  }
+} catch {
+  // Ignore: test environment may not support ESM file URLs
+}
+const __filename = __filename_path;
+const __dirname = __dirname_path;
 
 /**
  * Vibe-Cast REST API Server
@@ -78,8 +90,11 @@ export class ApiServer {
     this.fastify = Fastify({
       logger: false, // Use custom logger middleware instead
     });
+    // Decorate fastify instance with our custom logger so routes can access it
+    this.fastify.decorate('logger', this.logger);
     this.eventBus = new EventBus(this.logger);
-    this.readModelRepository = new SupabaseReadModelRepository(this.logger);
+    // Use NullReadModelRepository as default; replaced with Supabase during initialize() if env vars available
+    this.readModelRepository = new NullReadModelRepository();
   }
 
   /**
@@ -113,6 +128,11 @@ export class ApiServer {
     // One Supabase client serves both JWT verification (auth) and catalog reads.
     // Null if env is absent — auth then falls back to X-API-Key, catalog disables.
     const supabaseClient = createCatalogSupabaseClient();
+
+    // Upgrade from Null to Supabase-backed read model repository when env is available
+    if (supabaseClient) {
+      this.readModelRepository = new SupabaseReadModelRepository(supabaseClient);
+    }
 
     // Register custom middleware
     this.fastify.addHook('preHandler', createLoggingMiddleware(this.logger));

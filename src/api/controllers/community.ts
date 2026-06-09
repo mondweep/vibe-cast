@@ -37,10 +37,7 @@ export class CommunityController {
       });
 
       // Query read model
-      const profile = await this.readModelRepository.findById(
-        'CommunityProfile',
-        memberId
-      );
+      const profile = await this.readModelRepository.findCommunityProfile(memberId);
 
       if (!profile) {
         this.logger.warn('Member profile not found', {
@@ -102,29 +99,25 @@ export class CommunityController {
         certification: query.certification,
       });
 
-      // Query leaderboard from read model
-      // In a real implementation, this would query the database with pagination
-      const leaderboard = await this.readModelRepository.findByQuery(
-        'Leaderboard',
-        {
-          sort: { reputation_score: -1 },
-          skip: query.skip,
-          limit: query.limit,
-          ...(query.certification && { certification: query.certification }),
-        }
+      // Query leaderboard from read model (sorted by reputation, highest first)
+      const profiles = await this.readModelRepository.findTopLearnersByReputation(
+        query.limit + query.skip
       );
 
-      if (!leaderboard || !leaderboard.data) {
+      // Apply skip for pagination
+      const pagedProfiles = profiles.slice(query.skip, query.skip + query.limit);
+
+      if (pagedProfiles.length === 0) {
         this.logger.warn('Leaderboard query returned no results', {
           correlationId,
         });
         return reply.status(200).send(
-          paginatedResponse([], 0, query.limit, query.skip)
+          paginatedResponse([], profiles.length, query.limit, query.skip)
         );
       }
 
       // Format leaderboard entries with rank
-      const entries = (leaderboard.data as any[]).map((entry, index) => ({
+      const entries = pagedProfiles.map((entry, index) => ({
         rank: query.skip + index + 1,
         learner_id: entry.learner_id,
         display_name: entry.display_name,
@@ -136,13 +129,13 @@ export class CommunityController {
       this.logger.debug('Leaderboard fetched', {
         correlationId,
         count: entries.length,
-        total: leaderboard.total || entries.length + query.skip,
+        total: profiles.length,
       });
 
       reply.status(200).send(
         paginatedResponse(
           entries,
-          leaderboard.total || entries.length + query.skip,
+          profiles.length,
           query.limit,
           query.skip
         )
