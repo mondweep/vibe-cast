@@ -78,9 +78,12 @@ export function createAuthMiddleware(
         try {
           const { data, error } = await authClient.auth.getUser(token);
           if (!error && data?.user) {
-            (request as FastifyRequest & { authUser?: { id: string; email?: string } }).authUser = {
+            const role: string | undefined =
+              (data.user.app_metadata as Record<string, unknown> | undefined)?.role as string | undefined;
+            (request as FastifyRequest & { authUser?: { id: string; email?: string; role?: string } }).authUser = {
               id: data.user.id,
               email: data.user.email,
+              ...(role ? { role } : {}),
             };
             return;
           }

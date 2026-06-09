@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, BarChart2, BookOpen, GraduationCap, Award, Users, User, ChevronLeft, Network, FlaskConical } from 'lucide-react';
+import { BarChart3, BarChart2, BookOpen, GraduationCap, Award, Users, User, ChevronLeft, Network, FlaskConical, Tag } from 'lucide-react';
 import { ROUTES } from '@/config/constants';
+import { useAuth } from '@/auth/AuthContext';
 
 export function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user?.app_metadata?.role === 'admin';
 
   const menuItems = [
     { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: BarChart3 },
@@ -68,6 +71,29 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <nav className="px-4 pb-2">
+            {!collapsed && (
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-1">
+                Admin
+              </p>
+            )}
+            <Link
+              to="/admin/coupons"
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                location.pathname === '/admin/coupons'
+                  ? 'bg-primary-100 text-primary-600 font-semibold'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              title={collapsed ? 'Coupons' : ''}
+            >
+              <Tag size={20} className="flex-shrink-0" />
+              {!collapsed && <span className="truncate">Coupons</span>}
+            </Link>
+          </nav>
+        )}
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-200">

@@ -48,6 +48,10 @@ import { MetricsController } from './controllers/metrics';
 import { registerMetricsRoutes } from './routes/metrics';
 import { MetricsReadRepository } from '../metrics/infrastructure/repositories/MetricsReadRepository';
 import { PatternRepository } from '../community/infrastructure/repositories/PatternRepository';
+import { CouponController } from './controllers/coupon';
+import { registerCouponRoutes } from './routes/coupon';
+import { AdminCouponsController } from './controllers/adminCoupons';
+import { registerAdminCouponRoutes } from './routes/adminCoupons';
 
 // ESM equivalents of CommonJS __filename/__dirname (this runs under tsx as ESM)
 // Falls back gracefully for test environments
@@ -194,6 +198,7 @@ export class ApiServer {
           progressRepo,
           catalogRepo,
           this.logger,
+          supabaseClient,
         );
         await registerLearningProgressRoutes(this.fastify, progressController);
         this.logger.info('Learning progress routes registered');
@@ -232,6 +237,16 @@ export class ApiServer {
         const metricsController = new MetricsController(metricsRepo, this.logger);
         await registerMetricsRoutes(this.fastify, metricsController);
         this.logger.info('Metrics routes registered');
+
+        // Coupons — learner redemption + premium access gate (ADR-018)
+        const couponController = new CouponController(supabaseClient, this.logger);
+        await registerCouponRoutes(this.fastify, couponController);
+        this.logger.info('Coupon routes registered');
+
+        // Admin coupons — coupon lifecycle management (ADR-018)
+        const adminCouponsController = new AdminCouponsController(supabaseClient, this.logger);
+        await registerAdminCouponRoutes(this.fastify, adminCouponsController);
+        this.logger.info('Admin coupon routes registered');
       } else {
         this.logger.warn(
           'Learning catalog routes NOT registered (set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY)',

@@ -18,6 +18,7 @@ import { TermsPage } from '@/pages/TermsPage';
 import { ContactPage } from '@/pages/ContactPage';
 import { LearningPathsPage } from '@/pages/LearningPathsPage';
 import { PathDetailPage } from '@/pages/PathDetailPage';
+import { AdminCouponsPage } from '@/pages/AdminCouponsPage';
 import { LessonPage } from '@/pages/LessonPage';
 import { SkillLabPage } from '@/pages/SkillLabPage';
 import { ExercisePage } from '@/pages/ExercisePage';
@@ -258,6 +259,17 @@ export function App() {
       <Route path="/privacy" element={<PublicLayout><PrivacyPolicyPage /></PublicLayout>} />
       <Route path="/terms" element={<PublicLayout><TermsPage /></PublicLayout>} />
       <Route path="/contact" element={<PublicLayout><ContactPage /></PublicLayout>} />
+
+      <Route
+        path="/admin/coupons"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <AdminCouponsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />

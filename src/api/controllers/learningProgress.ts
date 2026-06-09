@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { Logger } from '../../shared/infrastructure/logging/Logger';
 import {
   ProgressReadRepository,
@@ -30,6 +31,7 @@ export class LearningProgressController {
     private progressRepo: ProgressReadRepository,
     private catalogRepo: LearningCatalogRepository,
     private logger: Logger,
+    private supabase?: SupabaseClient,
   ) {}
 
   // ---------------------------------------------------------------- mappers
@@ -191,6 +193,32 @@ export class LearningProgressController {
       const path = await this.catalogRepo.findPathById(pathId);
       if (!path) {
         return reply.status(404).send(errorResponse('Learning path not found', 'NOT_FOUND', undefined, correlationId));
+      }
+
+      // Premium access gate: INTERMEDIATE and ADVANCED paths require a valid coupon.
+      // ADR-018 §5: path.level is lowercase ('intermediate'/'advanced'); normalise to
+      // uppercase before comparing against coupon tier_access tokens.
+      const difficulty: string = ((path as any).difficulty ?? (path as any).level ?? '').toUpperCase();
+      if ((difficulty === 'INTERMEDIATE' || difficulty === 'ADVANCED') && this.supabase) {
+        const { data: grant } = await this.supabase
+          .from('ruflo_demo_coupon_redemption')
+          .select('id, ruflo_demo_coupon!inner(is_active, tier_access)')
+          .eq('user_id', learnerId)
+          .eq('ruflo_demo_coupon.is_active', true)
+          .gt('access_expires_at', new Date().toISOString())
+          .or(`tier_access.cs.{"${difficulty}"},tier_access.cs.{"ALL"}`, { foreignTable: 'ruflo_demo_coupon' })
+          .limit(1)
+          .maybeSingle();
+
+        if (!grant) {
+          return reply.status(402).send({
+            status: 'error',
+            error: 'PREMIUM_REQUIRED',
+            message: 'This path requires a premium coupon',
+            tier: difficulty,
+            code: 'PREMIUM_REQUIRED',
+          });
+        }
       }
 
       const totalLessons = path.lesson_count || (path.ordered_lesson_ids ?? []).length || 1;
