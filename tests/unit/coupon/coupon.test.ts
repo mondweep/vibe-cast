@@ -365,19 +365,21 @@ describe('AdminCouponsController', () => {
       const futureDateStr = new Date(Date.now() + 86_400_000 * 7).toISOString();
       let capturedInsertData: any = null;
 
-      const supabase: any = {
-        from: vi.fn().mockReturnValue({
-          insert: vi.fn().mockImplementation((data: any) => {
-            capturedInsertData = data;
-            return {
-              select: vi.fn().mockReturnThis(),
-              single: vi.fn().mockResolvedValue({
-                data: { ...data, created_at: futureDateStr },
-                error: null,
-              }),
-            };
-          }),
+      const fromChain = {
+        insert: vi.fn().mockImplementation((data: any) => {
+          capturedInsertData = data;
+          return {
+            select: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+              data: { ...data, created_at: futureDateStr },
+              error: null,
+            }),
+          };
         }),
+      };
+      const supabase: any = {
+        schema: vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue(fromChain) }),
+        from: vi.fn().mockReturnValue(fromChain),
       };
 
       const controller = new AdminCouponsController(supabase, logger);

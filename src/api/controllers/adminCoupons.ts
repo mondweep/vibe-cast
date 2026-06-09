@@ -44,20 +44,49 @@ export class AdminCouponsController {
   /**
    * GET /api/v1/admin/coupons
    * Returns all coupons ordered by created_at DESC.
+   * Optional query param: email — filters by assigned_to_email (case-insensitive partial match).
+   * Each coupon includes redemption info (first redemption) flattened into the row.
    */
   async listCoupons(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     const correlationId = (request as any).correlationId ?? uuidv4();
     if (!this.adminGuard(request, reply, correlationId)) return;
 
     try {
-      const { data, error } = await this.supabase
+      const email = (request.query as any).email;
+
+      let query = this.supabase
+        .schema('ruflo_demo')
         .from('ruflo_demo_coupon')
-        .select('id, code, is_active, expires_at, max_uses, use_count, tier_access, notes, created_at')
+        .select(`
+          *,
+          ruflo_demo_coupon_redemption (
+            user_id,
+            redeemed_at,
+            access_expires_at
+          )
+        `)
         .order('created_at', { ascending: false });
+
+      if (email) {
+        query = query.ilike('assigned_to_email', `%${email}%`);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
-      reply.status(200).send(successResponse(data ?? []));
+      const mapped = (data ?? []).map((c: any) => {
+        const redemption = c.ruflo_demo_coupon_redemption?.[0] ?? null;
+        return {
+          ...c,
+          ruflo_demo_coupon_redemption: undefined,
+          redeemed_by_user_id: redemption?.user_id ?? null,
+          redeemed_at: redemption?.redeemed_at ?? null,
+          redemption_expires_at: redemption?.access_expires_at ?? null,
+        };
+      });
+
+      reply.status(200).send(successResponse(mapped));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error('listCoupons failed', { error: message, correlationId });
@@ -69,9 +98,10 @@ export class AdminCouponsController {
 
   /**
    * POST /api/v1/admin/coupons
-   * Body: { expiresInDays?, maxUses?, tierAccess?, notes? }
+   * Body: { expiresInDays?, maxUses?, tierAccess?, notes?, assignedToEmail?, assignedToName? }
    *
    * Auto-generates a RUFLO-XXXX-XXXX code.
+   * tierAccess defaults to ['INTERMEDIATE','ADVANCED'] if omitted.
    */
   async createCoupon(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     const correlationId = (request as any).correlationId ?? uuidv4();
@@ -84,6 +114,10 @@ export class AdminCouponsController {
       ? body.tierAccess
       : ['INTERMEDIATE', 'ADVANCED'];
     const notes: string | null = typeof body.notes === 'string' ? body.notes : null;
+    const assignedToEmail: string | null =
+      typeof body.assignedToEmail === 'string' ? body.assignedToEmail : null;
+    const assignedToName: string | null =
+      typeof body.assignedToName === 'string' ? body.assignedToName : null;
 
     try {
       const expiresAt = new Date(Date.now() + expiresInDays * 86_400_000).toISOString();
@@ -91,6 +125,7 @@ export class AdminCouponsController {
       const id = uuidv4();
 
       const { data, error } = await this.supabase
+        .schema('ruflo_demo')
         .from('ruflo_demo_coupon')
         .insert({
           id,
@@ -101,13 +136,15 @@ export class AdminCouponsController {
           use_count: 0,
           tier_access: tierAccess,
           notes,
+          assigned_to_email: assignedToEmail,
+          assigned_to_name: assignedToName,
         })
-        .select('id, code, is_active, expires_at, max_uses, use_count, tier_access, notes, created_at')
+        .select('id, code, is_active, expires_at, max_uses, use_count, tier_access, notes, assigned_to_email, assigned_to_name, created_at')
         .single();
 
       if (error) throw error;
 
-      this.logger.info('Coupon created', { correlationId, couponId: id, code });
+      this.logger.info('Coupon created', { correlationId, couponId: id, code, assignedToEmail });
       reply.status(201).send(successResponse(data));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

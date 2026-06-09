@@ -21,19 +21,27 @@ export interface CouponAccessGrant {
 export interface AdminCoupon {
   id: string;
   code: string;
-  tierAccess: string[];
-  expiresAt: string;
-  maxUses: number;
-  useCount: number;
-  isActive: boolean;
-  notes?: string;
+  tier_access: string[];
+  expires_at: string;
+  max_uses: number;
+  use_count: number;
+  is_active: boolean;
+  notes: string | null;
+  assigned_to_email: string | null;
+  assigned_to_name: string | null;
+  created_at: string;
+  redeemed_by_user_id: string | null;
+  redeemed_at: string | null;
+  redemption_expires_at: string | null;
 }
 
 export interface CreateCouponBody {
+  tierAccess: string[];
   expiresInDays?: number;
   maxUses?: number;
-  tierAccess?: string[];
   notes?: string;
+  assignedToEmail?: string;
+  assignedToName?: string;
 }
 
 /** Learner-facing coupon API (ADR-018). */
@@ -56,8 +64,10 @@ export const couponApi = {
   },
 
   // Admin endpoints
-  listCoupons: (): Promise<AdminCoupon[]> =>
-    apiClient.get('/admin/coupons').then((r) => r.data?.data ?? []),
+  listCoupons: (email?: string): Promise<AdminCoupon[]> =>
+    apiClient
+      .get(`/admin/coupons${email ? `?email=${encodeURIComponent(email)}` : ''}`)
+      .then((r) => r.data?.data ?? []),
 
   createCoupon: (body: CreateCouponBody): Promise<AdminCoupon> =>
     apiClient.post('/admin/coupons', body).then((r) => r.data?.data),
