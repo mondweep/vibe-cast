@@ -55,7 +55,6 @@ export class AdminCouponsController {
       const email = (request.query as any).email;
 
       let query = this.supabase
-        .schema('ruflo_demo')
         .from('ruflo_demo_coupon')
         .select(`
           *,
@@ -125,7 +124,6 @@ export class AdminCouponsController {
       const id = uuidv4();
 
       const { data, error } = await this.supabase
-        .schema('ruflo_demo')
         .from('ruflo_demo_coupon')
         .insert({
           id,

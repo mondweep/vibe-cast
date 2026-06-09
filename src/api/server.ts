@@ -244,7 +244,9 @@ export class ApiServer {
         this.logger.info('Coupon routes registered');
 
         // Admin coupons — coupon lifecycle management (ADR-018)
-        const adminCouponsController = new AdminCouponsController(supabaseClient, this.logger);
+        // Uses the service-role client so INSERT/UPDATE/DELETE on ruflo_demo_coupon
+        // pass RLS (only service_role has write grants on that table).
+        const adminCouponsController = new AdminCouponsController(progressSupabase, this.logger);
         await registerAdminCouponRoutes(this.fastify, adminCouponsController);
         this.logger.info('Admin coupon routes registered');
       } else {
