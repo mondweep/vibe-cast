@@ -239,7 +239,10 @@ export class ApiServer {
         this.logger.info('Metrics routes registered');
 
         // Coupons — learner redemption + premium access gate (ADR-018)
-        const couponController = new CouponController(supabaseClient, this.logger);
+        // Uses service-role client: SELECT/INSERT on ruflo_demo_coupon needs to
+        // bypass RLS (anon key has no SELECT grant; authenticated needs user JWT
+        // the server doesn't forward). Auth is enforced at the application layer.
+        const couponController = new CouponController(progressSupabase, this.logger);
         await registerCouponRoutes(this.fastify, couponController);
         this.logger.info('Coupon routes registered');
 
