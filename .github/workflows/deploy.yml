@@ -1,0 +1,57 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [ruflo-demonstration]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: vibe-cast-492722
+  REGION: europe-west2
+  SERVICE: learn-ruflo
+  REGISTRY: europe-west2-docker.pkg.dev/vibe-cast-492722/cloud-run-source-deploy
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker europe-west2-docker.pkg.dev --quiet
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE="${{ env.REGISTRY }}/learn-ruflo:${{ github.sha }}"
+          docker build -t "$IMAGE" -t "${{ env.REGISTRY }}/learn-ruflo:latest" .
+          docker push "$IMAGE"
+          docker push "${{ env.REGISTRY }}/learn-ruflo:latest"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          image: ${{ env.IMAGE }}
+          env_vars: |
+            SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+            SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+            DATABASE_SCHEMA=ruflo_demo
+            NODE_ENV=production
+
+      - name: Show deployed URL
+        run: |
+          echo "Deployed: $(gcloud run services describe ${{ env.SERVICE }} \
+            --region ${{ env.REGION }} --format='value(status.url)')"
