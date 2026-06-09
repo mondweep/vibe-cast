@@ -19,6 +19,11 @@ import { ContactPage } from '@/pages/ContactPage';
 import { LearningPathsPage } from '@/pages/LearningPathsPage';
 import { PathDetailPage } from '@/pages/PathDetailPage';
 import { LessonPage } from '@/pages/LessonPage';
+import { SkillLabPage } from '@/pages/SkillLabPage';
+import { ExercisePage } from '@/pages/ExercisePage';
+import { PatternsPage } from '@/pages/PatternsPage';
+import { PatternDetailPage } from '@/pages/PatternDetailPage';
+import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { Loader } from 'lucide-react';
 
 // Lazy-loaded so the graph visualisation library only loads on this tab.
@@ -167,6 +172,12 @@ export function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route path="/skill-lab" element={<ProtectedRoute><AppLayout><SkillLabPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/skill-lab/exercises/:exerciseId" element={<ProtectedRoute><AppLayout><ExercisePage /></AppLayout></ProtectedRoute>} />
+      <Route path="/community/patterns" element={<ProtectedRoute><AppLayout><PatternsPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/community/patterns/:patternId" element={<ProtectedRoute><AppLayout><PatternDetailPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/analytics" element={<ProtectedRoute><AppLayout><AnalyticsPage /></AppLayout></ProtectedRoute>} />
 
       <Route
         path="/enrollment"

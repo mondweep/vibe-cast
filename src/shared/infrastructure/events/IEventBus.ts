@@ -5,13 +5,16 @@ import { EventHandler } from '../../domain/EventHandler';
  * Dead Letter Event - event that failed processing
  */
 export interface DeadLetterEvent {
+  id: string;
   eventId: string;
   eventName: string;
   event: DomainEvent;
   retryCount: number;
   error: string;
+  stack?: string;
   scheduledRetryAt: Date;
   firstFailedAt: Date;
+  lastRetryAt?: Date;
 }
 
 /**
@@ -44,13 +47,25 @@ export interface IEventBus {
   publish(event: DomainEvent): Promise<void>;
 
   /**
-   * Register a handler for a specific event type
+   * Subscribe a handler for a specific event type (supports plain functions)
+   *
+   * @param eventType Event name to subscribe to (e.g., 'EnrollmentCompleted')
+   * @param handler Event handler (plain function or EventHandler)
+   * @returns Unique subscription ID for later unsubscription
+   */
+  subscribe(
+    eventType: string,
+    handler: EventHandler | ((event: any) => void | Promise<void>)
+  ): string;
+
+  /**
+   * Register a typed event handler for a specific event type
    *
    * @param eventType Event name to subscribe to (e.g., 'EnrollmentCompleted')
    * @param handler Event handler implementation
    * @returns Unique subscription ID for later unsubscription
    */
-  subscribe<T extends DomainEvent>(
+  registerHandler(
     eventType: string,
     handler: EventHandler
   ): string;

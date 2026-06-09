@@ -491,18 +491,17 @@ describe('EventBus', () => {
       const event = new TestEvent();
       await eventBus.publish(event);
 
-      // Advance time for retry
-      vi.advanceTimersByTime(2000); // Move past first backoff (1s)
+      expect(eventBus.getDeadLetterQueueSize()).toBe(1);
 
-      // Fix the handler to succeed
+      // Fix the handler to succeed before retry
       handler.handleError = null;
 
-      // Run the scheduler manually
-      vi.advanceTimersByTime(5000); // Trigger scheduler poll
+      // Advance time past the first backoff (1s) and scheduler poll (5s)
+      await vi.advanceTimersByTimeAsync(6000);
 
-      // Give async operations time to complete
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    });
+      // DLQ should be cleared after successful retry
+      expect(eventBus.getDeadLetterQueueSize()).toBe(0);
+    }, 10000);
   });
 
   describe('isHealthy', () => {

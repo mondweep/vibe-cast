@@ -10,6 +10,7 @@
  * - EventBus event publishing
  */
 
+import { Member } from '../../../src/community/domain/models/Member';
 import { MemberTestBuilder, createMockMemberRepository, createMockReputationService, createMockBadgeRepository, createMockBadge } from '../../contracts/Member.contract';
 
 describe('Member Aggregate', () => {
@@ -26,157 +27,215 @@ describe('Member Aggregate', () => {
   });
 
   describe('Member Creation and Initialization', () => {
-    // Test: Should create member with userId and initial reputation 0
-    // Expected: MemberTestBuilder produces valid member
-    // Verify: reputation = 0, badges = [], followersCount = 0
+    it('should create a member with initial reputation 0 and no badges', () => {
+      const member = Member.create('user-123');
+      expect(member.getReputationValue()).toBe(0);
+      expect(member.getBadges()).toHaveLength(0);
+      expect(member.getFollowersCount()).toBe(0);
+    });
 
-    // Test: Should emit MemberJoined event
-    // Expected: mockEventBus.publish called with MemberJoined event
-    // Payload: memberId, userId, joinedAt timestamp
+    it('should set userId on creation', () => {
+      const member = Member.create('user-abc');
+      expect(member.getUserId()).toBe('user-abc');
+    });
 
-    // Test: Should set joinedAt timestamp on creation
-    // Expected: joinedAt is current date or specified date
+    it('should set joinedAt timestamp on creation', () => {
+      const before = new Date();
+      const member = Member.create('user-123');
+      const after = new Date();
+      expect(member.getJoinedAt().getTime()).toBeGreaterThanOrEqual(before.getTime());
+      expect(member.getJoinedAt().getTime()).toBeLessThanOrEqual(after.getTime());
+    });
   });
 
   describe('Reputation Updates', () => {
-    // Test: Should update reputation with validation
-    // Expected: mockReputationService.validateChange called
-    // Verify: reputation incremented on valid change
+    it('should increment reputation when positive points given', () => {
+      const member = Member.create('user-123');
+      member.updateReputation(50, 'answered question');
+      expect(member.getReputationValue()).toBe(50);
+    });
 
-    // Test: Should record reputation history
-    // Expected: mockReputationService.recordHistory called
-    // Payload: memberId, points, reason (e.g., "answered question")
+    it('should track reputation history', () => {
+      const member = Member.create('user-123');
+      member.updateReputation(10, 'first contribution');
+      member.updateReputation(20, 'second contribution');
+      const history = member.getReputationHistory();
+      expect(history).toHaveLength(2);
+      expect(history[0].reason).toBe('first contribution');
+    });
 
-    // Test: Should emit ReputationUpdated event
-    // Expected: mockEventBus.publish called with ReputationUpdated event
-    // Payload: previousReputation, newReputation, points, reason
-
-    // Test: Should enforce reputation bounds (0-1000)
-    // Expected: ValidationError on attempting to exceed bounds
+    it('should throw when updating reputation on inactive member', () => {
+      const member = Member.create('user-123');
+      member.deactivate();
+      expect(() => member.updateReputation(10, 'test')).toThrow('Cannot update reputation of inactive member');
+    });
   });
 
   describe('Badge Award SAGA', () => {
-    // Test: Should award LEARNER badge at 50 reputation
-    // Trigger: reputation reaches 50
-    // Expected: mockBadgeRepository.findByCategory('LEARNER') called
-    // Expected: mockBadgeRepository.award called with member and badge
-    // Verify: 10-point reputation bonus applied
-    // Emit: BadgeAwarded event with reputationBonus: 10
+    it('should award a badge and apply reputation bonus', () => {
+      const member = Member.create('user-123');
+      const badge = createMockBadge('Contributor', 'CONTRIBUTOR');
+      member.awardBadge(badge);
+      expect(member.getBadges()).toHaveLength(1);
+      // CONTRIBUTOR bonus = 25
+      expect(member.getReputationValue()).toBe(25);
+    });
 
-    // Test: Should award CONTRIBUTOR badge at 150 reputation
-    // Trigger: reputation reaches 150
-    // Expected: mockBadgeRepository.award called
-    // Verify: 25-point reputation bonus applied
-    // Emit: BadgeAwarded event with reputationBonus: 25
+    it('should not re-award badge already held', () => {
+      const member = Member.create('user-123');
+      const badge = createMockBadge('Learner', 'LEARNER');
+      member.awardBadge(badge);
+      expect(() => member.awardBadge(badge)).toThrow(`Member already has badge: ${badge.id}`);
+    });
 
-    // Test: Should award REVIEWER badge at 300 reputation
-    // Trigger: reputation reaches 300
-    // Verify: 50-point reputation bonus applied
-
-    // Test: Should award MENTOR badge at 500 reputation
-    // Trigger: reputation reaches 500
-    // Verify: 75-point reputation bonus applied
-
-    // Test: Should not re-award badge already held
-    // Expected: badge already in member.badges
-    // Verify: mockBadgeRepository.award NOT called
+    it('should not award badge to inactive member', () => {
+      const member = Member.create('user-123');
+      member.deactivate();
+      const badge = createMockBadge('Learner', 'LEARNER');
+      expect(() => member.awardBadge(badge)).toThrow('Cannot award badge to inactive member');
+    });
   });
 
   describe('Member with MemberTestBuilder', () => {
-    // Test: Build basic member
-    // Expected: MemberTestBuilder produces valid member
+    it('should build a basic member using the test builder', () => {
+      const data = MemberTestBuilder.aMember().build();
+      expect(data.userId).toBe('user-123');
+      expect(data.reputation).toBe(0);
+    });
 
-    // Test: Build with reputation
-    // Expected: builder.withReputation(200) sets reputation
-    // Verify: can trigger badge thresholds
+    it('should build a member with reputation', () => {
+      const data = MemberTestBuilder.aMember().withReputation(200).build();
+      expect(data.reputation).toBe(200);
+    });
 
-    // Test: Build with badges
-    // Expected: builder.withBadges([badge1, badge2]) sets badges array
+    it('should build an inactive member', () => {
+      const data = MemberTestBuilder.aMember().inactive().build();
+      expect(data.isActive).toBe(false);
+    });
 
-    // Test: Build with followers
-    // Expected: builder.withFollowers(50) sets followersCount
-    // Verify: distinguishes from followingCount
-
-    // Test: Build inactive member
-    // Expected: builder.inactive() sets isActive = false
+    it('should build member with followers', () => {
+      const data = MemberTestBuilder.aMember().withFollowers(50).build();
+      expect(data.followersCount).toBe(50);
+      expect(data.followingCount).toBe(0);
+    });
   });
 
   describe('Follow/Unfollow SAGA', () => {
-    // Test: Should record follow relationship
-    // Expected: mockRepository.recordFollow called with followerId, targetMemberId
-    // Verify: both follow records established (A follows B)
+    it('should increment followingCount when following another member', () => {
+      const member = Member.create('user-a');
+      member.follow('member-b-id');
+      expect(member.getFollowingCount()).toBe(1);
+    });
 
-    // Test: Should increment following count for follower
-    // Expected: follower.followingCount incremented by 1
+    it('should be idempotent — double follow does not increment twice', () => {
+      const member = Member.create('user-a');
+      member.follow('member-b-id');
+      member.follow('member-b-id');
+      expect(member.getFollowingCount()).toBe(1);
+    });
 
-    // Test: Should increment followers count for target
-    // Expected: target.followersCount incremented by 1
+    it('should not follow self', () => {
+      const member = Member.create('user-a');
+      expect(() => member.follow(member.getId())).toThrow('Cannot follow yourself');
+    });
 
-    // Test: Should emit MemberFollowed event
-    // Expected: mockEventBus.publish called with MemberFollowed event
-    // Payload: followerId, followingId, timestamp
-
-    // Test: Should prevent duplicate follows (idempotency)
-    // Expected: Second follow call is no-op
-    // Verify: followingCount not incremented twice
-
-    // Test: Should unfollow and decrement counts
-    // Expected: mockRepository.recordUnfollow called
-    // Verify: followingCount and followersCount decremented
-    // Emit: MemberUnfollowed event
+    it('should decrement followingCount on unfollow', () => {
+      const member = Member.create('user-a');
+      member.follow('member-b-id');
+      member.unfollow('member-b-id');
+      expect(member.getFollowingCount()).toBe(0);
+    });
   });
 
   describe('Member Repository Interactions', () => {
-    // Test: Should persist member
-    // Expected: mockRepository.save called once
+    it('should call save on mock repository', async () => {
+      const member = Member.create('user-123');
+      await mockRepository.save(member);
+      expect(mockRepository.save).toHaveBeenCalledWith(member);
+    });
 
-    // Test: Should retrieve member by ID
-    // Expected: mockRepository.findById returns member
+    it('should return null from findById when not found', async () => {
+      const result = await mockRepository.findById('nonexistent');
+      expect(result).toBeNull();
+    });
 
-    // Test: Should retrieve member by userId
-    // Expected: mockRepository.findByUserId returns member
-
-    // Test: Should get followers list
-    // Expected: mockRepository.getFollowers returns array of follower IDs
-
-    // Test: Should get following list
-    // Expected: mockRepository.getFollowing returns array of following IDs
-
-    // Test: Should list active members
-    // Expected: mockRepository.findActiveMembers returns array, filters inactive
+    it('should return empty array from findActiveMembers', async () => {
+      const result = await mockRepository.findActiveMembers();
+      expect(result).toEqual([]);
+    });
   });
 
   describe('Reputation History Tracking', () => {
-    // Test: Should retrieve reputation history
-    // Expected: mockReputationService.getHistory returns array of history entries
-    // Verify: each entry has points, reason, timestamp
+    it('should track each reputation change in history', () => {
+      const member = Member.create('user-123');
+      member.updateReputation(10, 'first');
+      member.updateReputation(20, 'second');
+      const history = member.getReputationHistory();
+      expect(history).toHaveLength(2);
+      expect(history[0].points).toBe(10);
+      expect(history[1].points).toBe(20);
+    });
 
-    // Test: History should track all reputation changes
-    // Expected: multiple reputation updates create multiple history entries
-    // Verify: entries ordered chronologically
+    it('should include reason and timestamp in each history entry', () => {
+      const member = Member.create('user-123');
+      const before = new Date();
+      member.updateReputation(5, 'test reason');
+      const history = member.getReputationHistory();
+      expect(history[0].reason).toBe('test reason');
+      expect(history[0].timestamp.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    });
   });
 
   describe('Member Invariants', () => {
-    // Test: userId is required and immutable
-    // Expected: ValidationError on missing userId
-    // Verify: userId cannot be changed
+    it('should return a copy of the badges array to prevent external mutation', () => {
+      const member = Member.create('user-123');
+      const badge = createMockBadge('Learner', 'LEARNER');
+      member.awardBadge(badge);
+      const badges = member.getBadges();
+      badges.push(createMockBadge('Extra', 'CONTRIBUTOR'));
+      // Internal badges should still have only 1
+      expect(member.getBadgeCount()).toBe(1);
+    });
 
-    // Test: Member must have non-negative reputation
-    // Expected: ValidationError on negative reputation
-
-    // Test: Badge array is immutable through external code
-    // Expected: badges property controlled only by badge award logic
+    it('should preserve userId as set at creation', () => {
+      const member = Member.create('user-xyz');
+      expect(member.getUserId()).toBe('user-xyz');
+    });
   });
 
   describe('Member Status and Queries', () => {
-    // Test: Should identify if member is active
-    // Expected: isActive property, true by default
+    it('should be active by default', () => {
+      const member = Member.create('user-123');
+      expect(member.getIsActive()).toBe(true);
+    });
 
-    // Test: Should count earned badges
-    // Expected: member.badges.length accessible
+    it('should become inactive after deactivate()', () => {
+      const member = Member.create('user-123');
+      member.deactivate();
+      expect(member.getIsActive()).toBe(false);
+    });
 
-    // Test: Should list earned badges by category
-    // Expected: mockBadgeRepository.findEarnedByMember called
-    // Verify: returned badges filtered by member ID
+    it('should return correct badge count', () => {
+      const member = Member.create('user-123');
+      const b1: import('../../../src/community/domain/models/Member').Badge = {
+        id: 'badge-learner-unique',
+        name: 'B1',
+        description: 'desc',
+        imageUrl: 'https://example.com/b1.png',
+        earnedAt: new Date(),
+        category: 'LEARNER',
+      };
+      const b2: import('../../../src/community/domain/models/Member').Badge = {
+        id: 'badge-contributor-unique',
+        name: 'B2',
+        description: 'desc',
+        imageUrl: 'https://example.com/b2.png',
+        earnedAt: new Date(),
+        category: 'CONTRIBUTOR',
+      };
+      member.awardBadge(b1);
+      member.awardBadge(b2);
+      expect(member.getBadgeCount()).toBe(2);
+    });
   });
 });

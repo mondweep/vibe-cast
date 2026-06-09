@@ -1,8 +1,25 @@
 import { DomainEvent } from '../../domain/DomainEvent';
 import { EventHandler } from '../../domain/EventHandler';
-import { Logger } from '../logging/Logger';
-import { IEventBus, DeadLetterEvent } from './IEventBus';
+import { Logger, ConsoleLogger } from '../logging/Logger';
+import { IEventBus } from './IEventBus';
 import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * Dead Letter Event - event that failed processing
+ * Exported directly from EventBus for convenience
+ */
+export interface DeadLetterEvent {
+  id: string;           // Unique DLQ event ID
+  eventId: string;
+  eventName: string;
+  event: DomainEvent;
+  retryCount: number;
+  error: string;
+  stack?: string;
+  scheduledRetryAt: Date;
+  firstFailedAt: Date;
+  lastRetryAt?: Date;
+}
 
 /**
  * EventBus - Central event publishing and handling mechanism
@@ -18,6 +35,7 @@ import { v4 as uuidv4 } from 'uuid';
  *
  * PHASE 1 IMPLEMENTATION:
  * - registerHandler: returns subscriptionId
+ * - subscribe: alias that wraps plain functions as handlers
  * - publish: idempotency + error isolation + DLQ fallback
  * - DLQ retry: exponential backoff [1s, 2s, 4s, 8s] with max 3 retries
  * - Correlation ID threading for distributed tracing
@@ -36,9 +54,55 @@ export class EventBus implements IEventBus {
   private readonly MAX_RETRIES = 3;
   private readonly DLQ_RETRY_POLL_INTERVAL = 5000; // Poll every 5 seconds
 
-  constructor(logger: Logger) {
-    this.logger = logger;
+  constructor(logger?: Logger) {
+    this.logger = logger || new ConsoleLogger();
     this.startDLQRetryScheduler();
+  }
+
+  /**
+   * Get the event name from an event object
+   * Handles both domain DomainEvent (getEventName()) and infrastructure DomainEvent (eventType)
+   */
+  private getEventName(event: any): string {
+    if (typeof event.getEventName === 'function') {
+      return event.getEventName();
+    }
+    if (typeof event.eventType === 'string') {
+      return event.eventType;
+    }
+    return 'UnknownEvent';
+  }
+
+  /**
+   * Get the correlationId from an event
+   * Handles both domain DomainEvent (event.correlationId) and infrastructure DomainEvent (event.metadata.correlationId)
+   */
+  private getCorrelationId(event: any): string | undefined {
+    if (typeof event.correlationId === 'string') {
+      return event.correlationId;
+    }
+    if (event.metadata && typeof event.metadata.correlationId === 'string') {
+      return event.metadata.correlationId;
+    }
+    return event.correlationId; // may be undefined - return actual value
+  }
+
+  /**
+   * Subscribe a plain function handler for a specific event type
+   * This is an alias for registerHandler that accepts plain functions
+   *
+   * @param eventType Event name to subscribe to
+   * @param handler Plain function handler (event) => void | Promise<void>
+   * @returns Unique subscription ID for later unsubscription
+   */
+  subscribe(eventType: string, handler: (event: any) => void | Promise<void>): string {
+    const wrappedHandler: EventHandler = {
+      canHandle: () => true,
+      handle: async (event: DomainEvent) => {
+        await handler(event as any);
+      },
+    };
+    return this.registerHandler(eventType, wrappedHandler);
   }
 
   /**
@@ -110,8 +174,8 @@ export class EventBus implements IEventBus {
    */
   async publish(event: DomainEvent): Promise<void> {
     const eventId = event.id;
-    const eventName = event.getEventName();
-    const correlationId = event.correlationId;
+    const eventName = this.getEventName(event);
+    const correlationId = this.getCorrelationId(event);
 
     this.logger.info('Publishing event', {
       eventId,
@@ -170,8 +234,18 @@ export class EventBus implements IEventBus {
         handlerCount: handlers.size,
       });
 
+      // Collect all error messages
+      const errors = handlerResults
+        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+        .map(r => r.reason instanceof Error ? r.reason.message : String(r.reason));
+      const firstError = handlerResults[0].status === 'rejected'
+        ? handlerResults[0].reason
+        : null;
+      const errorMessage = `All registered handlers failed: ${errors.join('; ')}`;
+      const errorStack = firstError instanceof Error ? firstError.stack : undefined;
+
       // Add to DLQ with retry metadata
-      this.addToDLQ(event, 'All registered handlers failed');
+      this.addToDLQ(event, errorMessage, errorStack);
     } else {
       // At least one handler succeeded
       this.logger.info('Event published successfully', {
@@ -276,18 +350,56 @@ export class EventBus implements IEventBus {
       retryCount: dlqEvent.retryCount,
       eventId: dlqEvent.eventId,
       eventName: dlqEvent.eventName,
-      correlationId: dlqEvent.event.correlationId,
+      correlationId: this.getCorrelationId(dlqEvent.event),
     });
 
-    try {
-      // Clear idempotency check to allow retry
-      this.processedEventIds.delete(dlqEvent.eventId);
+    // Clear idempotency check to allow retry
+    this.processedEventIds.delete(dlqEvent.eventId);
 
-      // Re-publish the event
-      await this.publish(dlqEvent.event);
+    // Re-run handlers directly (without going through publish to avoid re-adding to DLQ)
+    const eventName = dlqEvent.eventName;
+    const handlers = this.handlers.get(eventName) || new Map();
 
-      // If we get here, publish succeeded (at least one handler succeeded)
-      // Remove from DLQ
+    if (handlers.size === 0) {
+      // No handlers - increment retry and return false
+      dlqEvent.retryCount++;
+      dlqEvent.lastRetryAt = new Date();
+      return false;
+    }
+
+    const correlationId = this.getCorrelationId(dlqEvent.event);
+    const handlerResults = await Promise.allSettled(
+      Array.from(handlers.entries()).map(([subscriptionId, handler]) =>
+        this.executeHandlerWithErrorIsolation(
+          dlqEvent.event,
+          handler,
+          subscriptionId,
+          eventName,
+          correlationId
+        )
+      )
+    );
+
+    const allFailed = handlerResults.every(
+      (result) => result.status === 'rejected'
+    );
+
+    if (allFailed) {
+      // Retry failed - increment retry count and stay in DLQ
+      dlqEvent.retryCount++;
+      dlqEvent.lastRetryAt = new Date();
+
+      this.logger.error('DLQ retry: failed', {
+        dlqEventId,
+        eventId: dlqEvent.eventId,
+        retryCount: dlqEvent.retryCount,
+      });
+
+      return false;
+    } else {
+      // At least one handler succeeded - remove from DLQ
+      this.processedEventIds.add(dlqEvent.eventId);
+      this.processedEventCount++;
       this.deadLetterQueue.delete(dlqEventId);
 
       this.logger.info('DLQ retry: successful', {
@@ -297,35 +409,27 @@ export class EventBus implements IEventBus {
       });
 
       return true;
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-
-      this.logger.error('DLQ retry: failed', {
-        dlqEventId,
-        eventId: dlqEvent.eventId,
-        error: errorMessage,
-      });
-
-      return false;
     }
   }
 
   /**
    * Add event to dead letter queue with retry metadata
    */
-  private addToDLQ(event: DomainEvent, reason: string): void {
+  private addToDLQ(event: DomainEvent, reason: string, stack?: string): void {
     const dlqEventId = uuidv4();
     const dlqEvent: DeadLetterEvent = {
+      id: dlqEventId,
       eventId: event.id,
-      eventName: event.getEventName(),
+      eventName: this.getEventName(event),
       event, // Store the original event for retry
       retryCount: 0,
       error: reason,
+      stack,
       scheduledRetryAt: new Date(
         Date.now() + this.BACKOFF_DELAYS[0] // Schedule first retry
       ),
       firstFailedAt: new Date(),
+      lastRetryAt: undefined,
     };
 
     this.deadLetterQueue.set(dlqEventId, dlqEvent);
@@ -333,8 +437,8 @@ export class EventBus implements IEventBus {
     this.logger.error('Event added to Dead Letter Queue', {
       dlqEventId,
       eventId: event.id,
-      eventName: event.getEventName(),
-      correlationId: event.correlationId,
+      eventName: this.getEventName(event),
+      correlationId: this.getCorrelationId(event),
       reason,
       dlqSize: this.deadLetterQueue.size,
     });
@@ -390,13 +494,12 @@ export class EventBus implements IEventBus {
    * Returns true if bus is operating normally
    */
   isHealthy(): boolean {
-    const dlqSizeThreshold = 10; // Flag as unhealthy if DLQ > 10
+    const dlqSizeThreshold = 10; // Flag as unhealthy if DLQ >= 10
 
     const isDLQHealthy = this.deadLetterQueue.size < dlqSizeThreshold;
-    const hasHandlers = this.getSubscriptionCount() > 0;
     const schedulerRunning = this.dlqRetryScheduler !== null;
 
-    const healthy = isDLQHealthy && hasHandlers && schedulerRunning;
+    const healthy = isDLQHealthy && schedulerRunning;
 
     if (!healthy) {
       this.logger.warn('EventBus health check failed', {
@@ -404,7 +507,6 @@ export class EventBus implements IEventBus {
         dlqSizeThreshold,
         isDLQHealthy,
         subscriberCount: this.getSubscriptionCount(),
-        hasHandlers,
         schedulerRunning,
       });
     }
@@ -460,22 +562,24 @@ export class EventBus implements IEventBus {
 
       const retrySuccessful = await this.retry(dlqEventId);
 
-      if (!retrySuccessful && dlqEvent.retryCount < this.MAX_RETRIES) {
-        // Schedule next retry with exponential backoff
-        dlqEvent.retryCount++;
-        const nextBackoffDelay =
-          this.BACKOFF_DELAYS[
-            Math.min(dlqEvent.retryCount, this.BACKOFF_DELAYS.length - 1)
-          ];
+      if (!retrySuccessful && this.deadLetterQueue.has(dlqEventId)) {
+        const updatedDlqEvent = this.deadLetterQueue.get(dlqEventId)!;
+        if (updatedDlqEvent.retryCount < this.MAX_RETRIES) {
+          // Schedule next retry with exponential backoff
+          const nextBackoffDelay =
+            this.BACKOFF_DELAYS[
+              Math.min(updatedDlqEvent.retryCount, this.BACKOFF_DELAYS.length - 1)
+            ];
 
-        dlqEvent.scheduledRetryAt = new Date(Date.now() + nextBackoffDelay);
+          updatedDlqEvent.scheduledRetryAt = new Date(Date.now() + nextBackoffDelay);
 
-        this.logger.info('DLQ event rescheduled for retry', {
-          dlqEventId,
-          eventId: dlqEvent.eventId,
-          retryCount: dlqEvent.retryCount,
-          nextRetryIn: `${nextBackoffDelay}ms`,
-        });
+          this.logger.info('DLQ event rescheduled for retry', {
+            dlqEventId,
+            eventId: updatedDlqEvent.eventId,
+            retryCount: updatedDlqEvent.retryCount,
+            nextRetryIn: `${nextBackoffDelay}ms`,
+          });
+        }
       }
     }
   }

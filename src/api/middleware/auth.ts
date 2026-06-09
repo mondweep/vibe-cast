@@ -51,6 +51,8 @@ export function createAuthMiddleware(
       '/api/v1/learning/lessons',
       '/api/v1/certification/certifications',
       '/api/v1/kg',
+      '/api/v1/skill-lab/exercises',   // ADR-015: public exercise catalog
+      '/api/v1/community/patterns',    // ADR-016: public pattern library
     ];
     if (
       request.method === 'GET' &&

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, BookOpen, GraduationCap, Award, Users, User, ChevronLeft, Network } from 'lucide-react';
+import { BarChart3, BarChart2, BookOpen, GraduationCap, Award, Users, User, ChevronLeft, Network, FlaskConical } from 'lucide-react';
 import { ROUTES } from '@/config/constants';
 
 export function Sidebar() {
@@ -11,6 +11,9 @@ export function Sidebar() {
     { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: BarChart3 },
     { label: 'Learning Paths', path: ROUTES.PATHS, icon: GraduationCap },
     { label: 'Knowledge Graph', path: ROUTES.KNOWLEDGE_GRAPH, icon: Network },
+    { label: 'Skill Lab', path: '/skill-lab', icon: FlaskConical },
+    { label: 'Community', path: '/community/patterns', icon: Users },
+    { label: 'Analytics', path: '/analytics', icon: BarChart2 },
     { label: 'Enrollments', path: ROUTES.ENROLLMENT, icon: BookOpen },
     { label: 'Badges', path: ROUTES.BADGES, icon: Award },
     { label: 'Leaderboard', path: ROUTES.LEADERBOARD, icon: Users },

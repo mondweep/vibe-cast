@@ -39,6 +39,14 @@ import { KnowledgeGraphController } from './controllers/knowledgeGraph';
 import { registerKnowledgeGraphRoutes } from './routes/knowledgeGraph';
 import { FeedbackController } from './controllers/feedback';
 import { registerFeedbackRoutes } from './routes/feedback';
+import { SkillLabController } from './controllers/skillLab';
+import { registerSkillLabRoutes } from './routes/skillLab';
+import { CommunityPatternsController } from './controllers/communityPatterns';
+import { registerCommunityPatternRoutes } from './routes/communityPatterns';
+import { MetricsController } from './controllers/metrics';
+import { registerMetricsRoutes } from './routes/metrics';
+import { MetricsReadRepository } from '../metrics/infrastructure/repositories/MetricsReadRepository';
+import { PatternRepository } from '../community/infrastructure/repositories/PatternRepository';
 
 // ESM equivalents of CommonJS __filename/__dirname (this runs under tsx as ESM)
 const __filename = fileURLToPath(import.meta.url);
@@ -187,6 +195,23 @@ export class ApiServer {
         const feedbackController = new FeedbackController(supabaseClient, this.logger);
         await registerFeedbackRoutes(this.fastify, feedbackController);
         this.logger.info('Feedback routes registered');
+
+        // Skill Lab — exercises catalog + attempt grading (ADR-015)
+        const skillLabController = new SkillLabController(supabaseClient, this.logger);
+        await registerSkillLabRoutes(this.fastify, skillLabController);
+        this.logger.info('Skill Lab routes registered');
+
+        // Community Patterns — pattern repository + ratings (ADR-016 P1)
+        const patternRepo = new PatternRepository(supabaseClient);
+        const communityPatternsController = new CommunityPatternsController(patternRepo, this.logger);
+        await registerCommunityPatternRoutes(this.fastify, communityPatternsController);
+        this.logger.info('Community patterns routes registered');
+
+        // Metrics — learner analytics + cohort overview (ADR-017 P1)
+        const metricsRepo = new MetricsReadRepository(supabaseClient);
+        const metricsController = new MetricsController(metricsRepo, this.logger);
+        await registerMetricsRoutes(this.fastify, metricsController);
+        this.logger.info('Metrics routes registered');
       } else {
         this.logger.warn(
           'Learning catalog routes NOT registered (set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY)',
