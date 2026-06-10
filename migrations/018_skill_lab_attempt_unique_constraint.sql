@@ -9,3 +9,8 @@ DO $$ BEGIN
     ADD CONSTRAINT uq_attempt_learner_exercise UNIQUE (learner_id, exercise_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+-- service_role bypasses RLS but still needs explicit GRANT (not a superuser).
+-- Migration 012 only granted anon/authenticated; service_role needs it for
+-- SkillLabController which uses the service-role client for all operations.
+GRANT SELECT ON ruflo_demo.ruflo_demo_exercise_read_model TO service_role;
