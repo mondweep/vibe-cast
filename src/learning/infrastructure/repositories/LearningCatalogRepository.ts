@@ -44,6 +44,8 @@ export interface LearningPathRow {
   ordered_lesson_ids: string[];
   prerequisite_path_id: string | null;
   status: string;
+  /** Cumulative likes across the path's lessons (merged from the rollup view). */
+  total_likes?: number;
 }
 
 export interface LessonRow {
@@ -105,6 +107,23 @@ export class LearningCatalogRepository {
       .maybeSingle();
     if (error) throw error;
     return (data as LessonRow) ?? null;
+  }
+
+  /**
+   * Cumulative likes per path, keyed by path_id. Reads the rollup view created
+   * in migration 017. Non-fatal: if the view is absent (migration not applied)
+   * this returns an empty map so path cards just omit the count.
+   */
+  async findPathLikeCounts(): Promise<Record<string, number>> {
+    const { data, error } = await this.supabase
+      .from('ruflo_demo_path_total_likes')
+      .select('path_id, total_likes');
+    if (error) {
+      return {};
+    }
+    return Object.fromEntries(
+      (data ?? []).map((r: any) => [r.path_id, r.total_likes ?? 0]),
+    );
   }
 
   // ---- Learner reads (repairs the broken legacy endpoints; ADR-013) ----

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Clock, Layers, Lock, ArrowRight, Loader } from 'lucide-react';
+import { BookOpen, Clock, Heart, Layers, Lock, ArrowRight, Loader } from 'lucide-react';
 import { useLearningPaths } from '@/hooks/usePaths';
 import { useMyAccess } from '@/hooks/useMyAccess';
 import { PremiumBadge } from '@/components/common/PremiumBadge';
@@ -63,6 +63,11 @@ function PathCard({ path, hasAccess, expiryDate, onUnlock }: PathCardProps) {
         <span className="flex items-center gap-1">
           <Clock size={16} /> {path.estimatedHours} hours
         </span>
+        {typeof path.totalLikes === 'number' && path.totalLikes > 0 && (
+          <span className="flex items-center gap-1 text-red-500">
+            <Heart size={14} className="fill-red-400 text-red-400" /> {path.totalLikes}
+          </span>
+        )}
       </div>
 
       {isPremium && !hasAccess ? (

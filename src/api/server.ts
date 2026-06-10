@@ -52,6 +52,8 @@ import { CouponController } from './controllers/coupon';
 import { registerCouponRoutes } from './routes/coupon';
 import { AdminCouponsController } from './controllers/adminCoupons';
 import { registerAdminCouponRoutes } from './routes/adminCoupons';
+import { LessonFeedbackController } from './controllers/lessonFeedback';
+import { registerLessonFeedbackRoutes } from './routes/lessonFeedback';
 
 // ESM equivalents of CommonJS __filename/__dirname (this runs under tsx as ESM)
 // Falls back gracefully for test environments
@@ -252,6 +254,16 @@ export class ApiServer {
         const adminCouponsController = new AdminCouponsController(progressSupabase, this.logger);
         await registerAdminCouponRoutes(this.fastify, adminCouponsController);
         this.logger.info('Admin coupon routes registered');
+
+        // Lesson Feedback — per-lesson likes (toggle) + comments (PRD: lesson engagement)
+        // Uses the service-role client: the auth middleware verifies the user JWT
+        // and sets request.authUser but does NOT forward it to a per-request
+        // Supabase session, so the anon client's auth.uid() is null and RLS would
+        // block INSERT/DELETE. The service-role client bypasses RLS; learner
+        // identity is enforced at the application layer (same pattern as coupons).
+        const lessonFeedbackController = new LessonFeedbackController(progressSupabase, this.logger);
+        await registerLessonFeedbackRoutes(this.fastify, lessonFeedbackController);
+        this.logger.info('Lesson feedback routes registered');
       } else {
         this.logger.warn(
           'Learning catalog routes NOT registered (set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY)',

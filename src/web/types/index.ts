@@ -38,6 +38,8 @@ export interface LearningPath {
   orderedLessonIds: string[];
   prerequisitePathId: string | null;
   status: string;
+  /** Cumulative likes across all lessons in this path (populated by lesson-feedback rollup). */
+  totalLikes?: number;
 }
 
 export interface Lesson {

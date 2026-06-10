@@ -31,6 +31,7 @@ export class LearningCatalogController {
       orderedLessonIds: row.ordered_lesson_ids ?? [],
       prerequisitePathId: row.prerequisite_path_id,
       status: row.status,
+      totalLikes: row.total_likes ?? 0,
     };
   }
 
@@ -52,8 +53,23 @@ export class LearningCatalogController {
   async getPaths(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     const correlationId = (request as any).correlationId;
     try {
-      const paths = await this.repository.findAllPaths();
-      reply.status(200).send(successResponse(paths.map((p) => this.toPath(p))));
+      // Fetch paths and the cumulative-likes rollup in parallel. The like-count
+      // lookup is best-effort: a failure (e.g. view missing) yields an empty map
+      // so cards still render, just without the count.
+      const [paths, likeCounts] = await Promise.all([
+        this.repository.findAllPaths(),
+        this.repository
+          .findPathLikeCounts()
+          .catch(() => ({} as Record<string, number>)),
+      ]);
+      reply.status(200).send(
+        successResponse(
+          paths.map((p) => ({
+            ...this.toPath(p),
+            totalLikes: likeCounts[p.path_id] ?? 0,
+          })),
+        ),
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('Failed to list learning paths', { error: message, correlationId });

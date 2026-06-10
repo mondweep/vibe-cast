@@ -11,7 +11,9 @@ import {
   Loader,
 } from 'lucide-react';
 import { useLesson } from '@/hooks/usePaths';
+import { useAuth } from '@/auth/AuthContext';
 import { CompleteLessonButton } from '@/components/learner/CompleteLessonButton';
+import { LessonFeedbackPanel } from '@/components/learner/LessonFeedbackPanel';
 
 interface ContentBlock {
   type: string;
@@ -138,6 +140,7 @@ function Block({ block }: { block: ContentBlock }) {
 export function LessonPage() {
   const { lessonId } = useParams<{ lessonId: string }>();
   const { data: lesson, isLoading } = useLesson(lessonId);
+  const { user } = useAuth();
 
   if (isLoading) {
     return (
@@ -189,6 +192,8 @@ export function LessonPage() {
       <div className="pt-4 border-t border-gray-200">
         <CompleteLessonButton lessonId={lesson.id} />
       </div>
+
+      <LessonFeedbackPanel lessonId={lesson.id} isAuthenticated={!!user} />
     </div>
   );
 }
