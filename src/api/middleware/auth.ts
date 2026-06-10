@@ -51,12 +51,19 @@ export function createAuthMiddleware(
       '/api/v1/learning/lessons',
       '/api/v1/certification/certifications',
       '/api/v1/kg',
-      '/api/v1/skill-lab/exercises',   // ADR-015: public exercise catalog
       '/api/v1/community/patterns',    // ADR-016: public pattern library
     ];
-    if (
+
+    // Skill-lab exercise catalog is public for list + detail only.
+    // Sub-paths (/hint, /submit, /complete) require authentication.
+    const isPublicSkillLabGet =
       request.method === 'GET' &&
-      publicGetPrefixes.some((p) => request.url.startsWith(p))
+      /^\/api\/v1\/skill-lab\/exercises(\/[a-f0-9-]{36})?(\?.*)?$/.test(request.url);
+
+    if (
+      (request.method === 'GET' &&
+        publicGetPrefixes.some((p) => request.url.startsWith(p))) ||
+      isPublicSkillLabGet
     ) {
       return;
     }

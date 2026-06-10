@@ -24,6 +24,7 @@ import { SkillLabPage } from '@/pages/SkillLabPage';
 import { ExercisePage } from '@/pages/ExercisePage';
 import { PatternsPage } from '@/pages/PatternsPage';
 import { PatternDetailPage } from '@/pages/PatternDetailPage';
+import { ContributePatternPage } from '@/pages/ContributePatternPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { Loader } from 'lucide-react';
 
@@ -177,6 +178,7 @@ export function App() {
       <Route path="/skill-lab" element={<ProtectedRoute><AppLayout><SkillLabPage /></AppLayout></ProtectedRoute>} />
       <Route path="/skill-lab/exercises/:exerciseId" element={<ProtectedRoute><AppLayout><ExercisePage /></AppLayout></ProtectedRoute>} />
       <Route path="/community/patterns" element={<ProtectedRoute><AppLayout><PatternsPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/community/patterns/new" element={<ProtectedRoute><AppLayout><ContributePatternPage /></AppLayout></ProtectedRoute>} />
       <Route path="/community/patterns/:patternId" element={<ProtectedRoute><AppLayout><PatternDetailPage /></AppLayout></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><AppLayout><AnalyticsPage /></AppLayout></ProtectedRoute>} />
 

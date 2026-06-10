@@ -73,6 +73,11 @@ export class CommunityPatternsController {
     const correlationId = (request as any).correlationId;
     const { patternId } = request.params as { patternId: string };
 
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(patternId)) {
+      return reply.status(404).send(errorResponse('Pattern not found', 'NOT_FOUND', undefined, correlationId));
+    }
+
     try {
       const row = await this.patternRepo.findById(patternId);
       if (!row) {

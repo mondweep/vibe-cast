@@ -224,7 +224,7 @@ export class ApiServer {
         this.logger.info('Feedback routes registered');
 
         // Skill Lab — exercises catalog + attempt grading (ADR-015)
-        const skillLabController = new SkillLabController(supabaseClient, this.logger);
+        const skillLabController = new SkillLabController(progressSupabase, this.logger);
         await registerSkillLabRoutes(this.fastify, skillLabController);
         this.logger.info('Skill Lab routes registered');
 
