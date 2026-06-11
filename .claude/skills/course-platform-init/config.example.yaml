@@ -53,7 +53,34 @@ course:                           # metadata for THIS run's course material
   slug: "linear-algebra"          # used in migration filename + seed keys
   title: "Linear Algebra Foundations"
   level: "beginner"               # beginner | intermediate | advanced
-  knowledge_graph: true           # generate KG nodes/edges if platform supports it
+
+# Knowledge Graph — the CONTENT ENGINE (see references/knowledge-graph.md).
+# When enabled, author/extend the KG FIRST, then generate lessons FROM it
+# (cite-or-refuse: every lesson claim must map to a verified, cited node).
+knowledge_graph:
+  enabled: true
+  ground_truth: "https://github.com/your-org/source-of-truth"  # repo/material the graph cites
+  # Domain-specific taxonomies — derive from your syllabus nouns. Table shape is fixed.
+  node_kinds: ["concept", "term", "technique", "example", "definition"]
+  edge_relations: ["prerequisite_of", "teaches", "part_of", "depends_on", "related_to", "example_of"]
+  embedding:
+    model: "Xenova/all-MiniLM-L6-v2"   # local ONNX, no API key
+    dims: 384                          # index-time == query-time, or retrieval degrades
+  # Tiered model routing for the build pipeline:
+  model_routing:
+    author_nodes_edges: "opus"         # judgment-heavy, done once
+    generate_lessons: "sonnet"         # assembles prose from verified nodes
+    embed_and_glue: "haiku"            # mechanical
+
+# AI Tutor — GraphRAG over the knowledge graph (POST /api/v1/tutor/ask).
+ai_tutor:
+  enabled: true
+  retrieve_top_k: 8
+  score_floor: 0.3                     # below this -> refuse (anti-hallucination)
+  graph_hops: 1                        # neighbourhood expansion for context
+  # Bring-your-own-key: provider+key from the request OR server env; never persisted/logged.
+  providers: ["anthropic", "openai", "requesty", "gemini"]
+  default_model: "claude-sonnet-4-6"
 
 # Where the raw content lives (relative to repo root).
 course_material_dir: "course-material/"

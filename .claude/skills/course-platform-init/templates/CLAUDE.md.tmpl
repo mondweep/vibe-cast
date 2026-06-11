@@ -35,6 +35,11 @@
 - `npm run build && npm test` must pass before committing
 - RLS on every table; publishable key on frontend, service-role server-side only
 
+## Knowledge Graph + AI Tutor (content engine)
+- KG is the source of truth: author cited nodes/edges first, generate lessons FROM them (cite-or-refuse)
+- Tutor is GraphRAG; refuse below the score floor; BYOK keys are transient (never persisted/logged)
+- Embedding model fixed at index-time == query-time ({{EMBED_MODEL}}, {{EMBED_DIMS}}-dim)
+
 ## Database
 - Table prefix: `{{TABLE_PREFIX}}` on all tables
 - Migrations sequential + idempotent; never auto-apply

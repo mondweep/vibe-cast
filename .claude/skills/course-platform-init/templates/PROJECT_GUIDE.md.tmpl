@@ -88,6 +88,24 @@ researcher → architect → coder → tester → reviewer
 ```
 Name every agent — unnamed agents can't receive SendMessage.
 
+## 9.5 Knowledge Graph + AI Tutor — the content engine
+
+The KG is the **source of truth lessons are generated *from***, not a decoration.
+Opus authors a verified, **cited** property graph (`{{TABLE_PREFIX}}kg_node` /
+`kg_edge` / `lesson_concept`, pgvector + `pg_trgm`, HNSW); Sonnet then assembles
+lesson prose strictly from that subgraph — **cite-or-refuse, no invented APIs**.
+
+The **in-app AI tutor** is GraphRAG over the same graph:
+`POST /api/v1/tutor/ask` → embed question ({{EMBED_MODEL}}, {{EMBED_DIMS}}-dim) →
+`kg_search` top-k → score-floor **refuse** if nothing qualifies → 1-hop traverse →
+grounded answer with citations. LLM synthesis is **bring-your-own-key**
+({{TUTOR_PROVIDERS}}); keys are transient and never persisted or logged; with no
+key it degrades to a grounded retrieval-only answer. A read-only
+`GET /api/v1/knowledge-graph` powers the force-graph visualisation page.
+
+Index-time and query-time **must** use the same embedding model — that ONNX
+dependency is why deployment uses `node:20-slim` (glibc), not alpine.
+
 ## 10. Database & Security ({{DATABASE}})
 
 Chosen for: managed Postgres + Auth + RLS + realtime. Security rules applied:
@@ -120,8 +138,11 @@ Frontend (public): VITE_API_URL, VITE_{{DB_PROVIDER}}_URL, VITE_{{DB_PROVIDER}}_
 [ ] Foundational ADRs
 [ ] Test framework + AQE fleet configured
 [ ] DB chosen + RLS planned
+[ ] KG schema + build pipeline (cited nodes/edges, embeddings)
+[ ] Lessons generated FROM the KG (cite-or-refuse)
+[ ] GraphRAG tutor API + drawer (refuse below score floor; BYOK)
 [ ] Gitleaks configured
-[ ] Env vars documented
-[ ] Dockerfile / deploy config
+[ ] Env vars documented (incl. tutor LLM keys, service_role for KG writes)
+[ ] Dockerfile / deploy config (node:20-slim for ONNX embeddings)
 [ ] Seed migration for first course
 ```

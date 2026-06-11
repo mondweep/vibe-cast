@@ -33,16 +33,31 @@ ON CONFLICT (id) DO NOTHING;
 --   GRANT SELECT ON {{PREFIX}}<table> TO authenticated;
 --   GRANT SELECT, INSERT, UPDATE ON {{PREFIX}}<table> TO service_role;
 
--- 5. Knowledge graph (if config.course.knowledge_graph: true) ----------------
+-- 5. Knowledge graph (if config.knowledge_graph.enabled: true) ---------------
+-- The KG is the CONTENT ENGINE, not a decoration: author/extend it FIRST, then
+-- generate lessons FROM it (cite-or-refuse). Full schema, embeddings, build
+-- pipeline, and the GraphRAG tutor are in references/knowledge-graph.md — read it.
+-- Tables ({{PREFIX}}kg_node / kg_edge / lesson_concept) are created once at
+-- bootstrap; this seed only INSERTS content rows into them.
 {{#if KNOWLEDGE_GRAPH}}
+-- Nodes: each carries citations (source_refs) and a kind from the domain taxonomy.
+-- embedding is backfilled out-of-band by the build pipeline (MiniLM-L6-v2, 384-dim).
 {{#each KG_NODES}}
-INSERT INTO {{../PREFIX}}kg_nodes (id, label, type, lesson_id)
-VALUES ('{{id}}', '{{label}}', '{{type}}', '{{lesson_id}}')
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO {{../PREFIX}}kg_node (node_id, kind, name, aliases, summary, body, source_refs)
+VALUES ('{{node_id}}', '{{kind}}', '{{name}}', ARRAY[{{aliases}}]::text[],
+        '{{summary}}', '{{body}}', '{{source_refs}}'::jsonb)
+ON CONFLICT (kind, name) DO NOTHING;
 {{/each}}
+-- Edges: typed relations (prerequisite_of|teaches|part_of|depends_on|...).
 {{#each KG_EDGES}}
-INSERT INTO {{../PREFIX}}kg_edges (from_node, to_node, relation)
-VALUES ('{{from}}', '{{to}}', '{{relation}}')
+INSERT INTO {{../PREFIX}}kg_edge (edge_id, from_node, to_node, relation, weight)
+VALUES ('{{edge_id}}', '{{from_node}}', '{{to_node}}', '{{relation}}', {{weight}})
 ON CONFLICT (from_node, to_node, relation) DO NOTHING;
+{{/each}}
+-- Lesson -> concept links: which verified nodes each lesson teaches.
+{{#each LESSON_CONCEPTS}}
+INSERT INTO {{../PREFIX}}lesson_concept (lesson_id, node_id)
+VALUES ('{{lesson_id}}', '{{node_id}}')
+ON CONFLICT (lesson_id, node_id) DO NOTHING;
 {{/each}}
 {{/if}}
