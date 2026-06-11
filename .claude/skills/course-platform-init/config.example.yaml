@@ -1,0 +1,59 @@
+# course-platform-init — input config
+# Copy to config.yaml, fill in, then invoke the skill.
+# This drives NAMING and STRUCTURE. Content comes from course-material/.
+
+mode: bootstrap            # "bootstrap" (new platform) | "add-course" (existing platform)
+
+project:
+  name: "math-mastery"            # repo / product name (kebab-case)
+  display_name: "Math Mastery"    # human-facing title
+  org: "your-github-org"          # GitHub org or user
+  problem_statement: >            # one paragraph: who, what pain, why now, success
+    Learners preparing for quantitative interviews lack a structured, interactive
+    path from fundamentals to advanced topics with AI-guided support. Success =
+    a learner completes a path and earns a verifiable badge.
+
+branches:
+  primary: "main"                 # protected, stable
+  development: "course-build"     # active dev branch (created if missing)
+  feature_prefix: "claude/"       # auto-named agent/feature branches
+
+stack:                            # used for the guide + Dockerfile; bootstrap only
+  frontend: "React 18 + Vite"
+  backend: "Fastify + Node.js 20"
+  database: "Supabase (PostgreSQL)"
+  test_framework: "Vitest + React Testing Library"
+  deploy_target: "cloud-run"      # cloud-run | railway | vercel
+
+database:
+  table_prefix: "ruflo_demo_"     # MUST match existing tables in add-course mode
+  rls: true                       # enable Row Level Security on every new table
+
+methodology:                      # informational; appears in the generated guide
+  - "DDD (Domain-Driven Design)"
+  - "CQRS + Event Sourcing"
+  - "TDD (Test-Driven Development)"
+  - "Swarm AI orchestration (Ruflo / claude-flow)"
+
+# Bounded contexts to scaffold (bootstrap) or reference (add-course).
+# Omit domains you don't need — the skill only scaffolds what's listed.
+domains:
+  - name: "Learning"
+    bounded_context: "Paths, Lessons, Enrollment, Progress"
+  - name: "Certification"
+    bounded_context: "Badges, Exams, Certificates"
+  - name: "SkillLab"
+    bounded_context: "Exercises, Lab Sessions"
+  - name: "Community"
+    bounded_context: "Members, Discussions, Patterns"
+  - name: "Metrics"
+    bounded_context: "Analytics, Leaderboard"
+
+course:                           # metadata for THIS run's course material
+  slug: "linear-algebra"          # used in migration filename + seed keys
+  title: "Linear Algebra Foundations"
+  level: "beginner"               # beginner | intermediate | advanced
+  knowledge_graph: true           # generate KG nodes/edges if platform supports it
+
+# Where the raw content lives (relative to repo root).
+course_material_dir: "course-material/"
