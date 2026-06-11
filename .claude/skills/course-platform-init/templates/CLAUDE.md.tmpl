@@ -1,0 +1,40 @@
+# {{DISPLAY_NAME}} — Claude Code Configuration
+
+## Rules
+- Do what has been asked; nothing more, nothing less
+- ALWAYS read a file before editing it
+- NEVER commit secrets, credentials, or .env files
+- Keep files under 500 lines
+- Validate input at system boundaries
+- Put work in `/src`, `/tests`, `/docs`, `/migrations` — never the repo root
+
+## Project
+- **Product**: {{DISPLAY_NAME}}
+- **Repo**: github.com/{{ORG}}/{{PROJECT_NAME}}
+- **Primary branch**: {{PRIMARY_BRANCH}}  ·  **Dev branch**: {{DEV_BRANCH}}
+- **Stack**: {{FRONTEND}} · {{BACKEND}} · {{DATABASE}}
+- **Approach**: {{METHODOLOGY}}
+
+## Domains (bounded contexts)
+{{#each DOMAINS}}
+- **{{name}}** — {{bounded_context}}
+{{/each}}
+
+## Swarm & Routing
+- Topology: hierarchical-mesh · Max agents: 15 · Memory: hybrid (HNSW + neural)
+- Name every agent; coordinate via SendMessage, not polling.
+
+| Task | Agents | Topology |
+|------|--------|----------|
+| Bug fix | researcher, coder, tester | hierarchical |
+| Feature | architect, coder, tester, reviewer | hierarchical |
+| Security | security-architect, auditor | hierarchical |
+
+## Quality
+- TDD inner loop (Vitest) + Agentic QE outer loop (contract/SAGA coverage, 80% thresholds)
+- `npm run build && npm test` must pass before committing
+- RLS on every table; publishable key on frontend, service-role server-side only
+
+## Database
+- Table prefix: `{{TABLE_PREFIX}}` on all tables
+- Migrations sequential + idempotent; never auto-apply

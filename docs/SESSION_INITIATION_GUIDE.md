@@ -4,7 +4,7 @@
 **Project**: Vibe-Cast Learning Platform  
 **Session Type**: Greenfield full-stack SaaS  
 **Stack**: TypeScript, React, Fastify, Supabase, Vercel/Railway/Cloud Run  
-**Approach**: DDD + CQRS + Event Sourcing + TDD + Swarm AI  
+**Approach**: DDD + CQRS + Event Sourcing + TDD + Agentic QE + Swarm AI  
 
 ---
 
@@ -218,6 +218,58 @@ tests/api/              # HTTP endpoint tests
 
 ---
 
+## 8.5 Agentic QE — Quality Governance Above TDD
+
+TDD covered *how each unit was built*. **Agentic QE (AQE)** sat one level above it as the
+**quality-governance layer** — defining *what must be tested across domains* and *what
+coverage counts as done*. It was run as a **fleet/CLI initialized over the repository**,
+not as in-application code.
+
+### How AQE was actually used
+
+```
+aqe init  → writes .agentic-qe/config.json (fleet config for THIS repo)
+            ├── enumerates each domain, its models, test files, contract files
+            ├── declares SAGA scenarios (trigger → steps → verification)
+            └── sets coverage thresholds (statements 80 / branches 75 / functions 80 / lines 80)
+                    ↓
+AQE drives test DESIGN: contract tests + cross-domain integration + SAGA failure cases
+                    ↓
+Vitest EXECUTES the tests; coverage measured against AQE thresholds
+```
+
+**Evidence in this repo**:
+- `.agentic-qe/config.json` — the fleet config, scoped to real files (e.g.
+  `src/skill-lab/domain/models/Exercise.ts`, `LabSession`), with per-model coverage
+  targets (85%) and SAGA definitions like `LabSessionCompletionSaga`.
+- `.gitignore` keeps `.agentic-qe/` local (working dir, not committed).
+- `tests/integration/` (~4,500 lines, 9 specs) and `tests/contracts/` — the
+  cross-domain, idempotency, event-log-replay, and query-model-sync scenarios AQE targeted.
+- `docs/SAGA_FLOWS_DESIGN.md §"Testing Strategy (agentic-qe Integration)"` documents the
+  SAGA contract-test strategy whose thresholds match `config.json`.
+
+### Two honest caveats (don't over-claim)
+
+1. **AQE is a QE fleet, not in-repo source.** An earlier plan
+   (`docs/PHASE_2_IMPLEMENTATION_PLAN.md`) proposed building
+   `src/shared/testing/agentic-qe/` orchestrator classes — those were **never committed**.
+   The real value came from the fleet operating *on* the repo, not code shipped *in* it.
+2. **AQE governed design; Vitest executed.** `config.json` names jest/ts-jest, but the
+   committed suite runs under **Vitest**. Treat AQE as the coverage/contract authority and
+   Vitest as the runner — they are complementary, not the same tool.
+
+### Why this matters for repeatability
+
+The division of labour is the reusable pattern:
+- **TDD** → correctness of each unit (inner loop)
+- **AQE** → cross-domain contract + SAGA coverage + threshold governance (outer loop)
+- **Vitest/Playwright** → execution
+
+**Lesson**: Initialize the QE fleet *after* the domains exist but *before* you call testing
+"done" — it surfaces the cross-domain and failure-path scenarios that unit TDD never prompts you to write.
+
+---
+
 ## 9. Swarm Orchestration
 
 For multi-file, multi-domain tasks, agents were launched in parallel using the pipeline pattern:
@@ -350,6 +402,7 @@ Frontend (public, VITE_ prefix):
 | ADRs for every major decision | Zero re-litigation of past choices |
 | DDD bounded contexts | Clean separation, parallel agent work |
 | TDD before implementation | Caught 3 critical bugs before ship |
+| Agentic QE fleet for cross-domain coverage | Surfaced SAGA/contract scenarios unit TDD misses; enforced 80% thresholds |
 | Named swarm agents | Parallel execution, clear handoffs |
 | Interface-driven dependencies | Swapped EventBus/Repository without touching domain code |
 | Gitleaks pre-commit | Prevented 2 secret exposure incidents |

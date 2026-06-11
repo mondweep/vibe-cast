@@ -1,0 +1,127 @@
+# How We Built {{DISPLAY_NAME}}: From Problem Statement to Production
+
+**Project**: {{DISPLAY_NAME}}
+**Repository**: github.com/{{ORG}}/{{PROJECT_NAME}}
+**Stack**: {{FRONTEND}}, {{BACKEND}}, {{DATABASE}}, {{DEPLOY_TARGET}}
+**Approach**: {{METHODOLOGY}}
+
+---
+
+## 1. Problem Statement
+
+> {{PROBLEM_STATEMENT}}
+
+Every feature traces back to this. A sharp problem statement prevents scope creep —
+answer who has the pain, what it is, why now, and what success looks like.
+
+## 2. GitHub Setup
+
+Set up GitHub before writing code — it's the single source of truth.
+- `{{PRIMARY_BRANCH}}` — stable, protected
+- `{{DEV_BRANCH}}` — active development
+- `{{FEATURE_PREFIX}}*` — per-session feature branches
+
+Use an orphan branch for clean demo history if needed.
+
+## 3. Orchestration (Ruflo / claude-flow)
+
+```bash
+npx @claude-flow/cli@latest init --wizard
+npx @claude-flow/cli@latest daemon start
+npx @claude-flow/cli@latest doctor --fix
+```
+Config (in CLAUDE.md): hierarchical-mesh topology, ≤15 agents, hybrid memory.
+Named agents coordinate via SendMessage.
+
+## 4. PRD
+
+Draft personas, user stories, MVP scope, explicit out-of-scope, success metrics.
+The PRD's major nouns become the DDD bounded contexts.
+
+## 5. Architecture Decision Records
+
+Document every major decision in `docs/adr/` (Context · Decision · Consequences ·
+Alternatives). Foundational set: EventBus, consistency/SAGA, CQRS read models,
+database choice, deployment target. ADRs stop teams re-litigating past choices.
+
+## 6. Domain-Driven Design
+
+Bounded contexts derived from the PRD/syllabus nouns:
+{{#each DOMAINS}}
+- **{{name}}** — {{bounded_context}}
+{{/each}}
+
+Per-domain layout: `domain/{models,events,value-objects}` +
+`infrastructure/repositories`. Aggregates enforce invariants; domains talk via events
+through an Anti-Corruption Layer, never cross-context table reads.
+
+## 7. CQRS + Event Sourcing
+
+- **Command side**: HTTP → Controller → Aggregate → DomainEvent → EventBus
+- **Query side**: EventBus → Projector → {{DATABASE}} read model → HTTP GET → Frontend
+- Eventual consistency (~50–100ms) is acceptable for a learning platform.
+- EventBus is interface-driven: in-memory for dev, broker for production, no code change.
+
+## 8. TDD
+
+Pyramid: 60–70% unit, 20–30% integration, 5–10% E2E. Runner: {{TEST_FRAMEWORK}}.
+Locations: `tests/unit/{domain}/`, `tests/integration/`, `tests/contracts/`, `tests/api/`.
+
+## 8.5 Agentic QE — Quality Governance
+
+Above TDD, initialize an **AQE fleet** over the repo once domains exist:
+```
+aqe init → .agentic-qe/config.json (gitignored)
+  ├── enumerate each domain's models, contract files, SAGA scenarios
+  └── coverage thresholds: statements 80 / branches 75 / functions 80 / lines 80
+```
+AQE governs *test design* (contract + cross-domain integration + SAGA failure paths);
+{{TEST_FRAMEWORK}} *executes*. AQE is a fleet operating **on** the repo — not source
+shipped **in** it. Don't call testing done until AQE's cross-domain scenarios exist and
+thresholds are met.
+
+## 9. Swarm Orchestration
+
+Launch named agents in one message (pipeline or fan-out):
+```
+researcher → architect → coder → tester → reviewer
+```
+Name every agent — unnamed agents can't receive SendMessage.
+
+## 10. Database & Security ({{DATABASE}})
+
+Chosen for: managed Postgres + Auth + RLS + realtime. Security rules applied:
+- **RLS on every table**, **per-operation policies** (separate SELECT/INSERT/UPDATE/DELETE)
+- **Key separation**: publishable/anon key on frontend; service-role key server-side only
+- **Table prefix** `{{TABLE_PREFIX}}` on all tables
+- **Gitleaks** pre-commit; **optimistic locking** (`version`) on SAGA state
+- Migrations: indexes outside CREATE TABLE; idempotent seeds; never auto-applied
+
+## 11. Deployment ({{DEPLOY_TARGET}})
+
+Single container serves SPA + API (multi-stage Dockerfile, `node:20-slim`).
+Bundle backend with esbuild. For Vercel add `vercel.json` SPA rewrite on day one;
+prefer Cloud Run/Railway if expecting heavy deploy volume during development.
+
+Env checklist:
+```
+Backend (secret):  {{DB_URL_VAR}}, {{DB_SECRET_VAR}}, {{DB_PUBLISHABLE_VAR}}
+Frontend (public): VITE_API_URL, VITE_{{DB_PROVIDER}}_URL, VITE_{{DB_PROVIDER}}_ANON_KEY
+```
+
+## 12. Initiation Checklist
+
+```
+[ ] Problem statement written
+[ ] GitHub repo + dev branch
+[ ] claude-flow initialized (CLAUDE.md)
+[ ] PRD drafted
+[ ] Bounded contexts from PRD nouns
+[ ] Foundational ADRs
+[ ] Test framework + AQE fleet configured
+[ ] DB chosen + RLS planned
+[ ] Gitleaks configured
+[ ] Env vars documented
+[ ] Dockerfile / deploy config
+[ ] Seed migration for first course
+```
