@@ -140,6 +140,32 @@ gcloud run deploy learn-ruflo --source . \
 
 ---
 
+## Ops Runbook — Known Incidents
+
+### PostgREST 406 on all `ruflo_demo_*` endpoints
+
+**Symptom:** Every database-dependent API route returns HTTP 500; the app shows no content. Cloud Run logs show `error: '[object Object]'`; Supabase API logs show `406 Not Acceptable` on every `/rest/v1/ruflo_demo_*` path while `brigade_*` paths return 200.
+
+**Root cause:** The `authenticator` role's `pgrst.db_schemas` setting no longer includes `ruflo_demo`. PostgREST only exposes schemas in that list; any unlisted schema's tables return 406. This has been triggered by editing the **Supabase Dashboard → Project Settings → API → Exposed schemas** field — Supabase overwrites the `authenticator` role config on save, dropping any schemas not listed in the UI.
+
+**Diagnosis:**
+```sql
+-- Confirm ruflo_demo is absent from the exposed schemas
+SELECT rolconfig FROM pg_roles WHERE rolname = 'authenticator';
+-- Expect: "pgrst.db_schemas=public, brigade_sales, ruflo_demo"
+-- If ruflo_demo is missing, apply the fix below.
+```
+
+**Fix (takes effect in ~5 seconds, no redeploy needed):**
+```sql
+ALTER ROLE authenticator SET "pgrst.db_schemas" TO 'public, brigade_sales, ruflo_demo';
+NOTIFY pgrst, 'reload schema';
+```
+
+**Prevention:** Migration `004_expose_ruflo_demo_schema.sql` sets this initially. Re-run the two SQL statements above any time the Supabase API settings page is saved. Alternatively, add `ruflo_demo` explicitly to the "Extra search path" field in the Supabase dashboard so the UI stops stripping it.
+
+---
+
 ## Admin setup (Freemium coupons)
 
 To issue coupons, your Supabase user account needs admin role:

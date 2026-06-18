@@ -161,7 +161,18 @@ export class CouponController {
         .eq('ruflo_demo_coupon.is_active', true)
         .gt('access_expires_at', new Date().toISOString());
 
-      if (error) throw error;
+      // A DB/permission error (e.g. join on ruflo_demo_coupon denied for anon role,
+      // or the ruflo_demo schema dropped from pgrst.db_schemas) must not crash the
+      // page for a new user. No access grants is the safe default.
+      if (error) {
+        this.logger.warn('getMyAccess: DB query failed — returning empty grants', {
+          correlationId,
+          userId,
+          code: (error as any).code,
+          message: (error as any).message,
+        });
+        return reply.status(200).send(successResponse([]));
+      }
 
       const grants = (data ?? []).map((row: any) => ({
         id: row.id,

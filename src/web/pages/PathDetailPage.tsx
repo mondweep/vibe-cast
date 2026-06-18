@@ -1,7 +1,9 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, Layers, Loader } from 'lucide-react';
+import { ArrowLeft, Clock, Layers, Loader, PlayCircle, CheckCircle } from 'lucide-react';
 import { useLearningPath, usePathLessons } from '@/hooks/usePaths';
+import { useEnrollInPath, usePathEnrollments } from '@/hooks/useProgress';
+import { useAuth } from '@/auth/AuthContext';
 import type { Lesson } from '@/types';
 
 function humanizeCapstone(value: string): string {
@@ -53,8 +55,18 @@ function LessonRow({ lesson }: { lesson: Lesson }) {
 
 export function PathDetailPage() {
   const { pathId } = useParams<{ pathId: string }>();
+  const { user } = useAuth();
   const { data: path, isLoading: pathLoading } = useLearningPath(pathId);
   const { data: lessons = [], isLoading: lessonsLoading } = usePathLessons(pathId);
+  const { data: enrollments = [] } = usePathEnrollments(user?.id);
+  const { mutate: enroll, isPending: enrolling } = useEnrollInPath();
+
+  const isEnrolled = enrollments.some((e) => e.pathId === pathId);
+
+  const handleEnroll = () => {
+    if (!user?.id || !pathId) return;
+    enroll({ pathId, learnerId: user.id });
+  };
 
   if (pathLoading || lessonsLoading) {
     return (
@@ -95,6 +107,24 @@ export function PathDetailPage() {
             <Clock size={16} /> {path.estimatedHours} hours
           </span>
         </div>
+        {user && (
+          <div className="mt-5">
+            {isEnrolled ? (
+              <span className="inline-flex items-center gap-2 px-4 py-2 bg-success-100 text-success-700 rounded-lg text-sm font-medium">
+                <CheckCircle size={16} /> Enrolled — track progress on Dashboard
+              </span>
+            ) : (
+              <button
+                onClick={handleEnroll}
+                disabled={enrolling}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-semibold disabled:opacity-60"
+              >
+                {enrolling ? <Loader className="animate-spin" size={16} /> : <PlayCircle size={16} />}
+                {enrolling ? 'Starting...' : 'Start Learning'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div>

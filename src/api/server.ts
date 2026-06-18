@@ -236,7 +236,7 @@ export class ApiServer {
 
         // Metrics — learner analytics + cohort overview (ADR-017 P1)
         const metricsRepo = new MetricsReadRepository(supabaseClient);
-        const metricsController = new MetricsController(metricsRepo, this.logger);
+        const metricsController = new MetricsController(metricsRepo, this.logger, progressRepo);
         await registerMetricsRoutes(this.fastify, metricsController);
         this.logger.info('Metrics routes registered');
 

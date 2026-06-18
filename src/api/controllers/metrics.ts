@@ -5,6 +5,7 @@ import {
   LearnerMetricsRow,
   CohortRow,
 } from '../../metrics/infrastructure/repositories/MetricsReadRepository';
+import { ProgressReadRepository } from '../../learning/infrastructure/repositories/ProgressReadRepository';
 import { successResponse, errorResponse } from '../utils/response';
 
 /**
@@ -21,6 +22,7 @@ export class MetricsController {
   constructor(
     private metricsRepo: MetricsReadRepository,
     private logger: Logger,
+    private progressRepo?: ProgressReadRepository,
   ) {}
 
   // ---------------------------------------------------------------- mappers
@@ -58,6 +60,55 @@ export class MetricsController {
     };
   }
 
+  // ---------------------------------------------------------------- live computation
+
+  private async computeFromProgress(learnerId: string) {
+    if (!this.progressRepo) {
+      return {
+        learnerId, pathProgressPercent: 0, lessonsCompleted: 0, lessonsTotal: 0,
+        exercisesCompleted: 0, exercisesTotal: 0, timeInvestedHours: 0,
+        lastActivityAt: null, daysInactive: 0, engagementTrend: 'neutral' as const, estCertDate: null,
+      };
+    }
+    const [enrollments, progressRows, completions] = await Promise.all([
+      this.progressRepo.findEnrollmentsByLearner(learnerId),
+      this.progressRepo.findProgressByLearner(learnerId),
+      this.progressRepo.findCompletedLessons(learnerId),
+    ]);
+
+    const lessonsTotal = enrollments.reduce((s, e) => s + (e.total_lessons ?? 0), 0);
+    const lessonsCompleted = progressRows.reduce(
+      (s, p) => s + (p.completed_lesson_ids?.length ?? 0), 0,
+    );
+    const pathProgressPercent =
+      lessonsTotal > 0 ? Math.round((lessonsCompleted / lessonsTotal) * 100) : 0;
+
+    const lastActivityAt =
+      completions.length > 0
+        ? completions.reduce((latest, c) =>
+            c.completed_at > latest ? c.completed_at : latest,
+            completions[0].completed_at,
+          )
+        : null;
+
+    const daysInactive = lastActivityAt
+      ? Math.floor((Date.now() - new Date(lastActivityAt).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    const recentCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const staleCutoff  = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const recentCount  = completions.filter((c) => new Date(c.completed_at).getTime() > recentCutoff).length;
+    const engagementTrend: 'up' | 'neutral' | 'down' =
+      recentCount > 0 ? 'up' : lastActivityAt && new Date(lastActivityAt).getTime() < staleCutoff ? 'down' : 'neutral';
+
+    return {
+      learnerId, pathProgressPercent, lessonsCompleted, lessonsTotal,
+      exercisesCompleted: 0, exercisesTotal: 0,
+      timeInvestedHours: Math.round(lessonsCompleted * 0.5 * 10) / 10,
+      lastActivityAt, daysInactive, engagementTrend, estCertDate: null,
+    };
+  }
+
   // ---------------------------------------------------------------- handlers
 
   /**
@@ -79,22 +130,10 @@ export class MetricsController {
       const row = await this.metricsRepo.getLearnerMetrics(learnerId);
 
       if (!row) {
-        // Learner exists but has no metrics yet — return a zero-state stub
-        return reply.status(200).send(
-          successResponse({
-            learnerId,
-            pathProgressPercent:  0,
-            lessonsCompleted:     0,
-            lessonsTotal:         0,
-            exercisesCompleted:   0,
-            exercisesTotal:       0,
-            timeInvestedHours:    0,
-            lastActivityAt:       null,
-            daysInactive:         0,
-            engagementTrend:      'neutral',
-            estCertDate:          null,
-          }),
-        );
+        // No dedicated metrics row yet — compute live from progress read models
+        // so the Analytics page shows real data immediately on first use.
+        const computed = await this.computeFromProgress(learnerId);
+        return reply.status(200).send(successResponse(computed));
       }
 
       reply.status(200).send(successResponse(this.toLearnerMetrics(row)));
