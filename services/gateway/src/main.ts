@@ -2,9 +2,12 @@
  * Composition root: wire adapters → domain services → HTTP server and listen.
  * This is the only place that knows about concrete adapters (ADR-0003).
  */
+import dns from 'node:dns';
 import { loadConfig } from './config';
 import { createServer } from './http/server';
 import { NearbyAircraftService } from './flight/domain/nearby-aircraft.service';
+import { AircraftFeed } from './flight/ports/aircraft-feed.port';
+import { AdsbLolFeed } from './flight/adapters/adsblol-feed';
 import { OpenSkyFeed } from './flight/adapters/opensky-feed';
 import { OpenSkyTokenManager } from './flight/adapters/opensky-token-manager';
 import { CelestrakTleSource } from './satellite/adapters/celestrak-tle-source';
@@ -15,25 +18,35 @@ import { VisibilityService } from './satellite/domain/visibility.service';
 import { SkySnapshotService, SnapshotProvider } from './application/sky-snapshot.service';
 import { CachingSnapshotService } from './application/caching-snapshot.service';
 
+// On some serverless platforms (e.g. Cloud Run) Node's fetch can fail when it
+// tries an unroutable IPv6 address first; prefer IPv4 so the external flight/
+// TLE APIs are reachable.
+dns.setDefaultResultOrder('ipv4first');
+
 export function buildSnapshotService(
   config = loadConfig(),
 ): SkySnapshotService {
   const { opensky, celestrak } = config;
 
-  // Only attach OAuth2 if credentials are configured; otherwise call OpenSky
-  // anonymously (stricter limits, but works).
-  const tokenProvider =
-    opensky.clientId && opensky.clientSecret
-      ? new OpenSkyTokenManager({
-          clientId: opensky.clientId,
-          clientSecret: opensky.clientSecret,
-        })
-      : undefined;
-
-  const feed = new OpenSkyFeed({
-    baseUrl: opensky.baseUrl,
-    tokenProvider: tokenProvider ? () => tokenProvider.getToken() : undefined,
-  });
+  // Select the flight feed. adsb.lol is the default: open, no auth, and
+  // reachable from cloud egress (OpenSky blocks datacenter IPs and needs creds).
+  let feed: AircraftFeed;
+  if (config.flightSource === 'opensky') {
+    // Only attach OAuth2 if credentials are configured; otherwise anonymous.
+    const tokenProvider =
+      opensky.clientId && opensky.clientSecret
+        ? new OpenSkyTokenManager({
+            clientId: opensky.clientId,
+            clientSecret: opensky.clientSecret,
+          })
+        : undefined;
+    feed = new OpenSkyFeed({
+      baseUrl: opensky.baseUrl,
+      tokenProvider: tokenProvider ? () => tokenProvider.getToken() : undefined,
+    });
+  } else {
+    feed = new AdsbLolFeed({ baseUrl: config.adsblol.baseUrl });
+  }
 
   const propagator = new Sgp4Propagator();
   return new SkySnapshotService(

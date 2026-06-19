@@ -19,6 +19,9 @@ export interface GatewayConfig {
    * `?token=`); when unset, `/sky` is open. Lets a public URL be team-only.
    */
   apiToken?: string;
+  /** Which flight feed to use. adsb.lol is open + cloud-friendly (default). */
+  flightSource: 'adsblol' | 'opensky';
+  adsblol: { baseUrl: string };
   opensky: { baseUrl: string; clientId?: string; clientSecret?: string };
   celestrak: { baseUrl: string };
 }
@@ -48,6 +51,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig 
     passWindowHours: num(env.PASS_WINDOW_HOURS, 6),
     cacheTtlMs: num(env.CACHE_TTL_MS, 30000),
     apiToken: env.API_TOKEN || undefined,
+    flightSource: env.FLIGHT_SOURCE === 'opensky' ? 'opensky' : 'adsblol',
+    adsblol: { baseUrl: str(env.ADSBLOL_BASE_URL, 'https://api.adsb.lol') },
     opensky: {
       baseUrl: str(env.OPENSKY_BASE_URL, 'https://opensky-network.org/api'),
       clientId: env.OPENSKY_CLIENT_ID || undefined,

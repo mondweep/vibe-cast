@@ -7,6 +7,7 @@ export * from './flight/ports/aircraft-feed.port';
 export * from './flight/domain/nearby-aircraft.service';
 export * from './flight/adapters/opensky-feed';
 export * from './flight/adapters/opensky-token-manager';
+export * from './flight/adapters/adsblol-feed';
 
 export * from './satellite/domain/satellite';
 export * from './satellite/domain/pass';
