@@ -14,6 +14,11 @@ export interface GatewayConfig {
   passWindowHours: number;
   /** Snapshot cache TTL (ms). Should exceed compute time so polls are cheap. */
   cacheTtlMs: number;
+  /**
+   * Optional shared token. When set, `GET /sky` requires it (Bearer header or
+   * `?token=`); when unset, `/sky` is open. Lets a public URL be team-only.
+   */
+  apiToken?: string;
   opensky: { baseUrl: string; clientId?: string; clientSecret?: string };
   celestrak: { baseUrl: string };
 }
@@ -42,6 +47,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig 
     satelliteGroup: str(env.SATELLITE_GROUP, 'visual'),
     passWindowHours: num(env.PASS_WINDOW_HOURS, 6),
     cacheTtlMs: num(env.CACHE_TTL_MS, 30000),
+    apiToken: env.API_TOKEN || undefined,
     opensky: {
       baseUrl: str(env.OPENSKY_BASE_URL, 'https://opensky-network.org/api'),
       clientId: env.OPENSKY_CLIENT_ID || undefined,

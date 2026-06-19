@@ -49,10 +49,30 @@ choice), warm (`--min-instances=1`), with the default observer + cache env vars.
 Tweak these in [`.github/workflows/deploy-cloud-run.yml`](../.github/workflows/deploy-cloud-run.yml).
 
 ### Adding OpenSky credentials
-Recommended for team traffic. Store the secret in Secret Manager and reference it
-from the deploy step (see the OpenSky section of
-[DEPLOY-CLOUD-RUN.md](DEPLOY-CLOUD-RUN.md)); grant the deployer SA
-`roles/secretmanager.secretAccessor`.
+Recommended for team traffic. Run the bootstrap with the secret in the
+environment, which stores it in Secret Manager and grants the runtime SA access:
+```bash
+OPENSKY_CLIENT_SECRET='your-secret' ./scripts/gcp-bootstrap-wif.sh YOUR_PROJECT_ID europe-west2
+```
+Then add repo Variables `OPENSKY_CLIENT_ID=<id>` and
+`GCP_OPENSKY_SECRET=opensky-client-secret`. The deploy step wires them in
+automatically.
+
+### Make it team-only (shared token)
+To require a token on `GET /sky` (so a public URL isn't open to the world):
+```bash
+# create the token secret + let the runtime read it
+printf '%s' "$(openssl rand -hex 24)" | \
+  gcloud secrets create skywatch-api-token --data-file=- --project YOUR_PROJECT_ID
+PN=$(gcloud projects describe YOUR_PROJECT_ID --format='value(projectNumber)')
+gcloud secrets add-iam-policy-binding skywatch-api-token \
+  --member="serviceAccount:${PN}-compute@developer.gserviceaccount.com" \
+  --role=roles/secretmanager.secretAccessor --project YOUR_PROJECT_ID
+```
+Then add repo Variable `GCP_API_TOKEN_SECRET=skywatch-api-token` and redeploy.
+Share the app as `https://<service-url>/?token=<the-token>`; point ESP32 devices
+at the same token in their config portal. (Leave the Variable unset to stay
+public.)
 
 ## Security properties
 - **No keys**: WIF mints a short-lived token per workflow run; nothing long-lived

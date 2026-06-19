@@ -43,7 +43,28 @@ jobs:
           docker push "$IMAGE"
 
       - name: Deploy to Cloud Run
+        env:
+          # Optional OpenSky OAuth2 (set these repo Variables to enable; without
+          # them the gateway calls OpenSky anonymously with stricter limits).
+          OPENSKY_CLIENT_ID: ${{ vars.OPENSKY_CLIENT_ID }}
+          OPENSKY_SECRET_NAME: ${{ vars.GCP_OPENSKY_SECRET }} # Secret Manager name
+          # Optional shared-token guard: name of a Secret Manager secret holding
+          # API_TOKEN. When set, GET /sky requires the token (team-only URL).
+          API_TOKEN_SECRET: ${{ vars.GCP_API_TOKEN_SECRET }}
         run: |
+          ENV_VARS="OBSERVER_LAT=51.5074,OBSERVER_LON=-0.1278,OBSERVER_ALT_KM=0.03,FLIGHT_RANGE_KM=50,MIN_ELEVATION_DEG=10,SATELLITE_GROUP=visual,PASS_WINDOW_HOURS=6,CACHE_TTL_MS=30000"
+          SECRET_ARGS=()
+          if [[ -n "$OPENSKY_CLIENT_ID" && -n "$OPENSKY_SECRET_NAME" ]]; then
+            echo "OpenSky OAuth2 enabled (client id + Secret Manager secret)."
+            ENV_VARS="${ENV_VARS},OPENSKY_CLIENT_ID=${OPENSKY_CLIENT_ID}"
+            SECRET_ARGS+=(--update-secrets "OPENSKY_CLIENT_SECRET=${OPENSKY_SECRET_NAME}:latest")
+          else
+            echo "OpenSky credentials not configured — using anonymous access."
+          fi
+          if [[ -n "$API_TOKEN_SECRET" ]]; then
+            echo "Shared-token guard enabled — /sky will require the token."
+            SECRET_ARGS+=(--update-secrets "API_TOKEN=${API_TOKEN_SECRET}:latest")
+          fi
           gcloud run deploy "$SERVICE" \
             --image "$IMAGE" \
             --project "${{ vars.GCP_PROJECT_ID }}" \
@@ -52,7 +73,8 @@ jobs:
             --min-instances=1 --max-instances=3 \
             --cpu=1 --memory=512Mi --cpu-boost \
             --timeout=120 --concurrency=80 \
-            --set-env-vars=OBSERVER_LAT=51.5074,OBSERVER_LON=-0.1278,OBSERVER_ALT_KM=0.03,FLIGHT_RANGE_KM=50,MIN_ELEVATION_DEG=10,SATELLITE_GROUP=visual,PASS_WINDOW_HOURS=6,CACHE_TTL_MS=30000
+            --set-env-vars="$ENV_VARS" \
+            "${SECRET_ARGS[@]}"
 
       - name: Output service URL
         run: |

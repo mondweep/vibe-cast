@@ -62,4 +62,34 @@ describe('gateway HTTP server', () => {
     expect(res.status).toBe(500);
     expect(res.body.error).toBeDefined();
   });
+
+  describe('shared-token guard (API_TOKEN set)', () => {
+    const securedConfig = { ...config, apiToken: 's3cret-team-token' };
+    const app = () => createServer({ snapshotService: { snapshot: jest.fn().mockResolvedValue(emptySnapshot()) }, config: securedConfig });
+
+    it('rejects /sky without a token (401)', async () => {
+      const res = await request(app()).get('/sky');
+      expect(res.status).toBe(401);
+    });
+
+    it('accepts /sky with a correct Bearer token', async () => {
+      const res = await request(app()).get('/sky').set('Authorization', 'Bearer s3cret-team-token');
+      expect(res.status).toBe(200);
+    });
+
+    it('accepts /sky with a correct ?token= query', async () => {
+      const res = await request(app()).get('/sky?token=s3cret-team-token');
+      expect(res.status).toBe(200);
+    });
+
+    it('rejects a wrong token (401)', async () => {
+      const res = await request(app()).get('/sky').set('Authorization', 'Bearer nope');
+      expect(res.status).toBe(401);
+    });
+
+    it('leaves /healthz and the front-end open (no token needed)', async () => {
+      expect((await request(app()).get('/healthz')).status).toBe(200);
+      expect((await request(app()).get('/')).status).toBe(200);
+    });
+  });
 });

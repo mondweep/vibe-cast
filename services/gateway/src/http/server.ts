@@ -1,8 +1,27 @@
 import path from 'path';
+import { timingSafeEqual } from 'crypto';
 import express, { Express, Request, Response } from 'express';
 import { GatewayConfig } from '../config';
 import { SnapshotProvider } from '../application/sky-snapshot.service';
 import { BadRequestError, observerFromQuery } from './observer-query';
+
+/** Constant-time string compare that is safe for differing lengths. */
+function safeEqual(a: string | undefined, b: string | undefined): boolean {
+  if (!a || !b) return false;
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
+
+/** True if the request carries the configured token (or no token is required). */
+function isAuthorized(config: GatewayConfig, req: Request): boolean {
+  if (!config.apiToken) return true; // open when no token configured
+  const header = req.header('authorization');
+  const bearer = header?.startsWith('Bearer ') ? header.slice(7) : undefined;
+  const queryToken = typeof req.query.token === 'string' ? req.query.token : undefined;
+  return safeEqual(bearer, config.apiToken) || safeEqual(queryToken, config.apiToken);
+}
 
 export interface ServerDeps {
   snapshotService: SnapshotProvider;
@@ -25,6 +44,10 @@ export function createServer({ snapshotService, config, publicDir }: ServerDeps)
   });
 
   app.get('/sky', async (req: Request, res: Response) => {
+    if (!isAuthorized(config, req)) {
+      res.status(401).json({ error: 'missing or invalid access token' });
+      return;
+    }
     try {
       const observer = observerFromQuery(req.query, config.observer);
       const snapshot = await snapshotService.snapshot(observer, {

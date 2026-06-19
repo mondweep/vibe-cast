@@ -23,6 +23,16 @@ npm start           # run the built gateway (reads env / .env)
 Open `http://localhost:8080/` after `npm start` to see flights and satellites in
 a browser — no ESP32 hardware required.
 
+### Access control (optional shared token)
+Set **`API_TOKEN`** to make `GET /sky` require it — turning a public URL into a
+team-only one. `/healthz` and the front-end stay open so the page can load and
+prompt. Clients pass the token as `Authorization: Bearer <token>` or `?token=…`:
+- **Browser:** share `https://<host>/?token=YOUR_TOKEN` — the page stores it and
+  strips it from the URL (or it prompts on a 401).
+- **ESP32:** set the gateway API token in the config portal (sent as Bearer).
+
+Leave `API_TOKEN` unset to keep `/sky` open (default).
+
 Configuration is via environment variables — see `.env.example`. OpenSky OAuth2
 credentials are optional (`OPENSKY_CLIENT_ID`/`SECRET`); without them the gateway
 calls OpenSky anonymously. Deploy with Docker — see

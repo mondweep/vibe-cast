@@ -83,6 +83,24 @@
     const canvas = $('radar'), ctx = canvas.getContext('2d');
     const W = canvas.width, CX = W/2, CY = W/2, R = W/2 - 6;
 
+    // Optional access token (only needed if the gateway has API_TOKEN set).
+    // Capture it from ?token=… on first visit, persist it, and strip it from
+    // the visible URL. Share links as  https://<host>/?token=YOUR_TOKEN
+    const TOKEN_KEY = 'skywatch_token';
+    function getToken() {
+      const fromUrl = new URLSearchParams(location.search).get('token');
+      if (fromUrl) {
+        localStorage.setItem(TOKEN_KEY, fromUrl);
+        const u = new URL(location); u.searchParams.delete('token');
+        history.replaceState({}, '', u);
+      }
+      return localStorage.getItem(TOKEN_KEY) || '';
+    }
+    function promptToken() {
+      const t = prompt('This SkyWatch gateway requires an access token:');
+      if (t) { localStorage.setItem(TOKEN_KEY, t.trim()); refresh(); }
+    }
+
     // Range/min-el fields default to the gateway config (left blank → gateway picks).
     function query() {
       const p = new URLSearchParams();
@@ -148,7 +166,11 @@
 
     async function refresh() {
       try {
-        const res = await fetch('/sky' + query());
+        const headers = {};
+        const tok = getToken();
+        if (tok) headers['Authorization'] = 'Bearer ' + tok;
+        const res = await fetch('/sky' + query(), { headers });
+        if (res.status === 401) { $('status').textContent = 'access token required'; promptToken(); return; }
         if (!res.ok) { $('status').textContent = 'gateway error ' + res.status; return; }
         const snap = await res.json();
         const rangeKm = parseFloat($('rangeKm').value) || 50;

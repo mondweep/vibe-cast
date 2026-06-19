@@ -85,6 +85,29 @@ PROVIDER_NAME="$(gcloud iam workload-identity-pools providers describe "$PROVIDE
   --location=global --workload-identity-pool="$POOL_ID" \
   --project "$PROJECT_ID" --format='value(name)')"
 
+# --- Optional: OpenSky OAuth2 secret -----------------------------------------
+# Run with OPENSKY_CLIENT_SECRET=xxx ./scripts/gcp-bootstrap-wif.sh ... to store
+# the OpenSky client secret in Secret Manager and let the Cloud Run runtime read
+# it. (The client *id* is non-secret and goes in a repo Variable.)
+if [[ -n "${OPENSKY_CLIENT_SECRET:-}" ]]; then
+  echo ">> Configuring OpenSky secret in Secret Manager..."
+  gcloud services enable secretmanager.googleapis.com --project "$PROJECT_ID"
+  if gcloud secrets describe opensky-client-secret --project "$PROJECT_ID" >/dev/null 2>&1; then
+    printf '%s' "$OPENSKY_CLIENT_SECRET" | \
+      gcloud secrets versions add opensky-client-secret --data-file=- --project "$PROJECT_ID" >/dev/null
+  else
+    printf '%s' "$OPENSKY_CLIENT_SECRET" | \
+      gcloud secrets create opensky-client-secret --data-file=- --project "$PROJECT_ID" >/dev/null
+  fi
+  PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+  RUNTIME_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+  gcloud secrets add-iam-policy-binding opensky-client-secret \
+    --project "$PROJECT_ID" \
+    --member="serviceAccount:${RUNTIME_SA}" \
+    --role=roles/secretmanager.secretAccessor --quiet >/dev/null
+  echo "   Secret 'opensky-client-secret' ready; runtime SA granted access."
+fi
+
 cat <<EOF
 
 ====================================================================
@@ -101,3 +124,12 @@ cat <<EOF
  workflow manually) and it will build + deploy. The service URL is
  printed in the workflow run summary.
 EOF
+
+if [[ -n "${OPENSKY_CLIENT_SECRET:-}" ]]; then
+  cat <<'EOF'
+
+ OpenSky OAuth2 enabled — also add these repo Variables:
+   GCP_OPENSKY_SECRET = opensky-client-secret
+   OPENSKY_CLIENT_ID  = <your OpenSky client id>
+EOF
+fi
