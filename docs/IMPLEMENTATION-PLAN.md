@@ -48,14 +48,20 @@ Legend: ✅ done · 🚧 in progress · ⬜ planned
 **DoD:** ✅ `curl /sky` returns a valid live snapshot (verified end-to-end);
 ✅ unit suite still offline-green (39 tests); ✅ `npm run build` emits `dist/main.js`.
 
-## Phase 3 — Visibility & richer satellite features  ⬜
+## Phase 3 — Visibility & richer satellite features  ✅
 **Objective:** make passes genuinely useful for sky-watching.
 **ADRs:** 0004 (follow-up), 0005
-- ⬜ Sunlit/eclipse calc → flag **optically visible** passes (sat sunlit + observer dark)
-- ⬜ Sub-sample AOS/LOS for sharper rise/set times; magnitude estimate where possible
-- ⬜ Multi-group tracking & "next visible ISS/Starlink/NOAA" summaries
-- ⬜ Bright-pass ranking for the device's "what to look at" hint
-**DoD:** visible-pass tests (scripted illumination) green; documented in PRD.
+- ✅ Low-precision solar geometry (`sun.ts`): Sun ECI, observer solar elevation,
+  cylindrical Earth-shadow eclipse test — pure, unit-tested
+- ✅ `SunModel` port + `AstronomicalSunModel` adapter; `Propagator` extended with
+  `eciPositionKm` for shadow testing
+- ✅ `VisibilityService` → flag **optically visible** passes (satellite sunlit +
+  observer in darkness, configurable twilight threshold) — London-School tests
+- ✅ Wired into `SkySnapshotService`: passes carry a `visible` flag
+- ⬜ (future) sub-sample AOS/LOS sharpening; brightness/magnitude estimate;
+  per-group "next visible" summaries
+**DoD:** ✅ visibility tests (deterministic fakes) green; ✅ solar math tested
+against known geometry; passes annotated in the Sky Snapshot.
 
 ## Phase 4 — ESP32 firmware (thin client)  ⬜
 **Objective:** the physical device people actually look at.
@@ -94,4 +100,4 @@ Legend: ✅ done · 🚧 in progress · ⬜ planned
 | FR7 (Sky Snapshot JSON over HTTP) | 1 (model) ✅ / 2 (endpoint) ✅ |
 | FR8 (config portal) | 4 ⬜ |
 | FR9 (render) | 4 ⬜ |
-| Visible passes (PRD §7 follow-up) | 3 ⬜ |
+| Visible passes (PRD §7 follow-up) | 3 ✅ |

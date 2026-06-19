@@ -4,6 +4,7 @@ import { NearbyAircraftService } from '../flight/domain/nearby-aircraft.service'
 import { LookAngle } from '../satellite/domain/satellite';
 import { SatellitePass } from '../satellite/domain/pass';
 import { PassPredictor } from '../satellite/domain/pass-predictor.service';
+import { VisibilityService } from '../satellite/domain/visibility.service';
 import { Propagator } from '../satellite/ports/propagator.port';
 import { TleSource } from '../satellite/ports/tle-source.port';
 
@@ -38,6 +39,8 @@ export class SkySnapshotService {
     private readonly passPredictor: PassPredictor,
     private readonly propagator: Propagator,
     private readonly tleSource: TleSource,
+    /** Optional: when supplied, passes are annotated with `visible` (Phase 3). */
+    private readonly visibility?: VisibilityService,
   ) {}
 
   async snapshot(
@@ -81,11 +84,14 @@ export class SkySnapshotService {
             look,
           });
         }
+        const predicted = this.passPredictor.predictPasses(sat, observer, {
+          from: at,
+          hours: options.passWindowHours ?? 6,
+        });
         upcomingPasses.push(
-          ...this.passPredictor.predictPasses(sat, observer, {
-            from: at,
-            hours: options.passWindowHours ?? 6,
-          }),
+          ...(this.visibility
+            ? predicted.map((p) => this.visibility!.annotatePass(sat, observer, p))
+            : predicted),
         );
       } catch (err) {
         warnings.push(`skipped ${sat.name}: ${describe(err)}`);

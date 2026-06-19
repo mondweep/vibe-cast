@@ -1,6 +1,7 @@
 import * as satellite from 'satellite.js';
 import { Observer } from '../../shared/observer';
 import { LookAngle, Satellite } from '../domain/satellite';
+import { Vec3 } from '../domain/sun';
 import { Propagator } from '../ports/propagator.port';
 
 const RAD2DEG = 180 / Math.PI;
@@ -35,6 +36,12 @@ export class Sgp4Propagator implements Propagator {
       elevationDeg: look.elevation * RAD2DEG,
       rangeKm: look.rangeSat,
     };
+  }
+
+  eciPositionKm(sat: Satellite, at: Date): Vec3 | null {
+    const eci = satellite.propagate(this.satrecFor(sat), at);
+    if (typeof eci.position === 'boolean' || !eci.position) return null;
+    return { x: eci.position.x, y: eci.position.y, z: eci.position.z };
   }
 
   private satrecFor(sat: Satellite): satellite.SatRec {

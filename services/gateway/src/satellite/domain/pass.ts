@@ -16,6 +16,12 @@ export interface SatellitePass {
   readonly losTime: Date;
   readonly maxElevationDeg: number;
   readonly durationSeconds: number;
+  /**
+   * Whether the pass is optically visible (satellite sunlit + observer in
+   * darkness). Set by the VisibilityService when available (Phase 3);
+   * undefined when visibility was not evaluated.
+   */
+  readonly visible?: boolean;
 }
 
 export function passFromSamples(

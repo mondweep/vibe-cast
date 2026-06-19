@@ -31,6 +31,9 @@ describe('PassPredictor', () => {
         const elevationDeg = elevations[idx] ?? -90;
         return { azimuthDeg: 180, elevationDeg, rangeKm: 800 };
       },
+      eciPositionKm() {
+        return null; // not exercised by pass-detection tests
+      },
     };
   };
 

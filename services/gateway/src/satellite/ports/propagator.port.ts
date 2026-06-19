@@ -1,5 +1,6 @@
 import { Observer } from '../../shared/observer';
 import { LookAngle, Satellite } from '../domain/satellite';
+import { Vec3 } from '../domain/sun';
 
 /**
  * Driven port: computes where a satellite is in the observer's sky at a given
@@ -9,4 +10,9 @@ import { LookAngle, Satellite } from '../domain/satellite';
  */
 export interface Propagator {
   lookAngle(satellite: Satellite, observer: Observer, at: Date): LookAngle;
+  /**
+   * Geocentric (ECI, km) position of the satellite, or null on propagation
+   * error. Used by the visibility logic to test for Earth-shadow eclipse.
+   */
+  eciPositionKm(satellite: Satellite, at: Date): Vec3 | null;
 }

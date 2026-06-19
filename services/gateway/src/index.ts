@@ -12,9 +12,13 @@ export * from './satellite/domain/satellite';
 export * from './satellite/domain/pass';
 export * from './satellite/ports/propagator.port';
 export * from './satellite/ports/tle-source.port';
+export * from './satellite/ports/sun-model.port';
 export * from './satellite/domain/pass-predictor.service';
+export * from './satellite/domain/sun';
+export * from './satellite/domain/visibility.service';
 export * from './satellite/adapters/sgp4-propagator';
 export * from './satellite/adapters/celestrak-tle-source';
+export * from './satellite/adapters/astronomical-sun-model';
 
 export * from './application/sky-snapshot.service';
 
