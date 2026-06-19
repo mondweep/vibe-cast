@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+.next/
+coverage/
+.nyc_output/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+service-account*.json
+gcp-key*.json
+
+# RuFlo / claude-flow runtime data (keep config, ignore generated state)
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/
+.claude-flow/metrics/
+.claude-flow/learning/
+.swarm/
+*.db
+*.sqlite
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.swp
