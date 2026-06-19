@@ -6,35 +6,66 @@
   <title>SkyWatch — flights &amp; satellites around me</title>
   <style>
     :root { --bg:#05080f; --panel:#0d1320; --ink:#cfe3ff; --dim:#5b6b86;
-            --flight:#ffd33d; --sat:#39d3ff; --vis:#7CFC00; --warn:#ff7676; }
+            --flight:#ffd33d; --sat:#39d3ff; --vis:#7CFC00; --warn:#ff7676;
+            --line:#16203a; }
     * { box-sizing: border-box; }
     body { margin:0; background:var(--bg); color:var(--ink);
            font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
-    header { padding:12px 16px; border-bottom:1px solid #16203a; display:flex;
+    a { color:var(--sat); }
+    header { padding:12px 16px; border-bottom:1px solid var(--line); display:flex;
              align-items:baseline; gap:12px; flex-wrap:wrap; }
-    header h1 { font-size:16px; margin:0; letter-spacing:.5px; }
+    header h1 { font-size:17px; margin:0; letter-spacing:.5px; }
     header .sub { color:var(--dim); }
-    main { display:flex; gap:16px; padding:16px; flex-wrap:wrap; }
-    #radarWrap { position:relative; }
-    canvas { background:radial-gradient(circle at 50% 50%, #0a1424, #05080f 70%);
-             border-radius:50%; border:1px solid #16203a; }
-    .panel { background:var(--panel); border:1px solid #16203a; border-radius:10px;
-             padding:12px 14px; min-width:280px; flex:1; }
-    .panel h2 { font-size:13px; margin:0 0 8px; color:var(--dim);
-                text-transform:uppercase; letter-spacing:1px; }
-    .controls label { display:inline-block; color:var(--dim); margin:0 8px 8px 0; }
-    .controls input { width:80px; background:#0a1120; color:var(--ink);
-                      border:1px solid #233; border-radius:6px; padding:4px 6px; }
-    .legend span { margin-right:14px; }
+    main { display:flex; gap:18px; padding:16px; flex-wrap:wrap; align-items:flex-start; }
+
+    /* Enlarged radar pane */
+    #radarWrap { position:relative; flex:1 1 560px; max-width:680px; }
+    canvas { width:100%; height:auto; aspect-ratio:1/1; display:block;
+             background:radial-gradient(circle at 50% 50%, #0a1424, #05080f 72%);
+             border-radius:50%; border:1px solid var(--line); cursor:crosshair; }
+    .radar-help { color:var(--dim); font-size:12px; margin:8px 2px 0; }
+    .legend { margin-top:8px; }
+    .legend span { margin-right:16px; white-space:nowrap; }
     .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
-           vertical-align:middle; margin-right:4px; }
+           vertical-align:middle; margin-right:5px; }
+    .tri { display:inline-block; width:0; height:0; vertical-align:middle; margin-right:5px;
+           border-left:6px solid transparent; border-right:6px solid transparent;
+           border-bottom:10px solid var(--sat); }
+
+    /* Hover tooltip + click popup over the radar */
+    #tip { position:absolute; pointer-events:none; background:#0b1525ee; color:var(--ink);
+           border:1px solid var(--line); border-radius:6px; padding:2px 7px; font-size:12px;
+           white-space:nowrap; transform:translate(-50%,-150%); display:none; z-index:5; }
+    #popup { position:absolute; min-width:210px; max-width:280px; background:#0b1525f5;
+             border:1px solid #28406b; border-radius:10px; padding:12px 14px; font-size:13px;
+             box-shadow:0 8px 28px #000a; display:none; z-index:6; }
+    #popup h3 { margin:0 0 8px; font-size:14px; }
+    #popup .row { display:flex; justify-content:space-between; gap:14px; padding:2px 0;
+                  border-bottom:1px solid #121a2c; }
+    #popup .row span:first-child { color:var(--dim); }
+    #popup .close { position:absolute; top:6px; right:10px; cursor:pointer; color:var(--dim); }
+
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+             padding:14px 16px; flex:1 1 340px; min-width:300px; }
+    h2 { font-size:13px; margin:14px 0 8px; color:var(--dim);
+         text-transform:uppercase; letter-spacing:1px; }
+    h2:first-child { margin-top:0; }
+    .controls { display:grid; grid-template-columns:repeat(2,1fr); gap:10px 14px; }
+    .controls label { display:flex; flex-direction:column; gap:3px; color:var(--dim); font-size:12px; }
+    .controls input { background:#0a1120; color:var(--ink); border:1px solid #233;
+                      border-radius:6px; padding:6px 8px; font:inherit; }
+    .controls .full { grid-column:1 / -1; flex-direction:row; align-items:center; gap:10px; }
+    button { background:#16263f; color:var(--ink); border:1px solid #28406b; border-radius:7px;
+             padding:7px 12px; cursor:pointer; font:inherit; }
+    button:hover { background:#1d3358; }
+    .hint { color:var(--dim); font-size:12px; margin:8px 0 0; }
     table { width:100%; border-collapse:collapse; }
-    td, th { text-align:left; padding:3px 6px; border-bottom:1px solid #121a2c; }
-    th { color:var(--dim); font-weight:normal; }
-    .vis { color:var(--vis); }
-    .warn { color:var(--warn); }
+    td, th { text-align:left; padding:4px 6px; border-bottom:1px solid #121a2c; }
+    th { color:var(--dim); font-weight:normal; cursor:help; }
+    td.num, th.num { text-align:right; }
+    .vis { color:var(--vis); } .warn { color:var(--warn); } .muted { color:var(--dim); }
     .next { font-size:15px; }
-    .muted { color:var(--dim); }
+    .scroll { max-height:300px; overflow:auto; }
   </style>
 </head>
 <body>
@@ -43,36 +74,80 @@
     <span class="sub">flights &amp; satellites around you · served by the gateway</span>
     <span class="sub" id="clock"></span>
   </header>
+
   <main>
+    <!-- LEFT: enlarged radar -->
     <div id="radarWrap">
-      <canvas id="radar" width="420" height="420"></canvas>
+      <canvas id="radar" width="600" height="600"></canvas>
+      <div id="tip"></div>
+      <div id="popup"><span class="close" id="popupClose">✕</span><div id="popupBody"></div></div>
+      <div class="legend radar-help">
+        <span><i class="dot" style="background:var(--flight)"></i>flight</span>
+        <span><i class="tri"></i>satellite</span>
+        <span class="muted">click a marker for details · hover to identify</span>
+      </div>
+      <p class="radar-help">
+        <b>Reading the radar:</b> the centre is <b>you</b>. For <b>flights</b>, angle = compass
+        bearing and distance from centre = how far away (outer ring = your range).
+        For <b>satellites</b>, it's a sky-dome: centre = straight up (zenith), the rim = the
+        horizon, angle = compass azimuth.
+      </p>
     </div>
 
+    <!-- RIGHT: controls + data -->
     <div class="panel">
-      <h2>Observer</h2>
+      <h2>Observer — your vantage point</h2>
       <div class="controls">
-        <label>lat <input id="lat" type="number" step="0.001" /></label>
-        <label>lon <input id="lon" type="number" step="0.001" /></label>
-        <label>range km <input id="rangeKm" type="number" step="1" /></label>
-        <label>min el° <input id="minEl" type="number" step="1" /></label>
-        <label><input id="auto" type="checkbox" checked /> auto-refresh</label>
+        <label title="Your latitude in decimal degrees (north positive).">latitude °
+          <input id="lat" type="number" step="0.0001" placeholder="—" /></label>
+        <label title="Your longitude in decimal degrees (east positive).">longitude °
+          <input id="lon" type="number" step="0.0001" placeholder="—" /></label>
+        <label title="How far out to show aircraft (radius from you, in km).">range (km)
+          <input id="rangeKm" type="number" step="1" value="50" /></label>
+        <label title="Minimum angle above the horizon for a satellite to count as 'overhead'. 0°=horizon, 90°=straight up.">min elevation °
+          <input id="minEl" type="number" step="1" value="10" /></label>
+        <div class="full">
+          <button id="gpsBtn" type="button">📍 Use my location</button>
+          <label style="flex-direction:row;align-items:center;gap:6px;">
+            <input id="auto" type="checkbox" checked /> auto-refresh
+          </label>
+        </div>
       </div>
-      <p class="muted" id="status">loading…</p>
+      <p class="hint" id="obsHint">
+        <b>lat/lon</b> = where you are (the centre of the radar) · <b>range</b> = how far to
+        show aircraft · <b>min elevation</b> = lowest satellite angle to include.
+      </p>
+      <p class="hint" id="status">loading…</p>
 
-      <div class="legend">
-        <span><i class="dot" style="background:var(--flight)"></i>flight</span>
-        <span><i class="dot" style="background:var(--sat)"></i>satellite</span>
-        <span><i class="dot" style="background:var(--vis)"></i>visible pass</span>
-      </div>
-
-      <h2 style="margin-top:14px">Next visible pass</h2>
-      <p class="next" id="nextPass" class="muted">—</p>
+      <h2>Next visible pass</h2>
+      <p class="next" id="nextPass"><span class="muted">—</span></p>
+      <p class="hint">A pass is "visible" when the satellite is sunlit while your sky is dark.
+        <b>AOS</b> = rises, <b>TCA</b> = highest point, <b>LOS</b> = sets.</p>
 
       <h2>Flights (<span id="flightCount">0</span>)</h2>
-      <table id="flights"><thead><tr><th>call</th><th>km</th><th>brg</th><th>alt m</th></tr></thead><tbody></tbody></table>
+      <div class="scroll">
+        <table id="flights">
+          <thead><tr>
+            <th title="Callsign / flight number (or ICAO24 hex if no callsign)">call sign</th>
+            <th class="num" title="Great-circle distance from you, kilometres">dist (km)</th>
+            <th class="num" title="Bearing: compass direction from you to the aircraft (0°=N, 90°=E, 180°=S, 270°=W)">bearing °</th>
+            <th class="num" title="Barometric altitude, metres">alt (m)</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
-      <h2 style="margin-top:14px">Satellites overhead (<span id="satCount">0</span>)</h2>
-      <table id="sats"><thead><tr><th>name</th><th>el°</th><th>az°</th></tr></thead><tbody></tbody></table>
+      <h2>Satellites overhead (<span id="satCount">0</span>)</h2>
+      <div class="scroll">
+        <table id="sats">
+          <thead><tr>
+            <th title="Satellite name (from its TLE)">name</th>
+            <th class="num" title="Elevation: angle above the horizon (0°=horizon, 90°=zenith)">elev °</th>
+            <th class="num" title="Azimuth: compass direction to look (0°=N, 90°=E)">azim °</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
       <p class="warn" id="warnings"></p>
     </div>
@@ -81,125 +156,198 @@
   <script>
     const $ = (id) => document.getElementById(id);
     const canvas = $('radar'), ctx = canvas.getContext('2d');
-    const W = canvas.width, CX = W/2, CY = W/2, R = W/2 - 6;
+    const W = canvas.width, CX = W/2, CY = W/2, R = W/2 - 14;
+    const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
-    // Optional access token (only needed if the gateway has API_TOKEN set).
-    // Capture it from ?token=… on first visit, persist it, and strip it from
-    // the visible URL. Share links as  https://<host>/?token=YOUR_TOKEN
+    // unit helpers
+    const M_TO_FT = 3.28084, MPS_TO_KT = 1.94384, MPS_TO_KMH = 3.6;
+
+    // ---- optional access token (only needed if the gateway sets API_TOKEN) ----
     const TOKEN_KEY = 'skywatch_token';
     function getToken() {
       const fromUrl = new URLSearchParams(location.search).get('token');
-      if (fromUrl) {
-        localStorage.setItem(TOKEN_KEY, fromUrl);
-        const u = new URL(location); u.searchParams.delete('token');
-        history.replaceState({}, '', u);
-      }
+      if (fromUrl) { localStorage.setItem(TOKEN_KEY, fromUrl);
+        const u = new URL(location); u.searchParams.delete('token'); history.replaceState({},'',u); }
       return localStorage.getItem(TOKEN_KEY) || '';
     }
-    function promptToken() {
-      const t = prompt('This SkyWatch gateway requires an access token:');
-      if (t) { localStorage.setItem(TOKEN_KEY, t.trim()); refresh(); }
-    }
+    function promptToken(){ const t = prompt('This gateway requires an access token:');
+      if (t){ localStorage.setItem(TOKEN_KEY, t.trim()); refresh(); } }
 
-    // Range/min-el fields default to the gateway config (left blank → gateway picks).
+    function setStatus(t){ $('status').textContent = t; }
+
     function query() {
       const p = new URLSearchParams();
       for (const k of ['lat','lon','rangeKm','minEl']) {
-        const v = $(k).value.trim();
-        if (v !== '') p.set(k, v);
+        const v = $(k).value.trim(); if (v !== '') p.set(k, v);
       }
-      const s = p.toString();
-      return s ? ('?' + s) : '';
+      const s = p.toString(); return s ? ('?'+s) : '';
     }
 
-    function polar(bearingDeg, r01) {        // 0°=up(N), clockwise
-      const a = (bearingDeg - 90) * Math.PI/180;
+    function polar(bearingDeg, r01) {
+      const a = (bearingDeg - 90) * Math.PI/180;     // 0°=up (north)
       return [CX + Math.cos(a)*r01*R, CY + Math.sin(a)*r01*R];
     }
 
+    // ---- rendering ----
+    let plotted = [];          // [{x,y,kind,data}] in canvas px, for hit-testing
+    let currentSnap = null;
+
     function drawGrid() {
       ctx.clearRect(0,0,W,W);
-      ctx.strokeStyle = '#16263f'; ctx.fillStyle = '#3a4a66';
+      ctx.lineWidth = 1; ctx.strokeStyle = '#16263f';
       for (let i=1;i<=3;i++){ ctx.beginPath(); ctx.arc(CX,CY,R*i/3,0,7); ctx.stroke(); }
       ctx.beginPath(); ctx.moveTo(CX,CY-R); ctx.lineTo(CX,CY+R);
       ctx.moveTo(CX-R,CY); ctx.lineTo(CX+R,CY); ctx.stroke();
-      ctx.font = '11px monospace'; ctx.textAlign='center';
-      ctx.fillText('N',CX,14); ctx.fillText('S',CX,W-6);
-      ctx.fillText('E',W-8,CY+4); ctx.fillText('W',10,CY+4);
+      ctx.fillStyle = '#3a4a66'; ctx.font = '16px monospace'; ctx.textAlign='center';
+      ctx.fillText('N',CX,20); ctx.fillText('S',CX,W-8);
+      ctx.fillText('E',W-12,CY+6); ctx.fillText('W',14,CY+6);
     }
 
-    function render(snap, rangeKm) {
+    function render(snap) {
+      currentSnap = snap; plotted = [];
       drawGrid();
-      // Flights: angle=bearing, radius=distance/range.
-      ctx.fillStyle = getCss('--flight');
+      const rangeKm = parseFloat($('rangeKm').value) || 50;
+
+      // flights (yellow dots) — labels are NOT drawn (declutter); hover/click instead
+      ctx.fillStyle = css('--flight');
       for (const f of snap.flights) {
-        const r = rangeKm>0 ? Math.min(1, f.distanceKm/rangeKm) : 1;
-        const [x,y] = polar(f.bearingDeg, r);
-        ctx.beginPath(); ctx.arc(x,y,4,0,7); ctx.fill();
-        if (f.aircraft.callsign) { ctx.font='10px monospace'; ctx.textAlign='left';
-          ctx.fillText(f.aircraft.callsign, x+6, y+3); }
+        let rr = Math.min(1, f.distanceKm / rangeKm);
+        const [x,y] = polar(f.bearingDeg, rr);
+        ctx.beginPath(); ctx.arc(x,y,5,0,7); ctx.fill();
+        plotted.push({ x, y, kind:'flight', data:f });
       }
-      // Satellites: sky-dome (centre=zenith, rim=horizon), angle=azimuth.
+      // satellites (cyan triangles), sky-dome: radius = (90-el)/90
+      ctx.fillStyle = css('--sat');
       for (const s of snap.satellitesOverhead) {
-        const r = (90 - s.look.elevationDeg)/90;
-        const [x,y] = polar(s.look.azimuthDeg, r);
-        ctx.fillStyle = getCss('--sat');
-        ctx.beginPath(); ctx.moveTo(x,y-5); ctx.lineTo(x-5,y+4); ctx.lineTo(x+5,y+4); ctx.closePath(); ctx.fill();
-        ctx.font='10px monospace'; ctx.textAlign='left';
-        ctx.fillText(s.satelliteName, x+7, y+3);
-      }
-    }
-    const getCss = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-
-    function fillTable(id, rows) {
-      const tb = $(id).querySelector('tbody'); tb.innerHTML='';
-      for (const r of rows) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = r.map((c)=>`<td>${c}</td>`).join('');
-        tb.appendChild(tr);
+        const rr = (90 - s.look.elevationDeg)/90;
+        const [x,y] = polar(s.look.azimuthDeg, rr);
+        ctx.beginPath(); ctx.moveTo(x,y-7); ctx.lineTo(x-6,y+5); ctx.lineTo(x+6,y+5); ctx.closePath(); ctx.fill();
+        plotted.push({ x, y, kind:'satellite', data:s });
       }
     }
 
-    function nextVisible(passes) {
-      return passes.filter(p=>p.visible).sort((a,b)=>a.aosTime.localeCompare(b.aosTime))[0];
+    function highlight(item) {
+      if (!item) return;
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(item.x, item.y, 11, 0, 7); ctx.stroke();
     }
 
+    // ---- hit testing (mouse -> canvas px) ----
+    function toCanvas(e) {
+      const r = canvas.getBoundingClientRect();
+      return { x:(e.clientX-r.left)*(canvas.width/r.width),
+               y:(e.clientY-r.top)*(canvas.height/r.height),
+               cssX:e.clientX-r.left, cssY:e.clientY-r.top };
+    }
+    function nearest(cx, cy) {
+      let best=null, bd=16*16;
+      for (const p of plotted){ const d=(p.x-cx)**2+(p.y-cy)**2; if (d<bd){bd=d;best=p;} }
+      return best;
+    }
+
+    canvas.addEventListener('mousemove', (e) => {
+      const m = toCanvas(e); const hit = nearest(m.x, m.y);
+      const tip = $('tip');
+      if (hit) {
+        tip.textContent = hit.kind==='flight'
+          ? (hit.data.aircraft.callsign || hit.data.aircraft.icao24)
+          : hit.data.satelliteName;
+        tip.style.left = m.cssX+'px'; tip.style.top = m.cssY+'px'; tip.style.display='block';
+        canvas.style.cursor='pointer';
+      } else { tip.style.display='none'; canvas.style.cursor='crosshair'; }
+    });
+    canvas.addEventListener('mouseleave', ()=>{ $('tip').style.display='none'; });
+
+    function fmt(n, d=0){ return (n==null||isNaN(n)) ? '—' : Number(n).toFixed(d); }
+    function popupRows(rows){ return rows.map(([k,v])=>`<div class="row"><span>${k}</span><span>${v}</span></div>`).join(''); }
+
+    canvas.addEventListener('click', (e) => {
+      const m = toCanvas(e); const hit = nearest(m.x, m.y);
+      const pop = $('popup');
+      if (!hit) { pop.style.display='none'; if (currentSnap) render(currentSnap); return; }
+      render(currentSnap); highlight(hit);
+      let html;
+      if (hit.kind==='flight') {
+        const a=hit.data.aircraft;
+        html = `<h3>✈️ ${a.callsign || a.icao24}</h3>` + popupRows([
+          ['ICAO24', a.icao24],
+          ['distance', fmt(hit.data.distanceKm,1)+' km'],
+          ['bearing', fmt(hit.data.bearingDeg,0)+'° from you'],
+          ['altitude', a.baroAltitudeM!=null ? `${fmt(a.baroAltitudeM)} m (${fmt(a.baroAltitudeM*M_TO_FT)} ft)` : '—'],
+          ['speed', a.velocityMps!=null ? `${fmt(a.velocityMps*MPS_TO_KT)} kt (${fmt(a.velocityMps*MPS_TO_KMH)} km/h)` : '—'],
+          ['heading', a.headingDeg!=null ? fmt(a.headingDeg,0)+'°' : '—'],
+          ['on ground', a.onGround ? 'yes' : 'no'],
+        ]);
+      } else {
+        const s=hit.data;
+        html = `<h3>🛰️ ${s.satelliteName}</h3>` + popupRows([
+          ['NORAD id', s.noradId],
+          ['elevation', fmt(s.look.elevationDeg,1)+'° above horizon'],
+          ['azimuth', fmt(s.look.azimuthDeg,0)+'° (compass)'],
+          ['slant range', fmt(s.look.rangeKm,0)+' km away'],
+        ]);
+      }
+      $('popupBody').innerHTML = html;
+      let px = Math.min(m.cssX+12, canvas.getBoundingClientRect().width-220);
+      pop.style.left = Math.max(4,px)+'px'; pop.style.top = Math.max(4,m.cssY+12)+'px';
+      pop.style.display='block';
+    });
+    $('popupClose').addEventListener('click', ()=>{ $('popup').style.display='none'; if(currentSnap) render(currentSnap); });
+
+    // ---- tables ----
+    function fillTable(id, rows){
+      const tb=$(id).querySelector('tbody'); tb.innerHTML='';
+      for (const r of rows){ const tr=document.createElement('tr');
+        tr.innerHTML = r.map((c,i)=>`<td class="${i?'num':''}">${c}</td>`).join(''); tb.appendChild(tr); }
+    }
+    function nextVisible(passes){ return passes.filter(p=>p.visible)
+        .sort((a,b)=>a.aosTime.localeCompare(b.aosTime))[0]; }
+
+    // ---- data refresh ----
     async function refresh() {
       try {
-        const headers = {};
-        const tok = getToken();
-        if (tok) headers['Authorization'] = 'Bearer ' + tok;
-        const res = await fetch('/sky' + query(), { headers });
-        if (res.status === 401) { $('status').textContent = 'access token required'; promptToken(); return; }
-        if (!res.ok) { $('status').textContent = 'gateway error ' + res.status; return; }
+        const headers={}; const tok=getToken(); if (tok) headers['Authorization']='Bearer '+tok;
+        const res = await fetch('/sky'+query(), { headers });
+        if (res.status===401){ setStatus('access token required'); promptToken(); return; }
+        if (!res.ok){ setStatus('gateway error '+res.status); return; }
         const snap = await res.json();
-        const rangeKm = parseFloat($('rangeKm').value) || 50;
-        render(snap, rangeKm);
-
-        $('status').textContent = 'updated ' + new Date(snap.observedAt).toLocaleTimeString();
+        render(snap);
+        setStatus('updated '+new Date(snap.observedAt).toLocaleTimeString()
+          + ($('lat').value ? '' : ' · using default location (London) — click “Use my location”'));
         $('flightCount').textContent = snap.flights.length;
         $('satCount').textContent = snap.satellitesOverhead.length;
-
         fillTable('flights', snap.flights.map(f=>[
-          f.aircraft.callsign||f.aircraft.icao24, f.distanceKm.toFixed(1),
-          f.bearingDeg.toFixed(0), f.aircraft.baroAltitudeM!=null?f.aircraft.baroAltitudeM.toFixed(0):'—']));
+          f.aircraft.callsign||f.aircraft.icao24, fmt(f.distanceKm,1), fmt(f.bearingDeg,0),
+          f.aircraft.baroAltitudeM!=null?fmt(f.aircraft.baroAltitudeM):'—']));
         fillTable('sats', snap.satellitesOverhead.map(s=>[
-          s.satelliteName, s.look.elevationDeg.toFixed(1), s.look.azimuthDeg.toFixed(0)]));
-
+          s.satelliteName, fmt(s.look.elevationDeg,1), fmt(s.look.azimuthDeg,0)]));
         const np = nextVisible(snap.upcomingPasses);
         $('nextPass').innerHTML = np
-          ? `<span class="vis">${np.satelliteName}</span> @ ${new Date(np.aosTime).toLocaleTimeString()} · max el ${np.maxElevationDeg.toFixed(0)}°`
+          ? `<span class="vis">${np.satelliteName}</span> @ ${new Date(np.aosTime).toLocaleTimeString()} · max elevation ${fmt(np.maxElevationDeg,0)}°`
           : '<span class="muted">no visible passes in the window</span>';
-
         $('warnings').textContent = (snap.warnings||[]).join(' · ');
-      } catch (e) {
-        $('status').textContent = 'fetch failed: ' + e.message;
-      }
+      } catch (e){ setStatus('fetch failed: '+e.message); }
     }
 
-    setInterval(()=>{ $('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
-    let timer = setInterval(()=>{ if ($('auto').checked) refresh(); }, 10000);
+    // ---- geolocation ----
+    function useMyLocation(auto) {
+      if (!navigator.geolocation){ if(!auto) setStatus('geolocation not supported by this browser'); return; }
+      setStatus('locating…');
+      navigator.geolocation.getCurrentPosition(
+        (pos)=>{ $('lat').value=pos.coords.latitude.toFixed(4);
+                 $('lon').value=pos.coords.longitude.toFixed(4); refresh(); },
+        (err)=>{ if(!auto) setStatus('location denied — showing default (London). Enter lat/lon manually or allow location.');
+                 else refresh(); },
+        { enableHighAccuracy:false, timeout:8000, maximumAge:300000 });
+    }
+    $('gpsBtn').addEventListener('click', ()=>useMyLocation(false));
     ['lat','lon','rangeKm','minEl'].forEach(id=>$(id).addEventListener('change', refresh));
+
+    setInterval(()=>{ $('clock').textContent=new Date().toLocaleTimeString(); }, 1000);
+    setInterval(()=>{ if ($('auto').checked) refresh(); }, 10000);
+
+    // First load: try to centre on the user; render either way.
+    useMyLocation(true);
     refresh();
   </script>
 </body>
