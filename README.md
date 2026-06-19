@@ -52,7 +52,7 @@ Built with **Domain-Driven Design**, **Architecture Decision Records**, and
 | --- | --- |
 | [docs/research/RESEARCH.md](docs/research/RESEARCH.md) | Prior art, data sources (adsb.lol/OpenSky, CelesTrak, adsbdb, SGP4), constraints |
 | [docs/prd/PRD.md](docs/prd/PRD.md) | DDD PRD: ubiquitous language, bounded contexts, domain model, requirements |
-| [docs/adr/](docs/adr/README.md) | ADR-0001…0011 — the decisions that guide the build |
+| [docs/adr/](docs/adr/README.md) | ADR-0001…0013 — the decisions that guide the build |
 | [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md) | Phase-wise plan (all phases done + deployed), ADR-guided, with traceability |
 | [docs/DEPLOY-CICD.md](docs/DEPLOY-CICD.md) · [DEPLOY-CLOUD-RUN.md](docs/DEPLOY-CLOUD-RUN.md) | Deploying to Cloud Run (keyless CI / manual) |
 
@@ -66,7 +66,7 @@ Built with **Domain-Driven Design**, **Architecture Decision Records**, and
 │  ├─ src/satellite/          #   Satellite Tracking context (domain/ports/adapters)
 │  ├─ src/application/        #   SkySnapshotService (aggregation) + caching
 │  ├─ src/http/ + public/     #   HTTP API + browser front-end (radar UI)
-│  └─ test/                   #   London-School TDD suite (87 tests)
+│  └─ test/                   #   London-School TDD suite (97 tests)
 ├─ firmware/                  # ESP32 thin-client firmware (PlatformIO) (✅ code · ⬜ flash)
 ├─ CLAUDE.md, .claude/, .mcp.json, .claude-flow/   # RuFlo swarm orchestration
 └─ README.md
@@ -88,7 +88,7 @@ same snapshot feeds two consumers:
 cd services/gateway
 npm install
 npm run typecheck   # tsc --noEmit
-npm test            # Jest — 87 tests, fully offline (no network)
+npm test            # Jest — 97 tests, fully offline (no network)
 npm run build && npm start   # serves /, /sky and /health on :8080
 # then open http://localhost:8080/ in a browser
 ```
@@ -116,8 +116,9 @@ stateful container, not short serverless functions.)
 | 5 | Caching, JSON-schema contract guard, CI | ✅ |
 | 6 | Browser front-end (radar, GPS, click-to-learn) | ✅ |
 | 7 | Cloud Run deploy + adsb.lol/IPv4/CelesTrak hardening (ADR-0011) | ✅ live |
+| 8 | Geographic map view; satellites-on-map; click-to-learn (ADR-0012/0013) | ✅ live |
 
-**87 tests green, fully offline**; verified end-to-end against live data and
+**97 tests green, fully offline**; verified end-to-end against live data and
 **running on Cloud Run** (link at the top). The only remaining step is flashing
 the firmware to a physical ESP32 (+ a board-specific TFT setup). See the
 [Implementation Plan](docs/IMPLEMENTATION-PLAN.md).

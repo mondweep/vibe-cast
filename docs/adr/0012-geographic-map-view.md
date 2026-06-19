@@ -1,8 +1,11 @@
 # ADR-0012: Geographic map view for flights in the browser front-end
 
-- **Status:** Accepted
+- **Status:** Accepted (amended)
 - **Date:** 2026-06-19
 - **Extends:** [ADR-0009](./0009-browser-frontend.md) (browser front-end)
+- **Amended by:** [ADR-0013](./0013-satellites-on-map.md) — the "satellites stay on
+  the sky-dome only" decision below was revisited; satellites are now **also** shown
+  on the map at their sub-satellite ground point.
 
 ## Context
 The polar radar is accurate but abstract — users asked to **relate what they see

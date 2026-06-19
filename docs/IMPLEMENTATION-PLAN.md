@@ -124,23 +124,34 @@ flights/sats); 59 tests green.
 ✅ enrichment verified live (e.g. AUA33V → Austrian A320neo, VIE→LHR, photo);
 ✅ **87 tests green**, fully offline.
 
-## Phase 8 — Geographic map view (browser)  🚧
-**Objective:** let users relate flights to where they actually are (PRD G6).
-**ADRs:** 0012, 0009
-- ⬜ Leaflet 1.9.4 (CDN+SRI) + **CARTO Dark Matter** tiles (keyless, dark, HTTPS);
+## Phase 8 — Geographic map view + post-launch fixes (browser)  ✅
+**Objective:** let users relate flights/satellites to where they actually are (PRD G6).
+**ADRs:** 0012, 0013, 0009
+- ✅ Leaflet 1.9.4 (CDN+SRI) + **CARTO Dark Matter** tiles (keyless, dark, HTTPS);
   Stadia fallback documented
-- ⬜ **Radar ⇄ Map toggle** for flights: observer marker, range circle (= area the
+- ✅ **Radar ⇄ Map toggle** for flights: observer marker, range circle (= area the
   radar covers), flights at real lat/lon; click a marker → existing details popup
-- ⬜ Satellites stay on the sky-dome (overhead, not a ground point)
-- ⬜ Attribution + privacy note in the UI; footer credit (author + GitHub)
-- ⬜ Browser-only (the ESP32 keeps the polar radar); no gateway/domain change
-**DoD:** map renders flights over real geography centred on the observer; toggle
-works; page still serves + JS syntax-clean; deployed.
+- ✅ Satellites on the map at their **sub-satellite ground point + line to you**
+  (ADR-0013); the gateway exposes `subLatDeg`/`subLonDeg`
+- ✅ Attribution + privacy note in the UI; footer credit (author + GitHub)
+- ✅ Browser-only (the ESP32 keeps the polar radar)
+
+**Post-launch fixes (GitHub issues, TDD where applicable):**
+- ✅ **#11** satellites missing on the map → sub-satellite points (ADR-0013);
+  flight popup rendered behind the map → z-index fix
+- ✅ **#12** details popup cut off at the screen bottom → re-clamp after async
+  enrichment loads + `max-height`/scroll
+- ✅ **#13** satellite popup hung on "loading more…" (CelesTrak SATCAT blocks the
+  cloud IP) → TLE-derived orbital elements in `/sky` (always available) +
+  fail-fast SATCAT timeout
+
+**DoD:** ✅ deployed & live; flights + satellites render on the map; popups stay
+on-screen and load fast; **97 tests green**, fully offline.
 **Process note:** browser presentation (no new domain), so London-School TDD
-applies minimally; built with an ADR-first approach and a *proportionate* swarm
-(a research specialist validated tile providers; implementation is one file so a
-larger swarm would be disproportionate — per the "match agents to complexity"
-principle).
+applies to the gateway-side additions (sub-point, orbital elements) while the UI
+is verified by syntax-check + live test; built ADR-first with a *proportionate*
+swarm (a research specialist validated tile providers — implementation is one
+file, so a larger swarm would be disproportionate per "match agents to complexity").
 
 ---
 
@@ -163,3 +174,5 @@ principle).
 | Visible passes (PRD §7 follow-up) | 3 ✅ |
 | Click-to-learn enrichment (flights + satellites) | 7 ✅ |
 | Live cloud deployment + resilience | 7 ✅ |
+| FR10 (map view), FR11 (satellites on map) | 8 ✅ |
+| Post-launch fixes (#11 sats-on-map, #12 popup clamp, #13 orbital info) | 8 ✅ |
