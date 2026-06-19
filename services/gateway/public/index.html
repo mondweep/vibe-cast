@@ -44,6 +44,8 @@
                   border-bottom:1px solid #121a2c; }
     #popup .row span:first-child { color:var(--dim); }
     #popup .close { position:absolute; top:6px; right:10px; cursor:pointer; color:var(--dim); }
+    #popup .pmore { margin-top:9px; padding-top:9px; border-top:1px solid #28406b; }
+    #popup a { color:var(--sat); }
 
     .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px;
              padding:14px 16px; flex:1 1 340px; min-width:300px; }
@@ -287,11 +289,61 @@
           ['slant range', fmt(s.look.rangeKm,0)+' km away'],
         ]);
       }
+      html += `<div id="popupMore" class="pmore muted">loading more…</div>`;
       $('popupBody').innerHTML = html;
       let px = Math.min(m.cssX+12, canvas.getBoundingClientRect().width-220);
       pop.style.left = Math.max(4,px)+'px'; pop.style.top = Math.max(4,m.cssY+12)+'px';
       pop.style.display='block';
+      if (hit.kind==='flight') enrichFlight(hit.data.aircraft.icao24, hit.data.aircraft.callsign);
+      else enrichSatellite(hit.data.noradId);
     });
+
+    function authHeaders(){ const t=getToken(); return t ? { Authorization:'Bearer '+t } : {}; }
+    const OBJ_TYPE = { PAY:'Payload', 'R/B':'Rocket body', DEB:'Debris', UNK:'Unknown' };
+
+    async function enrichFlight(icao24, callsign){
+      const more=$('popupMore'); if(!more) return;
+      try {
+        const q = callsign ? ('?callsign='+encodeURIComponent(callsign.trim())) : '';
+        const res = await fetch('/flight/'+encodeURIComponent(icao24)+q, { headers: authHeaders() });
+        if(!res.ok){ more.textContent='no extra details'; return; }
+        const d = await res.json(); const r=d.route, a=d.aircraft; const rows=[];
+        if (r){
+          if (r.airlineName) rows.push(['airline', r.airlineName]);
+          if (r.origin||r.destination){
+            const o=r.origin||{}, de=r.destination||{};
+            rows.push(['route', `${o.iata||'?'} → ${de.iata||'?'}`]);
+            if (o.municipality||de.municipality) rows.push(['', `${o.municipality||o.name||''} → ${de.municipality||de.name||''}`]);
+          }
+        }
+        if (a){
+          if (a.type) rows.push(['aircraft', a.type]);
+          if (a.registration) rows.push(['registration', a.registration]);
+          if (a.owner) rows.push(['operator', a.owner]);
+        }
+        let h = rows.length ? popupRows(rows) : '<span class="muted">no route/aircraft data (often private flights)</span>';
+        if (a && a.photoThumbUrl) h += `<img src="${a.photoThumbUrl}" alt="aircraft" style="width:100%;border-radius:6px;margin-top:8px" loading="lazy"/>`;
+        more.classList.remove('muted'); more.innerHTML = h;
+      } catch { more.textContent='details unavailable'; }
+    }
+
+    async function enrichSatellite(norad){
+      const more=$('popupMore'); if(!more) return;
+      try {
+        const res = await fetch('/satellite/'+encodeURIComponent(norad), { headers: authHeaders() });
+        if(res.status===404){ more.textContent='not in catalogue'; return; }
+        if(!res.ok){ more.textContent='no extra details'; return; }
+        const s = await res.json(); const rows=[];
+        if (s.objectType) rows.push(['type', OBJ_TYPE[s.objectType]||s.objectType]);
+        if (s.owner) rows.push(['owner', s.owner]);
+        if (s.launchDate) rows.push(['launched', s.launchDate + (s.launchSite?` · ${s.launchSite}`:'')]);
+        if (s.periodMin) rows.push(['orbit period', fmt(s.periodMin,1)+' min']);
+        if (s.inclinationDeg!=null) rows.push(['inclination', fmt(s.inclinationDeg,1)+'°']);
+        if (s.apogeeKm!=null && s.perigeeKm!=null) rows.push(['altitude', `${fmt(s.perigeeKm)}–${fmt(s.apogeeKm)} km`]);
+        let h = popupRows(rows) + `<div style="margin-top:8px"><a href="https://www.n2yo.com/?s=${encodeURIComponent(norad)}" target="_blank" rel="noopener">live track on N2YO ↗</a></div>`;
+        more.classList.remove('muted'); more.innerHTML = h;
+      } catch { more.textContent='details unavailable'; }
+    }
     $('popupClose').addEventListener('click', ()=>{ $('popup').style.display='none'; if(currentSnap) render(currentSnap); });
 
     // ---- tables ----

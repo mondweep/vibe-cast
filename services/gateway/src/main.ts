@@ -8,9 +8,11 @@ import { createServer } from './http/server';
 import { NearbyAircraftService } from './flight/domain/nearby-aircraft.service';
 import { AircraftFeed } from './flight/ports/aircraft-feed.port';
 import { AdsbLolFeed } from './flight/adapters/adsblol-feed';
+import { AdsbdbFlightInfo } from './flight/adapters/adsbdb-flight-info';
 import { OpenSkyFeed } from './flight/adapters/opensky-feed';
 import { OpenSkyTokenManager } from './flight/adapters/opensky-token-manager';
 import { CelestrakTleSource } from './satellite/adapters/celestrak-tle-source';
+import { CelestrakSatcatInfo } from './satellite/adapters/celestrak-satcat-info';
 import { Sgp4Propagator } from './satellite/adapters/sgp4-propagator';
 import { AstronomicalSunModel } from './satellite/adapters/astronomical-sun-model';
 import { PassPredictor } from './satellite/domain/pass-predictor.service';
@@ -66,7 +68,12 @@ export function start(): void {
     buildSnapshotService(config),
     { ttlMs: config.cacheTtlMs },
   );
-  const app = createServer({ snapshotService, config });
+  const app = createServer({
+    snapshotService,
+    config,
+    flightInfo: new AdsbdbFlightInfo(),
+    satelliteInfo: new CelestrakSatcatInfo(),
+  });
   app.listen(config.port, () => {
     // eslint-disable-next-line no-console
     console.log(`SkyWatch gateway listening on :${config.port}`);

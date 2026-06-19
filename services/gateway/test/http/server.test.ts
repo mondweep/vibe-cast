@@ -63,6 +63,38 @@ describe('gateway HTTP server', () => {
     expect(res.body.error).toBeDefined();
   });
 
+  describe('enrichment endpoints (ADR-0010)', () => {
+    it('GET /flight/:icao24 returns enrichment from the provider', async () => {
+      const flightInfo = { lookup: jest.fn().mockResolvedValue({ aircraft: { registration: 'G-X' }, route: null }) };
+      const res = await request(
+        createServer({ snapshotService: { snapshot: jest.fn() }, config, flightInfo }),
+      ).get('/flight/abc123').query({ callsign: 'BAW1' });
+      expect(res.status).toBe(200);
+      expect(res.body.aircraft.registration).toBe('G-X');
+      expect(flightInfo.lookup).toHaveBeenCalledWith('abc123', 'BAW1');
+    });
+
+    it('GET /flight/:icao24 is 501 when no provider is configured', async () => {
+      const res = await request(createServer({ snapshotService: { snapshot: jest.fn() }, config })).get('/flight/abc123');
+      expect(res.status).toBe(501);
+    });
+
+    it('GET /satellite/:noradId returns metadata, 404 when unknown', async () => {
+      const satelliteInfo = {
+        lookup: jest.fn().mockImplementation((id: number) => (id === 25544 ? Promise.resolve({ name: 'ISS' }) : Promise.resolve(null))),
+      };
+      const app = createServer({ snapshotService: { snapshot: jest.fn() }, config, satelliteInfo });
+      expect((await request(app).get('/satellite/25544')).body.name).toBe('ISS');
+      expect((await request(app).get('/satellite/99999')).status).toBe(404);
+    });
+
+    it('GET /satellite/:noradId rejects a non-integer id (400)', async () => {
+      const satelliteInfo = { lookup: jest.fn() };
+      const res = await request(createServer({ snapshotService: { snapshot: jest.fn() }, config, satelliteInfo })).get('/satellite/abc');
+      expect(res.status).toBe(400);
+    });
+  });
+
   describe('shared-token guard (API_TOKEN set)', () => {
     const securedConfig = { ...config, apiToken: 's3cret-team-token' };
     const app = () => createServer({ snapshotService: { snapshot: jest.fn().mockResolvedValue(emptySnapshot()) }, config: securedConfig });
