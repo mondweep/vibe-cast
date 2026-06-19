@@ -30,8 +30,9 @@ def create_app(service: PulseService | None = None) -> FastAPI:
     service = service or _default_service()
     app = FastAPI(title="NE India Pulse", version="0.1.0")
 
-    @app.get("/healthz")
-    def healthz() -> dict:
+    @app.get("/health")
+    def health() -> dict:
+        # NB: not "/healthz" — Google Front End reserves that path on *.run.app.
         return {"status": "ok"}
 
     @app.get("/api/snapshot")

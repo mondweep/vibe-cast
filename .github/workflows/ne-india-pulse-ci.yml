@@ -52,11 +52,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build image (smoke)
         run: docker build -t ne-india-pulse:ci ne-india-pulse
-      - name: Container starts & serves /healthz
+      - name: Container starts & serves /health
         run: |
           docker run -d --name pulse -p 8080:8080 ne-india-pulse:ci
           for i in $(seq 1 15); do
-            if curl -fsS http://localhost:8080/healthz; then echo " OK"; exit 0; fi
+            if curl -fsS http://localhost:8080/health; then echo " OK"; exit 0; fi
             sleep 2
           done
           echo "::error::container did not become healthy"; docker logs pulse; exit 1

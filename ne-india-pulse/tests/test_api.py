@@ -30,8 +30,8 @@ def client(window) -> TestClient:
     return TestClient(create_app(service=StubService(window)))
 
 
-def test_healthz(window) -> None:
-    assert client(window).get("/healthz").json() == {"status": "ok"}
+def test_health(window) -> None:
+    assert client(window).get("/health").json() == {"status": "ok"}
 
 
 def test_api_snapshot_json(window) -> None:
