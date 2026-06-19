@@ -20,8 +20,8 @@ class StubService:
             raise UnknownScopeError(scope)
         label = "North East India" if scope == REGION_SCOPE else "Assam"
         mentions = [
-            make_mention(tone=-3.0, themes=("MEDICAL",), states=("IN03",)),
-            make_mention(tone=1.0, themes=("EDUCATION",), states=("IN03",)),
+            make_mention(tone=-4.0, themes=("MEDICAL",), states=("IN03",)),
+            make_mention(tone=5.0, themes=("EDUCATION",), states=("IN03",)),
         ]
         return build_snapshot(scope, label, self._window, mentions)
 
@@ -53,6 +53,18 @@ def test_dashboard_html_renders_caveat(window) -> None:
 
 def test_unknown_scope_returns_404(window) -> None:
     assert client(window).get("/api/snapshot?scope=ZZ").status_code == 404
+
+
+def test_api_exposes_sentiment_drilldown(window) -> None:
+    sb = client(window).get("/api/snapshot?scope=IN03").json()["sentiment"]
+    assert {a["tone"] for a in sb["negatives"]} == {-4.0}
+    assert {a["tone"] for a in sb["positives"]} == {5.0}
+    assert sb["negatives"][0]["polarity"] == "negative"
+    assert any(d["label"] == "Education" for d in sb["positive_drivers"])
+
+
+def test_dashboard_shows_why_this_mood(window) -> None:
+    assert "Why this mood?" in client(window).get("/").text
 
 
 def test_about_page_explains_pipeline(window) -> None:

@@ -8,6 +8,8 @@ from ..domain.models import Mention, Polarity, TimeWindow
 from ..domain.snapshot import (
     EntityTally,
     SampleArticle,
+    ScoredArticle,
+    SentimentBreakdown,
     Snapshot,
     ThemeTally,
     ToneSummary,
@@ -94,6 +96,8 @@ def build_snapshot(
     *,
     top_n: int = 10,
     sample_n: int = 8,
+    bucket_n: int = 25,
+    driver_n: int = 6,
 ) -> Snapshot:
     """Aggregate Mentions into a Snapshot for the given scope."""
     scoped = _scope_mentions(mentions, scope)
@@ -103,6 +107,10 @@ def build_snapshot(
     persons: Counter[str] = Counter()
     orgs: Counter[str] = Counter()
     per_state: Counter[str] = Counter()
+    # Sentiment drill-down: articles per mood bucket + themes driving each side.
+    buckets: dict[Polarity, list[ScoredArticle]] = {p: [] for p in Polarity}
+    neg_drivers: Counter[str] = Counter()
+    pos_drivers: Counter[str] = Counter()
     for m in scoped:
         # Count each article once per distinct theme label (codes that map to the
         # same label — e.g. MEDICAL & GENERAL_HEALTH — must not double-count).
@@ -119,6 +127,22 @@ def build_snapshot(
         for fips in m.states:
             per_state[fips] += 1
 
+        polarity = m.tone.polarity
+        buckets[polarity].append(
+            ScoredArticle(
+                url=m.url,
+                source=m.source,
+                tone=round(m.tone.score, 2),
+                polarity=polarity,
+                states=tuple(name_for(s) for s in sorted(m.states)),
+                themes=tuple(labels)[:3],
+            )
+        )
+        if polarity is Polarity.NEGATIVE:
+            neg_drivers.update(labels.keys())
+        elif polarity is Polarity.POSITIVE:
+            pos_drivers.update(labels.keys())
+
     theme_tallies = tuple(
         ThemeTally(label=label, code=theme_code[label], count=n)
         for label, n in theme_counts.most_common(top_n)
@@ -132,6 +156,23 @@ def build_snapshot(
         (name_for(fips), n) for fips, n in per_state.most_common()
     )
 
+    def _drivers(counter: Counter[str]) -> tuple[ThemeTally, ...]:
+        return tuple(
+            ThemeTally(label=label, code=theme_code.get(label, label), count=n)
+            for label, n in counter.most_common(driver_n)
+        )
+
+    sentiment = SentimentBreakdown(
+        # Most extreme first within each bucket; cap to keep payloads small.
+        negatives=tuple(sorted(buckets[Polarity.NEGATIVE],
+                               key=lambda a: a.tone)[:bucket_n]),
+        neutrals=tuple(buckets[Polarity.NEUTRAL][:bucket_n]),
+        positives=tuple(sorted(buckets[Polarity.POSITIVE],
+                               key=lambda a: a.tone, reverse=True)[:bucket_n]),
+        negative_drivers=_drivers(neg_drivers),
+        positive_drivers=_drivers(pos_drivers),
+    )
+
     return Snapshot(
         scope=scope,
         scope_label=scope_label,
@@ -143,4 +184,5 @@ def build_snapshot(
         organizations=tuple(EntityTally(name, n) for name, n in orgs.most_common(top_n)),
         per_state=per_state_out,
         samples=samples,
+        sentiment=sentiment,
     )

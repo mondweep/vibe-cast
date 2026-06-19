@@ -31,6 +31,27 @@
       padding:12px 14px; color:#f0c590; font-size:.92rem; margin:18px 0; }
     .src { font-size:.85rem; color:var(--mut); }
     footer { margin-top:36px; color:var(--mut); font-size:.82rem; }
+    /* sentiment drill-down */
+    .why { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .why h3 { margin:0 0 8px; font-size:.95rem; }
+    details.bucket { background:var(--card); border:1px solid var(--line);
+      border-radius:10px; padding:0 14px; margin:10px 0; }
+    details.bucket > summary { cursor:pointer; padding:12px 0; font-weight:600;
+      list-style:none; display:flex; align-items:center; gap:10px; }
+    details.bucket > summary::-webkit-details-marker { display:none; }
+    details.bucket > summary::before { content:"▸"; color:var(--mut); transition:.15s; }
+    details.bucket[open] > summary::before { transform:rotate(90deg); }
+    .tone-badge { font-variant-numeric:tabular-nums; font-weight:700; border-radius:6px;
+      padding:1px 7px; font-size:.82rem; }
+    .b-pos{background:#10391f;color:#3fb950} .b-neg{background:#3a1515;color:#ff7b72}
+    .b-neu{background:#3a2f14;color:#e3b341}
+    .article { padding:9px 0; border-bottom:1px solid var(--line); }
+    .article:last-child { border-bottom:none; }
+    .article a { word-break:break-all; }
+    .article .src { margin-top:2px; }
+    .tag { display:inline-block; background:#222b35; color:var(--mut); border-radius:5px;
+      padding:0 6px; font-size:.74rem; margin:3px 4px 0 0; }
+    @media (max-width:640px){ .why{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
@@ -78,6 +99,43 @@
     </div>
     {% endif %}
   </div>
+
+  {% set sb = s.sentiment %}
+  {% if t.positive + t.neutral + t.negative > 0 %}
+  <h2>Why this mood? <span class="meta" style="font-weight:400">— dig into what's driving it</span></h2>
+
+  {% if sb.negative_drivers or sb.positive_drivers %}
+  <div class="card why">
+    <div>
+      <h3 class="neg">▼ Pulling the mood down</h3>
+      <ul>{% for d in sb.negative_drivers %}<li>{{ d.label }}<span class="count">{{ d.count }}</span></li>{% else %}<li class="meta">—</li>{% endfor %}</ul>
+    </div>
+    <div>
+      <h3 class="pos">▲ Lifting the mood up</h3>
+      <ul>{% for d in sb.positive_drivers %}<li>{{ d.label }}<span class="count">{{ d.count }}</span></li>{% else %}<li class="meta">—</li>{% endfor %}</ul>
+    </div>
+  </div>
+  <p class="meta">Top themes among negative vs positive articles. Expand a bucket below to read the actual stories.</p>
+  {% endif %}
+
+  {% macro bucket(title, cls, items) %}
+  <details class="bucket">
+    <summary><span class="tone-badge {{ cls }}">{{ items|length }}</span> {{ title }}</summary>
+    {% for a in items %}
+      <div class="article">
+        <span class="tone-badge {{ cls }}">{{ '%+.1f'|format(a.tone) }}</span>
+        <a href="{{ a.url }}" target="_blank" rel="noopener">{{ a.url }}</a>
+        <div class="src">{{ a.source }}{% if a.states %} · {{ a.states|join(', ') }}{% endif %}</div>
+        {% for th in a.themes %}<span class="tag">{{ th }}</span>{% endfor %}
+      </div>
+    {% else %}<div class="meta" style="padding:10px 0">No articles in this bucket.</div>{% endfor %}
+  </details>
+  {% endmacro %}
+
+  {{ bucket('Negative articles (most negative first)', 'b-neg', sb.negatives) }}
+  {{ bucket('Neutral articles', 'b-neu', sb.neutrals) }}
+  {{ bucket('Positive articles (most positive first)', 'b-pos', sb.positives) }}
+  {% endif %}
 
   <h2>What it's about (top themes)</h2>
   <div class="card"><ul>

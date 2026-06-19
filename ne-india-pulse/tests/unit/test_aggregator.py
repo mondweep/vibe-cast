@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ne_pulse.analytics.aggregator import build_snapshot, normalise_theme
+from ne_pulse.domain.models import Polarity
 from ne_pulse.domain.snapshot import REGION_SCOPE
 
 from ..conftest import make_mention
@@ -38,6 +39,26 @@ def test_state_scope_excludes_other_states(window) -> None:
     ]
     snap = build_snapshot("IN03", "Assam", window, mentions)
     assert snap.article_count == 1
+
+
+def test_sentiment_breakdown_buckets_and_drivers(window) -> None:
+    mentions = [
+        make_mention(tone=-5.0, themes=("WB_2433_CONFLICT_AND_VIOLENCE",), states=("IN03",)),
+        make_mention(tone=-3.0, themes=("MEDICAL",), states=("IN03",)),
+        make_mention(tone=4.0, themes=("EDUCATION",), states=("IN03",)),
+        make_mention(tone=0.0, themes=("AGRICULTURE",), states=("IN03",)),
+    ]
+    sb = build_snapshot("IN03", "Assam", window, mentions).sentiment
+
+    # Buckets ordered by tone extremity within each side.
+    assert [a.tone for a in sb.negatives] == [-5.0, -3.0]
+    assert [a.tone for a in sb.positives] == [4.0]
+    assert len(sb.neutrals) == 1
+    assert sb.negatives[0].polarity == Polarity.NEGATIVE
+    assert "Conflict & violence" in sb.negatives[0].themes
+    # Drivers: which themes sit behind each side of the mood.
+    assert "Conflict & violence" in {d.label for d in sb.negative_drivers}
+    assert "Education" in {d.label for d in sb.positive_drivers}
 
 
 def test_empty_window_is_safe(window) -> None:

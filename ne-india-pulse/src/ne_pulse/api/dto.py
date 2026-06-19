@@ -29,5 +29,27 @@ def snapshot_to_dict(s: Snapshot) -> dict:
         "samples": [
             {"url": a.url, "source": a.source, "states": list(a.states)} for a in s.samples
         ],
+        "sentiment": {
+            "negatives": [_scored(a) for a in s.sentiment.negatives],
+            "neutrals": [_scored(a) for a in s.sentiment.neutrals],
+            "positives": [_scored(a) for a in s.sentiment.positives],
+            "negative_drivers": [
+                {"label": t.label, "count": t.count} for t in s.sentiment.negative_drivers
+            ],
+            "positive_drivers": [
+                {"label": t.label, "count": t.count} for t in s.sentiment.positive_drivers
+            ],
+        },
         "caveat": s.caveat,
+    }
+
+
+def _scored(a) -> dict:
+    return {
+        "url": a.url,
+        "source": a.source,
+        "tone": a.tone,
+        "polarity": a.polarity.value,
+        "states": list(a.states),
+        "themes": list(a.themes),
     }

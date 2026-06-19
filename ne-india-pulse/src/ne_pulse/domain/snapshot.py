@@ -64,6 +64,32 @@ class SampleArticle:
 
 
 @dataclass(frozen=True, slots=True)
+class ScoredArticle:
+    """An article with its individual tone — the unit that drives the mood."""
+
+    url: str
+    source: str
+    tone: float
+    polarity: Polarity
+    states: tuple[str, ...]
+    themes: tuple[str, ...]  # top human-readable theme labels for this article
+
+
+@dataclass(frozen=True, slots=True)
+class SentimentBreakdown:
+    """The articles behind each mood bucket, plus the themes driving each side.
+
+    Lets a reader dig into *what* made the mood positive/neutral/negative.
+    """
+
+    negatives: tuple[ScoredArticle, ...] = field(default_factory=tuple)
+    neutrals: tuple[ScoredArticle, ...] = field(default_factory=tuple)
+    positives: tuple[ScoredArticle, ...] = field(default_factory=tuple)
+    negative_drivers: tuple[ThemeTally, ...] = field(default_factory=tuple)
+    positive_drivers: tuple[ThemeTally, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True, slots=True)
 class Snapshot:
     scope: str               # 'NE' or a FIPS code e.g. 'IN03'
     scope_label: str         # human label e.g. 'North East India' / 'Assam'
@@ -75,4 +101,5 @@ class Snapshot:
     organizations: tuple[EntityTally, ...] = field(default_factory=tuple)
     per_state: tuple[tuple[str, int], ...] = field(default_factory=tuple)  # (label, count)
     samples: tuple[SampleArticle, ...] = field(default_factory=tuple)
+    sentiment: SentimentBreakdown = field(default_factory=SentimentBreakdown)
     caveat: str = COVERAGE_CAVEAT
