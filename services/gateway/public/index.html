@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SkyWatch — flights &amp; satellites around me</title>
+  <style>
+    :root { --bg:#05080f; --panel:#0d1320; --ink:#cfe3ff; --dim:#5b6b86;
+            --flight:#ffd33d; --sat:#39d3ff; --vis:#7CFC00; --warn:#ff7676; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink);
+           font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    header { padding:12px 16px; border-bottom:1px solid #16203a; display:flex;
+             align-items:baseline; gap:12px; flex-wrap:wrap; }
+    header h1 { font-size:16px; margin:0; letter-spacing:.5px; }
+    header .sub { color:var(--dim); }
+    main { display:flex; gap:16px; padding:16px; flex-wrap:wrap; }
+    #radarWrap { position:relative; }
+    canvas { background:radial-gradient(circle at 50% 50%, #0a1424, #05080f 70%);
+             border-radius:50%; border:1px solid #16203a; }
+    .panel { background:var(--panel); border:1px solid #16203a; border-radius:10px;
+             padding:12px 14px; min-width:280px; flex:1; }
+    .panel h2 { font-size:13px; margin:0 0 8px; color:var(--dim);
+                text-transform:uppercase; letter-spacing:1px; }
+    .controls label { display:inline-block; color:var(--dim); margin:0 8px 8px 0; }
+    .controls input { width:80px; background:#0a1120; color:var(--ink);
+                      border:1px solid #233; border-radius:6px; padding:4px 6px; }
+    .legend span { margin-right:14px; }
+    .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
+           vertical-align:middle; margin-right:4px; }
+    table { width:100%; border-collapse:collapse; }
+    td, th { text-align:left; padding:3px 6px; border-bottom:1px solid #121a2c; }
+    th { color:var(--dim); font-weight:normal; }
+    .vis { color:var(--vis); }
+    .warn { color:var(--warn); }
+    .next { font-size:15px; }
+    .muted { color:var(--dim); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛰️ SkyWatch</h1>
+    <span class="sub">flights &amp; satellites around you · served by the gateway</span>
+    <span class="sub" id="clock"></span>
+  </header>
+  <main>
+    <div id="radarWrap">
+      <canvas id="radar" width="420" height="420"></canvas>
+    </div>
+
+    <div class="panel">
+      <h2>Observer</h2>
+      <div class="controls">
+        <label>lat <input id="lat" type="number" step="0.001" /></label>
+        <label>lon <input id="lon" type="number" step="0.001" /></label>
+        <label>range km <input id="rangeKm" type="number" step="1" /></label>
+        <label>min el° <input id="minEl" type="number" step="1" /></label>
+        <label><input id="auto" type="checkbox" checked /> auto-refresh</label>
+      </div>
+      <p class="muted" id="status">loading…</p>
+
+      <div class="legend">
+        <span><i class="dot" style="background:var(--flight)"></i>flight</span>
+        <span><i class="dot" style="background:var(--sat)"></i>satellite</span>
+        <span><i class="dot" style="background:var(--vis)"></i>visible pass</span>
+      </div>
+
+      <h2 style="margin-top:14px">Next visible pass</h2>
+      <p class="next" id="nextPass" class="muted">—</p>
+
+      <h2>Flights (<span id="flightCount">0</span>)</h2>
+      <table id="flights"><thead><tr><th>call</th><th>km</th><th>brg</th><th>alt m</th></tr></thead><tbody></tbody></table>
+
+      <h2 style="margin-top:14px">Satellites overhead (<span id="satCount">0</span>)</h2>
+      <table id="sats"><thead><tr><th>name</th><th>el°</th><th>az°</th></tr></thead><tbody></tbody></table>
+
+      <p class="warn" id="warnings"></p>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const canvas = $('radar'), ctx = canvas.getContext('2d');
+    const W = canvas.width, CX = W/2, CY = W/2, R = W/2 - 6;
+
+    // Range/min-el fields default to the gateway config (left blank → gateway picks).
+    function query() {
+      const p = new URLSearchParams();
+      for (const k of ['lat','lon','rangeKm','minEl']) {
+        const v = $(k).value.trim();
+        if (v !== '') p.set(k, v);
+      }
+      const s = p.toString();
+      return s ? ('?' + s) : '';
+    }
+
+    function polar(bearingDeg, r01) {        // 0°=up(N), clockwise
+      const a = (bearingDeg - 90) * Math.PI/180;
+      return [CX + Math.cos(a)*r01*R, CY + Math.sin(a)*r01*R];
+    }
+
+    function drawGrid() {
+      ctx.clearRect(0,0,W,W);
+      ctx.strokeStyle = '#16263f'; ctx.fillStyle = '#3a4a66';
+      for (let i=1;i<=3;i++){ ctx.beginPath(); ctx.arc(CX,CY,R*i/3,0,7); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(CX,CY-R); ctx.lineTo(CX,CY+R);
+      ctx.moveTo(CX-R,CY); ctx.lineTo(CX+R,CY); ctx.stroke();
+      ctx.font = '11px monospace'; ctx.textAlign='center';
+      ctx.fillText('N',CX,14); ctx.fillText('S',CX,W-6);
+      ctx.fillText('E',W-8,CY+4); ctx.fillText('W',10,CY+4);
+    }
+
+    function render(snap, rangeKm) {
+      drawGrid();
+      // Flights: angle=bearing, radius=distance/range.
+      ctx.fillStyle = getCss('--flight');
+      for (const f of snap.flights) {
+        const r = rangeKm>0 ? Math.min(1, f.distanceKm/rangeKm) : 1;
+        const [x,y] = polar(f.bearingDeg, r);
+        ctx.beginPath(); ctx.arc(x,y,4,0,7); ctx.fill();
+        if (f.aircraft.callsign) { ctx.font='10px monospace'; ctx.textAlign='left';
+          ctx.fillText(f.aircraft.callsign, x+6, y+3); }
+      }
+      // Satellites: sky-dome (centre=zenith, rim=horizon), angle=azimuth.
+      for (const s of snap.satellitesOverhead) {
+        const r = (90 - s.look.elevationDeg)/90;
+        const [x,y] = polar(s.look.azimuthDeg, r);
+        ctx.fillStyle = getCss('--sat');
+        ctx.beginPath(); ctx.moveTo(x,y-5); ctx.lineTo(x-5,y+4); ctx.lineTo(x+5,y+4); ctx.closePath(); ctx.fill();
+        ctx.font='10px monospace'; ctx.textAlign='left';
+        ctx.fillText(s.satelliteName, x+7, y+3);
+      }
+    }
+    const getCss = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+    function fillTable(id, rows) {
+      const tb = $(id).querySelector('tbody'); tb.innerHTML='';
+      for (const r of rows) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = r.map((c)=>`<td>${c}</td>`).join('');
+        tb.appendChild(tr);
+      }
+    }
+
+    function nextVisible(passes) {
+      return passes.filter(p=>p.visible).sort((a,b)=>a.aosTime.localeCompare(b.aosTime))[0];
+    }
+
+    async function refresh() {
+      try {
+        const res = await fetch('/sky' + query());
+        if (!res.ok) { $('status').textContent = 'gateway error ' + res.status; return; }
+        const snap = await res.json();
+        const rangeKm = parseFloat($('rangeKm').value) || 50;
+        render(snap, rangeKm);
+
+        $('status').textContent = 'updated ' + new Date(snap.observedAt).toLocaleTimeString();
+        $('flightCount').textContent = snap.flights.length;
+        $('satCount').textContent = snap.satellitesOverhead.length;
+
+        fillTable('flights', snap.flights.map(f=>[
+          f.aircraft.callsign||f.aircraft.icao24, f.distanceKm.toFixed(1),
+          f.bearingDeg.toFixed(0), f.aircraft.baroAltitudeM!=null?f.aircraft.baroAltitudeM.toFixed(0):'—']));
+        fillTable('sats', snap.satellitesOverhead.map(s=>[
+          s.satelliteName, s.look.elevationDeg.toFixed(1), s.look.azimuthDeg.toFixed(0)]));
+
+        const np = nextVisible(snap.upcomingPasses);
+        $('nextPass').innerHTML = np
+          ? `<span class="vis">${np.satelliteName}</span> @ ${new Date(np.aosTime).toLocaleTimeString()} · max el ${np.maxElevationDeg.toFixed(0)}°`
+          : '<span class="muted">no visible passes in the window</span>';
+
+        $('warnings').textContent = (snap.warnings||[]).join(' · ');
+      } catch (e) {
+        $('status').textContent = 'fetch failed: ' + e.message;
+      }
+    }
+
+    setInterval(()=>{ $('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
+    let timer = setInterval(()=>{ if ($('auto').checked) refresh(); }, 10000);
+    ['lat','lon','rangeKm','minEl'].forEach(id=>$(id).addEventListener('change', refresh));
+    refresh();
+  </script>
+</body>
+</html>

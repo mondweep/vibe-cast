@@ -21,6 +21,14 @@ describe('gateway HTTP server', () => {
     expect(res.body.status).toBe('ok');
   });
 
+  it('GET / serves the browser front-end (HTML)', async () => {
+    const snapshotService: SnapshotProvider = { snapshot: jest.fn() };
+    const res = await request(createServer({ snapshotService, config })).get('/');
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/html/);
+    expect(res.text).toMatch(/SkyWatch/);
+  });
+
   it('GET /sky derives an observer from the query and returns the snapshot', async () => {
     const snapshot = jest.fn().mockResolvedValue(emptySnapshot());
     const res = await request(createServer({ snapshotService: { snapshot }, config }))

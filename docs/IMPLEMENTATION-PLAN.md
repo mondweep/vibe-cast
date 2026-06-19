@@ -94,6 +94,19 @@ field-for-field. **Remaining:** flash to hardware + board-specific TFT User_Setu
 **DoD:** ✅ CI workflow defined (gateway green locally: 58 tests); ✅ one-command
 gateway deploy (`docker compose up`); ✅ reproducible firmware build profile.
 
+## Phase 6 — Browser front-end  ✅
+**Objective:** a visual front-end you can see *without* ESP32 hardware.
+**ADRs:** 0009, 0008
+- ✅ Static `public/index.html` (vanilla JS + Canvas, no build step) served by the
+  gateway at `GET /`, polling the existing `/sky` endpoint
+- ✅ Renders the same views as the firmware: flight radar (bearing/distance),
+  satellite sky-dome (az/el), next *visible* pass, warnings; observer inputs +
+  auto-refresh
+- ✅ Second downstream Conformist over the same Sky Snapshot Published Language —
+  no new endpoint/contract; Docker image ships `public/`
+**DoD:** ✅ `GET /` serves the page (test); ✅ verified live (radar renders real
+flights/sats); 59 tests green.
+
 ---
 
 ## Cross-cutting practices
@@ -111,5 +124,5 @@ gateway deploy (`docker compose up`); ✅ reproducible firmware build profile.
 | FR6 (pass prediction) | 1 ✅ |
 | FR7 (Sky Snapshot JSON over HTTP) | 1 (model) ✅ / 2 (endpoint) ✅ |
 | FR8 (config portal) | 4 ✅ |
-| FR9 (render) | 4 ✅ |
+| FR9 (render) | 4 (ESP32) ✅ / 6 (browser) ✅ |
 | Visible passes (PRD §7 follow-up) | 3 ✅ |

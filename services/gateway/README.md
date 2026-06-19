@@ -14,10 +14,14 @@ npm start           # run the built gateway (reads env / .env)
 ```
 
 ## HTTP API (ADR-0008)
+- `GET /` → the **browser front-end** (radar + sky-dome, polls `/sky`) — ADR-0009
 - `GET /healthz` → `{ "status": "ok" }`
 - `GET /sky?lat=&lon=&altKm=&rangeKm=&minEl=` → the **Sky Snapshot** JSON
   (flights + satellites overhead + upcoming passes + `warnings[]`). All query
   params are optional and fall back to the configured observer defaults.
+
+Open `http://localhost:8080/` after `npm start` to see flights and satellites in
+a browser — no ESP32 hardware required.
 
 Configuration is via environment variables — see `.env.example`. OpenSky OAuth2
 credentials are optional (`OPENSKY_CLIENT_ID`/`SECRET`); without them the gateway

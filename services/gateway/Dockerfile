@@ -12,7 +12,7 @@ RUN npm ci
 # Copy source code
 COPY src ./src
 COPY types ./types
-COPY tsconfig.json ./
+COPY tsconfig.json tsconfig.build.json ./
 
 # Build TypeScript to dist/
 RUN npm run build
@@ -32,6 +32,9 @@ RUN npm ci --omit=dev
 
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
+
+# Copy the browser front-end (served at GET /)
+COPY public ./public
 
 # Set environment
 ENV NODE_ENV=production

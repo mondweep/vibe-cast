@@ -59,13 +59,25 @@ Built with **Domain-Driven Design**, **Architecture Decision Records**, and
 └─ README.md
 ```
 
-## Quick start (gateway)
+## Where you see it (front-ends)
+The ESP32 is a **thin client / consumer** (ADR-0001/0008): it doesn't compute
+anything, it just polls the gateway's `GET /sky` Sky Snapshot and draws it. The
+same snapshot feeds two consumers:
+
+1. **Browser front-end** — open **`http://<gateway-host>:8080/`** on any
+   phone/laptop. A radar (flights by bearing/distance) + sky-dome (satellites by
+   az/el) + next-visible-pass. **No hardware required** (ADR-0009).
+2. **ESP32 device** — the round-display radar (the physical product); needs
+   firmware flashed + a wired display. Also prints a text view to Serial.
+
+## Quick start (gateway + web front-end)
 ```bash
 cd services/gateway
 npm install
 npm run typecheck   # tsc --noEmit
-npm test            # Jest — 58 tests, fully offline (no network)
-npm run build && npm start   # serve GET /sky and GET /healthz on :8080
+npm test            # Jest — 59 tests, fully offline (no network)
+npm run build && npm start   # serves /, /sky and /healthz on :8080
+# then open http://localhost:8080/ in a browser
 ```
 Or run the whole thing with Docker: `docker compose up -d --build` (see
 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).

@@ -13,3 +13,4 @@ Significant, hard-to-reverse decisions for SkyWatch. Format follows the
 | [0006](./0006-tdd-london-school.md) | TDD, London School (mockist) | Accepted |
 | [0007](./0007-esp32-firmware-platformio-portal.md) | ESP32 firmware on Arduino/PlatformIO with a Wi-Fi config portal | Accepted |
 | [0008](./0008-device-gateway-http-json.md) | HTTP/JSON polling as the device↔gateway contract | Accepted |
+| [0009](./0009-browser-frontend.md) | Gateway-served browser front-end (second consumer) | Accepted |
