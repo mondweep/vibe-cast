@@ -59,15 +59,29 @@ Built with **Domain-Driven Design**, **Architecture Decision Records**, and
 └─ README.md
 ```
 
-## Quick start (gateway domain core)
+## Quick start (gateway)
 ```bash
 cd services/gateway
 npm install
 npm run typecheck   # tsc --noEmit
-npm test            # Jest — 20 tests, fully offline (no network)
+npm test            # Jest — 58 tests, fully offline (no network)
+npm run build && npm start   # serve GET /sky and GET /healthz on :8080
 ```
-Phase 1 (the tested domain core) is complete; Phase 2 adds the HTTP endpoint and
-live wiring. See the [Implementation Plan](docs/IMPLEMENTATION-PLAN.md).
+Or run the whole thing with Docker: `docker compose up -d --build` (see
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
+
+### Status — built to "ready"
+| Phase | What | State |
+| --- | --- | --- |
+| 1 | Domain core (flight + satellite, hexagonal, TDD) | ✅ |
+| 2 | Gateway HTTP service, OAuth2, resilience, Docker | ✅ |
+| 3 | Optically-visible pass detection (sunlit + dark) | ✅ |
+| 4 | ESP32 firmware (portal + poll + render) | ✅ code · ⬜ hardware flash |
+| 5 | Caching, JSON-schema contract guard, CI | ✅ |
+
+58 tests green, fully offline; verified end-to-end against live OpenSky data.
+The only remaining step is flashing the firmware to a physical ESP32 (+ a
+board-specific TFT setup). See the [Implementation Plan](docs/IMPLEMENTATION-PLAN.md).
 
 ## Swarm orchestration (RuFlo)
 This repo was initialised with [RuFlo](https://github.com/ruvnet/claude-flow)

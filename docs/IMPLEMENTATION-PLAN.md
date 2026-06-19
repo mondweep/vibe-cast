@@ -78,13 +78,21 @@ against known geometry; passes annotated in the Sky Snapshot.
 field-for-field. **Remaining:** flash to hardware + board-specific TFT User_Setup
 (can't be compiled in CI sandbox — see Phase 5 firmware build job).
 
-## Phase 5 — Hardening, deploy & polish  ⬜
+## Phase 5 — Hardening, deploy & polish  ✅
 **Objective:** make it dependable and easy to run.
-- ⬜ CI: typecheck + test + lint on PR (GitHub Actions); firmware build job
-- ⬜ Caching/back-pressure tuning; rate-limit-aware polling
-- ⬜ Optional MQTT/WebSocket push for multi-device (ADR-0008 follow-up)
-- ⬜ Deploy guide (Pi/VPS), 3D-print/enclosure notes, end-user setup docs
-**DoD:** green CI; one-command gateway deploy; reproducible firmware build.
+- ✅ CI (`.github/workflows/ci.yml`): gateway typecheck + test + build; firmware
+  PlatformIO build job (cached)
+- ✅ Rate-limit-friendly **caching layer** (`CachingSnapshotService`, TTL +
+  in-flight de-dupe, failures not cached) wired into the composition root (NFR3)
+- ✅ **Contract guard**: published JSON Schema
+  (`docs/contracts/sky-snapshot.schema.json`) validated in CI against the example
+  and a freshly produced snapshot, so gateway↔firmware can't drift (ADR-0008)
+- ✅ Deploy guide ([DEPLOYMENT.md](./DEPLOYMENT.md)) + device setup
+  ([firmware/README.md](../firmware/README.md))
+- ⬜ (future) MQTT/WebSocket push for many devices (ADR-0008 follow-up);
+  3D-print/enclosure notes
+**DoD:** ✅ CI workflow defined (gateway green locally: 58 tests); ✅ one-command
+gateway deploy (`docker compose up`); ✅ reproducible firmware build profile.
 
 ---
 

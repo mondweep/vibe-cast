@@ -1,7 +1,7 @@
 import request from 'supertest';
-import { createServer, SnapshotProvider } from '../../src/http/server';
+import { createServer } from '../../src/http/server';
 import { loadConfig } from '../../src/config';
-import { SkySnapshot } from '../../src/application/sky-snapshot.service';
+import { SkySnapshot, SnapshotProvider } from '../../src/application/sky-snapshot.service';
 
 const emptySnapshot = (): SkySnapshot => ({
   observedAt: '2026-06-19T12:00:00.000Z',

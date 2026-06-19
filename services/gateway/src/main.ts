@@ -12,7 +12,8 @@ import { Sgp4Propagator } from './satellite/adapters/sgp4-propagator';
 import { AstronomicalSunModel } from './satellite/adapters/astronomical-sun-model';
 import { PassPredictor } from './satellite/domain/pass-predictor.service';
 import { VisibilityService } from './satellite/domain/visibility.service';
-import { SkySnapshotService } from './application/sky-snapshot.service';
+import { SkySnapshotService, SnapshotProvider } from './application/sky-snapshot.service';
+import { CachingSnapshotService } from './application/caching-snapshot.service';
 
 export function buildSnapshotService(
   config = loadConfig(),
@@ -46,7 +47,13 @@ export function buildSnapshotService(
 
 export function start(): void {
   const config = loadConfig();
-  const app = createServer({ snapshotService: buildSnapshotService(config), config });
+  // Cache snapshots briefly so rapid/multiple device polls stay within the
+  // upstream provider rate limits (NFR3, Phase 5).
+  const snapshotService: SnapshotProvider = new CachingSnapshotService(
+    buildSnapshotService(config),
+    { ttlMs: config.cacheTtlMs },
+  );
+  const app = createServer({ snapshotService, config });
   app.listen(config.port, () => {
     // eslint-disable-next-line no-console
     console.log(`SkyWatch gateway listening on :${config.port}`);

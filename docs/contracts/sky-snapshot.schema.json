@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://skywatch/contracts/sky-snapshot.schema.json",
+  "title": "SkySnapshot",
+  "description": "The read model the gateway serves to ESP32 devices (ADR-0008).",
+  "type": "object",
+  "required": ["observedAt", "flights", "satellitesOverhead", "upcomingPasses", "warnings"],
+  "additionalProperties": false,
+  "properties": {
+    "observedAt": { "type": "string" },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "flights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["aircraft", "distanceKm", "bearingDeg"],
+        "additionalProperties": false,
+        "properties": {
+          "distanceKm": { "type": "number" },
+          "bearingDeg": { "type": "number" },
+          "aircraft": {
+            "type": "object",
+            "required": ["icao24", "callsign", "latitudeDeg", "longitudeDeg", "baroAltitudeM", "velocityMps", "headingDeg", "onGround"],
+            "additionalProperties": false,
+            "properties": {
+              "icao24": { "type": "string" },
+              "callsign": { "type": ["string", "null"] },
+              "latitudeDeg": { "type": "number" },
+              "longitudeDeg": { "type": "number" },
+              "baroAltitudeM": { "type": ["number", "null"] },
+              "velocityMps": { "type": ["number", "null"] },
+              "headingDeg": { "type": ["number", "null"] },
+              "onGround": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "satellitesOverhead": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["satelliteName", "noradId", "look"],
+        "additionalProperties": false,
+        "properties": {
+          "satelliteName": { "type": "string" },
+          "noradId": { "type": "number" },
+          "look": {
+            "type": "object",
+            "required": ["azimuthDeg", "elevationDeg", "rangeKm"],
+            "additionalProperties": false,
+            "properties": {
+              "azimuthDeg": { "type": "number" },
+              "elevationDeg": { "type": "number" },
+              "rangeKm": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "upcomingPasses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["satelliteName", "noradId", "aosTime", "tcaTime", "losTime", "maxElevationDeg", "durationSeconds"],
+        "additionalProperties": false,
+        "properties": {
+          "satelliteName": { "type": "string" },
+          "noradId": { "type": "number" },
+          "aosTime": { "type": "string" },
+          "tcaTime": { "type": "string" },
+          "losTime": { "type": "string" },
+          "maxElevationDeg": { "type": "number" },
+          "durationSeconds": { "type": "number" },
+          "visible": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

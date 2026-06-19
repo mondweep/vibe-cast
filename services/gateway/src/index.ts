@@ -21,6 +21,7 @@ export * from './satellite/adapters/celestrak-tle-source';
 export * from './satellite/adapters/astronomical-sun-model';
 
 export * from './application/sky-snapshot.service';
+export * from './application/caching-snapshot.service';
 
 export * from './config';
 export * from './http/observer-query';

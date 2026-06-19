@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [aircraft-tracking, main]
+  pull_request:
+
+jobs:
+  gateway:
+    name: Gateway (typecheck · test · build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: services/gateway/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  firmware:
+    name: Firmware (PlatformIO build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini') }}
+      - run: pip install --upgrade platformio
+      - name: Build firmware (Serial profile)
+        working-directory: firmware
+        run: pio run -e esp32c3

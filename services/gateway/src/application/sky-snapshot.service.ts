@@ -24,6 +24,17 @@ export interface SkySnapshot {
   warnings: string[];
 }
 
+export interface SnapshotOptions {
+  satelliteGroup?: string;
+  passWindowHours?: number;
+  at?: Date;
+}
+
+/** The use case the HTTP layer depends on (allows caching/stubbing). */
+export interface SnapshotProvider {
+  snapshot(observer: Observer, options?: SnapshotOptions): Promise<SkySnapshot>;
+}
+
 function describe(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
@@ -33,7 +44,7 @@ function describe(err: unknown): string {
  * read model the firmware consumes (ADR-0001). This is the use case wired to
  * the HTTP endpoint the ESP32 polls.
  */
-export class SkySnapshotService {
+export class SkySnapshotService implements SnapshotProvider {
   constructor(
     private readonly nearbyAircraft: NearbyAircraftService,
     private readonly passPredictor: PassPredictor,
@@ -45,7 +56,7 @@ export class SkySnapshotService {
 
   async snapshot(
     observer: Observer,
-    options: { satelliteGroup?: string; passWindowHours?: number; at?: Date } = {},
+    options: SnapshotOptions = {},
   ): Promise<SkySnapshot> {
     const at = options.at ?? new Date();
     const group = options.satelliteGroup ?? 'visual';

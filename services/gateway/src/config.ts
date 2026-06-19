@@ -12,6 +12,8 @@ export interface GatewayConfig {
   observer: ObserverDefaults;
   satelliteGroup: string;
   passWindowHours: number;
+  /** Snapshot cache TTL (ms). Should exceed compute time so polls are cheap. */
+  cacheTtlMs: number;
   opensky: { baseUrl: string; clientId?: string; clientSecret?: string };
   celestrak: { baseUrl: string };
 }
@@ -39,6 +41,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig 
     },
     satelliteGroup: str(env.SATELLITE_GROUP, 'visual'),
     passWindowHours: num(env.PASS_WINDOW_HOURS, 6),
+    cacheTtlMs: num(env.CACHE_TTL_MS, 30000),
     opensky: {
       baseUrl: str(env.OPENSKY_BASE_URL, 'https://opensky-network.org/api'),
       clientId: env.OPENSKY_CLIENT_ID || undefined,

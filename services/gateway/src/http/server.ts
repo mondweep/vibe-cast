@@ -1,15 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import { GatewayConfig } from '../config';
-import { SkySnapshot } from '../application/sky-snapshot.service';
+import { SnapshotProvider } from '../application/sky-snapshot.service';
 import { BadRequestError, observerFromQuery } from './observer-query';
-
-/** The slice of SkySnapshotService the HTTP layer needs (keeps it stubbable). */
-export interface SnapshotProvider {
-  snapshot(
-    observer: import('../shared/observer').Observer,
-    options?: { satelliteGroup?: string; passWindowHours?: number; at?: Date },
-  ): Promise<SkySnapshot>;
-}
 
 export interface ServerDeps {
   snapshotService: SnapshotProvider;

@@ -19,10 +19,17 @@ npm start           # run the built gateway (reads env / .env)
   (flights + satellites overhead + upcoming passes + `warnings[]`). All query
   params are optional and fall back to the configured observer defaults.
 
-Configuration is via environment variables — see
-[`.env.example`](./.env.example). OpenSky OAuth2 credentials are optional
-(`OPENSKY_CLIENT_ID`/`SECRET`); without them the gateway calls OpenSky
-anonymously. Deploy with Docker — see [../../docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md).
+Configuration is via environment variables — see `.env.example`. OpenSky OAuth2
+credentials are optional (`OPENSKY_CLIENT_ID`/`SECRET`); without them the gateway
+calls OpenSky anonymously. Deploy with Docker — see
+[../../docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md).
+
+### Caching (NFR3)
+Snapshots are cached per observer for `CACHE_TTL_MS` (default **30000** ms) via
+`CachingSnapshotService`, with concurrent polls sharing one in-flight
+computation and failures never cached. Computing passes for a large satellite
+group (e.g. `visual`, ~150 sats × 6 h) takes several seconds, so the TTL should
+stay well above that to keep device polls cheap and within provider rate limits.
 
 ## Architecture (ADR-0003)
 ```
@@ -54,8 +61,9 @@ so providers and the propagation library are swappable (ADR-0002, 0004, 0005).
 - **No network** in any test.
 
 ## Status
-**Phases 1–2 complete:** domain core + adapters, the OAuth2 token manager, the
-`GET /sky` / `GET /healthz` HTTP service, per-context resilience, and Docker
-deploy assets. Verified end-to-end against live OpenSky data (39 tests green,
-fully offline). Next: Phase 3 (visible-pass calculation) and Phase 4 (ESP32
-firmware) — see [../../docs/IMPLEMENTATION-PLAN.md](../../docs/IMPLEMENTATION-PLAN.md).
+**Phases 1–5 complete** (gateway side): domain core + adapters, OAuth2 token
+manager, `GET /sky` / `GET /healthz`, per-context resilience, optically-visible
+pass detection, snapshot caching, a JSON-schema contract guard, Docker deploy
+assets, and CI. **58 tests green, fully offline**; verified end-to-end against
+live OpenSky data. The ESP32 firmware (Phase 4) awaits a hardware flash. See
+[../../docs/IMPLEMENTATION-PLAN.md](../../docs/IMPLEMENTATION-PLAN.md).
