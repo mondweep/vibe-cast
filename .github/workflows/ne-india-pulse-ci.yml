@@ -1,0 +1,55 @@
+name: NE India Pulse CI
+
+# Phase-0 starter CI for the ne-india-pulse project. Grows with the codebase:
+# lint/typecheck/unit (London-School) tests get added in Phase 2 (walking
+# skeleton). For now it validates the Phase-0 prototype and docs.
+on:
+  push:
+    branches: ["claude/cool-fermat-vcyuyd"]
+    paths: ["ne-india-pulse/**", ".github/workflows/ne-india-pulse-ci.yml"]
+  pull_request:
+    paths: ["ne-india-pulse/**", ".github/workflows/ne-india-pulse-ci.yml"]
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: ne-india-pulse
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Byte-compile prototype (syntax check)
+        run: python -m py_compile scripts/ne_pulse_snapshot.py
+
+      - name: Lint prototype (ruff, non-blocking for now)
+        run: |
+          pip install ruff
+          ruff check scripts/ || true
+
+      - name: Check required project docs exist
+        run: |
+          set -e
+          for f in README.md CLAUDE.md \
+                   docs/prd/PRD.md \
+                   docs/PROJECT-PLAN.md docs/SWARM-STRATEGY.md \
+                   docs/adr/0001-ruflo-swarm-orchestration.md \
+                   docs/adr/0002-platform-gcp-cloud-run.md \
+                   docs/adr/0003-gdelt-data-access-strategy.md \
+                   docs/research/01-gdelt-capabilities.md \
+                   docs/research/02-ne-india-demographics.md \
+                   docs/research/03-todays-snapshot.md; do
+            test -f "$f" || { echo "::error::missing $f"; exit 1; }
+          done
+          echo "All required Phase-0 artifacts present."
+
+  # Added in Phase 2 once src/ exists:
+  #   test: build + npm/pytest (London-School unit & contract tests)
+  #   deploy: build image -> Artifact Registry -> Cloud Run (keyless WIF, ADR-0002)
