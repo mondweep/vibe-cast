@@ -14,10 +14,15 @@ coverage/
 *.log
 npm-debug.log*
 
-# RuFlo / Claude-Flow runtime (keep config, ignore runtime data)
+# RuFlo / Claude-Flow runtime (keep root config, ignore runtime data anywhere)
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
+**/.claude-flow/data/
+**/.claude-flow/logs/
+**/.claude-flow/sessions/
+# Nested .claude-flow created by running ruflo inside a subproject — pure runtime
+services/**/.claude-flow/
 .swarm/
 memory/
 

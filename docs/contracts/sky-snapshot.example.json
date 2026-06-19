@@ -1,0 +1,39 @@
+{
+  "observedAt": "2026-06-19T21:30:00.000Z",
+  "flights": [
+    {
+      "aircraft": {
+        "icao24": "abc123",
+        "callsign": "BAW123",
+        "latitudeDeg": 51.47,
+        "longitudeDeg": -0.45,
+        "baroAltitudeM": 11000,
+        "velocityMps": 240,
+        "headingDeg": 95,
+        "onGround": false
+      },
+      "distanceKm": 12.3,
+      "bearingDeg": 218.4
+    }
+  ],
+  "satellitesOverhead": [
+    {
+      "satelliteName": "ISS (ZARYA)",
+      "noradId": 25544,
+      "look": { "azimuthDeg": 130.2, "elevationDeg": 47.8, "rangeKm": 612.5 }
+    }
+  ],
+  "upcomingPasses": [
+    {
+      "satelliteName": "ISS (ZARYA)",
+      "noradId": 25544,
+      "aosTime": "2026-06-19T21:28:00.000Z",
+      "tcaTime": "2026-06-19T21:30:30.000Z",
+      "losTime": "2026-06-19T21:33:00.000Z",
+      "maxElevationDeg": 61.0,
+      "durationSeconds": 300,
+      "visible": true
+    }
+  ],
+  "warnings": []
+}

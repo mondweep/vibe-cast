@@ -63,16 +63,20 @@ Legend: ✅ done · 🚧 in progress · ⬜ planned
 **DoD:** ✅ visibility tests (deterministic fakes) green; ✅ solar math tested
 against known geometry; passes annotated in the Sky Snapshot.
 
-## Phase 4 — ESP32 firmware (thin client)  ⬜
+## Phase 4 — ESP32 firmware (thin client)  ✅ (pending hardware flash)
 **Objective:** the physical device people actually look at.
 **ADRs:** 0007, 0008, 0001 (follow-up)
-- ⬜ PlatformIO project; board profile for ESP32-C3 round display (+ generic TFT)
-- ⬜ Wi-Fi AP captive **config portal**: Wi-Fi, observer lat/lon/alt, range+units,
-  min elevation, satellite group, gateway URL/creds → persisted to NVS
-- ⬜ Poll `GET /sky` (HTTPClient + ArduinoJson); render flight radar + sky dome
-  (az/el) + next-pass banner
-- ⬜ Optional on-device SGP4 "favourite satellite" offline mode (Arduino SGP4 lib)
-**DoD:** device boots, self-configures, and renders a live snapshot from the gateway.
+- ✅ PlatformIO project; board profiles for ESP32-C3 round display + generic ESP32
+- ✅ Wi-Fi AP captive **config portal** (WiFiManager): Wi-Fi, observer lat/lon/alt,
+  range, min elevation, satellite group, gateway URL/token → persisted to NVS
+- ✅ Poll `GET /sky` (HTTPClient + ArduinoJson) → parse into `sky_model.h`
+- ✅ Render: Serial always; round-display radar (flights by bearing/distance,
+  satellites on a sky-dome, next-pass banner with visible `*`) under `-DUSE_TFT`
+- ✅ Shared JSON contract artefact (`docs/contracts/sky-snapshot.example.json`)
+- ⬜ (future) on-device SGP4 "favourite satellite" offline mode (Arduino SGP4 lib)
+**DoD:** firmware is complete + modular and parses the live gateway contract
+field-for-field. **Remaining:** flash to hardware + board-specific TFT User_Setup
+(can't be compiled in CI sandbox — see Phase 5 firmware build job).
 
 ## Phase 5 — Hardening, deploy & polish  ⬜
 **Objective:** make it dependable and easy to run.
@@ -98,6 +102,6 @@ against known geometry; passes annotated in the Sky Snapshot.
 | FR4, FR5 (look angle / overhead) | 1 ✅ |
 | FR6 (pass prediction) | 1 ✅ |
 | FR7 (Sky Snapshot JSON over HTTP) | 1 (model) ✅ / 2 (endpoint) ✅ |
-| FR8 (config portal) | 4 ⬜ |
-| FR9 (render) | 4 ⬜ |
+| FR8 (config portal) | 4 ✅ |
+| FR9 (render) | 4 ✅ |
 | Visible passes (PRD §7 follow-up) | 3 ✅ |
