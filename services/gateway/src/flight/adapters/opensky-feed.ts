@@ -1,6 +1,7 @@
 import { BoundingBox } from '../../shared/geo';
 import { Aircraft } from '../domain/aircraft';
 import { AircraftFeed } from '../ports/aircraft-feed.port';
+import { TokenProvider } from './opensky-token-manager';
 
 /** A single element of OpenSky's `states` array (positional encoding). */
 export type OpenSkyState = (string | number | boolean | null)[];
@@ -39,8 +40,13 @@ export function mapOpenSkyStates(response: OpenSkyResponse): Aircraft[] {
 
 export interface OpenSkyConfig {
   baseUrl?: string;
-  /** Optional OAuth2 bearer token (required for accounts since March 2025). */
+  /** Optional static OAuth2 bearer token. */
   accessToken?: string;
+  /**
+   * Optional dynamic token source (OAuth2 client-credentials, refreshed as
+   * needed). Takes precedence over `accessToken` when both are supplied.
+   */
+  tokenProvider?: TokenProvider;
   fetchFn?: typeof fetch;
 }
 
@@ -51,11 +57,13 @@ export interface OpenSkyConfig {
 export class OpenSkyFeed implements AircraftFeed {
   private readonly baseUrl: string;
   private readonly accessToken?: string;
+  private readonly tokenProvider?: TokenProvider;
   private readonly fetchFn: typeof fetch;
 
   constructor(config: OpenSkyConfig = {}) {
     this.baseUrl = config.baseUrl ?? 'https://opensky-network.org/api';
     this.accessToken = config.accessToken;
+    this.tokenProvider = config.tokenProvider;
     this.fetchFn = config.fetchFn ?? fetch;
   }
 
@@ -65,7 +73,10 @@ export class OpenSkyFeed implements AircraftFeed {
       `?lamin=${box.minLatDeg}&lomin=${box.minLonDeg}` +
       `&lamax=${box.maxLatDeg}&lomax=${box.maxLonDeg}`;
     const headers: Record<string, string> = {};
-    if (this.accessToken) headers.Authorization = `Bearer ${this.accessToken}`;
+    const bearer = this.tokenProvider
+      ? await this.tokenProvider()
+      : this.accessToken;
+    if (bearer) headers.Authorization = `Bearer ${bearer}`;
 
     const res = await this.fetchFn(url, { headers });
     if (!res.ok) {

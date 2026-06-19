@@ -9,8 +9,20 @@ architecture, DDD bounded contexts, London-School TDD.
 npm install
 npm run typecheck   # tsc --noEmit
 npm test            # Jest (offline, deterministic)
-npm run build       # emit dist/
+npm run build       # emit dist/ (entry: dist/main.js)
+npm start           # run the built gateway (reads env / .env)
 ```
+
+## HTTP API (ADR-0008)
+- `GET /healthz` → `{ "status": "ok" }`
+- `GET /sky?lat=&lon=&altKm=&rangeKm=&minEl=` → the **Sky Snapshot** JSON
+  (flights + satellites overhead + upcoming passes + `warnings[]`). All query
+  params are optional and fall back to the configured observer defaults.
+
+Configuration is via environment variables — see
+[`.env.example`](./.env.example). OpenSky OAuth2 credentials are optional
+(`OPENSKY_CLIENT_ID`/`SECRET`); without them the gateway calls OpenSky
+anonymously. Deploy with Docker — see [../../docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md).
 
 ## Architecture (ADR-0003)
 ```
@@ -42,6 +54,8 @@ so providers and the propagation library are swappable (ADR-0002, 0004, 0005).
 - **No network** in any test.
 
 ## Status
-**Phase 1 complete** (domain core + adapters). The HTTP `GET /sky` endpoint and
-live OpenSky/CelesTrak wiring are Phase 2 — see
-[../../docs/IMPLEMENTATION-PLAN.md](../../docs/IMPLEMENTATION-PLAN.md).
+**Phases 1–2 complete:** domain core + adapters, the OAuth2 token manager, the
+`GET /sky` / `GET /healthz` HTTP service, per-context resilience, and Docker
+deploy assets. Verified end-to-end against live OpenSky data (39 tests green,
+fully offline). Next: Phase 3 (visible-pass calculation) and Phase 4 (ESP32
+firmware) — see [../../docs/IMPLEMENTATION-PLAN.md](../../docs/IMPLEMENTATION-PLAN.md).

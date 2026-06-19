@@ -31,17 +31,22 @@ Legend: ✅ done · 🚧 in progress · ⬜ planned
 - ✅ Application: `SkySnapshotService` composing both contexts
 **DoD:** ✅ `npm run typecheck` clean; ✅ `npm test` green (20 tests), no network.
 
-## Phase 2 — Gateway HTTP service + live wiring  ⬜
+## Phase 2 — Gateway HTTP service + live wiring  ✅
 **Objective:** serve the Sky Snapshot to devices and prove it end-to-end.
 **ADRs:** 0008, 0002, 0005
-- ⬜ `GET /sky` endpoint (Express/Fastify) → `SkySnapshotService` (contract per ADR-0008)
-- ⬜ `GET /healthz`; config via env (OpenSky creds, default observer, group)
-- ⬜ OpenSky OAuth2 client-credentials token manager (fetch + refresh)
-- ⬜ Per-context resilience: a failing feed degrades, never crashes (NFR6)
-- ⬜ Integration/e2e smoke tests (nightly/allowed-failure) against live APIs
-- ⬜ Dockerfile + `docker compose` for Raspberry Pi / home server
-**DoD:** `curl /sky` returns a valid snapshot against live (or recorded) data;
-unit suite still offline-green.
+- ✅ `GET /sky` endpoint (Express) → `SkySnapshotService` (contract per ADR-0008),
+  with observer-query parsing + 400/500 handling
+- ✅ `GET /healthz`; config via env (`config.ts`, OpenSky creds, default observer, group)
+- ✅ OpenSky OAuth2 client-credentials token manager (`OpenSkyTokenManager`,
+  cached + refresh + in-flight de-dupe); `OpenSkyFeed` accepts a `tokenProvider`
+- ✅ Per-context resilience: a failing feed/source degrades to a `warnings[]`,
+  never crashes the snapshot (NFR6)
+- ✅ Composition root (`main.ts`) + `npm start`; multi-stage Dockerfile +
+  `docker compose` + `.env.example` + [DEPLOYMENT.md](./DEPLOYMENT.md)
+- 🚧 Nightly/allowed-failure e2e against live APIs (manual smoke verified:
+  `GET /sky` returned real aircraft near London) — wire into CI in Phase 5
+**DoD:** ✅ `curl /sky` returns a valid live snapshot (verified end-to-end);
+✅ unit suite still offline-green (39 tests); ✅ `npm run build` emits `dist/main.js`.
 
 ## Phase 3 — Visibility & richer satellite features  ⬜
 **Objective:** make passes genuinely useful for sky-watching.
@@ -86,7 +91,7 @@ unit suite still offline-green.
 | FR3 (TLE fetch+cache) | 1 ✅ |
 | FR4, FR5 (look angle / overhead) | 1 ✅ |
 | FR6 (pass prediction) | 1 ✅ |
-| FR7 (Sky Snapshot JSON over HTTP) | 1 (model) ✅ / 2 (endpoint) ⬜ |
+| FR7 (Sky Snapshot JSON over HTTP) | 1 (model) ✅ / 2 (endpoint) ✅ |
 | FR8 (config portal) | 4 ⬜ |
 | FR9 (render) | 4 ⬜ |
 | Visible passes (PRD §7 follow-up) | 3 ⬜ |

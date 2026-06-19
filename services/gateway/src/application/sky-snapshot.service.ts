@@ -19,6 +19,12 @@ export interface SkySnapshot {
   flights: NearbyAircraft[];
   satellitesOverhead: SatelliteOverhead[];
   upcomingPasses: SatellitePass[];
+  /** Non-fatal degradations (e.g. a data source was unavailable). NFR6. */
+  warnings: string[];
+}
+
+function describe(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 /**
@@ -40,30 +46,50 @@ export class SkySnapshotService {
   ): Promise<SkySnapshot> {
     const at = options.at ?? new Date();
     const group = options.satelliteGroup ?? 'visual';
+    const warnings: string[] = [];
 
-    const [flights, satellites] = await Promise.all([
+    // The two contexts are independent: a failure in one must not break the
+    // other (NFR6). Resolve each defensively.
+    const [flightsResult, satellitesResult] = await Promise.allSettled([
       this.nearbyAircraft.aircraftNear(observer),
       this.tleSource.fetchGroup(group),
     ]);
+
+    let flights: NearbyAircraft[] = [];
+    if (flightsResult.status === 'fulfilled') {
+      flights = flightsResult.value;
+    } else {
+      warnings.push(`flights unavailable: ${describe(flightsResult.reason)}`);
+    }
+
+    const satellites =
+      satellitesResult.status === 'fulfilled' ? satellitesResult.value : [];
+    if (satellitesResult.status === 'rejected') {
+      warnings.push(`satellites unavailable: ${describe(satellitesResult.reason)}`);
+    }
 
     const satellitesOverhead: SatelliteOverhead[] = [];
     const upcomingPasses: SatellitePass[] = [];
 
     for (const sat of satellites) {
-      const look = this.propagator.lookAngle(sat, observer, at);
-      if (look.elevationDeg >= observer.minElevationDeg) {
-        satellitesOverhead.push({
-          satelliteName: sat.name,
-          noradId: sat.noradId,
-          look,
-        });
+      try {
+        const look = this.propagator.lookAngle(sat, observer, at);
+        if (look.elevationDeg >= observer.minElevationDeg) {
+          satellitesOverhead.push({
+            satelliteName: sat.name,
+            noradId: sat.noradId,
+            look,
+          });
+        }
+        upcomingPasses.push(
+          ...this.passPredictor.predictPasses(sat, observer, {
+            from: at,
+            hours: options.passWindowHours ?? 6,
+          }),
+        );
+      } catch (err) {
+        warnings.push(`skipped ${sat.name}: ${describe(err)}`);
       }
-      upcomingPasses.push(
-        ...this.passPredictor.predictPasses(sat, observer, {
-          from: at,
-          hours: options.passWindowHours ?? 6,
-        }),
-      );
     }
 
     upcomingPasses.sort((a, b) => a.aosTime.getTime() - b.aosTime.getTime());
@@ -74,6 +100,7 @@ export class SkySnapshotService {
       flights,
       satellitesOverhead,
       upcomingPasses,
+      warnings,
     };
   }
 }
