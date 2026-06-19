@@ -49,7 +49,8 @@
            white-space:nowrap; transform:translate(-50%,-150%); display:none; z-index:5; }
     #popup { position:fixed; min-width:210px; max-width:280px; background:#0b1525f5;
              border:1px solid #28406b; border-radius:10px; padding:12px 14px; font-size:13px;
-             box-shadow:0 8px 28px #000a; display:none; z-index:2000; }
+             box-shadow:0 8px 28px #000a; display:none; z-index:2000;
+             max-height:calc(100vh - 16px); overflow-y:auto; }
     #popup h3 { margin:0 0 8px; font-size:14px; }
     #popup .row { display:flex; justify-content:space-between; gap:14px; padding:2px 0;
                   border-bottom:1px solid #121a2c; }
@@ -304,14 +305,18 @@
     function popupRows(rows){ return rows.map(([k,v])=>`<div class="row"><span>${k}</span><span>${v}</span></div>`).join(''); }
 
     // Position the (fixed) popup near a viewport point, clamped on-screen.
-    function positionPopup(x, y){
-      const pop=$('popup'); pop.style.display='block';
-      const w=pop.offsetWidth, h=pop.offsetHeight;
-      let px=x+14, py=y+14;
-      if (px+w > innerWidth-8) px=Math.max(8, x-w-14);
+    // The anchor is remembered so we can re-clamp after async detail loads and
+    // grows the popup (otherwise the bottom overflows the viewport — issue #12).
+    let popupAnchor = { x:0, y:0 };
+    function placePopup(){
+      const pop=$('popup'); const w=pop.offsetWidth, h=pop.offsetHeight;
+      let px=popupAnchor.x+14, py=popupAnchor.y+14;
+      if (px+w > innerWidth-8) px=Math.max(8, popupAnchor.x-w-14);
       if (py+h > innerHeight-8) py=Math.max(8, innerHeight-h-8);
-      pop.style.left=px+'px'; pop.style.top=py+'px';
+      pop.style.left=Math.max(8,px)+'px'; pop.style.top=Math.max(8,py)+'px';
     }
+    function positionPopup(x, y){ popupAnchor={x,y}; $('popup').style.display='block'; placePopup(); }
+    function reflowPopup(){ if ($('popup').style.display!=='none') placePopup(); }
     function closePopup(){ $('popup').style.display='none'; if(currentSnap) render(currentSnap); }
 
     // Shared popup builders — used by BOTH the radar markers and the tables.
@@ -356,7 +361,7 @@
       try {
         const q = callsign ? ('?callsign='+encodeURIComponent(callsign.trim())) : '';
         const res = await fetch('/flight/'+encodeURIComponent(icao24)+q, { headers: authHeaders() });
-        if(!res.ok){ more.textContent='no extra details'; return; }
+        if(!res.ok){ more.textContent='no extra details'; reflowPopup(); return; }
         const d = await res.json(); const r=d.route, a=d.aircraft; const rows=[];
         if (r){
           if (r.airlineName) rows.push(['airline', r.airlineName]);
@@ -374,15 +379,17 @@
         let h = rows.length ? popupRows(rows) : '<span class="muted">no route/aircraft data (often private flights)</span>';
         if (a && a.photoThumbUrl) h += `<img src="${a.photoThumbUrl}" alt="aircraft" style="width:100%;border-radius:6px;margin-top:8px" loading="lazy"/>`;
         more.classList.remove('muted'); more.innerHTML = h;
-      } catch { more.textContent='details unavailable'; }
+        const img=more.querySelector('img'); if(img) img.addEventListener('load', reflowPopup);
+        reflowPopup();
+      } catch { more.textContent='details unavailable'; reflowPopup(); }
     }
 
     async function enrichSatellite(norad){
       const more=$('popupMore'); if(!more) return;
       try {
         const res = await fetch('/satellite/'+encodeURIComponent(norad), { headers: authHeaders() });
-        if(res.status===404){ more.textContent='not in catalogue'; return; }
-        if(!res.ok){ more.textContent='no extra details'; return; }
+        if(res.status===404){ more.textContent='not in catalogue'; reflowPopup(); return; }
+        if(!res.ok){ more.textContent='no extra details'; reflowPopup(); return; }
         const s = await res.json(); const rows=[];
         if (s.objectType) rows.push(['type', OBJ_TYPE[s.objectType]||s.objectType]);
         if (s.owner) rows.push(['owner', s.owner]);
@@ -391,10 +398,11 @@
         if (s.inclinationDeg!=null) rows.push(['inclination', fmt(s.inclinationDeg,1)+'°']);
         if (s.apogeeKm!=null && s.perigeeKm!=null) rows.push(['altitude', `${fmt(s.perigeeKm)}–${fmt(s.apogeeKm)} km`]);
         let h = popupRows(rows) + `<div style="margin-top:8px"><a href="https://www.n2yo.com/?s=${encodeURIComponent(norad)}" target="_blank" rel="noopener">live track on N2YO ↗</a></div>`;
-        more.classList.remove('muted'); more.innerHTML = h;
-      } catch { more.textContent='details unavailable'; }
+        more.classList.remove('muted'); more.innerHTML = h; reflowPopup();
+      } catch { more.textContent='details unavailable'; reflowPopup(); }
     }
     $('popupClose').addEventListener('click', ()=>{ $('popup').style.display='none'; if(currentSnap) render(currentSnap); });
+    window.addEventListener('resize', reflowPopup);
 
     // ---- tables (rows are clickable → same popup as the radar markers) ----
     function fillTable(id, items, cells, onClick){
