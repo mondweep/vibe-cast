@@ -32,14 +32,14 @@ export interface ServerDeps {
 
 /**
  * Build the Express app (composition is done by the caller). Exposes:
- *  - GET /healthz  → liveness probe
+ *  - GET /health  → liveness probe
  *  - GET /sky      → the Sky Snapshot for an observer (ADR-0008)
  *  - GET /         → the browser radar front-end (static `public/index.html`)
  */
 export function createServer({ snapshotService, config, publicDir }: ServerDeps): Express {
   const app = express();
 
-  app.get('/healthz', (_req: Request, res: Response) => {
+  app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok', service: 'skywatch-gateway' });
   });
 

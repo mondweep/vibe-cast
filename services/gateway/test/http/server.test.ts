@@ -14,9 +14,9 @@ const emptySnapshot = (): SkySnapshot => ({
 describe('gateway HTTP server', () => {
   const config = loadConfig({}); // defaults
 
-  it('GET /healthz returns ok', async () => {
+  it('GET /health returns ok', async () => {
     const snapshotService: SnapshotProvider = { snapshot: jest.fn() };
-    const res = await request(createServer({ snapshotService, config })).get('/healthz');
+    const res = await request(createServer({ snapshotService, config })).get('/health');
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('ok');
   });
@@ -87,8 +87,8 @@ describe('gateway HTTP server', () => {
       expect(res.status).toBe(401);
     });
 
-    it('leaves /healthz and the front-end open (no token needed)', async () => {
-      expect((await request(app()).get('/healthz')).status).toBe(200);
+    it('leaves /health and the front-end open (no token needed)', async () => {
+      expect((await request(app()).get('/health')).status).toBe(200);
       expect((await request(app()).get('/')).status).toBe(200);
     });
   });

@@ -52,14 +52,17 @@ jobs:
           # API_TOKEN. When set, GET /sky requires the token (team-only URL).
           API_TOKEN_SECRET: ${{ vars.GCP_API_TOKEN_SECRET }}
         run: |
-          ENV_VARS="OBSERVER_LAT=51.5074,OBSERVER_LON=-0.1278,OBSERVER_ALT_KM=0.03,FLIGHT_RANGE_KM=50,MIN_ELEVATION_DEG=10,SATELLITE_GROUP=visual,PASS_WINDOW_HOURS=6,CACHE_TTL_MS=30000"
+          # Pipe-delimited (^|^) so NODE_OPTIONS can contain '='. NODE_OPTIONS
+          # forces IPv4-first DNS, without which Node's fetch fails on Cloud Run.
+          # FLIGHT_SOURCE=adsblol because OpenSky blocks datacenter IPs.
+          ENV_VARS="OBSERVER_LAT=51.5074|OBSERVER_LON=-0.1278|OBSERVER_ALT_KM=0.03|FLIGHT_RANGE_KM=50|MIN_ELEVATION_DEG=10|SATELLITE_GROUP=visual|PASS_WINDOW_HOURS=6|CACHE_TTL_MS=30000|FLIGHT_SOURCE=adsblol|NODE_OPTIONS=--dns-result-order=ipv4first"
           SECRET_ARGS=()
           if [[ -n "$OPENSKY_CLIENT_ID" && -n "$OPENSKY_SECRET_NAME" ]]; then
             echo "OpenSky OAuth2 enabled (client id + Secret Manager secret)."
-            ENV_VARS="${ENV_VARS},OPENSKY_CLIENT_ID=${OPENSKY_CLIENT_ID}"
+            ENV_VARS="${ENV_VARS}|OPENSKY_CLIENT_ID=${OPENSKY_CLIENT_ID}"
             SECRET_ARGS+=(--update-secrets "OPENSKY_CLIENT_SECRET=${OPENSKY_SECRET_NAME}:latest")
           else
-            echo "OpenSky credentials not configured — using anonymous access."
+            echo "OpenSky credentials not configured — using the adsb.lol feed."
           fi
           if [[ -n "$API_TOKEN_SECRET" ]]; then
             echo "Shared-token guard enabled — /sky will require the token."
@@ -73,7 +76,7 @@ jobs:
             --min-instances=1 --max-instances=3 \
             --cpu=1 --memory=512Mi --cpu-boost \
             --timeout=120 --concurrency=80 \
-            --set-env-vars="$ENV_VARS" \
+            --set-env-vars="^|^${ENV_VARS}" \
             "${SECRET_ARGS[@]}"
 
       - name: Output service URL

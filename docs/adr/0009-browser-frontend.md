@@ -20,7 +20,7 @@ Architecturally the browser is a **second downstream Conformist**, consuming the
 exact same **Sky Snapshot Published Language** as the ESP32 (ADR-0008). No new
 domain, endpoint, or contract is introduced — both consumers share one schema
 (guarded by the contract test). Express serves the static directory after the
-API routes so `/sky` and `/healthz` are never shadowed.
+API routes so `/sky` and `/health` are never shadowed.
 
 ## Consequences
 ### Positive

@@ -36,7 +36,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ planned
 **ADRs:** 0008, 0002, 0005
 - ✅ `GET /sky` endpoint (Express) → `SkySnapshotService` (contract per ADR-0008),
   with observer-query parsing + 400/500 handling
-- ✅ `GET /healthz`; config via env (`config.ts`, OpenSky creds, default observer, group)
+- ✅ `GET /health`; config via env (`config.ts`, OpenSky creds, default observer, group)
 - ✅ OpenSky OAuth2 client-credentials token manager (`OpenSkyTokenManager`,
   cached + refresh + in-flight de-dupe); `OpenSkyFeed` accepts a `tokenProvider`
 - ✅ Per-context resilience: a failing feed/source degrades to a `warnings[]`,

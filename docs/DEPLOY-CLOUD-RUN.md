@@ -44,7 +44,7 @@ gcloud run deploy skywatch-gateway \
   --min-instances=1 --max-instances=3 \
   --cpu=1 --memory=512Mi --cpu-boost \
   --timeout=120 --concurrency=80 \
-  --set-env-vars=OBSERVER_LAT=51.5074,OBSERVER_LON=-0.1278,OBSERVER_ALT_KM=0.03,FLIGHT_RANGE_KM=50,MIN_ELEVATION_DEG=10,SATELLITE_GROUP=visual,PASS_WINDOW_HOURS=6,CACHE_TTL_MS=30000
+  --set-env-vars="^|^OBSERVER_LAT=51.5074|OBSERVER_LON=-0.1278|OBSERVER_ALT_KM=0.03|FLIGHT_RANGE_KM=50|MIN_ELEVATION_DEG=10|SATELLITE_GROUP=visual|PASS_WINDOW_HOURS=6|CACHE_TTL_MS=30000|FLIGHT_SOURCE=adsblol|NODE_OPTIONS=--dns-result-order=ipv4first"
 ```
 
 When it finishes, `gcloud` prints a **Service URL** like

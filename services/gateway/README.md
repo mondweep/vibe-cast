@@ -15,7 +15,7 @@ npm start           # run the built gateway (reads env / .env)
 
 ## HTTP API (ADR-0008)
 - `GET /` → the **browser front-end** (radar + sky-dome, polls `/sky`) — ADR-0009
-- `GET /healthz` → `{ "status": "ok" }`
+- `GET /health` → `{ "status": "ok" }`
 - `GET /sky?lat=&lon=&altKm=&rangeKm=&minEl=` → the **Sky Snapshot** JSON
   (flights + satellites overhead + upcoming passes + `warnings[]`). All query
   params are optional and fall back to the configured observer defaults.
@@ -25,7 +25,7 @@ a browser — no ESP32 hardware required.
 
 ### Access control (optional shared token)
 Set **`API_TOKEN`** to make `GET /sky` require it — turning a public URL into a
-team-only one. `/healthz` and the front-end stay open so the page can load and
+team-only one. `/health` and the front-end stay open so the page can load and
 prompt. Clients pass the token as `Authorization: Bearer <token>` or `?token=…`:
 - **Browser:** share `https://<host>/?token=YOUR_TOKEN` — the page stores it and
   strips it from the URL (or it prompts on a 401).
@@ -76,7 +76,7 @@ so providers and the propagation library are swappable (ADR-0002, 0004, 0005).
 
 ## Status
 **Phases 1–5 complete** (gateway side): domain core + adapters, OAuth2 token
-manager, `GET /sky` / `GET /healthz`, per-context resilience, optically-visible
+manager, `GET /sky` / `GET /health`, per-context resilience, optically-visible
 pass detection, snapshot caching, a JSON-schema contract guard, Docker deploy
 assets, and CI. **58 tests green, fully offline**; verified end-to-end against
 live OpenSky data. The ESP32 firmware (Phase 4) awaits a hardware flash. See

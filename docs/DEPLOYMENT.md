@@ -46,7 +46,7 @@ The service will be available at `http://localhost:8080`.
 
 ```bash
 # Health check endpoint
-curl http://localhost:8080/healthz
+curl http://localhost:8080/health
 
 # Sky snapshot with current flights and satellite passes
 curl 'http://localhost:8080/sky'

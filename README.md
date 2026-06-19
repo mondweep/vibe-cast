@@ -76,7 +76,7 @@ cd services/gateway
 npm install
 npm run typecheck   # tsc --noEmit
 npm test            # Jest — 59 tests, fully offline (no network)
-npm run build && npm start   # serves /, /sky and /healthz on :8080
+npm run build && npm start   # serves /, /sky and /health on :8080
 # then open http://localhost:8080/ in a browser
 ```
 Or run the whole thing with Docker: `docker compose up -d --build` (see
