@@ -36,7 +36,7 @@
     #tip { position:absolute; pointer-events:none; background:#0b1525ee; color:var(--ink);
            border:1px solid var(--line); border-radius:6px; padding:2px 7px; font-size:12px;
            white-space:nowrap; transform:translate(-50%,-150%); display:none; z-index:5; }
-    #popup { position:absolute; min-width:210px; max-width:280px; background:#0b1525f5;
+    #popup { position:fixed; min-width:210px; max-width:280px; background:#0b1525f5;
              border:1px solid #28406b; border-radius:10px; padding:12px 14px; font-size:13px;
              box-shadow:0 8px 28px #000a; display:none; z-index:6; }
     #popup h3 { margin:0 0 8px; font-size:14px; }
@@ -65,6 +65,8 @@
     td, th { text-align:left; padding:4px 6px; border-bottom:1px solid #121a2c; }
     th { color:var(--dim); font-weight:normal; cursor:help; }
     td.num, th.num { text-align:right; }
+    tbody tr.clickable { cursor:pointer; }
+    tbody tr.clickable:hover td { background:#0f1b30; }
     .vis { color:var(--vis); } .warn { color:var(--warn); } .muted { color:var(--dim); }
     .next { font-size:15px; }
     .scroll { max-height:300px; overflow:auto; }
@@ -263,39 +265,49 @@
     function fmt(n, d=0){ return (n==null||isNaN(n)) ? '—' : Number(n).toFixed(d); }
     function popupRows(rows){ return rows.map(([k,v])=>`<div class="row"><span>${k}</span><span>${v}</span></div>`).join(''); }
 
+    // Position the (fixed) popup near a viewport point, clamped on-screen.
+    function positionPopup(x, y){
+      const pop=$('popup'); pop.style.display='block';
+      const w=pop.offsetWidth, h=pop.offsetHeight;
+      let px=x+14, py=y+14;
+      if (px+w > innerWidth-8) px=Math.max(8, x-w-14);
+      if (py+h > innerHeight-8) py=Math.max(8, innerHeight-h-8);
+      pop.style.left=px+'px'; pop.style.top=py+'px';
+    }
+    function closePopup(){ $('popup').style.display='none'; if(currentSnap) render(currentSnap); }
+
+    // Shared popup builders — used by BOTH the radar markers and the tables.
+    function openFlight(f, x, y){
+      const a=f.aircraft;
+      $('popupBody').innerHTML = `<h3>✈️ ${a.callsign || a.icao24}</h3>` + popupRows([
+        ['ICAO24', a.icao24],
+        ['distance', fmt(f.distanceKm,1)+' km'],
+        ['bearing', fmt(f.bearingDeg,0)+'° from you'],
+        ['altitude', a.baroAltitudeM!=null ? `${fmt(a.baroAltitudeM)} m (${fmt(a.baroAltitudeM*M_TO_FT)} ft)` : '—'],
+        ['speed', a.velocityMps!=null ? `${fmt(a.velocityMps*MPS_TO_KT)} kt (${fmt(a.velocityMps*MPS_TO_KMH)} km/h)` : '—'],
+        ['heading', a.headingDeg!=null ? fmt(a.headingDeg,0)+'°' : '—'],
+        ['on ground', a.onGround ? 'yes' : 'no'],
+      ]) + `<div id="popupMore" class="pmore muted">loading more…</div>`;
+      positionPopup(x, y);
+      enrichFlight(a.icao24, a.callsign);
+    }
+    function openSatellite(s, x, y){
+      $('popupBody').innerHTML = `<h3>🛰️ ${s.satelliteName}</h3>` + popupRows([
+        ['NORAD id', s.noradId],
+        ['elevation', fmt(s.look.elevationDeg,1)+'° above horizon'],
+        ['azimuth', fmt(s.look.azimuthDeg,0)+'° (compass)'],
+        ['slant range', fmt(s.look.rangeKm,0)+' km away'],
+      ]) + `<div id="popupMore" class="pmore muted">loading more…</div>`;
+      positionPopup(x, y);
+      enrichSatellite(s.noradId);
+    }
+
     canvas.addEventListener('click', (e) => {
       const m = toCanvas(e); const hit = nearest(m.x, m.y);
-      const pop = $('popup');
-      if (!hit) { pop.style.display='none'; if (currentSnap) render(currentSnap); return; }
+      if (!hit) { closePopup(); return; }
       render(currentSnap); highlight(hit);
-      let html;
-      if (hit.kind==='flight') {
-        const a=hit.data.aircraft;
-        html = `<h3>✈️ ${a.callsign || a.icao24}</h3>` + popupRows([
-          ['ICAO24', a.icao24],
-          ['distance', fmt(hit.data.distanceKm,1)+' km'],
-          ['bearing', fmt(hit.data.bearingDeg,0)+'° from you'],
-          ['altitude', a.baroAltitudeM!=null ? `${fmt(a.baroAltitudeM)} m (${fmt(a.baroAltitudeM*M_TO_FT)} ft)` : '—'],
-          ['speed', a.velocityMps!=null ? `${fmt(a.velocityMps*MPS_TO_KT)} kt (${fmt(a.velocityMps*MPS_TO_KMH)} km/h)` : '—'],
-          ['heading', a.headingDeg!=null ? fmt(a.headingDeg,0)+'°' : '—'],
-          ['on ground', a.onGround ? 'yes' : 'no'],
-        ]);
-      } else {
-        const s=hit.data;
-        html = `<h3>🛰️ ${s.satelliteName}</h3>` + popupRows([
-          ['NORAD id', s.noradId],
-          ['elevation', fmt(s.look.elevationDeg,1)+'° above horizon'],
-          ['azimuth', fmt(s.look.azimuthDeg,0)+'° (compass)'],
-          ['slant range', fmt(s.look.rangeKm,0)+' km away'],
-        ]);
-      }
-      html += `<div id="popupMore" class="pmore muted">loading more…</div>`;
-      $('popupBody').innerHTML = html;
-      let px = Math.min(m.cssX+12, canvas.getBoundingClientRect().width-220);
-      pop.style.left = Math.max(4,px)+'px'; pop.style.top = Math.max(4,m.cssY+12)+'px';
-      pop.style.display='block';
-      if (hit.kind==='flight') enrichFlight(hit.data.aircraft.icao24, hit.data.aircraft.callsign);
-      else enrichSatellite(hit.data.noradId);
+      if (hit.kind==='flight') openFlight(hit.data, e.clientX, e.clientY);
+      else openSatellite(hit.data, e.clientX, e.clientY);
     });
 
     function authHeaders(){ const t=getToken(); return t ? { Authorization:'Bearer '+t } : {}; }
@@ -346,14 +358,16 @@
     }
     $('popupClose').addEventListener('click', ()=>{ $('popup').style.display='none'; if(currentSnap) render(currentSnap); });
 
-    // ---- tables ----
-    function fillTable(id, rows){
+    // ---- tables (rows are clickable → same popup as the radar markers) ----
+    function fillTable(id, items, cells, onClick){
       const tb=$(id).querySelector('tbody'); tb.innerHTML='';
-      for (const r of rows){ const tr=document.createElement('tr');
-        tr.innerHTML = r.map((c,i)=>`<td class="${i?'num':''}">${c}</td>`).join(''); tb.appendChild(tr); }
+      items.forEach((item)=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = cells(item).map((c,i)=>`<td class="${i?'num':''}">${c}</td>`).join('');
+        if (onClick){ tr.classList.add('clickable'); tr.addEventListener('click', (e)=>onClick(item, e)); }
+        tb.appendChild(tr);
+      });
     }
-    function nextVisible(passes){ return passes.filter(p=>p.visible)
-        .sort((a,b)=>a.aosTime.localeCompare(b.aosTime))[0]; }
 
     // ---- data refresh ----
     async function refresh() {
@@ -368,15 +382,28 @@
           + ($('lat').value ? '' : ' · using default location (London) — click “Use my location”'));
         $('flightCount').textContent = snap.flights.length;
         $('satCount').textContent = snap.satellitesOverhead.length;
-        fillTable('flights', snap.flights.map(f=>[
-          f.aircraft.callsign||f.aircraft.icao24, fmt(f.distanceKm,1), fmt(f.bearingDeg,0),
-          f.aircraft.baroAltitudeM!=null?fmt(f.aircraft.baroAltitudeM):'—']));
-        fillTable('sats', snap.satellitesOverhead.map(s=>[
-          s.satelliteName, fmt(s.look.elevationDeg,1), fmt(s.look.azimuthDeg,0)]));
-        const np = nextVisible(snap.upcomingPasses);
-        $('nextPass').innerHTML = np
-          ? `<span class="vis">${np.satelliteName}</span> @ ${new Date(np.aosTime).toLocaleTimeString()} · max elevation ${fmt(np.maxElevationDeg,0)}°`
-          : '<span class="muted">no visible passes in the window</span>';
+        fillTable('flights', snap.flights,
+          f=>[ f.aircraft.callsign||f.aircraft.icao24, fmt(f.distanceKm,1), fmt(f.bearingDeg,0),
+               f.aircraft.baroAltitudeM!=null?fmt(f.aircraft.baroAltitudeM):'—' ],
+          (f,e)=>openFlight(f, e.clientX, e.clientY));
+        fillTable('sats', snap.satellitesOverhead,
+          s=>[ s.satelliteName, fmt(s.look.elevationDeg,1), fmt(s.look.azimuthDeg,0) ],
+          (s,e)=>openSatellite(s, e.clientX, e.clientY));
+
+        // Next pass: prefer the next *visible* one; otherwise show the next pass
+        // anyway and explain why nothing is naked-eye-visible right now.
+        const passes=[...snap.upcomingPasses].sort((a,b)=>a.aosTime.localeCompare(b.aosTime));
+        const vis=passes.filter(p=>p.visible);
+        const line=(p)=>`${p.satelliteName} @ ${new Date(p.aosTime).toLocaleTimeString()} · max elevation ${fmt(p.maxElevationDeg,0)}°`;
+        if (vis.length){
+          $('nextPass').innerHTML = `<span class="vis">★ ${line(vis[0])} — visible!</span>`;
+        } else if (passes.length){
+          $('nextPass').innerHTML = `Next pass: ${line(passes[0])}`
+            + `<br><span class="muted">${passes.length} passes in the window, but none are naked-eye-visible right now `
+            + `(your sky isn’t dark). Visible passes appear around dawn &amp; dusk.</span>`;
+        } else {
+          $('nextPass').innerHTML = '<span class="muted">no passes in the window</span>';
+        }
         $('warnings').textContent = (snap.warnings||[]).join(' · ');
       } catch (e){ setStatus('fetch failed: '+e.message); }
     }
