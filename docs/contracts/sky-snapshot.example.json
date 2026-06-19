@@ -22,6 +22,11 @@
       "noradId": 25544,
       "subLatDeg": 51.9,
       "subLonDeg": -0.3,
+      "intlDesignator": "1998-067A",
+      "inclinationDeg": 51.64,
+      "periodMin": 92.9,
+      "apogeeKm": 422,
+      "perigeeKm": 416,
       "look": { "azimuthDeg": 130.2, "elevationDeg": 47.8, "rangeKm": 612.5 }
     }
   ],

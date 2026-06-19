@@ -6,6 +6,7 @@ import { SatellitePass } from '../satellite/domain/pass';
 import { PassPredictor } from '../satellite/domain/pass-predictor.service';
 import { VisibilityService } from '../satellite/domain/visibility.service';
 import { subSatellitePoint } from '../satellite/domain/sub-point';
+import { orbitalElements } from '../satellite/domain/orbital-elements';
 import { Propagator } from '../satellite/ports/propagator.port';
 import { TleSource } from '../satellite/ports/tle-source.port';
 
@@ -16,6 +17,12 @@ export interface SatelliteOverhead {
   /** Sub-satellite ground point — for the map view (ADR-0013). Null if unknown. */
   subLatDeg: number | null;
   subLonDeg: number | null;
+  /** Orbital elements derived from the TLE (cloud-proof; #13). */
+  intlDesignator: string | null;
+  inclinationDeg: number | null;
+  periodMin: number | null;
+  apogeeKm: number | null;
+  perigeeKm: number | null;
 }
 
 /** Everything the ESP32 device needs to draw the sky right now. */
@@ -101,6 +108,7 @@ export class SkySnapshotService implements SnapshotProvider {
             look,
             subLatDeg: sub ? sub.latitudeDeg : null,
             subLonDeg: sub ? sub.longitudeDeg : null,
+            ...orbitalElements(sat.tleLine1, sat.tleLine2),
           });
         }
         const predicted = this.passPredictor.predictPasses(sat, observer, {

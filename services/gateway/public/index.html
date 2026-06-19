@@ -335,12 +335,21 @@
       enrichFlight(a.icao24, a.callsign);
     }
     function openSatellite(s, x, y){
-      $('popupBody').innerHTML = `<h3>🛰️ ${s.satelliteName}</h3>` + popupRows([
+      // Orbital elements come from the snapshot (TLE-derived) so they are always
+      // available, even when CelesTrak SATCAT is blocked from the cloud (#13).
+      const rows = [
         ['NORAD id', s.noradId],
-        ['elevation', fmt(s.look.elevationDeg,1)+'° above horizon'],
-        ['azimuth', fmt(s.look.azimuthDeg,0)+'° (compass)'],
-        ['slant range', fmt(s.look.rangeKm,0)+' km away'],
-      ]) + `<div id="popupMore" class="pmore muted">loading more…</div>`;
+      ];
+      if (s.intlDesignator) rows.push(['intl id', s.intlDesignator]);
+      rows.push(['elevation', fmt(s.look.elevationDeg,1)+'° above horizon']);
+      rows.push(['azimuth', fmt(s.look.azimuthDeg,0)+'° (compass)']);
+      rows.push(['slant range', fmt(s.look.rangeKm,0)+' km away']);
+      if (s.inclinationDeg!=null) rows.push(['inclination', fmt(s.inclinationDeg,1)+'°']);
+      if (s.periodMin!=null) rows.push(['orbit period', fmt(s.periodMin,1)+' min']);
+      if (s.apogeeKm!=null && s.perigeeKm!=null) rows.push(['altitude', `${fmt(s.perigeeKm)}–${fmt(s.apogeeKm)} km`]);
+      $('popupBody').innerHTML = `<h3>🛰️ ${s.satelliteName}</h3>` + popupRows(rows)
+        + `<div style="margin-top:8px"><a href="https://www.n2yo.com/?s=${encodeURIComponent(s.noradId)}" target="_blank" rel="noopener">live track on N2YO ↗</a></div>`
+        + `<div id="popupMore" class="pmore muted">loading catalogue…</div>`;
       positionPopup(x, y);
       enrichSatellite(s.noradId);
     }
@@ -356,11 +365,18 @@
     function authHeaders(){ const t=getToken(); return t ? { Authorization:'Bearer '+t } : {}; }
     const OBJ_TYPE = { PAY:'Payload', 'R/B':'Rocket body', DEB:'Debris', UNK:'Unknown' };
 
+    // fetch with a client-side timeout so the popup never hangs on "loading…" (#13).
+    async function fetchTimeout(url, ms=7000){
+      const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(), ms);
+      try { return await fetch(url, { headers: authHeaders(), signal: ctrl.signal }); }
+      finally { clearTimeout(t); }
+    }
+
     async function enrichFlight(icao24, callsign){
       const more=$('popupMore'); if(!more) return;
       try {
         const q = callsign ? ('?callsign='+encodeURIComponent(callsign.trim())) : '';
-        const res = await fetch('/flight/'+encodeURIComponent(icao24)+q, { headers: authHeaders() });
+        const res = await fetchTimeout('/flight/'+encodeURIComponent(icao24)+q);
         if(!res.ok){ more.textContent='no extra details'; reflowPopup(); return; }
         const d = await res.json(); const r=d.route, a=d.aircraft; const rows=[];
         if (r){
@@ -384,22 +400,21 @@
       } catch { more.textContent='details unavailable'; reflowPopup(); }
     }
 
+    // Orbital data is already shown (from the snapshot/TLE). This only adds the
+    // catalogue extras (type/owner/launch) from CelesTrak SATCAT, which can be
+    // blocked from the cloud — so it fails fast and quietly (#13).
     async function enrichSatellite(norad){
       const more=$('popupMore'); if(!more) return;
       try {
-        const res = await fetch('/satellite/'+encodeURIComponent(norad), { headers: authHeaders() });
-        if(res.status===404){ more.textContent='not in catalogue'; reflowPopup(); return; }
-        if(!res.ok){ more.textContent='no extra details'; reflowPopup(); return; }
+        const res = await fetchTimeout('/satellite/'+encodeURIComponent(norad));
+        if(!res.ok){ more.textContent='catalogue details unavailable'; reflowPopup(); return; }
         const s = await res.json(); const rows=[];
         if (s.objectType) rows.push(['type', OBJ_TYPE[s.objectType]||s.objectType]);
         if (s.owner) rows.push(['owner', s.owner]);
         if (s.launchDate) rows.push(['launched', s.launchDate + (s.launchSite?` · ${s.launchSite}`:'')]);
-        if (s.periodMin) rows.push(['orbit period', fmt(s.periodMin,1)+' min']);
-        if (s.inclinationDeg!=null) rows.push(['inclination', fmt(s.inclinationDeg,1)+'°']);
-        if (s.apogeeKm!=null && s.perigeeKm!=null) rows.push(['altitude', `${fmt(s.perigeeKm)}–${fmt(s.apogeeKm)} km`]);
-        let h = popupRows(rows) + `<div style="margin-top:8px"><a href="https://www.n2yo.com/?s=${encodeURIComponent(norad)}" target="_blank" rel="noopener">live track on N2YO ↗</a></div>`;
-        more.classList.remove('muted'); more.innerHTML = h; reflowPopup();
-      } catch { more.textContent='details unavailable'; reflowPopup(); }
+        if (!rows.length){ more.textContent='catalogue details unavailable'; reflowPopup(); return; }
+        more.classList.remove('muted'); more.innerHTML = popupRows(rows); reflowPopup();
+      } catch { more.textContent='catalogue details unavailable'; reflowPopup(); }
     }
     $('popupClose').addEventListener('click', ()=>{ $('popup').style.display='none'; if(currentSnap) render(currentSnap); });
     window.addEventListener('resize', reflowPopup);

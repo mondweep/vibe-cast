@@ -29,6 +29,8 @@ export interface CelestrakSatcatConfig {
   now?: () => number;
   maxRetries?: number;
   retryDelayMs?: number;
+  /** Per-attempt timeout (ms) so a blocked/hung CelesTrak fails fast (#13). */
+  timeoutMs?: number;
 }
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -46,6 +48,7 @@ export class CelestrakSatcatInfo implements SatelliteInfoProvider {
   private readonly now: () => number;
   private readonly maxRetries: number;
   private readonly retryDelayMs: number;
+  private readonly timeoutMs: number;
   private readonly cache = new Map<number, { at: number; value: SatelliteInfo | null }>();
 
   constructor(config: CelestrakSatcatConfig = {}) {
@@ -53,8 +56,9 @@ export class CelestrakSatcatInfo implements SatelliteInfoProvider {
     this.fetchFn = config.fetchFn ?? fetch;
     this.maxAgeMs = config.maxAgeMs ?? 7 * 24 * 3600 * 1000;
     this.now = config.now ?? Date.now;
-    this.maxRetries = config.maxRetries ?? 2;
-    this.retryDelayMs = config.retryDelayMs ?? 400;
+    this.maxRetries = config.maxRetries ?? 1;
+    this.retryDelayMs = config.retryDelayMs ?? 300;
+    this.timeoutMs = config.timeoutMs ?? 4000;
   }
 
   async lookup(noradId: number): Promise<SatelliteInfo | null> {
@@ -64,8 +68,13 @@ export class CelestrakSatcatInfo implements SatelliteInfoProvider {
     const url = `${this.baseUrl}?CATNR=${noradId}&FORMAT=json`;
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       if (attempt > 0) await sleep(this.retryDelayMs * attempt);
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), this.timeoutMs);
       try {
-        const res = await this.fetchFn(url, { headers: { Accept: 'application/json' } });
+        const res = await this.fetchFn(url, {
+          headers: { Accept: 'application/json' },
+          signal: ctrl.signal,
+        });
         if (!res.ok) continue; // transient — retry
         const records = (await res.json()) as unknown[];
         const value =
@@ -73,7 +82,9 @@ export class CelestrakSatcatInfo implements SatelliteInfoProvider {
         this.cache.set(noradId, { at: this.now(), value }); // cache success (incl. genuine "not found")
         return value;
       } catch {
-        // network error — retry
+        // network error / timeout — retry
+      } finally {
+        clearTimeout(timer);
       }
     }
     return null; // all attempts failed; not cached, so we retry next time

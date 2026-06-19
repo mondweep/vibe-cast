@@ -40,13 +40,18 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["satelliteName", "noradId", "look", "subLatDeg", "subLonDeg"],
+        "required": ["satelliteName", "noradId", "look", "subLatDeg", "subLonDeg", "intlDesignator", "inclinationDeg", "periodMin", "apogeeKm", "perigeeKm"],
         "additionalProperties": false,
         "properties": {
           "satelliteName": { "type": "string" },
           "noradId": { "type": "number" },
           "subLatDeg": { "type": ["number", "null"] },
           "subLonDeg": { "type": ["number", "null"] },
+          "intlDesignator": { "type": ["string", "null"] },
+          "inclinationDeg": { "type": ["number", "null"] },
+          "periodMin": { "type": ["number", "null"] },
+          "apogeeKm": { "type": ["number", "null"] },
+          "perigeeKm": { "type": ["number", "null"] },
           "look": {
             "type": "object",
             "required": ["azimuthDeg", "elevationDeg", "rangeKm"],
