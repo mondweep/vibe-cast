@@ -85,10 +85,13 @@ Or run the whole thing with Docker: `docker compose up -d --build` (see
 ### Share it with your team
 The gateway is one container that serves both the UI and the API, so deploy it to
 a container host and hand out the URL. **Google Cloud Run** is the recommended
-path — one always-warm HTTPS endpoint behind a shared cache:
-[docs/DEPLOY-CLOUD-RUN.md](docs/DEPLOY-CLOUD-RUN.md). (Static hosts like
-Netlify/Vercel aren't a good fit — `/sky` needs a long-running, stateful
-container, not short serverless functions.)
+path — one always-warm HTTPS endpoint behind a shared cache. Two ways:
+- **Push-to-deploy (keyless CI)** — GitHub Actions + Workload Identity Federation,
+  no stored keys: [docs/DEPLOY-CICD.md](docs/DEPLOY-CICD.md).
+- **Manual one-command deploy**: [docs/DEPLOY-CLOUD-RUN.md](docs/DEPLOY-CLOUD-RUN.md).
+
+(Static hosts like Netlify/Vercel aren't a good fit — `/sky` needs a long-running,
+stateful container, not short serverless functions.)
 
 ### Status — built to "ready"
 | Phase | What | State |

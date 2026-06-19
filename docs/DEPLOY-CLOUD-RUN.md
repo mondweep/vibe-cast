@@ -4,6 +4,9 @@ Run the gateway (API **and** browser front-end) as one always-warm container on
 Cloud Run and share a single HTTPS URL with your team. The same URL serves the
 radar UI at `/` and feeds any ESP32 devices via `/sky`.
 
+> **Prefer push-to-deploy?** For keyless GitHub Actions CD (no service-account
+> keys), see [DEPLOY-CICD.md](DEPLOY-CICD.md). This page is the manual path.
+>
 > **Access model:** this guide deploys **public / unauthenticated** (anyone with
 > the URL can use it). That's fine for a small trusted team, but note it also
 > spends *your* OpenSky API credits. To lock it down later, see

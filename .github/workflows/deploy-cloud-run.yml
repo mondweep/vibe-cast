@@ -1,0 +1,61 @@
+name: Deploy (Cloud Run)
+
+# Keyless deploy via Workload Identity Federation — no service-account keys are
+# stored in GitHub. One-time setup: run scripts/gcp-bootstrap-wif.sh and set the
+# four repo Variables it prints (see docs/DEPLOY-CICD.md).
+
+on:
+  push:
+    branches: [aircraft-tracking]
+    paths:
+      - 'services/gateway/**'
+      - '.github/workflows/deploy-cloud-run.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required to mint the OIDC token for WIF
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Skip cleanly until the GCP variables have been configured.
+    if: ${{ vars.GCP_PROJECT_ID != '' }}
+    env:
+      SERVICE: skywatch-gateway
+      IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/skywatch/gateway:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (WIF, keyless)
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build & push image to Artifact Registry
+        run: |
+          gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
+          docker build -t "$IMAGE" services/gateway
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --image "$IMAGE" \
+            --project "${{ vars.GCP_PROJECT_ID }}" \
+            --region "${{ vars.GCP_REGION }}" \
+            --allow-unauthenticated \
+            --min-instances=1 --max-instances=3 \
+            --cpu=1 --memory=512Mi --cpu-boost \
+            --timeout=120 --concurrency=80 \
+            --set-env-vars=OBSERVER_LAT=51.5074,OBSERVER_LON=-0.1278,OBSERVER_ALT_KM=0.03,FLIGHT_RANGE_KM=50,MIN_ELEVATION_DEG=10,SATELLITE_GROUP=visual,PASS_WINDOW_HOURS=6,CACHE_TTL_MS=30000
+
+      - name: Output service URL
+        run: |
+          echo "Deployed: $(gcloud run services describe "$SERVICE" \
+            --project "${{ vars.GCP_PROJECT_ID }}" \
+            --region "${{ vars.GCP_REGION }}" --format='value(status.url)')" >> "$GITHUB_STEP_SUMMARY"
