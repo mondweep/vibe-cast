@@ -49,7 +49,7 @@
            white-space:nowrap; transform:translate(-50%,-150%); display:none; z-index:5; }
     #popup { position:fixed; min-width:210px; max-width:280px; background:#0b1525f5;
              border:1px solid #28406b; border-radius:10px; padding:12px 14px; font-size:13px;
-             box-shadow:0 8px 28px #000a; display:none; z-index:6; }
+             box-shadow:0 8px 28px #000a; display:none; z-index:2000; }
     #popup h3 { margin:0 0 8px; font-size:14px; }
     #popup .row { display:flex; justify-content:space-between; gap:14px; padding:2px 0;
                   border-bottom:1px solid #121a2c; }
@@ -117,10 +117,11 @@
       </p>
       <p class="radar-help" id="mapHelp" style="display:none">
         <b>Map view:</b> your location is the marker, the circle is your flight range
-        (the area the radar covers), and each plane sits at its real position. Click a
-        plane for details. Satellites are overhead (sky-dome) — see the Radar view.
-        Map © OpenStreetMap contributors © CARTO. Panning sends your viewport to the
-        tile provider.
+        (the area the radar covers), and each plane sits at its real position.
+        <b>Satellites</b> (cyan) appear at their <b>ground point</b> — directly beneath
+        where they are overhead — with a line back to you; a low pass can sit far
+        outside the circle. Click any marker for details. Map © OpenStreetMap
+        contributors © CARTO. Panning sends your viewport to the tile provider.
       </p>
     </div>
 
@@ -487,6 +488,15 @@
           .addTo(mapFlightLayer).bindTooltip(a.callsign||a.icao24);
         mk.on('click',(e)=>{ openFlight(f, e.originalEvent.clientX, e.originalEvent.clientY); L.DomEvent.stop(e); });
       }
+      // Satellites at their sub-satellite ground point + a line from you (ADR-0013).
+      for (const s of snap.satellitesOverhead){
+        if (s.subLatDeg==null || s.subLonDeg==null) continue;
+        const ll=[s.subLatDeg, s.subLonDeg];
+        L.polyline([c, ll], {color:'#39d3ff', weight:1, opacity:0.35, dashArray:'4 5'}).addTo(mapFlightLayer);
+        const sk=L.circleMarker(ll,{radius:6,color:'#0b1525',weight:1,fillColor:'#39d3ff',fillOpacity:1})
+          .addTo(mapFlightLayer).bindTooltip(`${s.satelliteName} (el ${Math.round(s.look.elevationDeg)}°)`);
+        sk.on('click',(e)=>{ openSatellite(s, e.originalEvent.clientX, e.originalEvent.clientY); L.DomEvent.stop(e); });
+      }
     }
     function showView(which){
       mapView = (which==='map');
@@ -496,7 +506,7 @@
       $('mapView').style.display = mapView?'block':'none';
       $('radarHelp').style.display = mapView?'none':'block';
       $('mapHelp').style.display = mapView?'block':'none';
-      $('viewHint').textContent = mapView?'flights on a real map (satellites → Radar)':'flights + satellites, centred on you';
+      $('viewHint').textContent = mapView?'flights + satellites on a real map':'flights + satellites, centred on you';
       $('popup').style.display='none';
       if (mapView){
         initMap();

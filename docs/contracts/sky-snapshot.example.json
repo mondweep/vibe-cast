@@ -20,6 +20,8 @@
     {
       "satelliteName": "ISS (ZARYA)",
       "noradId": 25544,
+      "subLatDeg": 51.9,
+      "subLonDeg": -0.3,
       "look": { "azimuthDeg": 130.2, "elevationDeg": 47.8, "rangeKm": 612.5 }
     }
   ],

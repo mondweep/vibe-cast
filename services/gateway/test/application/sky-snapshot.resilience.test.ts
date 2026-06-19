@@ -25,6 +25,7 @@ describe('SkySnapshotService resilience', () => {
     const tleSource = { fetchGroup: over.fetchGroup ?? jest.fn().mockResolvedValue([]) } as unknown as TleSource;
     const propagator = {
       lookAngle: over.lookAngle ?? jest.fn().mockReturnValue({ azimuthDeg: 0, elevationDeg: -90, rangeKm: 0 }),
+      eciPositionKm: jest.fn().mockReturnValue(null),
     } as unknown as Propagator;
     const predictor = { predictPasses: over.predictPasses ?? jest.fn().mockReturnValue([]) } as unknown as PassPredictor;
     return new SkySnapshotService(nearby, predictor, propagator, tleSource);

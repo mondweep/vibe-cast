@@ -5,6 +5,7 @@ import { LookAngle } from '../satellite/domain/satellite';
 import { SatellitePass } from '../satellite/domain/pass';
 import { PassPredictor } from '../satellite/domain/pass-predictor.service';
 import { VisibilityService } from '../satellite/domain/visibility.service';
+import { subSatellitePoint } from '../satellite/domain/sub-point';
 import { Propagator } from '../satellite/ports/propagator.port';
 import { TleSource } from '../satellite/ports/tle-source.port';
 
@@ -12,6 +13,9 @@ export interface SatelliteOverhead {
   satelliteName: string;
   noradId: number;
   look: LookAngle;
+  /** Sub-satellite ground point — for the map view (ADR-0013). Null if unknown. */
+  subLatDeg: number | null;
+  subLonDeg: number | null;
 }
 
 /** Everything the ESP32 device needs to draw the sky right now. */
@@ -89,10 +93,14 @@ export class SkySnapshotService implements SnapshotProvider {
       try {
         const look = this.propagator.lookAngle(sat, observer, at);
         if (look.elevationDeg >= observer.minElevationDeg) {
+          const eci = this.propagator.eciPositionKm(sat, at);
+          const sub = eci ? subSatellitePoint(eci, at) : null;
           satellitesOverhead.push({
             satelliteName: sat.name,
             noradId: sat.noradId,
             look,
+            subLatDeg: sub ? sub.latitudeDeg : null,
+            subLonDeg: sub ? sub.longitudeDeg : null,
           });
         }
         const predicted = this.passPredictor.predictPasses(sat, observer, {
