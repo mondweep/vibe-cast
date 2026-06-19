@@ -56,3 +56,65 @@ describe('CelestrakTleSource caching', () => {
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('CelestrakTleSource resilience', () => {
+  it('retries a transient failure and then succeeds', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('fetch failed'))
+      .mockRejectedValueOnce(new Error('fetch failed'))
+      .mockResolvedValueOnce({ ok: true, text: async () => ISS_TLE });
+    const source = new CelestrakTleSource({
+      fetchFn: fetchFn as unknown as typeof fetch,
+      maxRetries: 2,
+      retryDelayMs: 0,
+    });
+
+    const sats = await source.fetchGroup('stations');
+    expect(sats.length).toBeGreaterThan(0);
+    expect(fetchFn).toHaveBeenCalledTimes(3);
+  });
+
+  it('falls back to the bundled TLE when every fetch fails and nothing is cached', async () => {
+    const fetchFn = jest.fn().mockRejectedValue(new Error('fetch failed'));
+    const source = new CelestrakTleSource({
+      fetchFn: fetchFn as unknown as typeof fetch,
+      maxRetries: 1,
+      retryDelayMs: 0,
+      fallbackTle: { visual: ISS_TLE },
+    });
+
+    const sats = await source.fetchGroup('visual');
+    expect(sats.map((s) => s.noradId)).toContain(25544); // served from fallback
+  });
+
+  it('serves a stale cache rather than failing when a later fetch fails', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: true, text: async () => ISS_TLE })
+      .mockRejectedValue(new Error('fetch failed'));
+    let clock = 1000;
+    const source = new CelestrakTleSource({
+      fetchFn: fetchFn as unknown as typeof fetch,
+      maxAgeMs: 10_000,
+      now: () => clock,
+      maxRetries: 0,
+      retryDelayMs: 0,
+    });
+
+    await source.fetchGroup('visual'); // primes cache
+    clock += 20_000; // stale → triggers a re-fetch, which fails
+    const sats = await source.fetchGroup('visual');
+    expect(sats.length).toBeGreaterThan(0); // stale cache returned
+  });
+
+  it('throws (→ snapshot warning) when fetch fails with no cache and no fallback', async () => {
+    const fetchFn = jest.fn().mockRejectedValue(new Error('fetch failed'));
+    const source = new CelestrakTleSource({
+      fetchFn: fetchFn as unknown as typeof fetch,
+      maxRetries: 0,
+      retryDelayMs: 0,
+    });
+    await expect(source.fetchGroup('weather')).rejects.toThrow();
+  });
+});

@@ -13,6 +13,7 @@ import { OpenSkyFeed } from './flight/adapters/opensky-feed';
 import { OpenSkyTokenManager } from './flight/adapters/opensky-token-manager';
 import { CelestrakTleSource } from './satellite/adapters/celestrak-tle-source';
 import { CelestrakSatcatInfo } from './satellite/adapters/celestrak-satcat-info';
+import { VISUAL_TLE_FALLBACK } from './satellite/data/visual-fallback';
 import { Sgp4Propagator } from './satellite/adapters/sgp4-propagator';
 import { AstronomicalSunModel } from './satellite/adapters/astronomical-sun-model';
 import { PassPredictor } from './satellite/domain/pass-predictor.service';
@@ -55,7 +56,10 @@ export function buildSnapshotService(
     new NearbyAircraftService(feed),
     new PassPredictor(propagator),
     propagator,
-    new CelestrakTleSource({ baseUrl: celestrak.baseUrl }),
+    new CelestrakTleSource({
+      baseUrl: celestrak.baseUrl,
+      fallbackTle: { visual: VISUAL_TLE_FALLBACK },
+    }),
     new VisibilityService(propagator, new AstronomicalSunModel()),
   );
 }
