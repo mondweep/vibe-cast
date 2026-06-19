@@ -16,3 +16,4 @@ Significant, hard-to-reverse decisions for SkyWatch. Format follows the
 | [0009](./0009-browser-frontend.md) | Gateway-served browser front-end (second consumer) | Accepted |
 | [0010](./0010-flight-satellite-enrichment.md) | Lazy flight & satellite enrichment (adsbdb + CelesTrak SATCAT) | Accepted |
 | [0011](./0011-cloud-deployment-hardening.md) | Cloud-deployment hardening: adsb.lol default feed, IPv4-first DNS, resilient CelesTrak | Accepted |
+| [0012](./0012-geographic-map-view.md) | Geographic map view for flights in the browser (Leaflet + CARTO dark tiles) | Accepted |

@@ -22,6 +22,8 @@ tracker, extended to the orbital domain.
 - G3 — Predict upcoming satellite passes (AOS/TCA/LOS, max elevation).
 - G4 — Run on common ESP32 display modules with **zero soldering**.
 - G5 — Be source-agnostic: swap flight/TLE providers without touching the core.
+- G6 — Be **relatable**: let the browser user see flights on a real map of where
+  they are, alongside the polar radar (ADR-0012).
 
 ### Non-goals (initial)
 - Not a precision antenna-rotator controller (though pass data could drive one).
@@ -133,6 +135,7 @@ tracker, extended to the orbital domain.
 | FR7 | Expose a single **Sky Snapshot** (flights + overhead + passes) as JSON | US1–3 |
 | FR8 | Configure observer location, range, range units, min elevation, satellite group, credentials via on-device Wi-Fi portal | US4 |
 | FR9 | Firmware renders the snapshot on a round/rectangular ESP32 display | US1–3 |
+| FR10 | Browser offers a **map view** (Radar ⇄ Map) plotting flights at their real positions with the observer + range circle; satellites stay on the sky-dome (ADR-0012) | US1, G6 |
 
 ## 7. Non-functional requirements
 - **NFR1 Testability:** domain is pure and unit-tested with mocked ports
