@@ -43,9 +43,37 @@ disciplined engineering process:
 
 ## Status
 
-🟡 **Phase 0 — Discovery & PRD.** Swarm initialised, deep research underway,
-PRD being authored. See [`docs/PROJECT-PLAN.md`](docs/PROJECT-PLAN.md) for the
-roadmap and current phase.
+🟢 **Phases 0–2 complete.** Deep research + DDD PRD done; a working **walking
+skeleton** is built and tested: a FastAPI app that pulls live GDELT data and
+serves today's themes/tone/entities for the NE region and each state. 21 tests
+(London-School) green. Next: Phase 3 features + Phase 4 Cloud Run deploy (needs
+one-time GCP setup by the owner — see [`docs/PROJECT-PLAN.md`](docs/PROJECT-PLAN.md)).
+
+## Quickstart
+
+```bash
+cd ne-india-pulse
+python3.12 -m venv .venv && . .venv/bin/activate
+pip install -e ".[dev]"
+
+pytest                      # run the test suite (offline, mocked GDELT)
+ruff check src tests        # lint
+
+# Run the app against LIVE GDELT data (needs outbound to data.gdeltproject.org):
+PULSE_WINDOW_HOURS=3 uvicorn ne_pulse.api.app:app --reload
+#   open http://127.0.0.1:8000        (dashboard)
+#   GET  /api/snapshot?scope=IN03     (Assam JSON)   scope=NE for the region
+
+# Quick CLI snapshot (no install needed):
+python3 scripts/ne_pulse_snapshot.py --hours 6
+
+# Container (as deployed to Cloud Run):
+docker build -t ne-india-pulse . && docker run -p 8080:8080 ne-india-pulse
+```
+
+`scope` is `NE` (whole region) or a FIPS-10-4 state code: `IN03` Assam ·
+`IN26` Tripura · `IN18` Meghalaya · `IN17` Manipur · `IN20` Nagaland ·
+`IN30` Arunachal Pradesh · `IN31` Mizoram · `IN29` Sikkim.
 
 ## Repository layout
 
@@ -56,8 +84,9 @@ ne-india-pulse/
 │   ├── prd/        # Product Requirements (Domain-Driven Design)
 │   ├── adr/        # Architecture Decision Records
 │   └── design/     # Domain model, context maps, API contracts
-├── src/            # Application source (added in build phases)
-├── tests/          # London-School TDD suites
+├── src/ne_pulse/   # App: ingestion (GDELT ACL) · analytics (core) · reference · api
+├── tests/          # London-School TDD suites (unit · contract · acceptance)
+├── Dockerfile      # Cloud Run container
 ├── .claude/        # RuFlo swarm agents, commands, skills
 └── CLAUDE.md       # Swarm guidance & configuration
 ```

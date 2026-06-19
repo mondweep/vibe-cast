@@ -9,42 +9,43 @@ Legend: ✅ done · 🟡 in progress · ⬜ not started
 
 ---
 
-## Phase 0 — Discovery & PRD  🟡 (current)
+## Phase 0 — Discovery & PRD  ✅
 
 **Goal:** Understand what's possible with GDELT for NE India and lock scope.
 
 - ✅ Initialise RuFlo swarm (`npx ruflo init`) — 17 agents, hierarchical-mesh
 - ✅ Scaffold project (`docs/`, `src/`, `tests/`) + swarm/model strategy
-- 🟡 Deep research: GDELT capabilities (Opus agent) → `docs/research/`
-- 🟡 Deep research: NE India demographics & open data (Sonnet agent) → `docs/research/`
-- ⬜ **PRD (DDD)** → `docs/prd/PRD.md`: vision, personas, ubiquitous language,
-  bounded contexts, domain model, use cases, NFRs, success metrics, risks
-- ⬜ ADR-0003: GDELT data-access strategy (DOC 2.0 API vs BigQuery vs raw files)
+- ✅ Deep research: GDELT capabilities (Opus agent) → `docs/research/01`
+- ✅ Deep research: NE India demographics & open data (Sonnet agent) → `docs/research/02`
+- ✅ Live proof-of-concept snapshot (real GDELT pull) → `docs/research/03`
+- ✅ **PRD (DDD)** → `docs/prd/PRD.md`
+- ✅ ADR-0003: GDELT data-access strategy (raw GKG files primary)
 
-**Exit criteria:** PRD reviewed; bounded contexts + first slice agreed.
+**Exit criteria:** ✅ PRD authored; bounded contexts + first slice agreed.
 
-## Phase 1 — Architecture & Design  ⬜
+## Phase 1 — Architecture & Design  ✅
 
 **Goal:** Turn the domain model into a buildable design.
 
-- ⬜ Context map + aggregates + domain events → `docs/design/`
-- ⬜ API contracts (OpenAPI) for the read model the UI consumes
-- ⬜ ADRs: runtime stack/language, persistence (cache vs store), ingestion
-  cadence/scheduler, frontend approach, observability
-- ⬜ Threat model + GDELT ToS compliance review (security-architect, Opus)
+- ✅ Bounded contexts as packages (ingestion/analytics/reference/api); ports &
+  adapters (`GkgGateway`)
+- ✅ ADR-0004 runtime stack (Python + FastAPI), ADR-0005 persistence (in-memory
+  TTL cache), ADR-0006 ingestion scheduling (lazy refresh → Cloud Scheduler)
+- ⬜ OpenAPI export + formal threat model (carried into Phase 3)
 
-**Exit criteria:** ADRs accepted; contracts stubbed; test strategy defined.
+**Exit criteria:** ✅ ADRs accepted; test strategy defined (London School).
 
-## Phase 2 — Walking Skeleton (TDD London School)  ⬜
+## Phase 2 — Walking Skeleton (TDD London School)  ✅
 
 **Goal:** Thinnest end-to-end slice: one query → one rendered insight.
 
-- ⬜ Outside-in: failing acceptance test for "show today's top themes for Assam"
-- ⬜ Drive down with mocks: `GdeltClient` (contract), aggregation, read API, UI
-- ⬜ Real `GdeltClient` against DOC 2.0 API behind the mocked contract
-- ⬜ Dockerfile + local run; GitHub Actions CI (lint, typecheck, unit tests)
+- ✅ Outside-in acceptance test: "today's top themes + tone for Assam" (mocked gateway)
+- ✅ Driven down with mocks: `GkgGateway` port, aggregator, `PulseService`, read API, UI
+- ✅ Real `GdeltRawFileGateway` (raw GKG files) behind the mocked contract; contract-tested
+- ✅ FastAPI dashboard + JSON API; Dockerfile; GitHub Actions CI (ruff + pytest + docker smoke)
+- ✅ Verified live: Assam/region snapshots render real themes, tone, entities
 
-**Exit criteria:** Green CI; skeleton deployable locally; one insight live.
+**Exit criteria:** ✅ 21 tests green; app runs locally & in Docker; insights live.
 
 ## Phase 3 — Core Features  ⬜
 

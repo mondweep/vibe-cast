@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NE India Pulse — {{ s.scope_label }}</title>
+  <style>
+    :root { --bg:#0f1419; --card:#1a222c; --fg:#e6edf3; --mut:#8b98a5;
+            --pos:#2ea043; --neg:#f85149; --neu:#d29922; --line:#2d3742; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:16px/1.5 system-ui,sans-serif; background:var(--bg); color:var(--fg); }
+    .wrap { max-width:980px; margin:0 auto; padding:24px 18px 64px; }
+    h1 { margin:.2em 0; font-size:1.6rem; } h2 { font-size:1.05rem; color:var(--mut);
+      text-transform:uppercase; letter-spacing:.05em; margin:1.8em 0 .6em; }
+    a { color:#58a6ff; text-decoration:none; } a:hover { text-decoration:underline; }
+    .meta { color:var(--mut); font-size:.9rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 6px; }
+    .nav a { background:var(--card); border:1px solid var(--line); border-radius:999px;
+      padding:4px 12px; font-size:.88rem; }
+    .nav a.on { background:#1f6feb; color:#fff; border-color:#1f6feb; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+    .big { font-size:2.2rem; font-weight:700; }
+    .pos{color:var(--pos)} .neg{color:var(--neg)} .neu{color:var(--neu)}
+    .bar { height:10px; border-radius:6px; background:#222b35; overflow:hidden; display:flex; }
+    .bar span { display:block; height:100%; }
+    ul { list-style:none; padding:0; margin:0; } li { padding:5px 0; border-bottom:1px solid var(--line); }
+    li:last-child { border-bottom:none; }
+    .count { color:var(--mut); float:right; font-variant-numeric:tabular-nums; }
+    .caveat { background:#231a12; border:1px solid #5c3b1e; border-radius:10px;
+      padding:12px 14px; color:#f0c590; font-size:.92rem; margin:18px 0; }
+    .src { font-size:.85rem; color:var(--mut); }
+    footer { margin-top:36px; color:var(--mut); font-size:.82rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <p class="meta">NE India Pulse · what the news is saying</p>
+  <h1>{{ s.scope_label }} — today</h1>
+  <p class="meta">
+    Window {{ s.window.start.strftime('%Y-%m-%d %H:%M') }} →
+    {{ s.window.end.strftime('%H:%M') }} UTC ·
+    {{ s.article_count }} articles · GDELT 15-min data
+  </p>
+
+  <nav class="nav">
+    <a class="{{ 'on' if s.scope == region else '' }}" href="/?scope={{ region }}">North East (all)</a>
+    {% for st in states %}
+      <a class="{{ 'on' if s.scope == st.fips else '' }}" href="/?scope={{ st.fips }}">{{ st.name }}</a>
+    {% endfor %}
+  </nav>
+
+  <div class="caveat">⚠️ {{ s.caveat }}</div>
+
+  <div class="grid">
+    <div class="card">
+      <h2 style="margin-top:0">Mood (tone)</h2>
+      {% set t = s.tone %}
+      <div class="big {{ 'pos' if t.overall=='positive' else 'neg' if t.overall=='negative' else 'neu' }}">
+        {{ '%+.2f'|format(t.average) }}
+      </div>
+      <p class="meta">{{ t.overall }} overall · {{ (t.negative_share*100)|round|int }}% negative</p>
+      {% if t.positive + t.neutral + t.negative > 0 %}
+      {% set tot = t.positive + t.neutral + t.negative %}
+      <div class="bar" title="pos/neu/neg">
+        <span class="" style="background:var(--pos);width:{{ (t.positive/tot*100)|round(1) }}%"></span>
+        <span class="" style="background:var(--neu);width:{{ (t.neutral/tot*100)|round(1) }}%"></span>
+        <span class="" style="background:var(--neg);width:{{ (t.negative/tot*100)|round(1) }}%"></span>
+      </div>
+      <p class="meta">{{ t.positive }} positive · {{ t.neutral }} neutral · {{ t.negative }} negative</p>
+      {% endif %}
+    </div>
+
+    {% if s.per_state %}
+    <div class="card">
+      <h2 style="margin-top:0">Coverage by state</h2>
+      <ul>{% for label, n in s.per_state %}<li>{{ label }}<span class="count">{{ n }}</span></li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <h2>What it's about (top themes)</h2>
+  <div class="card"><ul>
+    {% for th in s.themes %}<li>{{ th.label }}<span class="count">{{ th.count }}</span></li>{% else %}<li class="meta">No themes in this window.</li>{% endfor %}
+  </ul></div>
+
+  <div class="grid">
+    <div class="card"><h2 style="margin-top:0">People</h2><ul>
+      {% for e in s.persons %}<li>{{ e.name }}<span class="count">{{ e.count }}</span></li>{% else %}<li class="meta">—</li>{% endfor %}
+    </ul></div>
+    <div class="card"><h2 style="margin-top:0">Organizations</h2><ul>
+      {% for e in s.organizations %}<li>{{ e.name }}<span class="count">{{ e.count }}</span></li>{% else %}<li class="meta">—</li>{% endfor %}
+    </ul></div>
+  </div>
+
+  <h2>Sample stories</h2>
+  <div class="card"><ul>
+    {% for a in s.samples %}
+      <li><a href="{{ a.url }}" target="_blank" rel="noopener">{{ a.url }}</a>
+        <div class="src">{{ a.source }}{% if a.states %} · {{ a.states|join(', ') }}{% endif %}</div></li>
+    {% else %}<li class="meta">No articles in this window.</li>{% endfor %}
+  </ul></div>
+
+  <footer>
+    Data: <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">The GDELT Project</a>
+    (15-min GKG). A media-conversation sensor, not a public-opinion poll.
+    <a href="/api/snapshot?scope={{ s.scope }}">JSON</a>.
+  </footer>
+</div>
+</body>
+</html>
