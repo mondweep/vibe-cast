@@ -1,0 +1,63 @@
+# Declarative Cloud Run service for the SkyWatch gateway (ADR-0009 serves the
+# browser front-end at / alongside the /sky API).
+#
+# Usage:
+#   1. Build & push an image to Artifact Registry, then set `image:` below.
+#   2. gcloud run services replace services/gateway/deploy/cloud-run.service.yaml
+#   3. gcloud run services add-iam-policy-binding skywatch-gateway \
+#        --member=allUsers --role=roles/run.invoker     # public access
+#
+# Prefer the one-command `gcloud run deploy --source` flow in
+# docs/DEPLOY-CLOUD-RUN.md unless you want infra-as-code.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: skywatch-gateway
+  labels:
+    app: skywatch
+spec:
+  template:
+    metadata:
+      annotations:
+        # Keep one warm instance so the TLE/snapshot cache survives (NFR3).
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "3"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 120
+      containers:
+        # Replace with your Artifact Registry image:
+        - image: REGION-docker.pkg.dev/YOUR_PROJECT_ID/skywatch/gateway:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: OBSERVER_LAT
+              value: "51.5074"
+            - name: OBSERVER_LON
+              value: "-0.1278"
+            - name: OBSERVER_ALT_KM
+              value: "0.03"
+            - name: FLIGHT_RANGE_KM
+              value: "50"
+            - name: MIN_ELEVATION_DEG
+              value: "10"
+            - name: SATELLITE_GROUP
+              value: "visual"
+            - name: PASS_WINDOW_HOURS
+              value: "6"
+            - name: CACHE_TTL_MS
+              value: "30000"
+            # OpenSky OAuth2 (optional). Prefer Secret Manager for the secret:
+            # - name: OPENSKY_CLIENT_ID
+            #   value: "your-client-id"
+            # - name: OPENSKY_CLIENT_SECRET
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: opensky-client-secret
+            #       key: latest

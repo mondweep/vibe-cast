@@ -2,6 +2,12 @@
 
 This guide covers deploying the SkyWatch gateway service using Docker on a Raspberry Pi, home server, or small VPS.
 
+> **Sharing with a team?** To deploy to a managed, always-on HTTPS URL anyone can
+> open, see **[DEPLOY-CLOUD-RUN.md](DEPLOY-CLOUD-RUN.md)** (Google Cloud Run).
+> The gateway is one container that serves both the browser UI (`/`) and the API
+> (`/sky`), so it needs a container host — not a static/serverless host like
+> Netlify or Vercel.
+
 ## Prerequisites
 
 - **Docker** (version 20.10+) and **Docker Compose** (version 2.0+)
