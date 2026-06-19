@@ -27,8 +27,9 @@ sourcing it without our own receiver:
 
 | Source | Access | Bounding-box query | Notes |
 | --- | --- | --- | --- |
-| **OpenSky Network** | Free tier; OAuth2 client-credentials | `/states/all?lamin&lomin&lamax&lomax` | Used by Micro Radar. ~4000 credits/day with an account. **Chosen default** (ADR-0002). |
-| adsb.lol / airplanes.live / adsb.fi | Free community feeds | radius / box | Good fallbacks; same shape behind our `AircraftFeed` port |
+| **adsb.lol** | Free, **no auth** | point + radius (`/v2/lat/…/lon/…/dist/…`) | **Chosen default** (ADR-0011): open and reachable from cloud egress. |
+| OpenSky Network | Free tier; OAuth2 client-credentials | `/states/all?lamin&lomin&lamax&lomax` | Used by Micro Radar; was the original default (ADR-0002). **Blocks datacenter IPs**, so demoted to opt-in (`FLIGHT_SOURCE=opensky`). |
+| airplanes.live / adsb.fi | Free community feeds | radius / box | Further alternatives; same shape behind our `AircraftFeed` port. |
 | FlightAware / Flightradar24 | Paid | Yes | Out of scope |
 | Local RTL-SDR + dump1090 | Self-hosted | localhost JSON | Optional future adapter; reintroduces hardware |
 

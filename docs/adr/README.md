@@ -6,7 +6,7 @@ Significant, hard-to-reverse decisions for SkyWatch. Format follows the
 | ADR | Title | Status |
 | --- | --- | --- |
 | [0001](./0001-gateway-centric-thin-device.md) | Gateway-centric architecture with a thin ESP32 device | Accepted |
-| [0002](./0002-flight-data-source-opensky.md) | OpenSky as the default flight feed, behind a pluggable port | Accepted |
+| [0002](./0002-flight-data-source-opensky.md) | OpenSky as the default flight feed, behind a pluggable port | Superseded (in part) by 0011 |
 | [0003](./0003-hexagonal-ddd-architecture.md) | Hexagonal architecture with DDD bounded contexts | Accepted |
 | [0004](./0004-sgp4-via-satellite-js.md) | SGP4 propagation via satellite.js on the gateway | Accepted |
 | [0005](./0005-tle-from-celestrak-cached.md) | TLE acquisition from CelesTrak with a TTL cache | Accepted |
@@ -15,3 +15,4 @@ Significant, hard-to-reverse decisions for SkyWatch. Format follows the
 | [0008](./0008-device-gateway-http-json.md) | HTTP/JSON polling as the device↔gateway contract | Accepted |
 | [0009](./0009-browser-frontend.md) | Gateway-served browser front-end (second consumer) | Accepted |
 | [0010](./0010-flight-satellite-enrichment.md) | Lazy flight & satellite enrichment (adsbdb + CelesTrak SATCAT) | Accepted |
+| [0011](./0011-cloud-deployment-hardening.md) | Cloud-deployment hardening: adsb.lol default feed, IPv4-first DNS, resilient CelesTrak | Accepted |

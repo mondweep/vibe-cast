@@ -107,6 +107,23 @@ gateway deploy (`docker compose up`); ✅ reproducible firmware build profile.
 **DoD:** ✅ `GET /` serves the page (test); ✅ verified live (radar renders real
 flights/sats); 59 tests green.
 
+## Phase 7 — Live deployment + click-to-learn + cloud hardening  ✅
+**Objective:** ship it to a URL the team can use, make it informative and robust.
+**ADRs:** 0010, 0011
+- ✅ Deployed to **Google Cloud Run** (public, warm, min-instances=1); keyless
+  GitHub Actions CD via Workload Identity Federation ([DEPLOY-CICD.md](./DEPLOY-CICD.md))
+- ✅ **Click-to-learn enrichment** (ADR-0010): `GET /flight/:icao24` (airline +
+  route + aircraft type/registration/owner + photo via adsbdb) and
+  `GET /satellite/:noradId` (type/owner/launch/orbit via CelesTrak SATCAT) —
+  lazy, cached, behind ports; surfaced from radar markers **and** table rows
+- ✅ **Cloud hardening** (ADR-0011): adsb.lol default feed (OpenSky blocks cloud
+  IPs), IPv4-first DNS, CelesTrak retry + stale-cache + bundled `visual` fallback
+- ✅ Browser front-end: GPS location, enlarged radar, click popups, clearer
+  next-pass panel, optional shared-token guard
+**DoD:** ✅ live URL serves real flights + satellites + passes with no warnings;
+✅ enrichment verified live (e.g. AUA33V → Austrian A320neo, VIE→LHR, photo);
+✅ **87 tests green**, fully offline.
+
 ---
 
 ## Cross-cutting practices
@@ -126,3 +143,5 @@ flights/sats); 59 tests green.
 | FR8 (config portal) | 4 ✅ |
 | FR9 (render) | 4 (ESP32) ✅ / 6 (browser) ✅ |
 | Visible passes (PRD §7 follow-up) | 3 ✅ |
+| Click-to-learn enrichment (flights + satellites) | 7 ✅ |
+| Live cloud deployment + resilience | 7 ✅ |

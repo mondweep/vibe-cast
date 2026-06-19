@@ -155,7 +155,8 @@ tracker, extended to the orbital domain.
 ## 9. Risks
 | Risk | Mitigation |
 | --- | --- |
-| OpenSky auth/rate-limit changes | Port + ACL; alternative feeds; caching |
+| Flight feed blocks cloud IPs / rate-limits | **Realised** (OpenSky on Cloud Run) → swapped default to adsb.lol behind the same port (ADR-0011) |
 | Stale TLEs degrade accuracy | TTL cache + daily refresh (ADR-0005) |
+| CelesTrak throttles cloud IPs | **Realised** → retry + stale-cache + bundled fallback TLE (ADR-0011) |
 | ESP32 too weak for heavy math | Gateway-centric design (ADR-0001) |
 | Provider outage | Per-context isolation (NFR6); degrade gracefully |

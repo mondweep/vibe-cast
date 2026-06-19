@@ -1,7 +1,13 @@
 # ADR-0002: OpenSky as the default flight feed, behind a pluggable port
 
-- **Status:** Accepted
+- **Status:** Superseded (in part) by [ADR-0011](./0011-cloud-deployment-hardening.md)
 - **Date:** 2026-06-19
+
+> **Update (ADR-0011):** the *default* feed is now **adsb.lol**, because OpenSky
+> blocks datacenter IPs and produced zero flights on Cloud Run. The pluggable
+> `AircraftFeed` port and the OpenSky adapter (incl. OAuth2) remain exactly as
+> below — OpenSky is still selectable via `FLIGHT_SOURCE=opensky`. Only the
+> default changed.
 
 ## Context
 Flights can come from community ADS-B aggregators (OpenSky, adsb.lol,

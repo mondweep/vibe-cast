@@ -10,13 +10,23 @@
 This branch (`aircraft-tracking`) is an **orphan branch**: a fresh, standalone
 project, independent of the rest of the `vibe-cast` repository history.
 
+> **🌐 Live demo:** https://skywatch-gateway-374616809181.europe-west2.run.app
+> (deployed on Google Cloud Run). Allow location to centre it on you, or it
+> defaults to London. Click any flight or satellite — on the radar or in the
+> tables — for details.
+
 ## What it does
 - ✈️ **Flights:** live ADS-B aircraft within a configurable range, by
-  bearing/distance (default source: OpenSky Network — no RF hardware needed).
+  bearing/distance (default source: **adsb.lol** — open, no auth, no RF hardware;
+  OpenSky also supported via config — ADR-0011).
 - 🛰️ **Satellites:** which satellites are above your horizon right now (az/el),
-  computed from TLEs via SGP4.
+  computed from TLEs via SGP4, resilient to CelesTrak outages (bundled fallback).
 - ⏱️ **Passes:** upcoming passes with AOS (rise) / TCA (peak) / LOS (set), max
-  elevation and duration.
+  elevation, duration, and an **optically-visible** flag (sunlit sat + dark sky).
+- 🔎 **Click to learn more:** click a flight for airline + **route** + aircraft
+  type/registration/owner + photo; a satellite for type/owner/launch/orbit +
+  live-track link (ADR-0010).
+- 📍 **Around *you*:** the browser front-end can use your GPS location.
 - 🔌 **Source-agnostic:** flight feed, TLE source, and propagator all sit behind
   ports — swap providers by adding an adapter.
 
@@ -26,11 +36,12 @@ JSON; the **ESP32 firmware** is a thin client that self-configures over Wi-Fi an
 renders it (ADR-0001).
 
 ```
- ESP32 device  ──HTTP GET /sky──►  Gateway (TypeScript)
- (thin client)  ◄──Sky Snapshot──   ├─ Flight Tracking   → OpenSky  (AircraftFeed)
-                                     ├─ Satellite Tracking → CelesTrak (TleSource)
-                                     │                     → SGP4      (Propagator)
-                                     └─ Aggregation → SkySnapshotService
+ ESP32 / browser  ─HTTP GET /sky─►  Gateway (TypeScript)
+ (thin clients)   ◄──Sky Snapshot──  ├─ Flight Tracking    → adsb.lol / OpenSky (AircraftFeed)
+                                      ├─ Satellite Tracking → CelesTrak (TleSource, +fallback)
+                                      │                     → SGP4      (Propagator)
+                                      ├─ Enrichment        → adsbdb / SATCAT (on click)
+                                      └─ Aggregation → SkySnapshotService
 ```
 
 Built with **Domain-Driven Design**, **Architecture Decision Records**, and
@@ -39,22 +50,24 @@ Built with **Domain-Driven Design**, **Architecture Decision Records**, and
 ## Documentation
 | Doc | What's in it |
 | --- | --- |
-| [docs/research/RESEARCH.md](docs/research/RESEARCH.md) | Prior art, data sources (OpenSky, CelesTrak, SGP4), constraints |
+| [docs/research/RESEARCH.md](docs/research/RESEARCH.md) | Prior art, data sources (adsb.lol/OpenSky, CelesTrak, adsbdb, SGP4), constraints |
 | [docs/prd/PRD.md](docs/prd/PRD.md) | DDD PRD: ubiquitous language, bounded contexts, domain model, requirements |
-| [docs/adr/](docs/adr/README.md) | ADR-0001…0008 — the decisions that guide the build |
-| [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md) | Phase-wise plan (Phase 1 done), ADR-guided, with traceability |
+| [docs/adr/](docs/adr/README.md) | ADR-0001…0011 — the decisions that guide the build |
+| [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md) | Phase-wise plan (all phases done + deployed), ADR-guided, with traceability |
+| [docs/DEPLOY-CICD.md](docs/DEPLOY-CICD.md) · [DEPLOY-CLOUD-RUN.md](docs/DEPLOY-CLOUD-RUN.md) | Deploying to Cloud Run (keyless CI / manual) |
 
 ## Repository layout
 ```
 .
 ├─ docs/                      # research, PRD (DDD), ADRs, implementation plan
-├─ services/gateway/          # TypeScript gateway: domain core + adapters (Phase 1 ✅)
+├─ services/gateway/          # TypeScript gateway: domain core + adapters + HTTP (✅ deployed)
 │  ├─ src/shared/             #   Observer + geo (Shared Kernel)
 │  ├─ src/flight/             #   Flight Tracking context (domain/ports/adapters)
 │  ├─ src/satellite/          #   Satellite Tracking context (domain/ports/adapters)
-│  ├─ src/application/        #   SkySnapshotService (aggregation)
-│  └─ test/                   #   London-School TDD suite
-├─ firmware/                  # ESP32 thin-client scaffold (PlatformIO) (Phase 4 ⬜)
+│  ├─ src/application/        #   SkySnapshotService (aggregation) + caching
+│  ├─ src/http/ + public/     #   HTTP API + browser front-end (radar UI)
+│  └─ test/                   #   London-School TDD suite (87 tests)
+├─ firmware/                  # ESP32 thin-client firmware (PlatformIO) (✅ code · ⬜ flash)
 ├─ CLAUDE.md, .claude/, .mcp.json, .claude-flow/   # RuFlo swarm orchestration
 └─ README.md
 ```
@@ -75,7 +88,7 @@ same snapshot feeds two consumers:
 cd services/gateway
 npm install
 npm run typecheck   # tsc --noEmit
-npm test            # Jest — 59 tests, fully offline (no network)
+npm test            # Jest — 87 tests, fully offline (no network)
 npm run build && npm start   # serves /, /sky and /health on :8080
 # then open http://localhost:8080/ in a browser
 ```
@@ -93,7 +106,7 @@ path — one always-warm HTTPS endpoint behind a shared cache. Two ways:
 (Static hosts like Netlify/Vercel aren't a good fit — `/sky` needs a long-running,
 stateful container, not short serverless functions.)
 
-### Status — built to "ready"
+### Status — built, deployed, running
 | Phase | What | State |
 | --- | --- | --- |
 | 1 | Domain core (flight + satellite, hexagonal, TDD) | ✅ |
@@ -101,10 +114,13 @@ stateful container, not short serverless functions.)
 | 3 | Optically-visible pass detection (sunlit + dark) | ✅ |
 | 4 | ESP32 firmware (portal + poll + render) | ✅ code · ⬜ hardware flash |
 | 5 | Caching, JSON-schema contract guard, CI | ✅ |
+| 6 | Browser front-end (radar, GPS, click-to-learn) | ✅ |
+| 7 | Cloud Run deploy + adsb.lol/IPv4/CelesTrak hardening (ADR-0011) | ✅ live |
 
-58 tests green, fully offline; verified end-to-end against live OpenSky data.
-The only remaining step is flashing the firmware to a physical ESP32 (+ a
-board-specific TFT setup). See the [Implementation Plan](docs/IMPLEMENTATION-PLAN.md).
+**87 tests green, fully offline**; verified end-to-end against live data and
+**running on Cloud Run** (link at the top). The only remaining step is flashing
+the firmware to a physical ESP32 (+ a board-specific TFT setup). See the
+[Implementation Plan](docs/IMPLEMENTATION-PLAN.md).
 
 ## Swarm orchestration (RuFlo)
 This repo was initialised with [RuFlo](https://github.com/ruvnet/claude-flow)
