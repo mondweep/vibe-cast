@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SkyWatch — flights &amp; satellites around me</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <style>
     :root { --bg:#05080f; --panel:#0d1320; --ink:#cfe3ff; --dim:#5b6b86;
             --flight:#ffd33d; --sat:#39d3ff; --vis:#7CFC00; --warn:#ff7676;
@@ -24,6 +26,15 @@
              background:radial-gradient(circle at 50% 50%, #0a1424, #05080f 72%);
              border-radius:50%; border:1px solid var(--line); cursor:crosshair; }
     .radar-help { color:var(--dim); font-size:12px; margin:8px 2px 0; }
+    .viewtabs { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+    .vt { background:#0d1320; color:var(--dim); border:1px solid var(--line); border-radius:7px;
+          padding:5px 12px; cursor:pointer; font:inherit; }
+    .vt.active { color:var(--ink); border-color:#28406b; background:#13203a; }
+    #map { width:100%; aspect-ratio:1/1; border-radius:12px; border:1px solid var(--line); }
+    .leaflet-container { background:#05080f; font:inherit; }
+    footer { padding:14px 16px; border-top:1px solid var(--line); color:var(--dim);
+             font-size:12px; text-align:center; }
+    footer a { color:var(--sat); }
     .legend { margin-top:8px; }
     .legend span { margin-right:16px; white-space:nowrap; }
     .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
@@ -80,21 +91,36 @@
   </header>
 
   <main>
-    <!-- LEFT: enlarged radar -->
+    <!-- LEFT: enlarged radar / map -->
     <div id="radarWrap">
-      <canvas id="radar" width="600" height="600"></canvas>
-      <div id="tip"></div>
+      <div class="viewtabs">
+        <button id="tabRadar" class="vt active" type="button">◎ Radar</button>
+        <button id="tabMap" class="vt" type="button">🗺 Map</button>
+        <span class="muted" id="viewHint">flights + satellites, centred on you</span>
+      </div>
+      <div id="radarView">
+        <canvas id="radar" width="600" height="600"></canvas>
+        <div id="tip"></div>
+      </div>
+      <div id="mapView" style="display:none"><div id="map"></div></div>
       <div id="popup"><span class="close" id="popupClose">✕</span><div id="popupBody"></div></div>
       <div class="legend radar-help">
         <span><i class="dot" style="background:var(--flight)"></i>flight</span>
         <span><i class="tri"></i>satellite</span>
         <span class="muted">click a marker for details · hover to identify</span>
       </div>
-      <p class="radar-help">
+      <p class="radar-help" id="radarHelp">
         <b>Reading the radar:</b> the centre is <b>you</b>. For <b>flights</b>, angle = compass
         bearing and distance from centre = how far away (outer ring = your range).
         For <b>satellites</b>, it's a sky-dome: centre = straight up (zenith), the rim = the
         horizon, angle = compass azimuth.
+      </p>
+      <p class="radar-help" id="mapHelp" style="display:none">
+        <b>Map view:</b> your location is the marker, the circle is your flight range
+        (the area the radar covers), and each plane sits at its real position. Click a
+        plane for details. Satellites are overhead (sky-dome) — see the Radar view.
+        Map © OpenStreetMap contributors © CARTO. Panning sends your viewport to the
+        tile provider.
       </p>
     </div>
 
@@ -157,6 +183,17 @@
     </div>
   </main>
 
+  <footer>
+    Built by
+    <a href="https://www.linkedin.com/in/mondweepchakravorty/" target="_blank" rel="noopener">Mondweep Chakravorty</a>
+    · <a href="https://github.com/mondweep/vibe-cast/tree/aircraft-tracking" target="_blank" rel="noopener">source &amp; docs on GitHub (aircraft-tracking)</a>
+    · data: <a href="https://adsb.lol" target="_blank" rel="noopener">adsb.lol</a>,
+    <a href="https://celestrak.org" target="_blank" rel="noopener">CelesTrak</a>,
+    <a href="https://www.adsbdb.com" target="_blank" rel="noopener">adsbdb</a>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
     const $ = (id) => document.getElementById(id);
     const canvas = $('radar'), ctx = canvas.getContext('2d');
@@ -378,6 +415,7 @@
         if (!res.ok){ setStatus('gateway error '+res.status); return; }
         const snap = await res.json();
         render(snap);
+        if (mapView) updateMap(snap);
         setStatus('updated '+new Date(snap.observedAt).toLocaleTimeString()
           + ($('lat').value ? '' : ' · using default location (London) — click “Use my location”'));
         $('flightCount').textContent = snap.flights.length;
@@ -421,6 +459,52 @@
     }
     $('gpsBtn').addEventListener('click', ()=>useMyLocation(false));
     ['lat','lon','rangeKm','minEl'].forEach(id=>$(id).addEventListener('change', refresh));
+
+    // ---- map view (Leaflet + CARTO Dark Matter; flights only — ADR-0012) ----
+    let map=null, mapFlightLayer=null, observerMarker=null, rangeCircle=null, mapView=false;
+    function observerLatLon(){ return [ parseFloat($('lat').value)||51.5074, parseFloat($('lon').value)|| -0.1278 ]; }
+    function initMap(){
+      if (map) return;
+      map = L.map('map', { zoomControl:true }).setView(observerLatLon(), 9);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+        attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains:'abcd', maxZoom:19
+      }).addTo(map);
+      mapFlightLayer = L.layerGroup().addTo(map);
+    }
+    function updateMap(snap){
+      if (!map) return;
+      const c=observerLatLon(), rangeKm=parseFloat($('rangeKm').value)||50;
+      if (!observerMarker){ observerMarker=L.circleMarker(c,{radius:6,color:'#fff',weight:2,fillColor:'#39d3ff',fillOpacity:1}).addTo(map).bindTooltip('You'); }
+      else observerMarker.setLatLng(c);
+      if (!rangeCircle){ rangeCircle=L.circle(c,{radius:rangeKm*1000,color:'#39d3ff',weight:1,fillColor:'#39d3ff',fillOpacity:0.05}).addTo(map); }
+      else { rangeCircle.setLatLng(c); rangeCircle.setRadius(rangeKm*1000); }
+      mapFlightLayer.clearLayers();
+      for (const f of snap.flights){
+        const a=f.aircraft;
+        if (a.latitudeDeg==null || a.longitudeDeg==null) continue;
+        const mk=L.circleMarker([a.latitudeDeg,a.longitudeDeg],{radius:5,color:'#000',weight:1,fillColor:'#ffd33d',fillOpacity:1})
+          .addTo(mapFlightLayer).bindTooltip(a.callsign||a.icao24);
+        mk.on('click',(e)=>{ openFlight(f, e.originalEvent.clientX, e.originalEvent.clientY); L.DomEvent.stop(e); });
+      }
+    }
+    function showView(which){
+      mapView = (which==='map');
+      $('tabRadar').classList.toggle('active', !mapView);
+      $('tabMap').classList.toggle('active', mapView);
+      $('radarView').style.display = mapView?'none':'block';
+      $('mapView').style.display = mapView?'block':'none';
+      $('radarHelp').style.display = mapView?'none':'block';
+      $('mapHelp').style.display = mapView?'block':'none';
+      $('viewHint').textContent = mapView?'flights on a real map (satellites → Radar)':'flights + satellites, centred on you';
+      $('popup').style.display='none';
+      if (mapView){
+        initMap();
+        setTimeout(()=>{ map.invalidateSize(); map.setView(observerLatLon(), map.getZoom()||9); if(currentSnap) updateMap(currentSnap); }, 60);
+      }
+    }
+    $('tabRadar').addEventListener('click', ()=>showView('radar'));
+    $('tabMap').addEventListener('click', ()=>showView('map'));
 
     setInterval(()=>{ $('clock').textContent=new Date().toLocaleTimeString(); }, 1000);
     setInterval(()=>{ if ($('auto').checked) refresh(); }, 10000);
