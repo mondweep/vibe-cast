@@ -101,11 +101,11 @@
     {% else %}<li class="meta">No articles in this window.</li>{% endfor %}
   </ul></div>
 
-  <footer>
-    Data: <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">The GDELT Project</a>
-    (15-min GKG). A media-conversation sensor, not a public-opinion poll.
-    <a href="/api/snapshot?scope={{ s.scope }}">JSON</a>.
-  </footer>
+  <p class="meta" style="margin-top:26px">
+    <a href="/about">ℹ️ How this works</a> ·
+    <a href="/api/snapshot?scope={{ s.scope }}">view raw JSON</a>
+  </p>
+  {% include "_footer.html" %}
 </div>
 </body>
 </html>

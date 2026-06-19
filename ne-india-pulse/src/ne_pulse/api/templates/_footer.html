@@ -1,0 +1,56 @@
+{# Shared footer: data attribution, author credit, repo, and support card.
+   Self-contained styles so it renders consistently on every page. #}
+<style>
+  .np-foot { margin-top:40px; border-top:1px solid var(--line,#2d3742); padding-top:22px; }
+  .np-support { display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    justify-content:space-between; background:var(--card,#1a222c);
+    border:1px solid var(--line,#2d3742); border-radius:14px; padding:18px 20px; }
+  .np-support .np-txt { display:flex; gap:14px; align-items:flex-start; min-width:240px; flex:1; }
+  .np-heart { color:#ec4899; flex:0 0 auto; margin-top:2px; }
+  .np-support h3 { margin:0 0 3px; font-size:1.05rem; color:var(--fg,#e6edf3); }
+  .np-support p { margin:0; color:var(--mut,#8b98a5); font-size:.92rem; max-width:62ch; }
+  .np-btn { display:inline-flex; align-items:center; gap:8px; background:#ec4899;
+    color:#fff; font-weight:600; border-radius:999px; padding:11px 20px;
+    text-decoration:none; white-space:nowrap; border:none; }
+  .np-btn:hover { background:#db2777; text-decoration:none; }
+  .np-credit { margin-top:18px; color:var(--mut,#8b98a5); font-size:.86rem; line-height:1.7; }
+  .np-credit a { color:#58a6ff; text-decoration:none; } .np-credit a:hover { text-decoration:underline; }
+  .np-sep { opacity:.5; padding:0 8px; }
+</style>
+
+<footer class="np-foot">
+  <div class="np-support">
+    <div class="np-txt">
+      <svg class="np-heart" width="26" height="26" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/>
+      </svg>
+      <div>
+        <h3>Found this useful?</h3>
+        <p>This is built and shared in the open. If it helps you, please consider
+           supporting the work — it keeps it free and growing.</p>
+      </div>
+    </div>
+    <a class="np-btn" href="{{ site.paypal }}" target="_blank" rel="noopener">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/>
+      </svg>
+      Support this work
+    </a>
+  </div>
+
+  <div class="np-credit">
+    Data: <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">The GDELT Project</a>
+    (15-min GKG) · a media-conversation sensor, not a public-opinion poll.
+    <span class="np-sep">·</span>
+    <a href="/about">How it works</a>
+    <br>
+    Built by <a href="{{ site.linkedin }}" target="_blank" rel="noopener">{{ site.author }}</a>
+    <span class="np-sep">·</span>
+    <a href="{{ site.github_tree }}" target="_blank" rel="noopener">source on GitHub</a>
+    (<code>{{ site.branch }}</code>)
+    <span class="np-sep">·</span>
+    <a href="{{ site.paypal }}" target="_blank" rel="noopener">support via PayPal</a>
+  </div>
+</footer>

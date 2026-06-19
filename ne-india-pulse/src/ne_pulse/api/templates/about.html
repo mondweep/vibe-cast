@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How NE India Pulse works</title>
+  <style>
+    :root { --bg:#0f1419; --card:#1a222c; --fg:#e6edf3; --mut:#8b98a5;
+            --pos:#2ea043; --neg:#f85149; --neu:#d29922; --line:#2d3742; --accent:#58a6ff; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:16px/1.6 system-ui,sans-serif; background:var(--bg); color:var(--fg); }
+    .wrap { max-width:980px; margin:0 auto; padding:24px 18px 64px; }
+    a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+    h1 { font-size:1.7rem; margin:.2em 0; }
+    h2 { font-size:1.15rem; margin:2em 0 .6em; }
+    .meta { color:var(--mut); font-size:.92rem; }
+    .lead { font-size:1.05rem; color:#cdd6df; max-width:70ch; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; }
+    .figure { overflow-x:auto; }
+    svg { display:block; max-width:100%; height:auto; }
+    table { width:100%; border-collapse:collapse; font-size:.94rem; }
+    th,td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { color:var(--mut); font-weight:600; text-transform:uppercase; letter-spacing:.04em; font-size:.78rem; }
+    code { background:#222b35; padding:1px 6px; border-radius:5px; font-size:.88em; }
+    .pos{color:var(--pos)} .neg{color:var(--neg)} .neu{color:var(--neu)}
+    .pills a { display:inline-block; background:var(--card); border:1px solid var(--line);
+      border-radius:999px; padding:4px 12px; font-size:.88rem; margin:0 6px 6px 0; }
+    .note { background:#231a12; border:1px solid #5c3b1e; border-radius:10px;
+      padding:12px 14px; color:#f0c590; font-size:.92rem; }
+    ul.clean { padding-left:20px; } ul.clean li { margin:.3em 0; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <p class="meta"><a href="/">← NE India Pulse</a></p>
+  <h1>How NE India Pulse works</h1>
+  <p class="lead">
+    This app answers one question — <strong>“what is North East India talking and
+    feeling about today?”</strong> — by reading the world’s news, focusing on the
+    eight NE states, and summarising the <em>themes</em>, <em>mood</em>,
+    <em>people/organisations</em> and <em>volume</em> of coverage. It refreshes
+    with new data every 15 minutes.
+  </p>
+
+  <h2>The pipeline at a glance</h2>
+  <div class="card figure">
+    <svg viewBox="0 0 1000 250" role="img" aria-label="Five-stage processing pipeline">
+      <defs>
+        <marker id="arr" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#5b6673"/>
+        </marker>
+        <style>
+          .box{fill:#222b35;stroke:#3a4655;rx:12;}
+          .n{fill:#58a6ff;font:700 13px system-ui;}
+          .t{fill:#e6edf3;font:600 15px system-ui;}
+          .s{fill:#8b98a5;font:12px system-ui;}
+          .lab{fill:#5b6673;font:11px system-ui;}
+        </style>
+      </defs>
+
+      <!-- stage boxes -->
+      <g>
+        <rect class="box" x="8"   y="60" width="176" height="92" rx="12"/>
+        <rect class="box" x="214" y="60" width="176" height="92" rx="12"/>
+        <rect class="box" x="420" y="60" width="176" height="92" rx="12"/>
+        <rect class="box" x="626" y="60" width="176" height="92" rx="12"/>
+        <rect class="box" x="832" y="60" width="160" height="92" rx="12"/>
+      </g>
+
+      <!-- arrows -->
+      <g stroke="#5b6673" stroke-width="2" marker-end="url(#arr)">
+        <line x1="186" y1="106" x2="212" y2="106"/>
+        <line x1="392" y1="106" x2="418" y2="106"/>
+        <line x1="598" y1="106" x2="624" y2="106"/>
+        <line x1="804" y1="106" x2="830" y2="106"/>
+      </g>
+
+      <!-- stage 1 -->
+      <text class="n"  x="24" y="84">1 · INPUT</text>
+      <text class="t"  x="24" y="108">GDELT GKG</text>
+      <text class="s"  x="24" y="128">world news,</text>
+      <text class="s"  x="24" y="143">every 15 min</text>
+      <!-- stage 2 -->
+      <text class="n"  x="230" y="84">2 · FILTER</text>
+      <text class="t"  x="230" y="108">North East India</text>
+      <text class="s"  x="230" y="128">geocode → FIPS</text>
+      <text class="s"  x="230" y="143">IN03 … IN31</text>
+      <!-- stage 3 -->
+      <text class="n"  x="436" y="84">3 · PARSE</text>
+      <text class="t"  x="436" y="108">→ Mention</text>
+      <text class="s"  x="436" y="128">url · tone · themes</text>
+      <text class="s"  x="436" y="143">people · place</text>
+      <!-- stage 4 -->
+      <text class="n"  x="642" y="84">4 · AGGREGATE</text>
+      <text class="t"  x="642" y="108">over the window</text>
+      <text class="s"  x="642" y="128">themes · mood</text>
+      <text class="s"  x="642" y="143">entities · volume</text>
+      <!-- stage 5 -->
+      <text class="n"  x="848" y="84">5 · OUTPUT</text>
+      <text class="t"  x="848" y="108">Snapshot</text>
+      <text class="s"  x="848" y="128">dashboard</text>
+      <text class="s"  x="848" y="143">+ JSON API</text>
+
+      <!-- footnotes under the relevant stages -->
+      <text class="lab" x="24"  y="184">GDELT scans 100+ languages of</text>
+      <text class="lab" x="24"  y="199">online news, tags themes &amp; tone.</text>
+      <text class="lab" x="436" y="184">One article = one Mention,</text>
+      <text class="lab" x="436" y="199">kept only if it touches the NE.</text>
+      <text class="lab" x="642" y="184">Counts &amp; averages across</text>
+      <text class="lab" x="642" y="199">the last few hours (cached).</text>
+    </svg>
+  </div>
+
+  <h2>What goes in, what comes out</h2>
+  <p>Each of the four lenses on the dashboard is computed from the same stream of
+     articles, just summarised differently:</p>
+  <div class="card" style="padding:4px 8px">
+  <table>
+    <tr><th>Lens</th><th>Input (from each article)</th><th>How it's computed</th><th>Output</th></tr>
+    <tr>
+      <td><strong>What it's about</strong></td>
+      <td>GDELT theme tags (e.g. <code>MEDICAL</code>, <code>UNGP_FORESTS_RIVERS_OCEANS</code>)</td>
+      <td>De-noise &amp; map codes to plain labels, then count each article once per distinct theme</td>
+      <td>Ranked list of topics</td>
+    </tr>
+    <tr>
+      <td><strong>Mood (tone)</strong></td>
+      <td>Article tone score (−100…+100)</td>
+      <td>Average across all articles in the window; classify into positive / neutral / negative</td>
+      <td>A single mood score + split</td>
+    </tr>
+    <tr>
+      <td><strong>People &amp; orgs</strong></td>
+      <td>Named people &amp; organisations</td>
+      <td>Tally mentions across articles</td>
+      <td>Who's in the conversation</td>
+    </tr>
+    <tr>
+      <td><strong>Coverage</strong></td>
+      <td>Geocoded NE state(s)</td>
+      <td>Count articles per state</td>
+      <td>Volume by state</td>
+    </tr>
+  </table>
+  </div>
+
+  <h2>How we measure “Mood” (tone)</h2>
+  <p>Every article GDELT processes gets a <strong>tone score</strong>: roughly
+     <code>positive&nbsp;words&nbsp;−&nbsp;negative&nbsp;words</code> as a percentage of the
+     text. It typically lands between about −10 and +10. We take the
+     <strong>average tone of all NE-India articles</strong> in the window and place it
+     on this scale:</p>
+
+  <div class="card figure">
+    <svg viewBox="0 0 1000 150" role="img" aria-label="Tone scale from negative to positive">
+      <defs>
+        <linearGradient id="g" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%"  stop-color="#f85149"/>
+          <stop offset="45%" stop-color="#d29922"/>
+          <stop offset="55%" stop-color="#d29922"/>
+          <stop offset="100%" stop-color="#2ea043"/>
+        </linearGradient>
+      </defs>
+      <rect x="40" y="46" width="920" height="26" rx="13" fill="url(#g)"/>
+      <!-- ticks -->
+      <g stroke="#0f1419" stroke-width="2">
+        <line x1="40"  y1="46" x2="40"  y2="72"/>
+        <line x1="500" y1="42" x2="500" y2="76"/>
+        <line x1="960" y1="46" x2="960" y2="72"/>
+      </g>
+      <text x="40"  y="38" fill="#f85149" font="600 13px system-ui">−10 most negative</text>
+      <text x="470" y="34" fill="#d29922" font="600 13px system-ui">0</text>
+      <text x="862" y="38" fill="#2ea043" font="600 13px system-ui">+10 most positive</text>
+      <!-- band labels -->
+      <text x="210" y="104" fill="#f85149" font="700 14px system-ui" text-anchor="middle">NEGATIVE</text>
+      <text x="210" y="122" fill="#8b98a5" font="12px system-ui" text-anchor="middle">average &lt; −1</text>
+      <text x="500" y="104" fill="#d29922" font="700 14px system-ui" text-anchor="middle">NEUTRAL</text>
+      <text x="500" y="122" fill="#8b98a5" font="12px system-ui" text-anchor="middle">−1 … +1</text>
+      <text x="790" y="104" fill="#2ea043" font="700 14px system-ui" text-anchor="middle">POSITIVE</text>
+      <text x="790" y="122" fill="#8b98a5" font="12px system-ui" text-anchor="middle">average &gt; +1</text>
+    </svg>
+  </div>
+  <p class="meta">We also show the split of how many articles were positive,
+     neutral or negative — so a calm average that hides a 40%-negative day is still
+     visible.</p>
+
+  <h2>The eight states we watch</h2>
+  <div class="pills">
+    {% for st in states %}<a href="/?scope={{ st.fips }}">{{ st.name }} <span class="meta">{{ st.fips }}</span></a>{% endfor %}
+  </div>
+  <p class="meta">Each state is matched by its GDELT geocode (a FIPS&nbsp;10-4 code,
+     e.g. Assam = <code>IN03</code>), verified against live data.</p>
+
+  <h2>What this is — and isn’t</h2>
+  <div class="note">
+    NE India Pulse measures the <strong>news-media conversation</strong>, not public
+    opinion. It’s a useful, fast, neutral read on what the press is reporting and the
+    tone of that reporting — but it is not a poll of what residents think.
+  </div>
+  <ul class="clean" style="margin-top:14px">
+    <li><strong>Media, not minds.</strong> No social media, messaging or surveys —
+        just published news.</li>
+    <li><strong>Language skew.</strong> Coverage leans to English/Hindi online news;
+        Assamese, Meitei and Bodo vernacular outlets are largely uncaptured.</li>
+    <li><strong>Geocoding is noisy.</strong> Smaller states (Arunachal, Mizoram) show
+        thin signal; national-dateline stories can be mis-placed.</li>
+    <li><strong>Best read over hours, not minutes.</strong> A single 15-minute slice
+        is tiny, so we aggregate a window and (soon) compare against a baseline.</li>
+  </ul>
+
+  {% include "_footer.html" %}
+</div>
+</body>
+</html>

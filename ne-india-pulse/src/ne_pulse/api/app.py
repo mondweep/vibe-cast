@@ -20,6 +20,19 @@ from .dto import snapshot_to_dict
 
 _TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
+# Site metadata used by the shared footer (credit, repo, support).
+SITE = {
+    "author": "Mondweep Chakravorty",
+    "linkedin": "https://www.linkedin.com/in/mondweepchakravorty/",
+    "github": "https://github.com/mondweep/vibe-cast",
+    "github_tree": (
+        "https://github.com/mondweep/vibe-cast/tree/"
+        "claude/cool-fermat-vcyuyd/ne-india-pulse"
+    ),
+    "branch": "claude/cool-fermat-vcyuyd",
+    "paypal": "https://www.paypal.com/paypalme/mondweep",
+}
+
 
 def _default_service() -> PulseService:
     hours = float(os.getenv("PULSE_WINDOW_HOURS", "6"))
@@ -52,7 +65,16 @@ def create_app(service: PulseService | None = None) -> FastAPI:
         return _TEMPLATES.TemplateResponse(
             request,
             "dashboard.html",
-            {"s": snap, "states": list(NE_STATES.values()), "region": REGION_SCOPE},
+            {"s": snap, "states": list(NE_STATES.values()),
+             "region": REGION_SCOPE, "site": SITE},
+        )
+
+    @app.get("/about", response_class=HTMLResponse)
+    def about(request: Request) -> HTMLResponse:
+        return _TEMPLATES.TemplateResponse(
+            request,
+            "about.html",
+            {"states": list(NE_STATES.values()), "site": SITE},
         )
 
     return app

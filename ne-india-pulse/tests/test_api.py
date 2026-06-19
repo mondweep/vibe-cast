@@ -53,3 +53,18 @@ def test_dashboard_html_renders_caveat(window) -> None:
 
 def test_unknown_scope_returns_404(window) -> None:
     assert client(window).get("/api/snapshot?scope=ZZ").status_code == 404
+
+
+def test_about_page_explains_pipeline(window) -> None:
+    r = client(window).get("/about")
+    assert r.status_code == 200
+    body = r.text
+    assert "How NE India Pulse works" in body
+    assert "GDELT GKG" in body and "Mood" in body  # pipeline + tone explainer
+
+
+def test_footer_has_credit_and_support_links(window) -> None:
+    body = client(window).get("/").text
+    assert "paypalme/mondweep" in body          # support CTA
+    assert "linkedin.com/in/mondweepchakravorty" in body  # author credit
+    assert "github.com/mondweep/vibe-cast" in body        # source repo
