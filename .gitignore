@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Test / coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# RuFlo / Claude-Flow runtime (keep config, ignore runtime data)
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/
+.swarm/
+memory/
+
+# Firmware build artefacts (PlatformIO)
+firmware/.pio/
+firmware/.vscode/
+
+# Secrets / local env
+.env
+.env.local
+*.local
+
+# OS
+.DS_Store
+Thumbs.db
