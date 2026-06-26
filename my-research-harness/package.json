@@ -1,0 +1,50 @@
+{
+  "name": "my-research-harness",
+  "version": "0.1.0",
+  "description": "My AI agent harness",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "my-research-harness": "bin/cli.js"
+  },
+  "files": [
+    "bin/**",
+    "dist/**",
+    "src/**",
+    "tsconfig.json",
+    ".claude/**",
+    "CLAUDE.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "init": "node ./bin/cli.js init",
+    "doctor": "node ./bin/cli.js doctor",
+    "evolve": "metaharness-darwin evolve . --sandbox real --generations 3 --children 4",
+    "evolve:dry": "metaharness-darwin evolve . --sandbox mock --generations 2 --children 3"
+  },
+  "dependencies": {
+    "@metaharness/kernel": "^0.1.0",
+    "@metaharness/host-claude-code": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^3.0.0",
+    "@metaharness/darwin": "^0.2.2"
+  },
+  "keywords": [
+    "research",
+    "dossier",
+    "fact-checking",
+    "agent-harness"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

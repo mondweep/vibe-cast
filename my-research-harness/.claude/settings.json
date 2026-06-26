@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": ["Bash(npx my-research-harness*)", "mcp__my-research-harness__*", "WebFetch"],
+    "deny": ["Bash(rm *)", "Read(./.env)", "Read(./.env.*)"]
+  },
+  "mcpServers": {
+    "my-research-harness": { "command": "npx", "args": ["-y", "my-research-harness@latest", "mcp", "start"] }
+  }
+}

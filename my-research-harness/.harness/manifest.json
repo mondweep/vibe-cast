@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "generator": "0.1.0",
+  "template": "vertical:research",
+  "template_version": "0.0.0",
+  "vars": {
+    "name": "my-research-harness",
+    "description": "My AI agent harness",
+    "host": "claude-code"
+  },
+  "hosts": [
+    "claude-code"
+  ],
+  "files": {
+    ".claude/settings.json": "252015197116b06a19374958e55d40a9615cf03b290880781af21f75f735225d",
+    ".claude-plugin/plugin.json": "fd8786f8fcf1b68f71627ca51f13ad477b97a1f116a9e6583f9a9e842e6ae517",
+    "CLAUDE.md": "c34359cb577103b7d539aed5e5ce5d1fb3604e49697a0c4fe9df9da2e19f1524",
+    "README.md": "0d74e0a8a096faab66a2239c76ec8cc39cedaf2cffb8cdb7faf2e0c2ec55e956",
+    "__tests__/smoke.test.ts": "ecb622e1553a2224e2e0c431684424bbd29cefb8fc55f7ea74819db04dac7e1a",
+    "bin/cli.js": "2218f310a895f7bf2bbc8b3385c91265682ff4f6765d608219eeeba4683ee87e",
+    "package.json": "a50b7bb274404d9e04a64be5168424c468a6ac2212d9d0d0817fdba81ca67561",
+    "src/agents/citer.ts": "0d46577fd10f5e561e1b894b5e43da94dc733eadcff347ef9065553cf9f6533c",
+    "src/agents/fact-checker.ts": "0bcbbcdd1b3643edd36fa0c59c817a16413e8979f138aa3049da9233e0b4492e",
+    "src/agents/scout.ts": "cfd0717ea3eef224e61c28fee79e50f3afa6102fc4ae950239441ebe6dd20a09",
+    "src/agents/source-grader.ts": "e389922b513cbae772a0334d5e9a30a1d20b2d8355beb17ea20ccbe216cde48f",
+    "src/agents/synthesizer.ts": "bb9c6c1a189d98d4400030f5867918f50289f5aa3ffc1518161909856b3b65e5",
+    "src/agents/web-searcher.ts": "b789e7622dbdac65a299b1eb3d09f6456a9f9c24479b2f4e30d63d900c246098",
+    "src/init.ts": "8cfddc473c9df356e25751286f2c37bd22e185773d33b190a248905364090033",
+    "tsconfig.json": "8b4e730a1aa39162ac574455d7a98e1881f5313ca80ffe503b9652dcf0c76b9d",
+    "vitest.config.ts": "e9e94875611ab1cd602c1f6923902c2dab7953a75ac022962973639d1937587a",
+    "LICENSE": "2a55043b45817d4cb90261aed65b8936457bf3a6b911bdc56973b45b53304944",
+    ".claude/skills/evolve/SKILL.md": "bac9a519862a6ef31e20b99a0f2898fae785f7c19347f2ca5ab99459071de45a"
+  },
+  "generated_at": "2026-06-26T17:19:24.598Z",
+  "meta": {
+    "surface": "cli"
+  }
+}
