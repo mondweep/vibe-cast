@@ -1,0 +1,33 @@
+--- /private/tmp/claude-501/-Users-mondweepchakravorty-Documents-Lattice-lattice-target-release/2a0889ed-0b80-4662-88f0-dd365645b7d0/scratchpad/kp/for-ai/ask-kb.mjs	2026-07-03 14:48:54
++++ /Users/mondweepchakravorty/Documents/Lattice/lattice-dropin/for-ai/ask-kb.mjs	2026-07-06 14:33:17
+@@ -15,6 +15,7 @@
+ import fs from 'node:fs';
+ import path from 'node:path';
+ import readline from 'node:readline';
++import { execFileSync } from 'node:child_process';
+ import { fileURLToPath } from 'node:url';
+ import { loadRvf, loadTransformers, configureModel } from './resolve-deps.mjs';
+ import { targets as CONFIG_TARGETS, defaultTarget as CONFIG_DEFAULT } from './kb.config.mjs';
+@@ -172,6 +173,22 @@
+ // (asymmetric retrieval — passages were embedded with NO prefix at build time, queries
+ // get the instruction prefix here); MiniLM uses no prefix and mean pooling.
+ async function embed(text, cfg = MINILM_CFG) {
++  // Lattice embedder path: when LATTICE_EMBED_BIN is set, shell out to the
++  // lattice embed_query binary, which embeds with bge-small (f32) and applies
++  // the canonical bge query prefix itself, returning a JSON float array. This
++  // routes BOTH ask-kb.mjs and kb-mcp-server.mjs (via searchKb) through lattice
++  // while still searching the prebuilt .rvf. Assumes the build's queryPrefix is
++  // the standard bge retrieval instruction (true for this pack).
++  if (process.env.LATTICE_EMBED_BIN) {
++    if (process.env.KB_DEBUG) {
++      console.error(`[ask-kb] query embedder: lattice (${process.env.LATTICE_EMBED_BIN})`);
++    }
++    const out = execFileSync(process.env.LATTICE_EMBED_BIN, [text], {
++      encoding: 'utf8',
++      maxBuffer: 1 << 20,
++    });
++    return Float32Array.from(JSON.parse(out.trim()));
++  }
+   const fe = await getEmbedder(cfg.model || MINILM_CFG.model);
+   const out = await fe([(cfg.queryPrefix || '') + text], {
+     pooling: cfg.pooling || 'mean',

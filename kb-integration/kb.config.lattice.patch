@@ -1,0 +1,11 @@
+--- /private/tmp/claude-501/-Users-mondweepchakravorty-Documents-Lattice-lattice-target-release/2a0889ed-0b80-4662-88f0-dd365645b7d0/scratchpad/kp/for-ai/kb.config.mjs	2026-07-03 14:48:54
++++ /Users/mondweepchakravorty/Documents/Lattice/lattice-dropin/for-ai/kb.config.mjs	2026-07-06 14:32:43
+@@ -1439,7 +1439,7 @@
+ };
+ 
+ /** Default target for CLI scripts that omit --target while only one repo is in scope [L]. */
+-export const defaultTarget = 'agent-harness-generator';
++export const defaultTarget = 'lattice';
+ 
+ /** Lookup helper used by build-kb / ask-kb / guard-check / grade-kb / gate. */
+ export function getTarget(slug = defaultTarget) {
