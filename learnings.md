@@ -343,6 +343,82 @@ cargo run -q -p lattice-embed --example query_kb --release -- <passages.jsonl> "
 
 ---
 
+## 13. Building Lattice Studio (the native macOS app) into a `.dmg`
+
+Lattice ships a native SwiftUI desktop app — **Lattice Studio** — that wraps the Rust engine
+(chat, embeddings, quantization, LoRA training) behind a GUI. One script builds the whole thing
+into an installable disk image, from `~/Documents/Lattice/lattice`:
+
+```sh
+./apps/macos/scripts/package-app.sh
+```
+
+It runs six steps: `swift build -c release` (the SwiftUI frontend) → `cargo build --release` of
+**10 engine binaries** → assembles a self-contained `.app` with those binaries inside
+`Contents/Resources/bin/` → writes `Info.plist` (bundle id `ai.khive.lattice.studio`, v0.3.0) →
+**ad-hoc codesign** → produces `.dmg` + `.zip`. Useful flags: `--skip-build` (reuse the Swift
+build), `--skip-cargo` (reuse `target/release/` binaries), `--out <dir>`.
+
+### The blocker: Command Line Tools ≠ full Xcode
+
+First `swift build` failed across **19 SwiftUI files** in `apps/macos/Sources/LatticeStudio/Components/`:
+
+```
+error: external macro implementation type 'PreviewsMacros.SwiftUIView' could not be found
+       for macro 'Preview(_:body:)'; plugin for module 'PreviewsMacros' not found
+```
+
+`swift --version` reported 6.3.2, but `xcode-select -p` pointed at
+`/Library/Developer/CommandLineTools`, **not** a full `Xcode.app`. The `#Preview` macro's
+compiler plugin (`PreviewsMacros`) ships **only with Xcode**, not with the Command Line Tools
+SDK. Swift compiles fine; the macro expansion is what needs Xcode.
+
+**Two fixes:**
+- **Proper:** install full Xcode from the App Store, then
+  `sudo xcode-select --switch /Applications/Xcode.app`.
+- **What we did (no Xcode needed):** `#Preview` blocks are a **dev-only** affordance (they render
+  the Xcode canvas) with **zero effect on the shipped app**. In every file they sit last, right
+  after a `// MARK: - Previews` marker. Truncated each file at that marker, built the DMG, then
+  restored the source verbatim with `git checkout -- apps/macos/Sources`. The runtime app is
+  byte-for-byte what a full-Xcode build would produce. (Re-running the script from a clean
+  checkout hits the same wall until Xcode is installed — the strip is not committed upstream.)
+
+### Output & install
+
+| Artifact | Size | Notes |
+| --- | --- | --- |
+| `apps/macos/dist/Lattice.dmg` | 9.5 MB | drag-to-Applications disk image |
+| `apps/macos/dist/Lattice.app` | 22 MB | self-contained; 10 engine binaries bundled in `Contents/Resources/bin/` |
+| `apps/macos/dist/Lattice.zip` | 8.6 MB | same bundle, zipped |
+
+Bundled binaries: `chat_metal`, `embed`, `eval_perplexity`, `generate_lora`, `lattice`,
+`lattice_serve`, `quantize_q4`, `quantize_quarot`, `qwen35_generate`, `train_grad_full`.
+
+Install: open the `.dmg`, drag **Lattice** to `/Applications`. It is **ad-hoc signed** (free
+cert, not a paid Apple Developer ID), so the first launch is quarantined by Gatekeeper —
+**right-click → Open → Open** once (macOS remembers it), or:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Lattice.app
+```
+
+Requires macOS 14+. **Confirmed launching and working on this Mac Mini.**
+
+**Learnings**
+- **`swift --version` succeeding is not proof Xcode is installed.** Command Line Tools give you
+  the compiler but not the SwiftUI macro plugins; anything using `#Preview` (or other Xcode-only
+  macros) fails to build until a full `Xcode.app` is selected via `xcode-select`.
+- **`#Preview` is compile-time-only tooling.** Removing it changes nothing at runtime — a safe,
+  reversible way to unblock a CLT-only build, as long as you restore the source afterward.
+- **The bundle is named `Lattice.app` / `Lattice.dmg`, not `LatticeStudio.*`** as
+  `apps/macos/DISTRIBUTION.md` and `INSTALL.md` state (the script sets `APP_NAME="Lattice"`).
+  Minor upstream doc drift — the icon file is still `LatticeStudio.icns`.
+- **The app is fully self-contained.** It carries all engine binaries, so the recipient Mac needs
+  no Rust, no Swift, no toolchain. From `/Applications` it uses the bundled binaries; run from a
+  source checkout it falls back to `target/release/`.
+
+---
+
 ## Quick reference — everything installed/created this session
 
 | Thing | Location |
@@ -356,6 +432,7 @@ cargo run -q -p lattice-embed --example query_kb --release -- <passages.jsonl> "
 | lattice query-embedder bin | `~/Documents/Lattice/lattice/target/release/examples/embed_query` |
 | RAG examples (source) | `crates/embed/examples/{query_kb,embed_query}.rs` (untracked) |
 | `.rvf`→lattice glue | `lattice-dropin/for-ai/rvf-lattice.mjs` |
+| Lattice Studio app (built) | `lattice/apps/macos/dist/{Lattice.dmg, Lattice.app, Lattice.zip}` (§13) |
 | This doc | `~/Documents/Lattice/learnings.md` |
 
 ## Golden rules
@@ -369,3 +446,6 @@ cargo run -q -p lattice-embed --example query_kb --release -- <passages.jsonl> "
    passages with f32 lattice queries** — rankings hold, absolute scores don't.
 7. **MCP ≠ a terminal command.** Run the Node scripts to query it yourself; register the MCP
    server only to let a Claude session query the KB for you.
+8. **Building the GUI (Lattice Studio) needs full Xcode, not just Command Line Tools** — the
+   `#Preview` macro plugin ships only with `Xcode.app`. `./apps/macos/scripts/package-app.sh`
+   builds `Lattice.dmg`; ad-hoc signed, so first launch is **right-click → Open** (§13).

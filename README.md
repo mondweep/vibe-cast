@@ -11,7 +11,7 @@ source tree, the knowledge pack's binary data (`.rvf`, passages), or `node_modul
 
 | Path | What |
 | --- | --- |
-| `learnings.md` | Full running log of getting lattice running + this session's RAG findings (§12) |
+| `learnings.md` | Full running log of getting lattice running + RAG findings (§12) + building the **Lattice Studio** macOS app into a `.dmg` (§13) |
 | `lattice-embed-examples/query_kb.rs` | Pure-lattice RAG: embed passages **and** query with lattice, cosine top-k (has a stdin REPL). Drop into `crates/embed/examples/` |
 | `lattice-embed-examples/embed_query.rs` | Prints a bge-small query embedding as a JSON float array — the bridge for reusing a prebuilt vector index |
 | `kb-integration/rvf-lattice.mjs` | Reuses the pack's prebuilt `.rvf` (`@ruvector/rvf`), with the query vector produced by lattice |
@@ -31,6 +31,12 @@ source tree, the knowledge pack's binary data (`.rvf`, passages), or `node_modul
   Re-embedding is higher-fidelity; reusing the index is faster to stand up.
 - **MCP is for AI hosts, not the terminal** — run the Node scripts to query it yourself; register
   the MCP server only to let a Claude session pull KB context.
+- **Building the GUI (Lattice Studio → `.dmg`) needs full Xcode, not just Command Line Tools.**
+  `swift --version` succeeds under CLT, but the `#Preview` macro plugin (`PreviewsMacros`) ships
+  only with `Xcode.app`, so `./apps/macos/scripts/package-app.sh` fails to compile until Xcode is
+  installed — or the dev-only `#Preview` blocks are stripped (reversibly) first. The resulting
+  `Lattice.dmg` is ad-hoc signed: first launch is **right-click → Open**. Full write-up in
+  `learnings.md` §13. Confirmed working on the Mac Mini.
 
 ## Reproduce
 
