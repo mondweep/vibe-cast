@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Handle Single Page Application (SPA) routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
