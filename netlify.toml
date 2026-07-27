@@ -4,7 +4,6 @@
 
 [build.environment]
   NODE_VERSION = "22"
-  NPM_FLAGS = "--legacy-peer-deps"
 
 # SPA fallback — the console is client-routed.
 [[redirects]]
