@@ -6,6 +6,7 @@ import {
   createSectionAssembler,
   deriveBodyStart,
   totalRowOf,
+  type RowStartPolicy,
 } from './section-assembler';
 import type { SectionRecogniser } from './section-recogniser';
 import type { RowClusterer, TextRun, VisualRow } from './text-run';
@@ -251,7 +252,10 @@ describe('SectionAssembler — the row-start policy is injectable', () => {
   });
 
   it('lets a caller replace the policy entirely', () => {
-    const rowStartPolicy = vi.fn(() => true);
+    // Typed as the real RowStartPolicy: a bare `vi.fn(() => true)` infers a
+    // zero-argument call signature, so the assertion on argument [1] below
+    // cannot typecheck against an empty tuple.
+    const rowStartPolicy = vi.fn<RowStartPolicy>(() => true);
     const table = createSectionAssembler({
       clusterer: clustererReturning(rows),
       recogniser: {
