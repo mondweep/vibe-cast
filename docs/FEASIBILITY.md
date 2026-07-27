@@ -18,7 +18,7 @@ Findings below are from direct inspection of the 2026-07-27 bulletin, not assump
 | How large is it? | **31 pages**, 1.2 MB (not the 13 initially reported) | Page count | **Verified** |
 | How much structure? | ~22 report sections + Remarks; District → Revenue Circle → item hierarchy | Manual reading of all sections | **Verified** |
 | Are coordinates present? | **Yes**, lon/lat per damaged infrastructure item | Sections 18–22 | **Verified** |
-| Do internal totals reconcile? | **Yes** on the checks performed: 187,890 + 183,461 + 74,144 = 445,495 ✓ | Arithmetic on extracted values | **Verified** |
+| Do internal totals reconcile? | **Mostly.** Statewide population checks out: 187,890 + 183,461 + 74,144 = 445,495 ✓. But **Sivasagar's camp inmates do not**: stated 24,695 vs 11,892 + 10,497 + 2,281 = 24,670, a gap of 25 | Arithmetic on extracted values | **Verified** |
 | Is the table layout parser-friendly? | **No.** Wrapped cells, split numbers, no delimiters, embedded mini-syntax | Structural inspection | **Verified** |
 | Are sentinel values ambiguous? | **Yes.** `Nil`, `SNR`, and blanks each mean different things | Cross-section comparison | **Verified** |
 | Is there a stable public URL for bulletins? | **Probably.** Pattern `asdma.gov.in/pdf/flood_report/{year}/Daily_Flood_Report_{DD.MM.YYYY}.pdf` appears in search results | Web search | **Unverified — see §5** |

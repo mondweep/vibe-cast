@@ -337,6 +337,27 @@ describe('unknown quantities stay unknown (PRD §3.3)', () => {
     expect(deps.rationCoverageDays).not.toHaveBeenCalled();
   });
 
+  it('cannot project a camp load when the number of relief camps was never reported', () => {
+    const deps = makeDeps();
+    const outcome = project(
+      aReport({
+        statewide: {
+          populationAffected: count(10_000),
+          campInmates: count(1_000),
+          reliefCamps: unknownCount(),
+        },
+      }),
+      floodWorsensLevers(),
+      deps,
+    );
+
+    expect(outcome.statewide.reliefCampsAvailable).toEqual({ kind: 'unknown', unit: 'count' });
+    expect(outcome.statewide.projectedCampLoad.derivation.explanation).toContain(
+      'the number of relief camps was not reported',
+    );
+    expect(deps.campLoad).not.toHaveBeenCalled();
+  });
+
   it('reports an unknown camp load where no relief camps are open, never a zero', () => {
     const deps = makeDeps();
     const outcome = project(

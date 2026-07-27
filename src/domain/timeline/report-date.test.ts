@@ -37,6 +37,20 @@ describe('report dates are compared arithmetically, never by the clock', () => {
     ]);
   });
 
+  it('lists dates across a year boundary, where January and February live in the previous era', () => {
+    expect(datesInBetween(reportDate('2026-12-30'), reportDate('2027-01-03'))).toEqual([
+      '2026-12-31',
+      '2027-01-01',
+      '2027-01-02',
+    ]);
+  });
+
+  it('will not do arithmetic on something that is not a date', () => {
+    expect(() => daysBetween(reportDate('27-07-2026'), reportDate('2026-07-28'))).toThrow(
+      RangeError,
+    );
+  });
+
   it('rejects anything that is not an ISO calendar date', () => {
     expect(isValidReportDate('2026-07-27')).toBe(true);
     expect(isValidReportDate('27-07-2026')).toBe(false);

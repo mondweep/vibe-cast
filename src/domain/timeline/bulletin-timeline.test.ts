@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { count } from '../shared/quantity';
-import { TimelineError, bulletinTimeline, emptyTimeline } from './bulletin-timeline';
+import {
+  TimelineError,
+  bulletinTimeline,
+  datesCovered,
+  emptyTimeline,
+} from './bulletin-timeline';
+import type { FloodSituationReport } from '../shared/flood-situation-report';
 import { aReport } from '../scenario/__fixtures__/report-builder';
 
 const on = (date: string, id = `sha256:${date}`) => aReport({ id, date });
@@ -85,6 +91,19 @@ describe('a timeline is a value, not a mutable collection', () => {
 
   it('refuses a bulletin with no id, since dedup depends on the content hash', () => {
     expect(() => emptyTimeline().add(aReport({ id: '  ' }))).toThrow(/bulletin id/i);
+  });
+
+  it('refuses to add nothing at all', () => {
+    expect(() =>
+      emptyTimeline().add(undefined as unknown as FloodSituationReport),
+    ).toThrow(TimelineError);
+  });
+
+  it('lists the days it covers', () => {
+    expect(datesCovered(bulletinTimeline([on('2026-07-28'), on('2026-07-27')]))).toEqual([
+      '2026-07-27',
+      '2026-07-28',
+    ]);
   });
 });
 

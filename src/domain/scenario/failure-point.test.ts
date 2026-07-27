@@ -268,6 +268,35 @@ describe('a district that cannot be assessed is said to be unassessable, never s
     ]);
   });
 
+  it('cannot judge camp capacity when the number of relief camps was never reported', () => {
+    const report = aReport({
+      districts: [
+        aDistrict({
+          name: 'Sivasagar',
+          affected: count(10_000),
+          inmates: count(3_000),
+          reliefCamps: unknownCount(),
+          rice: quintals(200),
+        }),
+      ],
+      statewide: {
+        populationAffected: count(10_000),
+        campInmates: count(3_000),
+        reliefCamps: unknownCount(),
+      },
+    });
+
+    const analysis = identifyFailurePoints(project(report, heldSteadyForTenDays(), deps()), {
+      campCapacityPerCamp: 200,
+    });
+
+    expect(analysis.notAssessable).toContainEqual({
+      district: 'Sivasagar',
+      mode: 'camp-capacity',
+      reason: 'The number of relief camps open was not reported for this district.',
+    });
+  });
+
   it('refuses a camp capacity assumption that is not a positive number of places', () => {
     const outcome = project(threeDistrictsUnderPressure(), heldSteadyForTenDays(), deps());
 
