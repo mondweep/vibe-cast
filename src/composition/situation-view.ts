@@ -23,12 +23,13 @@ import {
   vulnerableInmates,
 } from '../domain/response/camp-load';
 import { rationNorm, type RationNorm } from '../domain/response/ration-coverage';
-import type {
-  CasualtiesViewModel,
-  DerivedFigure,
-  ReportedFigure,
-  ShelterSegment,
-  SituationSummaryViewModel,
+import {
+  formatNumber,
+  type CasualtiesViewModel,
+  type DerivedFigure,
+  type ReportedFigure,
+  type ShelterSegment,
+  type SituationSummaryViewModel,
 } from '../adapters/ui/view-models';
 import { derivedFigureFrom, percentFigureFrom } from './derived-figures';
 import { SECTION_LABELS, provenanceOf, unreadableSections } from './section-labels';
@@ -83,7 +84,10 @@ const populationNote = (districts: readonly DistrictReport[]): string | undefine
   );
   if (parts.some((part) => part === undefined)) return undefined;
   const [male, female, children] = parts as [number, number, number];
-  return `M ${male} / F ${female} / C ${children}, summed from the District rows`;
+  return (
+    `M ${formatNumber(male)} / F ${formatNumber(female)} / C ${formatNumber(children)}, ` +
+    'summed from the District rows'
+  );
 };
 
 export type StatewideDerived = {
