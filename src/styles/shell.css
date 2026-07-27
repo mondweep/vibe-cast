@@ -128,6 +128,25 @@
   font-size: var(--fs-micro);
 }
 
+/* Stacked notes read as one block: only the first carries the separator. */
+.console__rail-foot + .console__rail-foot {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.console__rail-contact {
+  color: #d5dee7;
+  /* Underlined rather than colour-only, so the link survives greyscale and
+     colour blindness on a washed-out projector (NFR-8). */
+  text-decoration: underline;
+}
+
+.console__rail-contact:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
 .console__main {
   grid-area: main;
   overflow: auto;

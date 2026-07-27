@@ -79,6 +79,17 @@ export const AppShell = ({
           ASDMA's bulletin remains the system of record. Figures marked{' '}
           <strong>Derived</strong> were computed here.
         </p>
+        <p className="console__rail-foot">
+          Questions or comments:{' '}
+          <a
+            className="console__rail-contact"
+            href="https://www.linkedin.com/in/mondweepchakravorty/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Mondweep Chakravorty
+          </a>
+        </p>
       </nav>
 
       <main className="console__main" id="console-main" tabIndex={-1}>

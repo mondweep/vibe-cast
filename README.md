@@ -114,6 +114,10 @@ Static deploy to Netlify — no backend, no database, no secrets, no functions.
   text layer is rejected with a clear message rather than parsed into garbage.
 - **Trend needs multiple bulletins.** One PDF is one snapshot. Load several to get deltas.
 
+## Contact
+
+Questions or comments: **Mondweep Chakravorty** — [LinkedIn](https://www.linkedin.com/in/mondweepchakravorty/)
+
 ## Data source
 
 Bulletins are published by the [Assam State Disaster Management Authority](https://asdma.assam.gov.in/information-services/assam-flood-report).
