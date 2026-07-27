@@ -12,9 +12,16 @@
 
 import type { BulletinId } from '../../domain/shared/flood-situation-report';
 
+/**
+ * Anything hashable. Deliberately wider than `BufferSource`, whose
+ * `ArrayBufferView<ArrayBuffer>` constraint rejects a plain `Uint8Array` under
+ * current lib types for no benefit here.
+ */
+export type DigestInput = ArrayBuffer | ArrayBufferView;
+
 /** The slice of `SubtleCrypto` we actually use. Narrow ports are easy to double. */
 export interface DigestProvider {
-  digest(algorithm: string, data: BufferSource): Promise<ArrayBuffer>;
+  digest(algorithm: string, data: DigestInput): Promise<ArrayBuffer>;
 }
 
 const HASH_ALGORITHM = 'SHA-256';
@@ -25,7 +32,7 @@ const toHex = (buffer: ArrayBuffer): string =>
     .join('');
 
 export const bulletinIdFromBytes = async (
-  bytes: BufferSource,
+  bytes: DigestInput,
   subtle: DigestProvider,
 ): Promise<BulletinId> => toHex(await subtle.digest(HASH_ALGORITHM, bytes)) as BulletinId;
 
