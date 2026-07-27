@@ -1,0 +1,480 @@
+/**
+ * UI view models — the driving adapter's own contract.
+ *
+ * The console is a driving adapter (ADR-0001): it receives everything it draws
+ * as props. These types are derived from the published language in
+ * `src/domain/shared`, but they are *ours*, so the composition root can map
+ * domain → view model without the UI ever reaching into another context.
+ *
+ * Two rules run through every type here:
+ *
+ * 1. **Unknown is not zero.** Reported figures keep their `Quantity` shape, so
+ *    a section that could not be read renders as "not reported", never as 0
+ *    (PRD §5.1 invariant 4).
+ * 2. **Derived is not reported.** Anything this product computed is a
+ *    `DerivedFigure` carrying its formula and workings, so no officer mistakes
+ *    our arithmetic for ASDMA's reporting (PRD §4.5).
+ */
+
+import type { Count, Hectares, Quantity, Quintals } from '../../domain/shared/quantity';
+import { isKnown } from '../../domain/shared/quantity';
+import type {
+  DamageClass,
+  ExtractionConfidence,
+  SectionKind,
+} from '../../domain/shared/flood-situation-report';
+import type { GeoCoordinate } from '../../domain/shared/administrative-unit';
+
+// ---------------------------------------------------------------------------
+// Navigation
+// ---------------------------------------------------------------------------
+
+export type ConsoleViewKey =
+  | 'situation'
+  | 'ranking'
+  | 'capacity'
+  | 'map'
+  | 'scenario'
+  | 'trend';
+
+export type ConsoleView = {
+  readonly key: ConsoleViewKey;
+  readonly label: string;
+  /** The decision question (PRD §2.1) this view exists to answer. */
+  readonly question: string;
+};
+
+export const CONSOLE_VIEWS: readonly ConsoleView[] = [
+  {
+    key: 'situation',
+    label: 'Situation Summary',
+    question: 'How many affected people are not in Relief Camps?',
+  },
+  {
+    key: 'ranking',
+    label: 'District Ranking',
+    question: 'Which Districts are worst affected, and by what measure?',
+  },
+  {
+    key: 'capacity',
+    label: 'Response Capacity',
+    question: 'How many days of rice remain at current Inmate counts?',
+  },
+  {
+    key: 'map',
+    label: 'Damage Map',
+    question: 'Where is infrastructure damage concentrated?',
+  },
+  {
+    key: 'scenario',
+    label: 'Scenario Planner',
+    question: "If the affected population grows, whose capacity fails first?",
+  },
+  {
+    key: 'trend',
+    label: 'Trend',
+    question: "What changed since yesterday's bulletin?",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Provenance and data quality
+// ---------------------------------------------------------------------------
+
+export type ProvenanceRef = {
+  readonly section: SectionKind;
+  /** ASDMA's own section heading, e.g. "Inmates in Relief Camps". */
+  readonly sectionLabel: string;
+  readonly sourcePages: readonly number[];
+  readonly confidence: ExtractionConfidence;
+};
+
+export const CONFIDENCE_LABELS: Record<ExtractionConfidence, string> = {
+  high: 'High confidence',
+  degraded: 'Degraded — reconciliation failed',
+  failed: 'Could not read',
+};
+
+export type ReconciliationWarningViewModel = {
+  readonly sectionLabel: string;
+  readonly column: string;
+  /** The Total row as printed by ASDMA. */
+  readonly statedTotal: number;
+  /** Our independent sum of the District rows. */
+  readonly computedTotal: number;
+};
+
+export type SectionConfidenceViewModel = ProvenanceRef;
+
+// ---------------------------------------------------------------------------
+// Figures
+// ---------------------------------------------------------------------------
+
+/** A figure exactly as ASDMA reported it. */
+export type ReportedFigure = {
+  readonly key: string;
+  readonly label: string;
+  readonly quantity: Quantity<string>;
+  readonly precision?: number;
+  readonly provenance?: ProvenanceRef;
+  readonly note?: string;
+};
+
+/**
+ * A figure this console computed. Never rendered without its formula.
+ * `value === undefined` means the inputs were not reported — not zero.
+ */
+export type DerivedFigure = {
+  readonly key: string;
+  readonly label: string;
+  readonly value: number | undefined;
+  readonly precision?: number;
+  readonly unit?: string;
+  /** Symbolic form, e.g. "Affected Population − Inmates − Non-Camp Inmates". */
+  readonly formula: string;
+  /** Arithmetic with real numbers, e.g. "445,495 − 28,695 − 51,777 = 365,023". */
+  readonly workings: string;
+  /** One-line reading of what the number means for a decision. */
+  readonly context?: string;
+};
+
+// ---------------------------------------------------------------------------
+// Situation Summary
+// ---------------------------------------------------------------------------
+
+/**
+ * One band of the shelter split. Patterns, not colours, carry the meaning —
+ * colour is never the only channel (NFR-8).
+ */
+export type ShelterSegment = {
+  readonly key: 'camp-inmates' | 'non-camp-inmates' | 'unsheltered';
+  readonly label: string;
+  readonly value: number | undefined;
+  readonly share: number;
+  readonly derived: boolean;
+};
+
+export type RiverPanelViewModel = {
+  readonly aboveDangerLevel: readonly string[];
+  readonly aboveHighestFloodLevel: readonly string[];
+  /** e.g. "CWC bulletin issued 08:00". Attributed, never restated as ours. */
+  readonly attribution: string;
+};
+
+export type CasualtiesViewModel = {
+  readonly floodDeaths: Count;
+  readonly generalDrownings: Count;
+  readonly missing: Count;
+  readonly confirmedProvenance?: ProvenanceRef;
+  readonly missingProvenance?: ProvenanceRef;
+};
+
+export type SituationSummaryViewModel = {
+  readonly reportDate: string;
+  readonly generatedAt: string;
+  readonly affectedPopulation: ReportedFigure;
+  /** The headline gap. Given the same visual weight as the reported total. */
+  readonly unshelteredAffected: DerivedFigure;
+  readonly shelterSplit: readonly ShelterSegment[];
+  readonly reportedFigures: readonly ReportedFigure[];
+  readonly derivedMetrics: readonly DerivedFigure[];
+  readonly rivers: RiverPanelViewModel;
+  readonly casualties: CasualtiesViewModel;
+  readonly reconciliationWarnings: readonly ReconciliationWarningViewModel[];
+  readonly unreadableSections: readonly SectionConfidenceViewModel[];
+};
+
+// ---------------------------------------------------------------------------
+// Severity index
+// ---------------------------------------------------------------------------
+
+export type SeverityComponentKey =
+  | 'affectedPopulation'
+  | 'villagesAffected'
+  | 'cropArea'
+  | 'campLoad'
+  | 'casualties';
+
+export type SeverityWeights = Record<SeverityComponentKey, number>;
+
+/** PRD §6.3 — a stated starting point, not a claim of objectivity. */
+export const DEFAULT_SEVERITY_WEIGHTS: SeverityWeights = {
+  affectedPopulation: 0.35,
+  villagesAffected: 0.15,
+  cropArea: 0.15,
+  campLoad: 0.2,
+  casualties: 0.15,
+};
+
+export const SEVERITY_COMPONENT_LABELS: Record<SeverityComponentKey, string> = {
+  affectedPopulation: 'Affected Population',
+  villagesAffected: 'Villages Affected',
+  cropArea: 'Crop Area Submerged',
+  campLoad: 'Camp Load',
+  casualties: 'Casualties',
+};
+
+export type SeverityContribution = {
+  readonly component: SeverityComponentKey;
+  readonly weight: number;
+  /** Min–max normalised within this bulletin (FR-3.4). */
+  readonly normalised: number;
+  readonly contribution: number;
+};
+
+export type SeverityBand = {
+  readonly label: 'Severe' | 'High' | 'Moderate' | 'Low';
+  readonly rank: 1 | 2 | 3 | 4;
+};
+
+/** Severity is carried by text and bar length as well as colour (NFR-8). */
+export const severityBand = (index: number): SeverityBand => {
+  if (index >= 0.75) return { label: 'Severe', rank: 1 };
+  if (index >= 0.5) return { label: 'High', rank: 2 };
+  if (index >= 0.25) return { label: 'Moderate', rank: 3 };
+  return { label: 'Low', rank: 4 };
+};
+
+// ---------------------------------------------------------------------------
+// District ranking
+// ---------------------------------------------------------------------------
+
+export type DistrictSortKey =
+  | 'severityIndex'
+  | 'populationAffected'
+  | 'villagesAffected'
+  | 'cropAreaSubmerged'
+  | 'campInmates'
+  | 'campLoad';
+
+export type SortDirection = 'asc' | 'desc';
+
+export type RevenueCircleRowViewModel = {
+  readonly circle: string;
+  readonly villagesAffected: Count;
+  readonly populationAffected: Count;
+  readonly cropAreaSubmerged: Hectares;
+  readonly reliefCamps: Count;
+  readonly reliefDistributionCentres: Count;
+  readonly campInmates: Count;
+  readonly nonCampInmates: Count;
+  /** Inmates ÷ Relief Camps. Derived. */
+  readonly campLoad: number | undefined;
+};
+
+export type DistrictRowViewModel = {
+  readonly district: string;
+  readonly rank: number;
+  readonly severityIndex: number;
+  readonly contributions: readonly SeverityContribution[];
+  readonly populationAffected: Count;
+  readonly villagesAffected: Count;
+  readonly cropAreaSubmerged: Hectares;
+  readonly campInmates: Count;
+  readonly reliefCamps: Count;
+  readonly campLoad: number | undefined;
+  readonly casualties: CasualtiesViewModel;
+  readonly revenueCircles: readonly RevenueCircleRowViewModel[];
+  /**
+   * Dhemaji and Dibrugarh report all-zero rows: reported and quiet, not
+   * absent. The distinction is preserved (PRD §4.1).
+   */
+  readonly status: 'affected' | 'reported-quiet';
+  readonly provenance?: ProvenanceRef;
+};
+
+// ---------------------------------------------------------------------------
+// Response capacity
+// ---------------------------------------------------------------------------
+
+export type ResponseRowViewModel = {
+  readonly district: string;
+  readonly reliefCamps: Count;
+  readonly reliefDistributionCentres: Count;
+  readonly campInmates: Count;
+  readonly nonCampInmates: Count;
+  readonly campLoad: number | undefined;
+  readonly rationCoverageDays: number | undefined;
+  readonly vulnerableLoad: number | undefined;
+};
+
+export type ResponseCapacityViewModel = {
+  readonly riceStock: Quintals;
+  readonly campInmates: Count;
+  readonly reliefCamps: Count;
+  readonly reliefDistributionCentres: Count;
+  readonly nonCampInmates: Count;
+  readonly campLoad: DerivedFigure;
+  readonly rationCoverageDays: DerivedFigure;
+  readonly vulnerableLoad: DerivedFigure;
+  readonly rescueAssetRatio: DerivedFigure;
+  readonly districts: readonly ResponseRowViewModel[];
+};
+
+// ---------------------------------------------------------------------------
+// Damage map
+// ---------------------------------------------------------------------------
+
+export const DAMAGE_CLASS_LABELS: Record<DamageClass, string> = {
+  road: 'Road',
+  bridge: 'Bridge',
+  'embankment-breached': 'Embankment Breached',
+  'embankment-affected': 'Embankment Affected',
+  'school-elementary': 'School — Elementary',
+  'school-secondary': 'School — Secondary',
+  anganwadi: 'Anganwadi Centre',
+  other: 'Other',
+};
+
+export type DamagePointViewModel = {
+  readonly id: string;
+  readonly damageClass: DamageClass;
+  readonly district: string;
+  readonly circle: string;
+  readonly name: string;
+  readonly coordinate: GeoCoordinate;
+};
+
+// ---------------------------------------------------------------------------
+// Scenario planning
+// ---------------------------------------------------------------------------
+
+export type ScenarioLeversViewModel = {
+  /** Percentage growth applied to Affected Population, e.g. 30. */
+  readonly populationGrowthPercent: number;
+  /** Target Camp Uptake Rate as a percentage, e.g. 25. */
+  readonly campUptakePercent: number;
+  readonly durationDays: number;
+  readonly rationNormKgPerPersonPerDay: number;
+  readonly additionalCampCapacity: number;
+};
+
+export type ScenarioComparisonRow = {
+  readonly key: string;
+  readonly metric: string;
+  /** Baseline as reported/derived from the anchoring bulletin. */
+  readonly baseline: string;
+  readonly projected: string;
+  /** Plain-language provenance of the projected figure (FR-4.6). */
+  readonly derivation: string;
+  readonly direction: 'worse' | 'better' | 'unchanged';
+};
+
+export type FirstFailurePointViewModel = {
+  readonly district: string;
+  readonly description: string;
+  readonly dayIndex: number | undefined;
+};
+
+// ---------------------------------------------------------------------------
+// Trend
+// ---------------------------------------------------------------------------
+
+export type TrendMetricKey =
+  | 'affectedPopulation'
+  | 'campInmates'
+  | 'unshelteredAffected'
+  | 'reliefCamps';
+
+export type TrendMetric = {
+  readonly key: TrendMetricKey;
+  readonly label: string;
+  readonly derived: boolean;
+};
+
+export const TREND_METRICS: readonly TrendMetric[] = [
+  { key: 'affectedPopulation', label: 'Population Affected', derived: false },
+  { key: 'campInmates', label: 'Inmates in Relief Camps', derived: false },
+  { key: 'unshelteredAffected', label: 'Unsheltered Affected', derived: true },
+  { key: 'reliefCamps', label: 'Relief Camps', derived: false },
+];
+
+export type TrendObservation = {
+  readonly date: string;
+  readonly value: number | undefined;
+};
+
+export type TimelineGapViewModel = {
+  /** Last bulletin before the gap. */
+  readonly afterDate: string;
+  /** First bulletin after the gap. */
+  readonly beforeDate: string;
+  readonly missingDates: readonly string[];
+};
+
+export type DeltaViewModel = {
+  readonly metricLabel: string;
+  readonly fromDate: string;
+  readonly toDate: string;
+  readonly from: number | undefined;
+  readonly to: number | undefined;
+  readonly delta: number | undefined;
+  readonly direction: 'up' | 'down' | 'unchanged' | 'unknown';
+  readonly derived: boolean;
+};
+
+// ---------------------------------------------------------------------------
+// Bulletin loading
+// ---------------------------------------------------------------------------
+
+export type BulletinLoaderState =
+  | { readonly status: 'idle' }
+  | { readonly status: 'parsing'; readonly fileName: string }
+  | { readonly status: 'error'; readonly message: string; readonly fileName?: string }
+  | {
+      readonly status: 'loaded';
+      readonly fileName: string;
+      readonly reportDate: string;
+      readonly sections: readonly SectionConfidenceViewModel[];
+      readonly reconciliationWarnings: readonly ReconciliationWarningViewModel[];
+    };
+
+// ---------------------------------------------------------------------------
+// Formatting
+// ---------------------------------------------------------------------------
+
+/** What we print when the source did not report a value. Never "0". */
+export const NOT_REPORTED = '—';
+
+const UNIT_SUFFIX: Record<string, string> = {
+  count: '',
+  Hect: ' Hect.',
+  Q: ' Q',
+  L: ' L',
+  kg: ' kg',
+};
+
+/**
+ * Grouped to three digits, matching the bulletin's own presentation
+ * (445,495) so a figure can be found by eye in the PDF.
+ */
+export const formatNumber = (value: number, dp = 0): string => {
+  if (!Number.isFinite(value)) return NOT_REPORTED;
+  const negative = value < 0;
+  const fixed = Math.abs(value).toFixed(dp);
+  const [whole, fraction] = fixed.split('.');
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const body = fraction ? `${grouped}.${fraction}` : grouped;
+  return negative ? `-${body}` : body;
+};
+
+export const formatQuantity = (quantity: Quantity<string>, dp = 0): string =>
+  isKnown(quantity)
+    ? `${formatNumber(quantity.value, dp)}${UNIT_SUFFIX[quantity.unit] ?? ` ${quantity.unit}`}`
+    : NOT_REPORTED;
+
+export const formatReported = (figure: ReportedFigure): string =>
+  formatQuantity(figure.quantity, figure.precision ?? 0);
+
+export const formatDerived = (figure: DerivedFigure): string => {
+  if (figure.value === undefined) return NOT_REPORTED;
+  const body = formatNumber(figure.value, figure.precision ?? 0);
+  return figure.unit ? `${body} ${figure.unit}` : body;
+};
+
+export const formatPercent = (fraction: number | undefined, dp = 1): string =>
+  fraction === undefined || !Number.isFinite(fraction)
+    ? NOT_REPORTED
+    : `${formatNumber(fraction * 100, dp)}%`;
+
+export const isReported = (quantity: Quantity<string>): boolean => isKnown(quantity);

@@ -1,0 +1,140 @@
+/*
+ * Console shell — header, left rail, content well.
+ *
+ * Budgeted for 1366x768 (NFR-11): rail 184px, header 44px, leaving
+ * ~1182 x ~650 of content. The content well is the only scrolling region, so
+ * the rail and the report identity never scroll out of view.
+ */
+
+.console {
+  display: grid;
+  grid-template-columns: var(--rail-width) 1fr;
+  grid-template-rows: var(--header-height) 1fr;
+  grid-template-areas:
+    'brand header'
+    'rail  main';
+  height: 100%;
+  min-height: 100%;
+}
+
+.console__brand {
+  grid-area: brand;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--s-3);
+  background: var(--c-rail);
+  color: var(--c-rail-ink);
+  border-bottom: 1px solid #000;
+}
+
+.console__brand-title {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.console__brand-sub {
+  font-size: var(--fs-micro);
+  color: var(--c-rail-ink-muted);
+}
+
+.console__header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: 0 var(--s-4);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-rule);
+}
+
+.console__header-identity {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.console__header-question {
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.console__rail {
+  grid-area: rail;
+  background: var(--c-rail);
+  color: var(--c-rail-ink);
+  padding: var(--s-2) 0;
+  overflow-y: auto;
+}
+
+.console__rail-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.console__rail-item {
+  display: block;
+}
+
+.console__rail-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--s-2) var(--s-3);
+  border-left: 3px solid transparent;
+  color: var(--c-rail-ink);
+  font-size: var(--fs-body);
+}
+
+.console__rail-link:hover {
+  background: #262f39;
+}
+
+.console__rail-link[aria-current='page'] {
+  background: #2d3742;
+  border-left-color: #ffffff;
+  font-weight: 600;
+}
+
+.console__rail-link:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: -2px;
+}
+
+.console__rail-question {
+  display: block;
+  color: var(--c-rail-ink-muted);
+  font-size: var(--fs-micro);
+  line-height: 1.25;
+  margin-top: 1px;
+}
+
+.console__rail-link[aria-current='page'] .console__rail-question {
+  color: #d5dee7;
+}
+
+.console__rail-foot {
+  margin-top: var(--s-4);
+  padding: var(--s-3);
+  border-top: 1px solid #333c46;
+  color: var(--c-rail-ink-muted);
+  font-size: var(--fs-micro);
+}
+
+.console__main {
+  grid-area: main;
+  overflow: auto;
+  padding: var(--s-3) var(--s-4) var(--s-6);
+}
+
+.console__empty {
+  max-width: 46rem;
+  margin: var(--s-6) auto;
+}

@@ -1,0 +1,94 @@
+/*
+ * Design tokens — Assam Flood Situation Console.
+ *
+ * Constraints that drove every value here:
+ *  - NFR-11: the console is read off a 1366x768 projector in a control room.
+ *    That is ~700px of usable height, often through a washed-out lamp. So:
+ *    light background, near-black ink, no thin hairlines below 1px, and a
+ *    compact but never-cramped type scale.
+ *  - NFR-8: colour is never the only channel. Every colour token below has a
+ *    text or shape counterpart in the markup. The hues are the Okabe-Ito
+ *    colour-blind-safe set, darkened where they carry text so they clear the
+ *    WCAG 2.1 AA 4.5:1 bar on white.
+ */
+
+:root {
+  /* --- Surfaces and ink ------------------------------------------------ */
+  --c-surface: #ffffff;
+  --c-surface-sunken: #f1f4f7;
+  --c-surface-raised: #ffffff;
+  --c-rail: #1b2129;
+  --c-rail-ink: #e8edf2;
+  --c-rail-ink-muted: #a9b6c3;
+
+  --c-ink: #13181e;          /* 15.9:1 on white */
+  --c-ink-muted: #48525d;    /*  7.9:1 on white */
+  --c-ink-faint: #67717d;    /*  5.1:1 on white */
+
+  --c-rule: #c4cdd6;
+  --c-rule-strong: #8d99a6;
+
+  /* --- Meaning --------------------------------------------------------- */
+  /* Reported by ASDMA. */
+  --c-reported: #13181e;
+  /* Derived by this console (PRD §4.5) — purple, never used for anything else. */
+  --c-derived: #6b2f8f;      /* 8.0:1 on white */
+  --c-derived-soft: #f2e9f8;
+  /* The headline gap: people with no recorded touchpoint. */
+  --c-gap: #a83c00;          /* 5.4:1 on white */
+  --c-gap-soft: #fdeee5;
+  /* Projected under a scenario — never confusable with a reported figure. */
+  --c-projected: #00625b;    /* 6.4:1 on white */
+  --c-projected-soft: #e4f2f0;
+
+  --c-warning: #8a5a00;      /* 5.4:1 on white */
+  --c-warning-soft: #fdf3df;
+  --c-danger: #a1140a;       /* 7.3:1 on white */
+  --c-danger-soft: #fdeceb;
+  --c-ok: #00624a;           /* 6.9:1 on white */
+  --c-link: #0b5cab;         /* 6.2:1 on white */
+  --c-focus: #0b5cab;
+
+  /* Severity bands — graphic fills, always paired with a word. */
+  --c-severity-1: #8a2200;
+  --c-severity-2: #d55e00;
+  --c-severity-3: #e69f00;
+  --c-severity-4: #7d8894;
+
+  /* Damage classes — graphic fills, always paired with a distinct shape. */
+  --c-damage-road: #0057a3;
+  --c-damage-bridge: #6b2f8f;
+  --c-damage-breach: #8a2200;
+  --c-damage-embankment: #a86a00;
+  --c-damage-school: #00625b;
+  --c-damage-anganwadi: #9c2a68;
+  --c-damage-other: #4a545f;
+
+  /* --- Type ------------------------------------------------------------ */
+  --font-ui: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-figure: 'IBM Plex Mono', 'SF Mono', 'Consolas', 'Roboto Mono', ui-monospace, monospace;
+
+  --fs-hero: 2.6rem;      /* the two headline figures — identical size */
+  --fs-figure-lg: 1.5rem;
+  --fs-figure: 1.15rem;
+  --fs-body: 0.8125rem;   /* 13px base — dense but legible at projector range */
+  --fs-small: 0.75rem;
+  --fs-micro: 0.6875rem;
+
+  --lh-tight: 1.1;
+  --lh-body: 1.4;
+
+  /* --- Space ----------------------------------------------------------- */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+
+  --rail-width: 11.5rem;
+  --header-height: 2.75rem;
+
+  --radius: 2px;
+  --shadow-pop: 0 2px 10px rgba(19, 24, 30, 0.22);
+}
