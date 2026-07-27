@@ -1,14 +1,16 @@
 /**
- * Temporary composition root for the UI adapter.
+ * A props-driven shell for the console.
  *
- * The real one belongs in the application layer: it will construct a
- * `BulletinSource` (the pdf.js adapter), a `ReportRepository` (IndexedDB), run
- * the ingestion use case, and map the resulting `FloodSituationReport` into the
- * view models in `./view-models`.
+ * The real composition root now lives in `src/composition/` — `createContainer`
+ * builds the object graph and `App` holds the loaded bulletins and the user's
+ * assumptions. This component is what remains once that work moved out: the
+ * driving adapter's own minimal host, which owns loader state and nothing else
+ * and takes ingestion as an injected function.
  *
- * Until that wiring lands, this renders the console honestly: the loader is
- * live, and dropping a PDF produces a clear "not wired yet" error rather than
- * a fake report. The console never invents data.
+ * It is kept because it is the smallest thing that renders the console with a
+ * live loader — useful for exercising the UI against a stubbed parse — and it
+ * is deliberately incapable of inventing data: with no `parseBulletin` it shows
+ * an honest error rather than a fabricated bulletin.
  */
 
 import { useState } from 'react';
@@ -16,7 +18,10 @@ import { ConsoleApp, type ConsoleData } from './console-app';
 import type { BulletinLoaderState } from './view-models';
 
 export type BootstrapProps = {
-  /** Supplied by the real composition root once ingestion is wired. */
+  /**
+   * Turns a picked file into everything the console draws. Supplied by a host
+   * that owns the ports; `src/composition/app.tsx` is the production one.
+   */
   readonly parseBulletin?: (file: File) => Promise<ConsoleData>;
 };
 
@@ -30,7 +35,8 @@ export const Bootstrap = ({ parseBulletin }: BootstrapProps) => {
         status: 'error',
         fileName: file.name,
         message:
-          'Bulletin ingestion is not wired into this build yet. The console will not display figures it has not read.',
+          'This shell was mounted without a bulletin source, so there is nothing to read the ' +
+          'PDF with. The console will not display figures it has not read.',
       });
       return;
     }

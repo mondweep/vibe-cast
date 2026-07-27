@@ -46,6 +46,17 @@ export default defineConfig({
           include: ['src/adapters/ui/**/*.test.tsx', 'src/adapters/ui/**/*.test.ts'],
         },
       },
+      {
+        extends: true,
+        test: {
+          // The composition root wires adapters to the domain and mounts the
+          // console, so its tests need a DOM even though most of them assert
+          // arithmetic rather than markup.
+          name: 'composition',
+          environment: 'jsdom',
+          include: ['src/composition/**/*.test.tsx', 'src/composition/**/*.test.ts'],
+        },
+      },
     ],
     coverage: {
       provider: 'v8',
