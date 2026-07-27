@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-07-27T21:04:02.314Z",
+  "projectRoot": "/home/user/vibe-cast",
+  "structure": {
+    "hasPackageJson": false,
+    "hasTsConfig": false,
+    "hasClaudeConfig": true,
+    "hasClaudeFlow": true
+  },
+  "scannedAt": 1785186242314
+}

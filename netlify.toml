@@ -1,0 +1,35 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# SPA fallback — the console is client-routed.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# NFR-5: zero network egress of bulletin content.
+#
+# `connect-src 'self'` is the load-bearing directive: it makes it structurally
+# impossible for a bulletin to be posted anywhere, whatever the application
+# code does. The PDF is parsed in the browser and stays there.
+#
+# `worker-src blob:` is required by pdf.js, which instantiates its worker from
+# a blob URL. `wasm-unsafe-eval` is required by pdf.js's WebAssembly paths.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "no-referrer"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
