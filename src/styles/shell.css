@@ -157,3 +157,99 @@
   max-width: 46rem;
   margin: var(--s-6) auto;
 }
+
+/* --- Bulletin age banner (staleness) ------------------------------------
+ *
+ * Sits at the very top of the content well, before anything it qualifies —
+ * a warning below the figures it warns about is a footnote, and footnotes are
+ * not read under time pressure.
+ *
+ * NFR-8 throughout: the level is carried by the word and the shape in the
+ * markup. Everything below is reinforcement. Set the page to greyscale and the
+ * banner still reads correctly, which is the actual test — a control-room
+ * projector with a tired lamp is close enough to greyscale in practice.
+ */
+
+.staleness {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--s-2) var(--s-3);
+  margin-bottom: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--c-rule-strong);
+  /* The left rule thickens with the level, so severity is legible from the
+     shape of the block alone, at projector range, before any word is read. */
+  border-left: 4px solid var(--c-rule-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface-sunken);
+}
+
+.staleness__level {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.staleness__mark {
+  font-size: var(--fs-figure);
+  line-height: 1;
+}
+
+.staleness__body {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.staleness__headline {
+  font-size: var(--fs-body);
+}
+
+.staleness__age {
+  font-size: var(--fs-figure);
+  font-weight: 700;
+}
+
+.staleness__note {
+  font-size: var(--fs-small);
+  color: var(--c-ink-muted);
+}
+
+.staleness__warning {
+  font-size: var(--fs-body);
+}
+
+.staleness--current {
+  border-color: var(--c-ok);
+  background: var(--c-surface-sunken);
+}
+
+.staleness--ageing {
+  border-color: var(--c-warning);
+  background: var(--c-warning-soft);
+}
+
+.staleness--stale {
+  border-left-width: 8px;
+  border-color: var(--c-gap);
+  background: var(--c-gap-soft);
+}
+
+.staleness--obsolete,
+.staleness--unknown {
+  border-left-width: 12px;
+  border-color: var(--c-danger);
+  background: var(--c-danger-soft);
+}
+
+.staleness--obsolete .staleness__age,
+.staleness--unknown .staleness__age,
+.staleness--stale .staleness__age {
+  font-size: var(--fs-figure-lg);
+}

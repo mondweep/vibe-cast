@@ -22,5 +22,6 @@ export { ResponseCapacity, type ResponseCapacityProps } from './response-capacit
 export { ScenarioPlanner, type ScenarioPlannerProps } from './scenario-planner';
 export { SeverityWeightsPanel, type SeverityWeightsProps } from './severity-weights';
 export { SituationSummary, type SituationSummaryProps } from './situation-summary';
+export { StalenessBanner, type StalenessBannerProps } from './staleness-banner';
 export { TrendView, withExplicitGaps, type TrendViewProps } from './trend-view';
 export * from './view-models';

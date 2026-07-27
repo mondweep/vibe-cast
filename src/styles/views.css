@@ -350,3 +350,35 @@ td.comparison__projected {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Where to get a bulletin -------------------------------------------- */
+
+.loader__source {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  max-width: 34rem;
+}
+
+/* In the header the link and its note sit on one line, inside the 2.75rem
+   the console budgets for the header on a 1366x768 projector (NFR-11). */
+.loader__source[data-compact='true'] {
+  flex-direction: row;
+  align-items: baseline;
+  gap: var(--s-2);
+  white-space: nowrap;
+}
+
+.loader__source-link {
+  color: var(--c-link);
+  font-weight: 700;
+  /* Underlined rather than colour-only, so it still reads as a link in
+     greyscale on a projector and to a colour-blind reader (NFR-8). */
+  text-decoration: underline;
+}
+
+.loader__source-link:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}

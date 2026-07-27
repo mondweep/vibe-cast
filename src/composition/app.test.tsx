@@ -68,14 +68,37 @@ const dropIn = async (file: File) => {
 };
 
 describe('App', () => {
-  it('shows the loader and no figures until a bulletin is read', async () => {
+  it('opens on the bundled bulletin, with the loader still to hand', async () => {
     const { container, list } = aContainer();
 
     render(<App container={container} />);
 
+    // No fetch, no pdf.js, no loading state: the figures are on screen in the
+    // first paint (NFR-3). 365,023 is the headline gap for 27 July 2026.
+    expect(screen.getAllByText('365,023').length).toBeGreaterThan(0);
     await waitFor(() => expect(list).toHaveBeenCalled());
     expect(screen.getByTestId('bulletin-dropzone')).toBeTruthy();
-    expect(screen.queryByText('365,023')).toBeNull();
+  });
+
+  it('never parses a PDF to show the bundled bulletin', async () => {
+    const { container, list } = aContainer();
+
+    render(<App container={container} />);
+    await waitFor(() => expect(list).toHaveBeenCalled());
+
+    // The whole point of shipping the parsed report: the default path costs
+    // nothing from the `BulletinSource` port, which is where pdf.js lives.
+    expect(container.bulletins.parse).not.toHaveBeenCalled();
+  });
+
+  it('does not write the bundled example into the officer’s own store', async () => {
+    const { container, list } = aContainer();
+
+    render(<App container={container} />);
+    await waitFor(() => expect(list).toHaveBeenCalled());
+
+    // A worked example the officer did not choose is not part of their record.
+    expect(container.reports.save).not.toHaveBeenCalled();
   });
 
   it('runs the load use case and renders the parsed figures', async () => {
@@ -117,7 +140,7 @@ describe('App', () => {
     expect(screen.getByText(/No gaps/)).toBeTruthy();
   });
 
-  it('surfaces a parse failure verbatim and displays nothing it did not read', async () => {
+  it('surfaces a parse failure verbatim and adopts nothing from the failed file', async () => {
     const load = vi.fn().mockRejectedValue(new Error('This PDF has no text layer'));
     const { container } = aContainer({
       loadBulletin: { execute: load } as unknown as Container['loadBulletin'],
@@ -127,7 +150,11 @@ describe('App', () => {
     await dropIn(pdf('scan.pdf'));
 
     await waitFor(() => expect(screen.getByText(/no text layer/)).toBeTruthy());
-    expect(screen.queryByText('365,023')).toBeNull();
+    // The console falls back to what it had, and still says what that is: the
+    // bundled example. A failed parse never promotes itself to a bulletin.
+    expect(screen.getByTestId('staleness-banner').getAttribute('data-origin')).toBe(
+      'bundled-sample',
+    );
   });
 
   it('restores bulletins kept from a previous session', async () => {
@@ -158,5 +185,138 @@ describe('App', () => {
 
     await waitFor(() => expect(screen.getAllByText(/4\.2 days/).length).toBeGreaterThan(0));
     expect(load).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * The bundled bulletin, and the safety control that stops it going stale in
+ * silence. These are composition-root tests because the age assessment needs
+ * three things only this layer has together: the timeline, the `Clock` port,
+ * and the knowledge of whether the officer loaded anything.
+ */
+describe('App — the bundled bulletin and its age', () => {
+  const atAssamTime = (iso: string) => ({
+    clock: { now: () => new Date(iso) } as Container['clock'],
+  });
+
+  const banner = () => screen.getByTestId('staleness-banner');
+
+  it('frames the bundled bulletin as a worked example, not as today’s situation', async () => {
+    const { container, list } = aContainer(atAssamTime('2026-07-27T09:00:00+05:30'));
+
+    render(<App container={container} />);
+    await waitFor(() => expect(list).toHaveBeenCalled());
+
+    expect(banner().getAttribute('data-origin')).toBe('bundled-sample');
+    expect(banner().textContent).toMatch(/so you can see the console working/);
+    expect(banner().textContent).toMatch(/Load today’s bulletin for live figures/);
+    // On its own day it is genuinely current; crying wolf here would teach
+    // officers to ignore the banner when it matters.
+    expect(banner().getAttribute('data-level')).toBe('current');
+  });
+
+  it('says in plain words how old the bundled bulletin has become', async () => {
+    const { container, list } = aContainer(atAssamTime('2026-08-30T09:00:00+05:30'));
+
+    render(<App container={container} />);
+    await waitFor(() => expect(list).toHaveBeenCalled());
+
+    expect(banner().textContent).toMatch(/This bulletin is 34 days old/);
+    expect(banner().getAttribute('data-level')).toBe('obsolete');
+    expect(banner().textContent).toMatch(/Do not use these figures for current decisions/);
+    expect(banner().getAttribute('role')).toBe('alert');
+  });
+
+  it('escalates through the bands as the same console is reopened later', async () => {
+    const levelOn = async (iso: string): Promise<string | null> => {
+      cleanup();
+      const { container, list } = aContainer(atAssamTime(iso));
+      render(<App container={container} />);
+      await waitFor(() => expect(list).toHaveBeenCalled());
+      return banner().getAttribute('data-level');
+    };
+
+    expect(await levelOn('2026-07-28T09:00:00+05:30')).toBe('current');
+    expect(await levelOn('2026-07-29T09:00:00+05:30')).toBe('ageing');
+    expect(await levelOn('2026-08-02T09:00:00+05:30')).toBe('stale');
+    expect(await levelOn('2026-11-03T09:00:00+05:30')).toBe('obsolete');
+  });
+
+  it('is superseded by a bulletin the officer loads for the same date', async () => {
+    const load = vi.fn().mockResolvedValue(bulletin('2026-07-27', 'officers-own-copy', 445_495));
+    const { container } = aContainer({
+      ...atAssamTime('2026-07-27T21:49:00+05:30'),
+      loadBulletin: { execute: load } as unknown as Container['loadBulletin'],
+    });
+
+    render(<App container={container} />);
+    await dropIn(pdf('Daily_Flood_Report_20260727.pdf'));
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+
+    // One bulletin for 27 July, and it is the officer's — exactly what the
+    // BulletinTimeline aggregate specifies for a re-issued day.
+    await waitFor(() => expect(banner().getAttribute('data-origin')).toBe('loaded'));
+    expect(banner().textContent).toMatch(/You loaded this bulletin/);
+
+    await userEvent.click(screen.getByRole('button', { name: /Trend/ }));
+    expect(screen.getByText(/1 bulletin loaded/)).toBeTruthy();
+  });
+
+  it('drops the example entirely once the officer loads a bulletin of any date', async () => {
+    const load = vi.fn().mockResolvedValue(bulletin('2026-11-03', 'todays-bulletin', 12_000));
+    const { container } = aContainer({
+      ...atAssamTime('2026-11-03T09:00:00+05:30'),
+      loadBulletin: { execute: load } as unknown as Container['loadBulletin'],
+    });
+
+    render(<App container={container} />);
+    await dropIn(pdf('Daily_Flood_Report_20261103.pdf'));
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+
+    // The officer's bulletin is the one on screen, and it is the only one.
+    await waitFor(() =>
+      expect(banner().textContent).toMatch(/Assam Flood Report as on 3 November 2026/),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Trend/ }));
+    // A demonstration must not turn up in the officer's deltas, and must not
+    // manufacture a 99-day gap in their timeline.
+    await waitFor(() => expect(screen.getByText(/1 bulletin loaded/)).toBeTruthy());
+    expect(screen.queryByText(/No bulletin for/)).toBeNull();
+  });
+
+  it('reads a restored bulletin as one the officer loaded, however old it is', async () => {
+    const { container } = aContainer({
+      ...atAssamTime('2026-08-30T09:00:00+05:30'),
+      listBulletins: {
+        execute: vi.fn(async () => [aReport()]),
+      } as unknown as Container['listBulletins'],
+    });
+
+    render(<App container={container} />);
+
+    // An old bulletin the officer chose is a different situation from the
+    // shipped example: their source is out of date, not their console.
+    await waitFor(() => expect(banner().getAttribute('data-origin')).toBe('loaded'));
+    expect(banner().textContent).toMatch(/You loaded this bulletin/);
+    expect(banner().textContent).not.toMatch(/so you can see the console working/);
+    expect(banner().textContent).toMatch(/This bulletin is 34 days old/);
+  });
+
+  it('takes its clock from the container, never from the system', async () => {
+    // The banner is only a safety control if it can be tested at an arbitrary
+    // date. Two different injected clocks, two different answers.
+    const early = aContainer(atAssamTime('2026-07-27T09:00:00+05:30'));
+    render(<App container={early.container} />);
+    await waitFor(() => expect(early.list).toHaveBeenCalled());
+    expect(banner().getAttribute('data-level')).toBe('current');
+
+    cleanup();
+
+    const late = aContainer(atAssamTime('2027-07-27T09:00:00+05:30'));
+    render(<App container={late.container} />);
+    await waitFor(() => expect(late.list).toHaveBeenCalled());
+    expect(banner().getAttribute('data-level')).toBe('obsolete');
+    expect(banner().textContent).toMatch(/365 days old/);
   });
 });

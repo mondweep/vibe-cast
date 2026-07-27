@@ -17,6 +17,12 @@ export type AppShellProps = {
   readonly reportDate?: string;
   readonly generatedAt?: string;
   readonly headerSlot?: ReactNode;
+  /**
+   * Rendered at the top of the content well, before everything it qualifies.
+   * The bulletin-age banner lives here: a warning printed below the figures it
+   * warns about is a footnote, and footnotes are not read under time pressure.
+   */
+  readonly bannerSlot?: ReactNode;
   readonly children: ReactNode;
 };
 
@@ -27,6 +33,7 @@ export const AppShell = ({
   reportDate,
   generatedAt,
   headerSlot,
+  bannerSlot,
   children,
 }: AppShellProps) => {
   const active = views.find((view) => view.key === activeView);
@@ -93,6 +100,7 @@ export const AppShell = ({
       </nav>
 
       <main className="console__main" id="console-main" tabIndex={-1}>
+        {bannerSlot}
         {children}
       </main>
     </div>

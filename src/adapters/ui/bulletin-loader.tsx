@@ -10,6 +10,56 @@
  * does not notice is worse than no data at all (PRD §5.1, invariant 3).
  */
 
+/**
+ * Where the bulletin comes from.
+ *
+ * `https://sdrf.assam.gov.in/dfr/download?type=flood` downloads the Daily Flood
+ * Report directly — it is a real download endpoint, not a landing page. Two
+ * things about it shape what we can do with it:
+ *
+ * 1. **It is geo-restricted to India.** From outside India the connection is
+ *    refused. That is why the note beside the link says so: without it, a user
+ *    abroad clicks, gets a reset, and concludes this console is broken.
+ * 2. **It has no date parameter**, so treat it as serving only the LATEST
+ *    bulletin. Nothing here may assume an archive is reachable by URL.
+ *
+ * This is a link for a human to click and nothing more. **The app must never
+ * fetch it.** NFR-5 forbids network egress outright, the CSP blocks it, CORS
+ * would block it anyway, and the geo-restriction makes it impossible from most
+ * hosting regardless. There is no fetch, no proxy and no retry here by design,
+ * and `src/architecture.test.ts` keeps it that way.
+ */
+const SDRF_DOWNLOAD_URL = 'https://sdrf.assam.gov.in/dfr/download?type=flood';
+
+/**
+ * The geo-restriction is stated in both variants, at different lengths. The
+ * header has 2.75rem to work in (NFR-11 budgets the console for a 1366x768
+ * projector), so the compact note is trimmed to the part a user cannot afford
+ * to miss: clicking this from outside India fails, and that is the site, not
+ * this console.
+ */
+const SourceLink = ({ compact }: { readonly compact: boolean }) => (
+  <p className="loader__source" data-compact={compact ? 'true' : 'false'}>
+    <a
+      className="loader__source-link"
+      href={SDRF_DOWNLOAD_URL}
+      target="_blank"
+      rel="noreferrer"
+    >
+      Download the latest bulletin from SDRF Assam
+    </a>{' '}
+    {compact ? (
+      <span className="text-micro text-muted">Reachable only from India.</span>
+    ) : (
+      <span className="text-small text-muted">
+        Downloads the newest Daily Flood Report straight from SDRF Assam. The site is reachable
+        only from India — from elsewhere you will need an India VPN, or a colleague to send you
+        the PDF.
+      </span>
+    )}
+  </p>
+);
+
 import { useRef, useState, type DragEvent } from 'react';
 import { Provenance } from './provenance';
 import {
@@ -141,6 +191,11 @@ export const BulletinLoader = ({ state, onLoad, compact = false }: BulletinLoade
         >
           Choose bulletin PDF
         </button>
+
+        {/* Kept in the compact header too: the moment an officer most needs
+            today's bulletin is when they are looking at an old one. */}
+        <SourceLink compact={compact} />
+
         <input
           ref={inputRef}
           type="file"

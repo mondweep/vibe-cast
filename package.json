@@ -12,6 +12,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "oxlint",
+    "generate:default-bulletin": "vite-node scripts/generate-default-bulletin.ts",
+    "verify:lazy-pdfjs": "vite-node scripts/verify-lazy-pdfjs.ts",
     "typecheck": "tsc -b && tsc --noEmit -p tsconfig.test.json"
   },
   "dependencies": {
@@ -34,6 +36,7 @@
     "oxlint": "^1.71.0",
     "typescript": "~6.0.2",
     "vite": "^8.1.1",
+    "vite-node": "^6.0.0",
     "vitest": "^4.1.10"
   }
 }

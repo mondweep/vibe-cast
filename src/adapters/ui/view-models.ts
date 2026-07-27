@@ -432,11 +432,102 @@ export type BulletinLoaderState =
     };
 
 // ---------------------------------------------------------------------------
+// Bulletin age
+// ---------------------------------------------------------------------------
+
+/**
+ * Mirrors `StalenessLevel` in the Temporal Comparison context, restated as the
+ * UI's own type so the console never reaches into a bounded context (ADR-0001).
+ * The composition root maps one to the other, exhaustively, so a new band in
+ * the domain is a compile error here rather than a level that silently renders
+ * as nothing.
+ */
+export type BulletinAgeLevel = 'current' | 'ageing' | 'stale' | 'obsolete' | 'unknown';
+
+/**
+ * Where the bulletin on screen came from.
+ *
+ * A bulletin the officer loaded that happens to be old is a different situation
+ * from the example we shipped in the bundle, and the two must not read the
+ * same: one means "your source is out of date", the other means "you are
+ * looking at a demonstration".
+ */
+export type BulletinOrigin = 'bundled-sample' | 'loaded';
+
+export type BulletinAgeViewModel = {
+  readonly level: BulletinAgeLevel;
+  /** Whole days. `undefined`, never 0, when the age is not knowable. */
+  readonly ageDays: number | undefined;
+  /** ISO date of the bulletin, or `undefined` if it carries none. */
+  readonly reportDate: string | undefined;
+  /** ISO date the age was judged against. */
+  readonly asOf: string | undefined;
+  readonly datedInFuture: boolean;
+  /** False once the figures must not drive a decision taken today. */
+  readonly safeForCurrentDecisions: boolean;
+  readonly origin: BulletinOrigin;
+};
+
+/** The level in words. Colour is never the only channel (NFR-8). */
+export const BULLETIN_AGE_LABELS: Record<BulletinAgeLevel, string> = {
+  current: 'Current',
+  ageing: 'Ageing',
+  stale: 'Stale',
+  obsolete: 'Out of date',
+  unknown: 'Age not known',
+};
+
+/**
+ * A distinct shape per level, so the banner survives a washed-out projector and
+ * a greyscale print. Shapes, not colour swatches: a filled disc, a half disc, a
+ * triangle, a square, a question mark are all told apart by outline alone.
+ */
+export const BULLETIN_AGE_MARKS: Record<BulletinAgeLevel, string> = {
+  current: '●',
+  ageing: '◐',
+  stale: '▲',
+  obsolete: '■',
+  unknown: '?',
+};
+
+// ---------------------------------------------------------------------------
 // Formatting
 // ---------------------------------------------------------------------------
 
 /** What we print when the source did not report a value. Never "0". */
 export const NOT_REPORTED = '—';
+
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+] as const;
+
+/**
+ * `2026-07-27` → `27 July 2026`.
+ *
+ * Written out rather than passed to `toLocaleDateString` so the console reads
+ * identically on every machine in the control room, and so a test asserting the
+ * copy is not asserting the test runner's locale. Day-first matches how ASDMA
+ * prints the date on the bulletin itself (`27-07-2026`).
+ */
+export const formatReportDateLong = (iso: string | undefined): string | undefined => {
+  if (iso === undefined) return undefined;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (match === null) return undefined;
+  const month = MONTH_NAMES[Number(match[2]) - 1];
+  if (month === undefined) return undefined;
+  return `${String(Number(match[3]))} ${month} ${match[1]}`;
+};
 
 const UNIT_SUFFIX: Record<string, string> = {
   count: '',

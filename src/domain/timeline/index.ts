@@ -5,3 +5,4 @@ export * from './bulletin-timeline';
 export * from './delta';
 export * from './gap-detection';
 export * from './newly-affected';
+export * from './staleness';

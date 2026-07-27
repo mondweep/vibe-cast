@@ -18,9 +18,11 @@ import { ResponseCapacity } from './response-capacity';
 import { ScenarioPlanner } from './scenario-planner';
 import { SeverityWeightsPanel } from './severity-weights';
 import { SituationSummary } from './situation-summary';
+import { StalenessBanner } from './staleness-banner';
 import { TrendView } from './trend-view';
 import {
   DEFAULT_SEVERITY_WEIGHTS,
+  type BulletinAgeViewModel,
   type BulletinLoaderState,
   type ConsoleViewKey,
   type DamagePointViewModel,
@@ -59,6 +61,12 @@ export type ConsoleAppProps = {
   readonly loaderState: BulletinLoaderState;
   readonly onLoadBulletin: (file: File) => void;
   readonly data?: ConsoleData | null;
+  /**
+   * How old the bulletin on screen is, and whether it is the bundled example.
+   * Supplied by the composition root, which owns the `Clock` — this component
+   * has no way to ask what day it is, and must not acquire one.
+   */
+  readonly bulletinAge?: BulletinAgeViewModel;
   readonly onWeightsChange?: (weights: SeverityWeights) => void;
   readonly onRationNormChange?: (norm: number) => void;
   readonly onLeversChange?: (levers: ScenarioLeversViewModel) => void;
@@ -77,6 +85,7 @@ export const ConsoleApp = ({
   loaderState,
   onLoadBulletin,
   data,
+  bulletinAge,
   onWeightsChange,
   onRationNormChange,
   onLeversChange,
@@ -188,6 +197,7 @@ export const ConsoleApp = ({
       onSelectView={setActiveView}
       reportDate={data?.summary.reportDate}
       generatedAt={data?.summary.generatedAt}
+      bannerSlot={bulletinAge ? <StalenessBanner age={bulletinAge} /> : null}
       headerSlot={
         data ? (
           <BulletinLoader state={loaderState} onLoad={onLoadBulletin} compact />

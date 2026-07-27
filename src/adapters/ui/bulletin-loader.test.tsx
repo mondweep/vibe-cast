@@ -139,3 +139,55 @@ describe('BulletinLoader — confidence and reconciliation (FR-1.8)', () => {
     expect(screen.getByText(/never rendered as zero/)).toBeTruthy();
   });
 });
+
+describe('BulletinLoader — where to get a bulletin', () => {
+  const SDRF_URL = 'https://sdrf.assam.gov.in/dfr/download?type=flood';
+
+  const sourceLink = () =>
+    screen.getByRole('link', { name: /Download the latest bulletin from SDRF Assam/i });
+
+  it('offers a link to the SDRF Assam download, so the officer knows where to get one', () => {
+    render(<BulletinLoader state={{ status: 'idle' }} onLoad={vi.fn()} />);
+
+    expect(sourceLink().getAttribute('href')).toBe(SDRF_URL);
+  });
+
+  it('opens it in a new tab without leaking the referrer', () => {
+    render(<BulletinLoader state={{ status: 'idle' }} onLoad={vi.fn()} />);
+
+    expect(sourceLink().getAttribute('target')).toBe('_blank');
+    expect(sourceLink().getAttribute('rel')).toBe('noreferrer');
+  });
+
+  it('warns that the SDRF site is reachable only from India', () => {
+    // Without this, someone outside India clicks, gets a connection reset, and
+    // reasonably concludes the console is broken.
+    render(<BulletinLoader state={{ status: 'idle' }} onLoad={vi.fn()} />);
+
+    expect(screen.getByText(/only from India/i)).toBeTruthy();
+  });
+
+  it('keeps the link available once a bulletin is loaded, and in the compact header', () => {
+    // The moment an officer most needs the newest bulletin is when they are
+    // looking at an old one.
+    render(<BulletinLoader state={loadedState} onLoad={vi.fn()} compact />);
+
+    expect(sourceLink().getAttribute('href')).toBe(SDRF_URL);
+    // The header has 2.75rem to work in (NFR-11), so the note is trimmed — but
+    // the geo-restriction is never the part that gets dropped.
+    expect(screen.getByText('Reachable only from India.')).toBeTruthy();
+    expect(screen.queryByText(/India VPN/)).toBeNull();
+  });
+
+  it('never fetches it — the app makes no request of its own (NFR-5)', () => {
+    const fetchSpy = vi.fn();
+    const original = globalThis.fetch;
+    globalThis.fetch = fetchSpy as unknown as typeof globalThis.fetch;
+    try {
+      render(<BulletinLoader state={{ status: 'idle' }} onLoad={vi.fn()} />);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+});
