@@ -21,9 +21,10 @@ Findings below are from direct inspection of the 2026-07-27 bulletin, not assump
 | Do internal totals reconcile? | **Mostly.** Statewide population checks out: 187,890 + 183,461 + 74,144 = 445,495 ✓. But **Sivasagar's camp inmates do not**: stated 24,695 vs 11,892 + 10,497 + 2,281 = 24,670, a gap of 25 | Arithmetic on extracted values | **Verified** |
 | Is the table layout parser-friendly? | **No.** Wrapped cells, split numbers, no delimiters, embedded mini-syntax | Structural inspection | **Verified** |
 | Are sentinel values ambiguous? | **Yes.** `Nil`, `SNR`, and blanks each mean different things | Cross-section comparison | **Verified** |
-| Is there a stable public URL for bulletins? | **Probably.** Pattern `asdma.gov.in/pdf/flood_report/{year}/Daily_Flood_Report_{DD.MM.YYYY}.pdf` appears in search results | Web search | **Unverified — see §5** |
+| Is there a download endpoint for bulletins? | **Yes.** `sdrf.assam.gov.in/dfr/download?type=flood` returns the report directly | Confirmed by the project owner | **Confirmed** |
+| Can it be reached from hosting infrastructure? | **No.** It is geo-restricted to India | Confirmed by the project owner; our probes reset | **Confirmed** |
 
-**On that last row:** the ASDMA domain returned 503 through this environment's proxy and reset the connection on direct `curl`, most likely blocking datacenter IPs. The URL pattern is reported by a search index, not confirmed by us. **Verify from a normal browser on an Indian connection before building anything that depends on it.**
+**On those last two rows:** our own probes from this environment failed (503 through the proxy, connection reset on direct `curl`), which we initially read as datacentre-IP blocking. The project owner has confirmed the real cause: the endpoint enforces an **India geofence**, and is a genuine direct download for anyone inside it. This distinction matters — it is what rules out CI-based automation entirely (§5), which IP blocking alone would not have.
 
 ---
 
@@ -110,23 +111,31 @@ District boundaries for Assam are obtainable. **Revenue Circle boundaries — th
 
 ## 5. The one real limitation: automation
 
-A static site **cannot** fetch the daily bulletin automatically. Two independent blockers:
+Bulletins are downloaded from **`https://sdrf.assam.gov.in/dfr/download?type=flood`**. Confirmed behaviour:
+
+- It **is a direct download** — the endpoint returns the report, not a landing page.
+- It is **geo-restricted to India**. From anywhere else it is unreachable without an India VPN. (This is why our own probes reset the connection.)
+- It carries **no date parameter**, so it appears to serve only the *latest* bulletin. There is no evidence of a fetchable archive.
+
+A static site cannot fetch it automatically, for **three** independent reasons — and the third is the one that actually decides it:
 
 1. **No scheduler.** Static hosting has no cron. Nothing runs unless a user opens the page.
-2. **CORS.** Even with the page open, browser JavaScript cannot fetch a PDF from `asdma.gov.in` unless ASDMA sends `Access-Control-Allow-Origin`. Government portals essentially never do.
+2. **CORS.** Even with the page open, browser JavaScript cannot read a cross-origin PDF unless the server sends `Access-Control-Allow-Origin`. Government portals essentially never do.
+3. **Geo-restriction.** The endpoint only answers requests originating in India.
 
-So v1 requires a human to download the PDF and drop it in. For a daily-rhythm control-room tool that is acceptable, but it is a real friction point and worth stating plainly rather than discovering later.
+**Point 3 rules out the cheap automation options.** GitHub Actions runners, Netlify build and function containers, and most CI infrastructure run in US and European datacentres. They are outside the geofence, so they simply cannot reach the endpoint — no amount of scheduling logic fixes that.
 
-**If automation becomes a requirement**, in increasing order of cost:
+| Option | How | Viable? |
+|---|---|---|
+| **A. Netlify Scheduled Function** | Function fetches daily, re-serves same-origin | **No** — Netlify has no India region; outside the geofence |
+| **B. GitHub Action → committed archive** | Action fetches daily, commits the PDF, Netlify serves it | **No** — GitHub-hosted runners are outside the geofence |
+| **B′. Self-hosted runner in India** | Same as B, but on a small VM in an Indian region (e.g. Mumbai) or an office machine | **Yes** — the only automation path that works. Costs a always-on host to maintain |
+| **C. Ask ASDMA/SDRF for a feed** | Request an API, a CORS header, or an allowlisted egress | Political, not technical — **best outcome if achievable** |
+| **D. Manual download + upload** | A user in India downloads and drops the PDF in | **Yes — works today, zero infrastructure** |
 
-| Option | How | Cost | Trade-off |
-|---|---|---|---|
-| **A. Scheduled function + proxy** | Netlify Scheduled Function fetches the PDF daily, re-serves it same-origin | Low | Breaks the pure-static property; ASDMA may block datacenter IPs — as it appears to have blocked us |
-| **B. GitHub Action → committed archive** | Action fetches daily, commits the PDF (or parsed JSON) to the repo, Netlify serves it same-origin | Low | Still static hosting; builds a valuable dated archive as a side effect; same IP-blocking risk |
-| **C. Ask ASDMA for a feed** | Request an API or CORS header | Political, not technical | Best outcome by far if achievable, and worth asking |
-| **D. Manual upload (v1)** | User drops the PDF in | None | Works today; a human in the loop each morning |
+**Recommendation: D for now, C in parallel.** Manual upload is not merely the v1 compromise — given the geofence it is the only option that needs no infrastructure at all, and the intended users are in Assam, inside the fence, where the link simply works. Pursue B′ only if a daily archive becomes genuinely valuable enough to justify running and maintaining an India-hosted machine; that archive is what would eventually enable multi-season trends and an *absolute* severity scale (ADR-0006 defers that only for lack of history).
 
-**Option B is the recommendation** if automation is wanted. It preserves static hosting, adds no runtime dependency, and the accumulating archive is what would eventually make multi-season trend analysis and an *absolute* severity scale possible (ADR-0006 defers that only for lack of history). Verify the URL pattern from an Indian connection first.
+> **Corrected from an earlier draft.** This assessment previously recommended Option B (a GitHub Action). That was wrong: it assumed the endpoint was merely blocking datacentre IPs, when in fact it enforces a country geofence that GitHub's runners cannot satisfy.
 
 ---
 

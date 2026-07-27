@@ -105,9 +105,13 @@ Static deploy to Netlify — no backend, no database, no secrets, no functions.
 
 ## Known limitations
 
-- **No automatic bulletin fetch.** Static hosting has no scheduler, and CORS blocks
-  browser-side fetching from `asdma.gov.in`. Bulletins are loaded manually. See
-  [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) §5 for the automation options.
+- **No automatic bulletin fetch.** Bulletins are downloaded from
+  [SDRF Assam](https://sdrf.assam.gov.in/dfr/download?type=flood) and loaded manually.
+  Three things prevent automating it: static hosting has no scheduler, CORS blocks
+  browser-side fetching, and — decisively — the endpoint is **geo-restricted to India**,
+  so CI runners and hosting providers outside the country cannot reach it at all.
+  For users in Assam the link simply works. See
+  [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) §5.
 - **No revenue-circle choropleth.** Boundary GeoJSON at that granularity is not
   reliably available as open data. The point map needs no external data (ADR-0008).
 - **Scanned PDFs are not supported.** OCR is out of scope for v1; a PDF without a
