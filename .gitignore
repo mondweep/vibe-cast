@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Ruflo runtime state — regenerated on every run, no value in version control.
+# The config that shapes the swarm (.claude-flow/config.yaml) stays tracked.
+.claude-flow/daemon-state.json
+.claude-flow/daemon.pid
+.claude-flow/metrics/
+.claude-flow/sessions/
+.claude-flow/logs/
+.swarm/
+ruvector.db

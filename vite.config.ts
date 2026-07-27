@@ -15,6 +15,12 @@ export default defineConfig({
         // function because Rollup's object form is no longer in the accepted
         // type union.
         manualChunks(id: string) {
+          // Vite's dynamic-import preload helper is shared, and left to itself
+          // the bundler folds it into the first chunk that needs it — which is
+          // `pdfjs`, giving the entry a *static* import of the very chunk we
+          // split out to keep off the first paint. Its own chunk is ~1 kB and
+          // keeps pdf.js genuinely lazy (NFR-3).
+          if (id.includes('preload-helper')) return 'preload-helper';
           if (id.includes('node_modules/pdfjs-dist')) return 'pdfjs';
           if (id.includes('node_modules/recharts')) return 'charts';
           return undefined;
