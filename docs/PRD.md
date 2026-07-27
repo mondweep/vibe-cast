@@ -334,7 +334,9 @@ Pure function: `(FloodSituationReport, ScenarioLever[]) → ProjectedOutcome`. N
 2. `ProjectedOutcome` is **never persisted** — always recomputed from baseline + levers, so a stale projection cannot survive a data correction.
 3. Every projected figure carries a `Derivation` explaining its provenance in words: *"Rice runs out in 2.1 days: 25% uptake of 579,143 projected affected = 144,785 inmates × 0.6 kg × 100 = 86,871 kg/day demand vs 119,109 kg stock."* A projection a user cannot interrogate is a projection they should not trust.
 
-**Worked example — the flagship scenario.** Baseline 2026-07-27: 445,495 affected, 6.4% uptake, 6.9 days of rice. Apply *+30% affected, uptake rises to 25%, sustained 5 days*: projected inmates 144,785 (a 5× increase), camp load at current 90 camps = 1,609 per camp (5× the current 319), ration coverage collapses from 6.9 days to **1.4 days**. That single screen is the product's core value proposition, and it is arithmetic the PDF cannot do.
+**Worked example — the flagship scenario.** Baseline 2026-07-27: 445,495 affected, 6.4% uptake, 6.9 days of rice. Apply *+30% affected, uptake rises to 25%, sustained 5 days*: projected affected 579,143, projected inmates 144,785 (a 5× increase), camp load at current 90 camps = 1,609 per camp (5× the current 319), ration coverage collapses from 6.9 days to **1.4 days**. That single screen is the product's core value proposition, and it is arithmetic the PDF cannot do.
+
+> **Rounding convention.** Projected people counts are **floored**. Two reasons: a fraction of a person is not a meaningful planning unit, and flooring keeps a projection from inflating itself through rounding artefacts as levers compound. The convention is stated here because `445,495 × 1.3` lands exactly on `.5`, where floor and round-half-up disagree — the kind of ambiguity that otherwise shows up as a failing test nobody can adjudicate. Coverage-day and load figures are unaffected either way.
 
 ### 5.6 Temporal Comparison Context
 

@@ -31,6 +31,7 @@ export default defineConfig({
             'src/application/**/*.test.ts',
             'src/adapters/pdf/**/*.test.ts',
             'src/adapters/persistence/**/*.test.ts',
+            'src/architecture.test.ts',
           ],
         },
       },
