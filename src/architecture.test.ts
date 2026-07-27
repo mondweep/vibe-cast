@@ -90,6 +90,10 @@ describe('ADR-0001: dependencies point inward only', () => {
     // The application layer depends on ports it owns; adapters implement them.
     const violations: string[] = [];
     for (const file of sourceFilesUnder(join(SRC, 'application'))) {
+      // Tests legitimately wire a real adapter in as a test double — the
+      // in-memory repository exists precisely for that. The rule constrains
+      // production code, which is where the coupling would actually bite.
+      if (/\.test\.tsx?$/.test(file)) continue;
       for (const specifier of importsOf(file)) {
         const within = resolveWithinSrc(file, specifier);
         if (within?.startsWith('adapters/')) {
