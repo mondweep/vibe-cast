@@ -28,6 +28,27 @@
   border-bottom: 1px solid #000;
 }
 
+.console__brand-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/*
+ * The drawer toggle and its scrim exist in the markup at every width — one
+ * tree, no viewport branching in JavaScript — and are simply not rendered
+ * above the breakpoint. `display: none` also takes them out of the
+ * accessibility tree and out of the tab order, so the projector layout
+ * (NFR-11) is untouched down to the last Tab stop.
+ */
+.console__rail-toggle {
+  display: none;
+}
+
+.console__scrim {
+  display: none;
+}
+
 .console__brand-title {
   font-size: var(--fs-small);
   font-weight: 700;
@@ -252,4 +273,190 @@
 .staleness--unknown .staleness__age,
 .staleness--stale .staleness__age {
   font-size: var(--fs-figure-lg);
+}
+
+/* --- Loading a newer bulletin, inside the banner that asked for one -------
+ *
+ * A separated row, not a second alarm: the banner has already made its noise
+ * with a thick left rule and the word STALE, and this is the quiet answer to
+ * it. One rule above, ordinary type, no colour of its own.
+ */
+
+.bulletin-reload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2) var(--s-3);
+  margin-top: var(--s-2);
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--c-rule-strong);
+}
+
+.bulletin-reload__button {
+  flex: none;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--c-ink);
+  border-radius: var(--radius);
+  background: var(--c-ink);
+  color: #ffffff;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.bulletin-reload__button:hover {
+  background: #000000;
+}
+
+.bulletin-reload__source {
+  min-width: 0;
+  flex: 1 1 18rem;
+}
+
+/* --- Narrow viewports: the rail becomes an off-canvas drawer --------------
+ *
+ * 900px, and the arithmetic behind it, is documented at the top of
+ * `src/adapters/ui/layout.test.ts`, which also asserts every rule below.
+ * The short version: the rail costs a flat 184px, and by 874px of viewport
+ * that is the difference between `.figure-grid` being a grid and being a
+ * list. Above the breakpoint nothing in this block applies and the console is
+ * byte-for-byte the layout the control room already knows.
+ */
+
+@media (max-width: 900px) {
+  .console {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      'brand'
+      'header'
+      'main';
+  }
+
+  /* The brand line becomes the top bar, with the toggle at the end of it. */
+  .console__brand {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    padding: var(--s-2) var(--s-3);
+  }
+
+  .console__rail-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    flex: none;
+    /* WCAG 2.1 AA target size. */
+    min-height: 44px;
+    min-width: 44px;
+    padding: var(--s-2) var(--s-3);
+    border: 1px solid var(--c-rail-ink-muted);
+    border-radius: var(--radius);
+    color: var(--c-rail-ink);
+    font-size: var(--fs-small);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .console__rail-toggle[aria-expanded='true'] {
+    background: #2d3742;
+    border-color: #ffffff;
+  }
+
+  .console__rail-toggle:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  .console__rail-toggle-mark {
+    font-size: var(--fs-figure);
+    line-height: 1;
+  }
+
+  .console__rail {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    width: min(17rem, 82vw);
+    padding-top: var(--s-3);
+    box-shadow: var(--shadow-pop);
+    /* Off-canvas AND out of the tab order. `transform` alone would leave the
+       view buttons focusable, and a keyboard user would find themselves
+       typing into a drawer they cannot see. */
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition: transform 180ms ease, visibility 0s linear 180ms;
+  }
+
+  .console[data-rail-open='true'] .console__rail {
+    visibility: visible;
+    transform: translateX(0);
+    transition: transform 180ms ease, visibility 0s linear 0s;
+  }
+
+  .console__rail-link {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .console__scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    width: 100%;
+    height: 100%;
+    background: rgba(19, 24, 30, 0.45);
+    cursor: pointer;
+  }
+
+  /* The header carries the report identity and the compact loader. On a phone
+     it wraps onto as many lines as it needs rather than truncating the date. */
+  .console__header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--s-2);
+    padding: var(--s-2) var(--s-3);
+  }
+
+  .console__header-identity {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .console__header-question {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .console__main {
+    padding: var(--s-3) var(--s-3) var(--s-6);
+  }
+
+  /* "Age not known" and the level mark stop competing with the sentence for
+     the same 3.5 inches; the level sits on its own line above it. */
+  .staleness {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bulletin-reload__button {
+    min-height: 44px;
+  }
+}
+
+/*
+ * NFR-7. `base.css` already clamps every duration globally; this states the
+ * drawer's case explicitly so the intent survives a refactor of that rule,
+ * and clears the visibility delay so the drawer does not linger.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .console__rail,
+  .console[data-rail-open='true'] .console__rail {
+    transition: none;
+  }
 }

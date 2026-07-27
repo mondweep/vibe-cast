@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import { TableScroll } from './table-scroll';
 import {
   formatNumber,
   type FirstFailurePointViewModel,
@@ -181,64 +182,66 @@ export const ScenarioPlanner = ({
             </span>
           </div>
 
-          <table className="data-table comparison">
-            <caption>
-              Baseline is {baselineLabel}, as reported by ASDMA. Projected figures are computed
-              by this console from the levers on the left.
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Metric</th>
-                <th scope="col" className="numeric comparison__baseline-head">
-                  Baseline (reported)
-                </th>
-                <th scope="col" className="numeric comparison__projected-head">
-                  Projected
-                </th>
-                <th scope="col">Direction</th>
-              </tr>
-            </thead>
-            <tbody>
-              {comparisons.map((row) => {
-                const open = expanded.includes(row.key);
-                const derivationId = `derivation-${row.key}`;
-                return (
-                  <tr key={row.key} data-metric={row.key}>
-                    <th scope="row">{row.metric}</th>
-                    <td className="numeric" data-cell="baseline">
-                      <span className="figure">{row.baseline}</span>
-                    </td>
-                    <td className="numeric comparison__projected" data-cell="projected">
-                      <span className="projected-figure">
-                        {row.projected}
-                        <span className="figure-tag">projected</span>
-                      </span>
-                      <div>
-                        <button
-                          type="button"
-                          className="derivation__toggle"
-                          aria-expanded={open}
-                          aria-controls={derivationId}
-                          title={row.derivation}
-                          onClick={() => toggle(row.key)}
-                        >
-                          {open ? 'Hide derivation' : 'Show derivation'}
-                        </button>
-                      </div>
-                      {open ? (
-                        <p className="derivation" id={derivationId}>
-                          {row.derivation}
-                        </p>
-                      ) : null}
-                    </td>
-                    <td>
-                      <span className="text-small">{DIRECTION_TAG[row.direction]}</span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <TableScroll label="Baseline vs projected table">
+            <table className="data-table comparison">
+              <caption>
+                Baseline is {baselineLabel}, as reported by ASDMA. Projected figures are computed
+                by this console from the levers on the left.
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Metric</th>
+                  <th scope="col" className="numeric comparison__baseline-head">
+                    Baseline (reported)
+                  </th>
+                  <th scope="col" className="numeric comparison__projected-head">
+                    Projected
+                  </th>
+                  <th scope="col">Direction</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisons.map((row) => {
+                  const open = expanded.includes(row.key);
+                  const derivationId = `derivation-${row.key}`;
+                  return (
+                    <tr key={row.key} data-metric={row.key}>
+                      <th scope="row">{row.metric}</th>
+                      <td className="numeric" data-cell="baseline">
+                        <span className="figure">{row.baseline}</span>
+                      </td>
+                      <td className="numeric comparison__projected" data-cell="projected">
+                        <span className="projected-figure">
+                          {row.projected}
+                          <span className="figure-tag">projected</span>
+                        </span>
+                        <div>
+                          <button
+                            type="button"
+                            className="derivation__toggle"
+                            aria-expanded={open}
+                            aria-controls={derivationId}
+                            title={row.derivation}
+                            onClick={() => toggle(row.key)}
+                          >
+                            {open ? 'Hide derivation' : 'Show derivation'}
+                          </button>
+                        </div>
+                        {open ? (
+                          <p className="derivation" id={derivationId}>
+                            {row.derivation}
+                          </p>
+                        ) : null}
+                      </td>
+                      <td>
+                        <span className="text-small">{DIRECTION_TAG[row.direction]}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </TableScroll>
         </section>
       </div>
     </div>

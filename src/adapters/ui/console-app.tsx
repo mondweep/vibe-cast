@@ -197,7 +197,15 @@ export const ConsoleApp = ({
       onSelectView={setActiveView}
       reportDate={data?.summary.reportDate}
       generatedAt={data?.summary.generatedAt}
-      bannerSlot={bulletinAge ? <StalenessBanner age={bulletinAge} /> : null}
+      bannerSlot={
+        bulletinAge ? (
+          // The banner is the one element guaranteed to be on screen at every
+          // viewport — it is the first thing in the content well, and unlike
+          // the rail it is never behind a toggle. So it is where the "load a
+          // newer bulletin" affordance belongs on a phone.
+          <StalenessBanner age={bulletinAge} onLoadBulletin={onLoadBulletin} />
+        ) : null
+      }
       headerSlot={
         data ? (
           <BulletinLoader state={loaderState} onLoad={onLoadBulletin} compact />

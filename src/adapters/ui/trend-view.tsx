@@ -23,6 +23,7 @@ import {
   YAxis,
 } from 'recharts';
 import { DerivedBadge } from './derived-badge';
+import { TableScroll } from './table-scroll';
 import {
   TREND_METRICS,
   formatNumber,
@@ -223,49 +224,51 @@ export const TrendView = ({
             No adjacent pair of bulletins is loaded, so there is nothing to compare.
           </p>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th scope="col">Metric</th>
-                <th scope="col">From</th>
-                <th scope="col">To</th>
-                <th scope="col" className="numeric">
-                  Change
-                </th>
-                <th scope="col">Direction</th>
-              </tr>
-            </thead>
-            <tbody>
-              {deltas.map((delta) => (
-                <tr
-                  key={`${delta.metricLabel}-${delta.fromDate}-${delta.toDate}`}
-                  data-delta={`${delta.fromDate}→${delta.toDate}`}
-                >
-                  <th scope="row">
-                    {delta.metricLabel}
-                    {delta.derived ? ' (derived)' : ''}
+          <TableScroll label="Day-over-day change table">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Metric</th>
+                  <th scope="col">From</th>
+                  <th scope="col">To</th>
+                  <th scope="col" className="numeric">
+                    Change
                   </th>
-                  <td className="figure">
-                    {delta.fromDate}{' '}
-                    {delta.from === undefined ? '—' : `(${formatNumber(delta.from)})`}
-                  </td>
-                  <td className="figure">
-                    {delta.toDate} {delta.to === undefined ? '—' : `(${formatNumber(delta.to)})`}
-                  </td>
-                  <td className={`numeric delta delta--${delta.direction}`}>
-                    {delta.delta === undefined
-                      ? '—'
-                      : `${delta.delta > 0 ? '+' : ''}${formatNumber(delta.delta)}`}
-                  </td>
-                  <td>
-                    <span className={`delta__direction delta--${delta.direction}`}>
-                      {DIRECTION_MARK[delta.direction]}
-                    </span>
-                  </td>
+                  <th scope="col">Direction</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {deltas.map((delta) => (
+                  <tr
+                    key={`${delta.metricLabel}-${delta.fromDate}-${delta.toDate}`}
+                    data-delta={`${delta.fromDate}→${delta.toDate}`}
+                  >
+                    <th scope="row">
+                      {delta.metricLabel}
+                      {delta.derived ? ' (derived)' : ''}
+                    </th>
+                    <td className="figure">
+                      {delta.fromDate}{' '}
+                      {delta.from === undefined ? '—' : `(${formatNumber(delta.from)})`}
+                    </td>
+                    <td className="figure">
+                      {delta.toDate} {delta.to === undefined ? '—' : `(${formatNumber(delta.to)})`}
+                    </td>
+                    <td className={`numeric delta delta--${delta.direction}`}>
+                      {delta.delta === undefined
+                        ? '—'
+                        : `${delta.delta > 0 ? '+' : ''}${formatNumber(delta.delta)}`}
+                    </td>
+                    <td>
+                      <span className={`delta__direction delta--${delta.direction}`}>
+                        {DIRECTION_MARK[delta.direction]}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableScroll>
         )}
       </section>
     </div>

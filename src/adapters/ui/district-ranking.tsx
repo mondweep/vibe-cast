@@ -18,6 +18,7 @@
 import { Fragment } from 'react';
 import { DerivedBadge } from './derived-badge';
 import { Provenance } from './provenance';
+import { TableScroll } from './table-scroll';
 import {
   SEVERITY_COMPONENT_LABELS,
   formatNumber,
@@ -139,176 +140,180 @@ export const DistrictRanking = ({
       </span>
     </div>
 
-    <table className="data-table">
-      <caption>
-        Districts ranked by Severity Index. Districts reporting all-zero rows are shown as
-        “Reported, no impact” — reported and quiet, not absent.
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">District</th>
-          {COLUMNS.map((column) => (
-            <th
-              scope="col"
-              key={column.key}
-              className={column.numeric ? 'numeric' : undefined}
-              aria-sort={
-                sortKey === column.key
-                  ? sortDirection === 'asc'
-                    ? 'ascending'
-                    : 'descending'
-                  : 'none'
-              }
-            >
-              <button
-                type="button"
-                className="data-table__sort"
-                onClick={() => onSort(column.key)}
+    <TableScroll label="District ranking table">
+      <table className="data-table">
+        <caption>
+          Districts ranked by Severity Index. Districts reporting all-zero rows are shown as
+          “Reported, no impact” — reported and quiet, not absent.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">District</th>
+            {COLUMNS.map((column) => (
+              <th
+                scope="col"
+                key={column.key}
+                className={column.numeric ? 'numeric' : undefined}
+                aria-sort={
+                  sortKey === column.key
+                    ? sortDirection === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                }
               >
-                {column.label}
-                <span className="data-table__sort-arrow" aria-hidden="true">
-                  {sortKey === column.key ? SORT_ARROW[sortDirection] : '↕'}
-                </span>
-              </button>
+                <button
+                  type="button"
+                  className="data-table__sort"
+                  onClick={() => onSort(column.key)}
+                >
+                  {column.label}
+                  <span className="data-table__sort-arrow" aria-hidden="true">
+                    {sortKey === column.key ? SORT_ARROW[sortDirection] : '↕'}
+                  </span>
+                </button>
+              </th>
+            ))}
+            <th scope="col" className="numeric">
+              Flood Death
             </th>
-          ))}
-          <th scope="col" className="numeric">
-            Flood Death
-          </th>
-          <th scope="col" className="numeric">
-            General Drowning (Non Flood)
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => {
-          const expanded = expandedDistrict === row.district;
-          const detailId = `district-detail-${row.district.replace(/\s+/g, '-')}`;
-          return (
-            <Fragment key={row.district}>
-              <tr
-                className={`${expanded ? 'row--expanded' : ''} ${
-                  row.status === 'reported-quiet' ? 'row--quiet' : ''
-                }`.trim()}
-                data-district={row.district}
-              >
-                <td className="numeric">{row.rank}</td>
-                <th scope="row">
-                  <button
-                    type="button"
-                    className="data-table__sort"
-                    aria-expanded={expanded}
-                    aria-controls={detailId}
-                    onClick={() => onToggleDistrict(row.district)}
-                  >
-                    <span aria-hidden="true">{expanded ? '▾' : '▸'}</span>
-                    {row.district}
-                  </button>
-                  {row.status === 'reported-quiet' ? (
-                    <span className="text-micro text-muted"> Reported, no impact</span>
-                  ) : null}
-                  {row.provenance ? (
-                    <>
-                      {' '}
-                      <Provenance source={row.provenance} onOpenPage={onOpenPage} />
-                    </>
-                  ) : null}
-                </th>
-                <td>
-                  <SeverityCell row={row} />
-                </td>
-                <td className="numeric">{formatQuantity(row.populationAffected)}</td>
-                <td className="numeric">{formatQuantity(row.villagesAffected)}</td>
-                <td className="numeric">{formatQuantity(row.cropAreaSubmerged, 2)}</td>
-                <td className="numeric">{formatQuantity(row.campInmates)}</td>
-                <td className="numeric">
-                  {row.campLoad === undefined ? '—' : formatNumber(row.campLoad)}
-                </td>
-                <td className="numeric">{formatQuantity(row.casualties.floodDeaths)}</td>
-                <td className="numeric">{formatQuantity(row.casualties.generalDrownings)}</td>
-              </tr>
-
-              {expanded ? (
-                <tr className="row--expanded" id={detailId}>
-                  <td colSpan={10}>
-                    <ContributionBreakdown contributions={row.contributions} />
-                    <h3 style={{ marginTop: 'var(--s-3)' }}>
-                      Revenue Circles in {row.district}
-                    </h3>
-                    {row.revenueCircles.length === 0 ? (
-                      <p className="text-small text-muted">
-                        No Revenue Circle breakdown reported for {row.district}.
-                      </p>
-                    ) : (
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th scope="col">Revenue Circle</th>
-                            <th scope="col" className="numeric">
-                              Villages Affected
-                            </th>
-                            <th scope="col" className="numeric">
-                              Population Affected
-                            </th>
-                            <th scope="col" className="numeric">
-                              Crop Area Submerged
-                            </th>
-                            <th scope="col" className="numeric">
-                              Relief Camps
-                            </th>
-                            <th scope="col" className="numeric">
-                              Relief Distribution Centres
-                            </th>
-                            <th scope="col" className="numeric">
-                              Inmates
-                            </th>
-                            <th scope="col" className="numeric">
-                              Non-Camp Inmates
-                            </th>
-                            <th scope="col" className="numeric">
-                              Camp Load
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {row.revenueCircles.map((circle) => (
-                            <tr className="row--circle" key={circle.circle}>
-                              <th scope="row">{circle.circle}</th>
-                              <td className="numeric">
-                                {formatQuantity(circle.villagesAffected)}
-                              </td>
-                              <td className="numeric">
-                                {formatQuantity(circle.populationAffected)}
-                              </td>
-                              <td className="numeric">
-                                {formatQuantity(circle.cropAreaSubmerged, 2)}
-                              </td>
-                              <td className="numeric">{formatQuantity(circle.reliefCamps)}</td>
-                              <td className="numeric">
-                                {formatQuantity(circle.reliefDistributionCentres)}
-                              </td>
-                              <td className="numeric">{formatQuantity(circle.campInmates)}</td>
-                              <td className="numeric">
-                                {formatQuantity(circle.nonCampInmates)}
-                              </td>
-                              <td className="numeric">
-                                {circle.campLoad === undefined
-                                  ? '—'
-                                  : formatNumber(circle.campLoad)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
+            <th scope="col" className="numeric">
+              General Drowning (Non Flood)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const expanded = expandedDistrict === row.district;
+            const detailId = `district-detail-${row.district.replace(/\s+/g, '-')}`;
+            return (
+              <Fragment key={row.district}>
+                <tr
+                  className={`${expanded ? 'row--expanded' : ''} ${
+                    row.status === 'reported-quiet' ? 'row--quiet' : ''
+                  }`.trim()}
+                  data-district={row.district}
+                >
+                  <td className="numeric">{row.rank}</td>
+                  <th scope="row">
+                    <button
+                      type="button"
+                      className="data-table__sort"
+                      aria-expanded={expanded}
+                      aria-controls={detailId}
+                      onClick={() => onToggleDistrict(row.district)}
+                    >
+                      <span aria-hidden="true">{expanded ? '▾' : '▸'}</span>
+                      {row.district}
+                    </button>
+                    {row.status === 'reported-quiet' ? (
+                      <span className="text-micro text-muted"> Reported, no impact</span>
+                    ) : null}
+                    {row.provenance ? (
+                      <>
+                        {' '}
+                        <Provenance source={row.provenance} onOpenPage={onOpenPage} />
+                      </>
+                    ) : null}
+                  </th>
+                  <td>
+                    <SeverityCell row={row} />
                   </td>
+                  <td className="numeric">{formatQuantity(row.populationAffected)}</td>
+                  <td className="numeric">{formatQuantity(row.villagesAffected)}</td>
+                  <td className="numeric">{formatQuantity(row.cropAreaSubmerged, 2)}</td>
+                  <td className="numeric">{formatQuantity(row.campInmates)}</td>
+                  <td className="numeric">
+                    {row.campLoad === undefined ? '—' : formatNumber(row.campLoad)}
+                  </td>
+                  <td className="numeric">{formatQuantity(row.casualties.floodDeaths)}</td>
+                  <td className="numeric">{formatQuantity(row.casualties.generalDrownings)}</td>
                 </tr>
-              ) : null}
-            </Fragment>
-          );
-        })}
-      </tbody>
-    </table>
+
+                {expanded ? (
+                  <tr className="row--expanded" id={detailId}>
+                    <td colSpan={10}>
+                      <ContributionBreakdown contributions={row.contributions} />
+                      <h3 style={{ marginTop: 'var(--s-3)' }}>
+                        Revenue Circles in {row.district}
+                      </h3>
+                      {row.revenueCircles.length === 0 ? (
+                        <p className="text-small text-muted">
+                          No Revenue Circle breakdown reported for {row.district}.
+                        </p>
+                      ) : (
+                        <TableScroll label={`Revenue Circles in ${row.district} table`}>
+                          <table className="data-table">
+                            <thead>
+                              <tr>
+                                <th scope="col">Revenue Circle</th>
+                                <th scope="col" className="numeric">
+                                  Villages Affected
+                                </th>
+                                <th scope="col" className="numeric">
+                                  Population Affected
+                                </th>
+                                <th scope="col" className="numeric">
+                                  Crop Area Submerged
+                                </th>
+                                <th scope="col" className="numeric">
+                                  Relief Camps
+                                </th>
+                                <th scope="col" className="numeric">
+                                  Relief Distribution Centres
+                                </th>
+                                <th scope="col" className="numeric">
+                                  Inmates
+                                </th>
+                                <th scope="col" className="numeric">
+                                  Non-Camp Inmates
+                                </th>
+                                <th scope="col" className="numeric">
+                                  Camp Load
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {row.revenueCircles.map((circle) => (
+                                <tr className="row--circle" key={circle.circle}>
+                                  <th scope="row">{circle.circle}</th>
+                                  <td className="numeric">
+                                    {formatQuantity(circle.villagesAffected)}
+                                  </td>
+                                  <td className="numeric">
+                                    {formatQuantity(circle.populationAffected)}
+                                  </td>
+                                  <td className="numeric">
+                                    {formatQuantity(circle.cropAreaSubmerged, 2)}
+                                  </td>
+                                  <td className="numeric">{formatQuantity(circle.reliefCamps)}</td>
+                                  <td className="numeric">
+                                    {formatQuantity(circle.reliefDistributionCentres)}
+                                  </td>
+                                  <td className="numeric">{formatQuantity(circle.campInmates)}</td>
+                                  <td className="numeric">
+                                    {formatQuantity(circle.nonCampInmates)}
+                                  </td>
+                                  <td className="numeric">
+                                    {circle.campLoad === undefined
+                                      ? '—'
+                                      : formatNumber(circle.campLoad)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </TableScroll>
+                      )}
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </TableScroll>
   </section>
 );

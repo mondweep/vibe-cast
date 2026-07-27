@@ -11,25 +11,11 @@
  */
 
 /**
- * Where the bulletin comes from.
- *
- * `https://sdrf.assam.gov.in/dfr/download?type=flood` downloads the Daily Flood
- * Report directly — it is a real download endpoint, not a landing page. Two
- * things about it shape what we can do with it:
- *
- * 1. **It is geo-restricted to India.** From outside India the connection is
- *    refused. That is why the note beside the link says so: without it, a user
- *    abroad clicks, gets a reset, and concludes this console is broken.
- * 2. **It has no date parameter**, so treat it as serving only the LATEST
- *    bulletin. Nothing here may assume an archive is reachable by URL.
- *
- * This is a link for a human to click and nothing more. **The app must never
- * fetch it.** NFR-5 forbids network egress outright, the CSP blocks it, CORS
- * would block it anyway, and the geo-restriction makes it impossible from most
- * hosting regardless. There is no fetch, no proxy and no retry here by design,
- * and `src/architecture.test.ts` keeps it that way.
+ * Where the bulletin comes from. The URL, and the reasons it is a link for a
+ * human to click and never something this app fetches, are documented at the
+ * single point of definition in `bulletin-reload.tsx`.
  */
-const SDRF_DOWNLOAD_URL = 'https://sdrf.assam.gov.in/dfr/download?type=flood';
+import { SDRF_DOWNLOAD_URL } from './bulletin-reload';
 
 /**
  * The geo-restriction is stated in both variants, at different lengths. The

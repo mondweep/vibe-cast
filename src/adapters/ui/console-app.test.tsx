@@ -142,4 +142,46 @@ describe('ConsoleApp', () => {
 
     expect(screen.getByRole('button', { name: 'Choose bulletin PDF' })).toBeTruthy();
   });
+
+  it('wires the staleness banner’s reload control to the same loader', async () => {
+    // The bundled example is the state the console opens in, and the state in
+    // which an officer asked where to upload a newer bulletin from.
+    const onLoadBulletin = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <ConsoleApp
+        loaderState={{ status: 'idle' }}
+        onLoadBulletin={onLoadBulletin}
+        data={data}
+        bulletinAge={{
+          level: 'current',
+          ageDays: 0,
+          reportDate: '2026-07-27',
+          asOf: '2026-07-27',
+          datedInFuture: false,
+          safeForCurrentDecisions: true,
+          origin: 'bundled-sample',
+        }}
+      />,
+    );
+
+    const file = new File(['%PDF-1.4'], 'dfr.pdf', { type: 'application/pdf' });
+    await user.upload(screen.getByLabelText(/newer bulletin pdf/i), file);
+
+    expect(onLoadBulletin).toHaveBeenCalledWith(file);
+  });
+
+  it('scrolls the District ranking table inside its own named region', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConsoleApp loaderState={{ status: 'idle' }} onLoadBulletin={vi.fn()} data={data} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /District Ranking/ }));
+
+    // ~1185px of min-content (ten nowrap headers plus an 8rem severity bar)
+    // has to go somewhere; it goes in a box of its own rather than dragging
+    // the staleness banner and the headline figures sideways with it.
+    expect(screen.getByRole('region', { name: 'District ranking table' })).toBeTruthy();
+  });
 });

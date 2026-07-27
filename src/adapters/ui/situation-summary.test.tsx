@@ -31,6 +31,45 @@ describe('SituationSummary — the headline gap', () => {
     ).toBe(true);
   });
 
+  it('keeps the two tiles interchangeable when the band stacks on a phone', () => {
+    // Below 1100px `.headline` becomes one column and 365,023 sits *under*
+    // 445,495 rather than beside it. Stacking is the moment "the second one"
+    // starts looking like a footnote, so the markup must give the stylesheet
+    // no way to treat them differently: same element, same classes, same
+    // depth, same order of children.
+    const { container } = render(<SituationSummary summary={summaryFixture} />);
+
+    const tiles = [...container.querySelectorAll('.headline__tile')];
+    expect(tiles).toHaveLength(2);
+
+    const [reportedTile, gapTile] = tiles as [HTMLElement, HTMLElement];
+    expect(reportedTile.tagName).toBe(gapTile.tagName);
+    expect(reportedTile.getAttribute('style')).toBeNull();
+    expect(gapTile.getAttribute('style')).toBeNull();
+
+    // The only class either tile has that the other lacks is its own modifier.
+    const shared = ['headline__tile'];
+    expect([...reportedTile.classList].filter((c) => !c.endsWith('--reported'))).toEqual(shared);
+    expect([...gapTile.classList].filter((c) => !c.endsWith('--gap'))).toEqual(shared);
+
+    // Same skeleton in the same order: heading, figure, caption, meta. Neither
+    // tile is a reduced version of the other.
+    const skeleton = (tile: HTMLElement) =>
+      [...tile.children].map((child) => `${child.tagName}.${child.className}`);
+    expect(skeleton(gapTile)).toEqual(skeleton(reportedTile));
+
+    // And the figure itself is the same element with the same class in both,
+    // which is what makes --fs-hero apply to 365,023 exactly as it does to
+    // 445,495 at every viewport (FR-2.1).
+    const value = (tile: HTMLElement) =>
+      tile.querySelector('.headline__value') as HTMLElement | null;
+    expect(value(gapTile)?.tagName).toBe(value(reportedTile)?.tagName);
+    expect(value(gapTile)?.className).toBe(value(reportedTile)?.className);
+    expect(value(gapTile)?.parentElement?.className).toBe(
+      value(reportedTile)?.parentElement?.className.replace('--reported', '--gap'),
+    );
+  });
+
   it('puts the gap in the first screenful, not below the fold', () => {
     const { container } = render(<SituationSummary summary={summaryFixture} />);
 

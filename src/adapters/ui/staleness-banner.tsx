@@ -25,6 +25,7 @@
  * `Clock` port (ADR-0001).
  */
 
+import { BulletinReload } from './bulletin-reload';
 import {
   BULLETIN_AGE_LABELS,
   BULLETIN_AGE_MARKS,
@@ -34,6 +35,12 @@ import {
 
 export type StalenessBannerProps = {
   readonly age: BulletinAgeViewModel;
+  /**
+   * When supplied, the banner offers a way to load a newer bulletin — but only
+   * when it is reporting a problem that loading one would fix. See
+   * `needsNewerBulletin` below.
+   */
+  readonly onLoadBulletin?: (file: File) => void;
 };
 
 /**
@@ -52,11 +59,21 @@ const describeAge = (ageDays: number | undefined): string | undefined => {
 
 const RELOAD_PROMPT = 'Load the latest Daily Flood Report for current figures.';
 
-export const StalenessBanner = ({ age }: StalenessBannerProps) => {
+export const StalenessBanner = ({ age, onLoadBulletin }: StalenessBannerProps) => {
   const { level, ageDays, origin, safeForCurrentDecisions } = age;
   const dateInWords = formatReportDateLong(age.reportDate);
   const ageWords = describeAge(ageDays);
   const isSample = origin === 'bundled-sample';
+
+  /**
+   * Every line of copy below already tells the officer to load a newer
+   * bulletin in these four cases. Offering the control anywhere else would be
+   * a console nagging about a problem it has not got — and a second insistent
+   * element next to the staleness warning is precisely what this design is
+   * trying to avoid.
+   */
+  const needsNewerBulletin =
+    isSample || level === 'stale' || level === 'obsolete' || level === 'unknown';
 
   return (
     <section
@@ -134,6 +151,11 @@ export const StalenessBanner = ({ age }: StalenessBannerProps) => {
             situation that has since been superseded. {RELOAD_PROMPT}
           </p>
         )}
+
+        {/* The remedy, beside the statement of the problem. */}
+        {onLoadBulletin && needsNewerBulletin ? (
+          <BulletinReload onLoad={onLoadBulletin} />
+        ) : null}
       </div>
     </section>
   );

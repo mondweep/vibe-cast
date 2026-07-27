@@ -9,6 +9,7 @@
  */
 
 import { DerivedBadgeFor } from './derived-badge';
+import { TableScroll } from './table-scroll';
 import {
   formatDerived,
   formatNumber,
@@ -118,61 +119,63 @@ export const ResponseCapacity = ({
           Camp Load, Ration Coverage Days and Vulnerable Load are derived figures.
         </span>
       </div>
-      <table className="data-table">
-        <caption>
-          Ration Coverage Days computed at {rationNorm} kg of rice per person per day.
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">District</th>
-            <th scope="col" className="numeric">
-              Relief Camps
-            </th>
-            <th scope="col" className="numeric">
-              Relief Distribution Centres
-            </th>
-            <th scope="col" className="numeric">
-              Inmates
-            </th>
-            <th scope="col" className="numeric">
-              Non-Camp Inmates
-            </th>
-            <th scope="col" className="numeric">
-              Camp Load (derived)
-            </th>
-            <th scope="col" className="numeric">
-              Ration Coverage Days (derived)
-            </th>
-            <th scope="col" className="numeric">
-              Vulnerable Load (derived)
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {capacity.districts.map((row) => (
-            <tr key={row.district} data-district={row.district}>
-              <th scope="row">{row.district}</th>
-              <td className="numeric">{formatQuantity(row.reliefCamps)}</td>
-              <td className="numeric">{formatQuantity(row.reliefDistributionCentres)}</td>
-              <td className="numeric">{formatQuantity(row.campInmates)}</td>
-              <td className="numeric">{formatQuantity(row.nonCampInmates)}</td>
-              <td className="numeric">
-                {row.campLoad === undefined ? '—' : formatNumber(row.campLoad)}
-              </td>
-              <td className="numeric" data-cell="ration-coverage-days">
-                {row.rationCoverageDays === undefined
-                  ? '—'
-                  : `${formatNumber(row.rationCoverageDays, 1)} days`}
-              </td>
-              <td className="numeric">
-                {row.vulnerableLoad === undefined
-                  ? '—'
-                  : `${formatNumber(row.vulnerableLoad, 1)}%`}
-              </td>
+      <TableScroll label="Capacity by District table">
+        <table className="data-table">
+          <caption>
+            Ration Coverage Days computed at {rationNorm} kg of rice per person per day.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">District</th>
+              <th scope="col" className="numeric">
+                Relief Camps
+              </th>
+              <th scope="col" className="numeric">
+                Relief Distribution Centres
+              </th>
+              <th scope="col" className="numeric">
+                Inmates
+              </th>
+              <th scope="col" className="numeric">
+                Non-Camp Inmates
+              </th>
+              <th scope="col" className="numeric">
+                Camp Load (derived)
+              </th>
+              <th scope="col" className="numeric">
+                Ration Coverage Days (derived)
+              </th>
+              <th scope="col" className="numeric">
+                Vulnerable Load (derived)
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {capacity.districts.map((row) => (
+              <tr key={row.district} data-district={row.district}>
+                <th scope="row">{row.district}</th>
+                <td className="numeric">{formatQuantity(row.reliefCamps)}</td>
+                <td className="numeric">{formatQuantity(row.reliefDistributionCentres)}</td>
+                <td className="numeric">{formatQuantity(row.campInmates)}</td>
+                <td className="numeric">{formatQuantity(row.nonCampInmates)}</td>
+                <td className="numeric">
+                  {row.campLoad === undefined ? '—' : formatNumber(row.campLoad)}
+                </td>
+                <td className="numeric" data-cell="ration-coverage-days">
+                  {row.rationCoverageDays === undefined
+                    ? '—'
+                    : `${formatNumber(row.rationCoverageDays, 1)} days`}
+                </td>
+                <td className="numeric">
+                  {row.vulnerableLoad === undefined
+                    ? '—'
+                    : `${formatNumber(row.vulnerableLoad, 1)}%`}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableScroll>
     </section>
   </div>
 );

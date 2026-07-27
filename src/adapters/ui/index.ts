@@ -6,6 +6,11 @@
 
 export { AppShell, type AppShellProps } from './app-shell';
 export { BulletinLoader, type BulletinLoaderProps } from './bulletin-loader';
+export {
+  BulletinReload,
+  SDRF_DOWNLOAD_URL,
+  type BulletinReloadProps,
+} from './bulletin-reload';
 export { Bootstrap, type BootstrapProps } from './bootstrap';
 export { CasualtyPanel, type CasualtyPanelProps } from './casualty-panel';
 export { ConsoleApp, type ConsoleAppProps, type ConsoleData } from './console-app';
@@ -23,5 +28,6 @@ export { ScenarioPlanner, type ScenarioPlannerProps } from './scenario-planner';
 export { SeverityWeightsPanel, type SeverityWeightsProps } from './severity-weights';
 export { SituationSummary, type SituationSummaryProps } from './situation-summary';
 export { StalenessBanner, type StalenessBannerProps } from './staleness-banner';
+export { TableScroll, type TableScrollProps } from './table-scroll';
 export { TrendView, withExplicitGaps, type TrendViewProps } from './trend-view';
 export * from './view-models';

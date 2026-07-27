@@ -8,8 +8,9 @@
  * thrown away, which is what asserting on text rather than class names checks.
  */
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { StalenessBanner } from './staleness-banner';
 import type { BulletinAgeViewModel } from './view-models';
 
@@ -219,6 +220,135 @@ describe('StalenessBanner', () => {
     it('says nothing of the sort when the dates agree', () => {
       render(<StalenessBanner age={anAge({ ageDays: 0, datedInFuture: false })} />);
       expect(within(banner()).queryByText(/dated ahead/)).toBeNull();
+    });
+  });
+
+  /**
+   * "Where do I upload a new bulletin from?"
+   *
+   * A default bulletin always loads now, so the large loader panel never
+   * appears and only the compact header control remains. The fix for a stale
+   * bulletin is to load a newer one — so the affordance belongs beside the
+   * sentence that states the problem, not in a second banner competing with
+   * this one for the officer's attention.
+   */
+  describe('loading a newer bulletin, where the staleness is stated', () => {
+    const reload = () =>
+      screen.queryByRole('button', { name: /Load today’s Daily Flood Report/i });
+
+    it('offers the control when the bulletin is stale', () => {
+      render(
+        <StalenessBanner
+          age={anAge({ level: 'stale', ageDays: 34, safeForCurrentDecisions: false })}
+          onLoadBulletin={vi.fn()}
+        />,
+      );
+      expect(reload()).toBeTruthy();
+    });
+
+    it('offers the control when the bulletin is out of date', () => {
+      render(
+        <StalenessBanner
+          age={anAge({ level: 'obsolete', ageDays: 120, safeForCurrentDecisions: false })}
+          onLoadBulletin={vi.fn()}
+        />,
+      );
+      expect(reload()).toBeTruthy();
+    });
+
+    it('offers the control when the age could not be established', () => {
+      render(
+        <StalenessBanner
+          age={anAge({
+            level: 'unknown',
+            ageDays: undefined,
+            reportDate: undefined,
+            safeForCurrentDecisions: false,
+          })}
+          onLoadBulletin={vi.fn()}
+        />,
+      );
+      expect(reload()).toBeTruthy();
+    });
+
+    it('offers the control while the bundled example is on screen, however fresh it is', () => {
+      // This is the case the officer actually hit: the console opens on the
+      // bundled bulletin, so the loader panel never renders and the upload
+      // path had gone quiet.
+      render(
+        <StalenessBanner
+          age={anAge({ level: 'current', ageDays: 0, origin: 'bundled-sample' })}
+          onLoadBulletin={vi.fn()}
+        />,
+      );
+      expect(reload()).toBeTruthy();
+    });
+
+    it('stays quiet for a bulletin the officer loaded that is still current', () => {
+      // Restraint: a console for time-pressured decisions does not nag about a
+      // problem that does not exist.
+      render(<StalenessBanner age={anAge({ level: 'current' })} onLoadBulletin={vi.fn()} />);
+      expect(reload()).toBeNull();
+    });
+
+    it('stays quiet for a bulletin the officer loaded that is merely ageing', () => {
+      render(
+        <StalenessBanner age={anAge({ level: 'ageing', ageDays: 3 })} onLoadBulletin={vi.fn()} />,
+      );
+      expect(reload()).toBeNull();
+    });
+
+    it('renders nothing extra when no loader was injected', () => {
+      render(
+        <StalenessBanner
+          age={anAge({ level: 'obsolete', ageDays: 120, safeForCurrentDecisions: false })}
+        />,
+      );
+      expect(reload()).toBeNull();
+    });
+
+    it('hands the chosen file to the injected loader', async () => {
+      const onLoadBulletin = vi.fn();
+      const user = userEvent.setup();
+      render(
+        <StalenessBanner
+          age={anAge({ level: 'stale', ageDays: 34, safeForCurrentDecisions: false })}
+          onLoadBulletin={onLoadBulletin}
+        />,
+      );
+
+      const file = new File(['%PDF-1.4'], 'dfr.pdf', { type: 'application/pdf' });
+      await user.upload(screen.getByLabelText(/newer bulletin pdf/i), file);
+
+      expect(onLoadBulletin).toHaveBeenCalledWith(file);
+    });
+
+    it('keeps the SDRF Assam download paired with it, geofence and all', () => {
+      render(
+        <StalenessBanner
+          age={anAge({ level: 'stale', ageDays: 34, safeForCurrentDecisions: false })}
+          onLoadBulletin={vi.fn()}
+        />,
+      );
+
+      expect(
+        within(banner()).getByRole('link', { name: /SDRF Assam/i }).getAttribute('href'),
+      ).toBe('https://sdrf.assam.gov.in/dfr/download?type=flood');
+      expect(within(banner()).getByText(/reachable only from India/i)).toBeTruthy();
+    });
+
+    it('sits inside the banner, not in the rail a phone hides behind a toggle', () => {
+      // NFR: on a narrow viewport the rail is an off-canvas drawer. An upload
+      // path nobody can find was the original complaint; hiding it in the
+      // drawer would repeat the mistake.
+      render(
+        <StalenessBanner
+          age={anAge({ level: 'stale', ageDays: 34, safeForCurrentDecisions: false })}
+          onLoadBulletin={vi.fn()}
+        />,
+      );
+
+      expect(within(banner()).getByTestId('bulletin-reload')).toBeTruthy();
     });
   });
 });

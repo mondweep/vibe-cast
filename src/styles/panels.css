@@ -308,7 +308,16 @@
   margin-top: var(--s-1);
 }
 
-/* --- Tables ------------------------------------------------------------- */
+/* --- Tables -------------------------------------------------------------
+ *
+ * `.table-scroll` wraps every wide table. It is deliberately inert here and
+ * only becomes a scroll container below the drawer breakpoint — see the block
+ * at the foot of this file, and `src/adapters/ui/table-scroll.tsx` for why.
+ */
+
+.table-scroll {
+  max-width: 100%;
+}
 
 .data-table {
   width: 100%;
@@ -481,4 +490,67 @@
   display: grid;
   gap: var(--s-1);
   font-size: var(--fs-small);
+}
+
+/* --- Narrow viewports ----------------------------------------------------
+ *
+ * Same breakpoint as the rail drawer (900px, measured — see
+ * `src/adapters/ui/layout.test.ts`). Nothing here applies to the projector.
+ */
+
+@media (max-width: 900px) {
+  /*
+   * The District ranking table is ~1185px of min-content and will not fit any
+   * phone. Confine the overflow to the table's own box so a sideways swipe
+   * does not drag the staleness banner and the two headline figures off the
+   * screen with it — an officer who has lost 365,023 while scrolling to the
+   * Camp Load column has lost the thing the console exists to show them.
+   */
+  .table-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  /* The region is focusable so the columns can be reached without a pointer;
+     focus must therefore be visible on it (NFR-7). */
+  .table-scroll:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  /* Headers stay on one line and travel with their own column, so a figure is
+     never read under the wrong heading. */
+  .data-table thead th {
+    white-space: nowrap;
+  }
+
+  /*
+   * 21rem of popover is wider than the whole content well on a phone. Cap it
+   * to the viewport. It stays absolutely positioned and stays in the
+   * accessibility tree — the derivation must remain readable to a screen
+   * reader whether or not anyone has hovered it.
+   */
+  .derived-badge__detail {
+    width: min(21rem, calc(100vw - var(--s-6)));
+  }
+
+  /* WCAG 2.1 AA target size. These are inline-flex already, so a minimum
+     height applies and the row grows to meet the fingertip. */
+  .data-table__sort,
+  .derived-badge__marker,
+  .provenance {
+    min-height: 44px;
+  }
+
+  /* Flood Deaths and General Drownings still never share a container that
+     could read as a total (FR-2.9) — stacked, the separating rule moves from
+     the side to the top rather than disappearing. */
+  .casualties {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .casualties__block + .casualties__block {
+    border-left: none;
+    border-top: 2px solid var(--c-rule-strong);
+  }
 }

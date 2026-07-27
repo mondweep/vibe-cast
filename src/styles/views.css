@@ -164,8 +164,15 @@
   align-items: start;
 }
 
+/*
+ * The map is an inline SVG with a fixed 1000x720 viewBox, so it scales to
+ * whatever box it is given. `max-width` is the belt to that braces: without
+ * it, a `1fr` track resolving to its min-content width can hand the SVG a box
+ * wider than the content well and push the page sideways.
+ */
 .map__canvas {
   width: 100%;
+  max-width: 100%;
   height: auto;
   background: #f7f9fb;
   border: 1px solid var(--c-rule-strong);
@@ -341,13 +348,87 @@ td.comparison__projected {
 /* --- Narrow / projector fallbacks ---------------------------------------- */
 
 @media (max-width: 1100px) {
+  /*
+   * Stacked, not demoted. Both tiles keep `.headline__tile`, so 365,023 gets
+   * the same box, the same 5px top rule and the same --fs-hero as 445,495 —
+   * one column instead of two changes their arrangement and nothing else
+   * (FR-2.1). The stylesheet has no rule that gives either tile a type size
+   * the other lacks, and `layout.test.ts` fails if one is ever added.
+   */
   .headline {
     grid-template-columns: 1fr;
   }
 
+  /*
+   * `minmax(0, 1fr)`, not `1fr`. `1fr` is `minmax(auto, 1fr)`, whose floor is
+   * the content's min-content width — that is exactly how a long Revenue
+   * Circle name or the 1000-unit map canvas forces a horizontal scrollbar on
+   * the whole page. An explicit zero floor lets the track shrink instead.
+   */
   .map,
   .scenario {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .map > *,
+  .scenario > * {
+    min-width: 0;
+  }
+}
+
+/* --- Narrow viewports ----------------------------------------------------
+ *
+ * Same 900px breakpoint as the rail drawer. See `layout.test.ts`.
+ */
+
+@media (max-width: 900px) {
+  /* A 10rem label column plus a 3.5rem readout leaves nothing for the slider
+     on a phone, so the label takes a line of its own. */
+  .weights__row {
+    grid-template-columns: minmax(0, 1fr) 3.5rem;
+  }
+
+  .weights__row > label {
+    grid-column: 1 / -1;
+  }
+
+  .weights__slider {
+    min-height: 44px;
+  }
+
+  /* WCAG 2.1 AA target size. */
+  .loader__button,
+  .assumption__input,
+  .derivation__toggle,
+  .map__legend-item {
+    min-height: 44px;
+  }
+
+  .map__legend-item input[type='checkbox'] {
+    width: 22px;
+    height: 22px;
+    flex: none;
+  }
+
+  .assumption__input {
+    width: 6.5rem;
+  }
+
+  /* The compact header loader stops insisting on one line — off the projector
+     there is no 2.75rem header budget to protect, and truncating the words
+     "reachable only from India" is the one thing it must never do. */
+  .loader__source[data-compact='true'] {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  .loader__dropzone {
+    padding: var(--s-3);
+  }
+
+  /* Recharts sizes itself to its container; give it one it can shrink into. */
+  .trend__chart {
+    min-width: 0;
   }
 }
 
