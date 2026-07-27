@@ -35,7 +35,7 @@ const bulletin = (date: string, id: string, affected: number): FloodSituationRep
   });
 
 const aContainer = (overrides: Partial<Container> = {}) => {
-  const load = vi.fn(async () => aReport());
+  const load = vi.fn(async (_file: Blob) => aReport());
   const list = vi.fn(async () => [] as readonly FloodSituationReport[]);
 
   const container = {
