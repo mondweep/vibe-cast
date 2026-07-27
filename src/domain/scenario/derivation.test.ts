@@ -42,6 +42,11 @@ describe('number formatting for plain-language derivations (FR-4.6)', () => {
     expect(formatDecimal(5, 1)).toBe('5');
   });
 
+  it('keeps the sign on a negative decimal, since a fall is not a rise', () => {
+    expect(formatDecimal(-1_234.56, 1)).toBe('-1,234.6');
+    expect(formatDecimal(-0.4, 1)).toBe('-0.4');
+  });
+
   it('says so plainly when a figure is not known', () => {
     expect(formatInteger(undefined)).toBe('not reported');
     expect(formatPercent(undefined)).toBe('not reported');

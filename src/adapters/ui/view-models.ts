@@ -175,6 +175,8 @@ export type SituationSummaryViewModel = {
   readonly affectedPopulation: ReportedFigure;
   /** The headline gap. Given the same visual weight as the reported total. */
   readonly unshelteredAffected: DerivedFigure;
+  /** Unsheltered ÷ Affected Population, as a fraction. 0.819 on 2026-07-27. */
+  readonly unshelteredShare: number;
   readonly shelterSplit: readonly ShelterSegment[];
   readonly reportedFigures: readonly ReportedFigure[];
   readonly derivedMetrics: readonly DerivedFigure[];

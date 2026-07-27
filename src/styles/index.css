@@ -1,0 +1,13 @@
+/*
+ * Assam Flood Situation Console — stylesheet entry point.
+ *
+ * Hand-written CSS, no framework. The console has to render identically on a
+ * control-room projector with no network (NFR-6), so there is nothing to
+ * download and nothing to compile.
+ */
+
+@import './tokens.css';
+@import './base.css';
+@import './shell.css';
+@import './panels.css';
+@import './views.css';

@@ -6,8 +6,15 @@ import type {
   DistrictReport,
   RevenueCircleImpact,
 } from '../shared/flood-situation-report';
-import { count, hectares, unknownCount, unknownHectares } from '../shared/quantity';
-import { districtSituationFrom } from './district-situation';
+import {
+  count,
+  hectares,
+  litres,
+  quintals,
+  unknownCount,
+  unknownHectares,
+} from '../shared/quantity';
+import { districtSituationFrom, districtSituationsFrom } from './district-situation';
 
 // --- builders -------------------------------------------------------------
 // Kept local to the test file: production code carries no test scaffolding.
@@ -229,7 +236,12 @@ describe('Invariant 2 — district figures ≥ the sum of their Revenue Circles'
   it('retains the excess as unattributedToCircle rather than discarding it', () => {
     const withExcess = report('Golaghat', {
       villagesAffected: count(111),
-      population: { male: count(0), female: count(0), children: count(0), total: count(38172) },
+      population: {
+        male: count(17657),
+        female: count(14920),
+        children: count(5595),
+        total: count(38172),
+      },
       cropAreaSubmerged: hectares(2411.5),
       revenueCircles: [
         circle('Golaghat', {
@@ -355,6 +367,14 @@ describe('reported-and-quiet districts', () => {
     });
 
     expect(districtSituationFrom(silent).activity).toBe('unreported');
+  });
+});
+
+describe('a whole bulletin', () => {
+  it('builds one DistrictSituation per reporting district, order preserved', () => {
+    const situations = districtSituationsFrom([report('Dhemaji'), sivasagar]);
+
+    expect(situations.map((s) => s.district)).toEqual(['Dhemaji', 'Sivasagar']);
   });
 });
 

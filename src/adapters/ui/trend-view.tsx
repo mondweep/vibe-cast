@@ -1,0 +1,273 @@
+/**
+ * Trend across bulletins (FR-5.1, FR-5.2, FR-5.4).
+ *
+ * Yesterday's bulletin is a separate PDF, so trend — the difference between a
+ * receding flood and a building one — otherwise requires manually diffing
+ * documents.
+ *
+ * The hard rule here is that **gaps are gaps**. A missing bulletin becomes an
+ * explicit null in the series, so the line breaks visibly, and it is named in
+ * words underneath. Drawing a straight line from the 24th to the 27th would
+ * invent two days of flood data, which is fabrication, not smoothing
+ * (PRD §5.6, invariant 2).
+ */
+
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceArea,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { DerivedBadge } from './derived-badge';
+import {
+  TREND_METRICS,
+  formatNumber,
+  type DeltaViewModel,
+  type TimelineGapViewModel,
+  type TrendMetricKey,
+  type TrendObservation,
+} from './view-models';
+
+export type TrendChartDatum = {
+  readonly date: string;
+  /** `null` — not zero — on a date with no bulletin. Recharts breaks the line. */
+  readonly value: number | null;
+  readonly missing: boolean;
+};
+
+/**
+ * Splice the missing dates into the series as explicit nulls.
+ *
+ * Pure and exported so the no-interpolation guarantee can be tested directly,
+ * rather than inferred from pixels.
+ */
+export const withExplicitGaps = (
+  observations: readonly TrendObservation[],
+  gaps: readonly TimelineGapViewModel[],
+): TrendChartDatum[] => {
+  const reported = new Map<string, number | undefined>();
+  for (const observation of observations) reported.set(observation.date, observation.value);
+
+  const dates = new Set<string>(observations.map((observation) => observation.date));
+  for (const gap of gaps) for (const date of gap.missingDates) dates.add(date);
+
+  return Array.from(dates)
+    .sort()
+    .map((date) => {
+      const held = reported.has(date);
+      const value = reported.get(date);
+      return {
+        date,
+        value: held && value !== undefined ? value : null,
+        missing: !held,
+      };
+    });
+};
+
+export type TrendViewProps = {
+  readonly metricKey: TrendMetricKey;
+  readonly onMetricChange: (metric: TrendMetricKey) => void;
+  readonly observations: readonly TrendObservation[];
+  readonly gaps: readonly TimelineGapViewModel[];
+  /** Day-over-day deltas. The host supplies only *adjacent* pairs. */
+  readonly deltas: readonly DeltaViewModel[];
+  readonly bulletinCount: number;
+  /** Explicit dimensions bypass ResponsiveContainer (used by tests). */
+  readonly chartWidth?: number;
+  readonly chartHeight?: number;
+};
+
+const DIRECTION_MARK: Record<DeltaViewModel['direction'], string> = {
+  up: '▲ up',
+  down: '▼ down',
+  unchanged: '– unchanged',
+  unknown: '? not reported',
+};
+
+export const TrendView = ({
+  metricKey,
+  onMetricChange,
+  observations,
+  gaps,
+  deltas,
+  bulletinCount,
+  chartWidth,
+  chartHeight = 280,
+}: TrendViewProps) => {
+  const metric = TREND_METRICS.find((candidate) => candidate.key === metricKey);
+  const data = withExplicitGaps(observations, gaps);
+
+  const chart = (
+    <LineChart
+      data={data}
+      width={chartWidth}
+      height={chartHeight}
+      margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
+    >
+      <CartesianGrid stroke="var(--c-rule)" strokeDasharray="2 2" />
+      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+      <YAxis tickFormatter={(value: number) => formatNumber(value)} tick={{ fontSize: 11 }} />
+      <Tooltip formatter={(value: number) => formatNumber(value)} />
+      {gaps.map((gap) => (
+        <ReferenceArea
+          key={`${gap.afterDate}-${gap.beforeDate}`}
+          x1={gap.missingDates[0]}
+          x2={gap.missingDates[gap.missingDates.length - 1]}
+          strokeOpacity={0}
+          fill="var(--c-rule)"
+          fillOpacity={0.55}
+          label={{ value: 'no bulletin', fontSize: 10 }}
+        />
+      ))}
+      <Line
+        type="linear"
+        dataKey="value"
+        name={metric?.label ?? metricKey}
+        stroke="var(--c-damage-road)"
+        strokeWidth={2}
+        dot={{ r: 3 }}
+        connectNulls={false}
+        isAnimationActive={false}
+      />
+    </LineChart>
+  );
+
+  return (
+    <div className="panel-stack">
+      <section className="panel" aria-labelledby="trend-heading">
+        <div className="panel__head">
+          <h2 className="panel__title" id="trend-heading">
+            Trend across loaded bulletins
+          </h2>
+          <div className="assumption">
+            <label htmlFor="trend-metric">Metric</label>
+            <select
+              id="trend-metric"
+              value={metricKey}
+              onChange={(event) => onMetricChange(event.target.value as TrendMetricKey)}
+            >
+              {TREND_METRICS.map((candidate) => (
+                <option key={candidate.key} value={candidate.key}>
+                  {candidate.label}
+                  {candidate.derived ? ' (derived)' : ''}
+                </option>
+              ))}
+            </select>
+            {metric?.derived ? (
+              <DerivedBadge
+                formula="Affected Population − Inmates − Non-Camp Inmates"
+                workings="Computed per bulletin, then plotted."
+              />
+            ) : null}
+          </div>
+        </div>
+
+        {bulletinCount < 2 ? (
+          <p className="text-small text-muted">
+            {bulletinCount} bulletin loaded. A single bulletin is a valid timeline and yields no
+            deltas — load an earlier DRIMS PDF to compare.
+          </p>
+        ) : null}
+
+        <div className="trend__chart" data-testid="trend-chart">
+          {chartWidth === undefined ? (
+            <ResponsiveContainer width="100%" height={chartHeight}>
+              {chart}
+            </ResponsiveContainer>
+          ) : (
+            chart
+          )}
+        </div>
+      </section>
+
+      <section
+        className={gaps.length > 0 ? 'callout callout--warning' : 'panel'}
+        aria-labelledby="gaps-heading"
+      >
+        <p className="callout__title" id="gaps-heading">
+          Timeline gaps
+        </p>
+        {gaps.length === 0 ? (
+          <p className="trend__gap-note text-muted">
+            No gaps: every date between the first and last loaded bulletin has a bulletin.
+          </p>
+        ) : (
+          <ul className="callout__list">
+            {gaps.map((gap) => (
+              <li key={`${gap.afterDate}-${gap.beforeDate}`} data-gap={gap.afterDate}>
+                No bulletin for{' '}
+                <strong className="figure">{gap.missingDates.join(', ')}</strong> — between{' '}
+                <span className="figure">{gap.afterDate}</span> and{' '}
+                <span className="figure">{gap.beforeDate}</span>. The line is broken across
+                this gap and no delta is computed over it. Interpolating flood data would be
+                fabrication.
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="panel" aria-labelledby="deltas-heading">
+        <div className="panel__head">
+          <h2 className="panel__title" id="deltas-heading">
+            Day-over-day change
+          </h2>
+          <span className="panel__note">Computed only between adjacent bulletin dates.</span>
+        </div>
+        {deltas.length === 0 ? (
+          <p className="text-small text-muted">
+            No adjacent pair of bulletins is loaded, so there is nothing to compare.
+          </p>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Metric</th>
+                <th scope="col">From</th>
+                <th scope="col">To</th>
+                <th scope="col" className="numeric">
+                  Change
+                </th>
+                <th scope="col">Direction</th>
+              </tr>
+            </thead>
+            <tbody>
+              {deltas.map((delta) => (
+                <tr
+                  key={`${delta.metricLabel}-${delta.fromDate}-${delta.toDate}`}
+                  data-delta={`${delta.fromDate}→${delta.toDate}`}
+                >
+                  <th scope="row">
+                    {delta.metricLabel}
+                    {delta.derived ? ' (derived)' : ''}
+                  </th>
+                  <td className="figure">
+                    {delta.fromDate}{' '}
+                    {delta.from === undefined ? '—' : `(${formatNumber(delta.from)})`}
+                  </td>
+                  <td className="figure">
+                    {delta.toDate} {delta.to === undefined ? '—' : `(${formatNumber(delta.to)})`}
+                  </td>
+                  <td className={`numeric delta delta--${delta.direction}`}>
+                    {delta.delta === undefined
+                      ? '—'
+                      : `${delta.delta > 0 ? '+' : ''}${formatNumber(delta.delta)}`}
+                  </td>
+                  <td>
+                    <span className={`delta__direction delta--${delta.direction}`}>
+                      {DIRECTION_MARK[delta.direction]}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+    </div>
+  );
+};

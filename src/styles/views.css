@@ -1,0 +1,352 @@
+/* View-specific styles: loader, casualties, weights, capacity, map, scenario, trend. */
+
+/* --- Bulletin loader ---------------------------------------------------- */
+
+.loader__dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-6) var(--s-4);
+  border: 2px dashed var(--c-rule-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  text-align: center;
+}
+
+.loader__dropzone[data-dragging='true'] {
+  border-color: var(--c-link);
+  border-style: solid;
+  background: #eef4fb;
+}
+
+.loader__dropzone[data-status='error'] {
+  border-color: var(--c-danger);
+}
+
+.loader__headline {
+  font-size: var(--fs-figure);
+  font-weight: 700;
+}
+
+.loader__button {
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--c-ink);
+  border-radius: var(--radius);
+  background: var(--c-ink);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.loader__button:hover {
+  background: #000000;
+}
+
+.loader__status {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  font-weight: 600;
+}
+
+.section-confidence {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--s-1);
+  font-size: var(--fs-small);
+}
+
+.section-confidence__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: 2px var(--s-1);
+  border-bottom: 1px dotted var(--c-rule);
+}
+
+/* --- Casualties ---------------------------------------------------------
+ * Flood Deaths and General Drownings are physically separated by a rule and
+ * never share a container that could read as a total (FR-2.9).
+ */
+
+.casualties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.casualties__block {
+  padding: var(--s-2) var(--s-3);
+}
+
+.casualties__block + .casualties__block {
+  border-left: 2px solid var(--c-rule-strong);
+}
+
+.casualties__label {
+  display: block;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--c-ink-muted);
+}
+
+.casualties__value {
+  font-family: var(--font-figure);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-figure-lg);
+  font-weight: 700;
+}
+
+.casualties__missing {
+  margin-top: var(--s-2);
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--c-rule);
+}
+
+/* --- Severity weights --------------------------------------------------- */
+
+.weights__row {
+  display: grid;
+  grid-template-columns: 10rem 1fr 3.5rem;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 2px 0;
+}
+
+.weights__value {
+  font-family: var(--font-figure);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.weights__slider {
+  width: 100%;
+}
+
+.weights__total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--s-2);
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--c-rule);
+  font-size: var(--fs-small);
+}
+
+/* --- Response capacity -------------------------------------------------- */
+
+.assumption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.assumption__input {
+  width: 5.5rem;
+  padding: var(--s-1) var(--s-2);
+  border: 1px solid var(--c-rule-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-figure);
+  text-align: right;
+}
+
+.assumption__input:focus-visible {
+  border-color: var(--c-focus);
+}
+
+/* --- Damage map ---------------------------------------------------------- */
+
+.map {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  gap: var(--s-3);
+  align-items: start;
+}
+
+.map__canvas {
+  width: 100%;
+  height: auto;
+  background: #f7f9fb;
+  border: 1px solid var(--c-rule-strong);
+  border-radius: var(--radius);
+}
+
+.map__graticule {
+  stroke: var(--c-rule);
+  stroke-width: 0.5;
+}
+
+.map__frame-label {
+  font-size: 9px;
+  fill: var(--c-ink-faint);
+  font-family: var(--font-figure);
+}
+
+.map__point {
+  stroke-width: 1.5;
+}
+
+.map__point[data-precision='precise'] {
+  fill-opacity: 0.85;
+}
+
+/* Approximate coordinates are hollow and dashed: the bulletin gave us two
+ * significant figures, which locates a District, not a site. */
+.map__point[data-precision='approximate'] {
+  fill: none;
+  stroke-dasharray: 3 2;
+}
+
+.map__cluster-count {
+  font-family: var(--font-figure);
+  font-size: 9px;
+  font-weight: 700;
+  fill: #ffffff;
+  paint-order: stroke;
+  stroke: var(--c-ink);
+  stroke-width: 2.5;
+}
+
+.map__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 2px 0;
+  font-size: var(--fs-small);
+}
+
+.map__legend-swatch {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+/* --- Scenario planner ---------------------------------------------------- */
+
+.scenario {
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 1fr);
+  gap: var(--s-3);
+  align-items: start;
+}
+
+.levers__row {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 2px;
+  padding: var(--s-2) 0;
+  border-bottom: 1px dotted var(--c-rule);
+}
+
+.levers__label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+}
+
+.levers__readout {
+  font-family: var(--font-figure);
+  font-weight: 700;
+}
+
+.comparison th.comparison__baseline-head,
+.comparison th.comparison__projected-head {
+  width: 30%;
+}
+
+.comparison__projected-head {
+  color: var(--c-projected);
+}
+
+/*
+ * Projected figures are typographically distinct from reported ones —
+ * different family weighting, italic, tinted cell, and a literal "projected"
+ * tag in the markup (FR-4.7). Three channels, not one.
+ */
+.projected-figure {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-1);
+  font-family: var(--font-figure);
+  font-style: italic;
+  font-weight: 700;
+  color: var(--c-projected);
+}
+
+td.comparison__projected {
+  background: var(--c-projected-soft);
+  border-left: 2px solid var(--c-projected);
+}
+
+.figure-tag {
+  font-family: var(--font-ui);
+  font-style: normal;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-projected);
+  border: 1px solid var(--c-projected);
+  border-radius: var(--radius);
+  padding: 0 0.3em;
+}
+
+.derivation {
+  margin-top: var(--s-1);
+  padding: var(--s-2);
+  background: var(--c-surface);
+  border: 1px solid var(--c-projected);
+  border-radius: var(--radius);
+  font-size: var(--fs-small);
+  color: var(--c-ink);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.derivation__toggle {
+  font-size: var(--fs-micro);
+  color: var(--c-link);
+  text-decoration: underline;
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* --- Trend --------------------------------------------------------------- */
+
+.trend__chart {
+  overflow-x: auto;
+}
+
+.trend__gap-note {
+  font-size: var(--fs-small);
+}
+
+.delta {
+  font-family: var(--font-figure);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.delta--up { color: var(--c-gap); }
+.delta--down { color: var(--c-ok); }
+.delta--unchanged { color: var(--c-ink-muted); }
+.delta--unknown { color: var(--c-ink-faint); }
+
+.delta__direction {
+  font-family: var(--font-ui);
+}
+
+/* --- Narrow / projector fallbacks ---------------------------------------- */
+
+@media (max-width: 1100px) {
+  .headline {
+    grid-template-columns: 1fr;
+  }
+
+  .map,
+  .scenario {
+    grid-template-columns: 1fr;
+  }
+}

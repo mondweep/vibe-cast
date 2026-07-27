@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-27T21:19:02.331Z",
+  "timestamp": "2026-07-27T21:34:02.361Z",
   "projectRoot": "/home/user/vibe-cast",
   "structure": {
     "hasPackageJson": true,
@@ -7,5 +7,5 @@
     "hasClaudeConfig": true,
     "hasClaudeFlow": true
   },
-  "scannedAt": 1785187142331
+  "scannedAt": 1785188042361
 }
