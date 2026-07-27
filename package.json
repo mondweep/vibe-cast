@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "oxlint",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b && tsc --noEmit -p tsconfig.test.json"
   },
   "dependencies": {
     "idb": "^8.0.3",

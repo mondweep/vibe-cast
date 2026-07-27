@@ -8,39 +8,39 @@
       "failureCount": 0,
       "averageDurationMs": 12.333333333333334,
       "isRunning": false,
-      "nextRun": "2026-07-27T21:34:02.335Z",
+      "nextRun": "2026-07-27T21:49:02.364Z",
       "lastStartedAt": "2026-07-27T21:34:02.336Z",
       "lastRun": "2026-07-27T21:34:02.361Z"
     },
     "audit": {
+      "runCount": 4,
+      "successCount": 4,
+      "failureCount": 0,
+      "averageDurationMs": 5.5,
+      "isRunning": false,
+      "nextRun": "2026-07-27T21:46:02.367Z",
+      "lastStartedAt": "2026-07-27T21:40:02.531Z",
+      "lastRun": "2026-07-27T21:40:02.535Z"
+    },
+    "optimize": {
       "runCount": 3,
       "successCount": 3,
       "failureCount": 0,
-      "averageDurationMs": 6,
+      "averageDurationMs": 21,
       "isRunning": false,
-      "nextRun": "2026-07-27T21:36:02.364Z",
-      "lastStartedAt": "2026-07-27T21:26:02.352Z",
-      "lastRun": "2026-07-27T21:26:02.361Z"
+      "nextRun": "2026-07-27T21:53:02.385Z",
+      "lastStartedAt": "2026-07-27T21:40:02.538Z",
+      "lastRun": "2026-07-27T21:40:02.542Z"
     },
-    "optimize": {
+    "consolidate": {
       "runCount": 2,
       "successCount": 2,
       "failureCount": 0,
-      "averageDurationMs": 29.5,
+      "averageDurationMs": 104,
       "isRunning": false,
-      "nextRun": "2026-07-27T21:38:02.380Z",
-      "lastStartedAt": "2026-07-27T21:23:02.324Z",
-      "lastRun": "2026-07-27T21:23:02.376Z"
-    },
-    "consolidate": {
-      "runCount": 1,
-      "successCount": 1,
-      "failureCount": 0,
-      "averageDurationMs": 192,
-      "isRunning": false,
-      "nextRun": "2026-07-27T21:40:02.504Z",
-      "lastStartedAt": "2026-07-27T21:10:02.308Z",
-      "lastRun": "2026-07-27T21:10:02.500Z"
+      "nextRun": "2026-07-27T22:10:02.531Z",
+      "lastStartedAt": "2026-07-27T21:40:02.510Z",
+      "lastRun": "2026-07-27T21:40:02.526Z"
     },
     "testgaps": {
       "runCount": 2,
@@ -175,5 +175,5 @@
       }
     ]
   },
-  "savedAt": "2026-07-27T21:34:02.361Z"
+  "savedAt": "2026-07-27T21:40:02.542Z"
 }

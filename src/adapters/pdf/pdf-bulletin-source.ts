@@ -670,6 +670,28 @@ const DAMAGE_CLASSES: Partial<Record<SectionKind, DamageClass>> = {
 
 const flatten = (raw: string): string => raw.replace(/\s*\n\s*/g, ' ').trim();
 
+const tighten = (raw: string): string => raw.replace(/\s+/g, '').toLowerCase();
+
+/**
+ * Recover a Revenue Circle name the narrow infrastructure column split
+ * mid-word (`Sissiborgao` / `n | 2)`).
+ *
+ * Prose columns cannot be repaired — nothing distinguishes a word break from a
+ * line break once the glyphs are joined — but a circle name can, because by
+ * the time the infrastructure tables are read we already have this district's
+ * circles from the Villages and Population sections. The wrapped fragment is
+ * matched against that vocabulary with whitespace removed, exactly as section
+ * labels are matched.
+ */
+const resolveCircleName = (district: DistrictDraft, raw: string): string => {
+  const wanted = tighten(raw);
+  if (wanted === '') return '';
+  for (const circle of district.circles.values()) {
+    if (tighten(circle.name) === wanted) return circle.name;
+  }
+  return flatten(raw);
+};
+
 const coordinateFrom = (longitude: string, latitude: string): GeoCoordinate | undefined => {
   const lon = numericValue(parseWrappedDrimsNumber(longitude));
   const lat = numericValue(parseWrappedDrimsNumber(latitude));
@@ -686,14 +708,11 @@ const interpretInfrastructure = (table: SectionTable, draft: Draft): void => {
   const damageClass = DAMAGE_CLASSES[table.kind];
   if (damageClass === undefined) return;
 
-  let currentDistrict = '';
+  let current: DistrictDraft | undefined;
   for (const row of table.rows) {
     const district = cellAt(row, 0);
-    if (district !== '' && isDistrictRow(row)) {
-      currentDistrict = district;
-      districtOf(draft, district);
-    }
-    if (currentDistrict === '') continue;
+    if (district !== '' && isDistrictRow(row)) current = districtOf(draft, district);
+    if (current === undefined) continue;
 
     const name = flatten(cellAt(row, 3));
     if (name === '' || name.toLowerCase() === 'nil') continue;
@@ -701,8 +720,8 @@ const interpretInfrastructure = (table: SectionTable, draft: Draft): void => {
     const circles = [...simpleBreakdown(cellAt(row, 2)).keys()];
     draft.infrastructure.push({
       damageClass,
-      district: districtName(currentDistrict),
-      circle: revenueCircleName(circles[0] ?? ''),
+      district: districtName(current.name),
+      circle: revenueCircleName(resolveCircleName(current, circles[0] ?? '')),
       name,
       department: flatten(cellAt(row, 4)),
       village: flatten(cellAt(row, 5)),

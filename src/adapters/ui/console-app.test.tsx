@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConsoleApp, type ConsoleData } from './console-app';
 import {
@@ -14,6 +14,19 @@ import {
 } from './test-fixtures';
 
 afterEach(cleanup);
+
+/**
+ * The Trend view sizes its chart with a ResponsiveContainer, which jsdom does
+ * not implement. A no-op observer is enough — layout is not what these tests
+ * are about.
+ */
+beforeAll(() => {
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+});
 
 const data: ConsoleData = {
   summary: summaryFixture,
@@ -83,11 +96,14 @@ describe('ConsoleApp', () => {
     );
 
     await user.click(screen.getByRole('button', { name: /Response Capacity/ }));
-    const input = screen.getByLabelText('Rice per person per day');
-    await user.clear(input);
-    await user.type(input, '0.8');
+    fireEvent.change(screen.getByLabelText('Rice per person per day'), {
+      target: { value: '0.8' },
+    });
 
     expect(onRationNormChange).toHaveBeenLastCalledWith(0.8);
+    expect(
+      screen.getByText(/Ration Coverage Days computed at 0.8 kg/),
+    ).toBeTruthy();
   });
 
   it('toggles the sort direction when the same column is chosen twice', async () => {

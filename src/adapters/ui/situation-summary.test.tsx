@@ -22,6 +22,23 @@ describe('SituationSummary — the headline gap', () => {
     expect(reported?.closest('.headline__tile')?.parentElement).toBe(
       gap?.closest('.headline__tile')?.parentElement,
     );
+    // ...and nothing inline shrinks or fades it. The only difference the
+    // stylesheet is allowed to make is colour.
+    expect(gap?.getAttribute('style')).toBeNull();
+    expect(reported?.getAttribute('style')).toBeNull();
+    expect(
+      (gap as HTMLElement).tagName === (reported as HTMLElement).tagName,
+    ).toBe(true);
+  });
+
+  it('puts the gap in the first screenful, not below the fold', () => {
+    const { container } = render(<SituationSummary summary={summaryFixture} />);
+
+    // The headline band is the first thing in the content well, and both
+    // tiles are in it — a District Commissioner does not scroll to find 365,023.
+    const first = container.firstElementChild?.firstElementChild;
+    expect(first?.getAttribute('aria-label')).toBe('Headline figures');
+    expect(first?.querySelectorAll('[data-headline]')).toHaveLength(2);
   });
 
   it('states the gap as a share of the affected population', () => {

@@ -69,13 +69,30 @@ export interface SectionAssembler {
  */
 export type RowStartPolicy = (cells: readonly string[], kind: SectionKind) => boolean;
 
+/**
+ * Whether a section opens with a column-header block.
+ *
+ * Almost every section does, and its header must be dropped before columns are
+ * measured. The rivers block does not: it is a two-line key/value list whose
+ * first line is data, and dropping it would lose the only river above danger
+ * level in the bulletin.
+ */
+export type HeaderPolicy = (kind: SectionKind) => boolean;
+
 export type SectionAssemblerDependencies = {
   readonly clusterer?: RowClusterer;
   readonly recogniser?: SectionRecogniser;
   readonly rowStartPolicy?: RowStartPolicy;
+  readonly headerPolicy?: HeaderPolicy;
   /** Runs starting left of this are section-label gutter, not table body. */
   readonly bodyStart?: number;
 };
+
+const HEADERLESS_SECTIONS: ReadonlySet<SectionKind> = new Set<SectionKind>([
+  'rivers-above-danger-level',
+]);
+
+export const defaultHeaderPolicy: HeaderPolicy = (kind) => !HEADERLESS_SECTIONS.has(kind);
 
 const ITEMISED_SECTIONS: ReadonlySet<SectionKind> = new Set<SectionKind>([
   'infrastructure-road',
@@ -85,8 +102,9 @@ const ITEMISED_SECTIONS: ReadonlySet<SectionKind> = new Set<SectionKind>([
   'infrastructure-others',
 ]);
 
-/** Column holding the Revenue Circle in the infrastructure tables. */
+/** Columns of the infrastructure tables that signal the start of a new item. */
 const ITEM_CIRCLE_COLUMN = 2;
+const ITEM_DEPARTMENT_COLUMN = 4;
 
 /** Fallback gutter width, used only when the document is too sparse to measure. */
 export const FALLBACK_BODY_START = 74;
@@ -114,9 +132,17 @@ const namesSomething = (cell: string): boolean => {
 
 export const defaultRowStartPolicy: RowStartPolicy = (cells, kind) => {
   if (namesSomething(cells[0] ?? '')) return true;
-  // One row per damaged item: `(Sonari | 1)` in the Revenue Circle column
-  // opens the next item even though the District column is empty.
-  return ITEMISED_SECTIONS.has(kind) && (cells[ITEM_CIRCLE_COLUMN] ?? '').trimStart().startsWith('(');
+  if (!ITEMISED_SECTIONS.has(kind)) return false;
+  // One row per damaged item, and a district contributes several. Two signals
+  // open the next item even though the District column is empty:
+  //   - a fresh `(Sonari | 1)` in the Revenue Circle column, and
+  //   - a fresh Department, which every item states exactly once on its first
+  //     printed line. `PWD` opens an item; the `(Roads)` beneath it does not,
+  //     because a continuation never begins with a bracket or lower case.
+  return (
+    (cells[ITEM_CIRCLE_COLUMN] ?? '').trimStart().startsWith('(') ||
+    namesSomething(cells[ITEM_DEPARTMENT_COLUMN] ?? '')
+  );
 };
 
 const cellsOf = (row: VisualRow, columns: readonly ColumnBand[], bodyStart: number): string[] => {
@@ -143,6 +169,7 @@ export const createSectionAssembler = (
   const clusterer = dependencies.clusterer ?? createRowClusterer();
   const recogniser = dependencies.recogniser ?? createSectionRecogniser();
   const startsRow = dependencies.rowStartPolicy ?? defaultRowStartPolicy;
+  const hasHeader = dependencies.headerPolicy ?? defaultHeaderPolicy;
 
   return {
     assemble(runs) {
@@ -188,7 +215,9 @@ export const createSectionAssembler = (
 
       return spans.map(({ kind, label, from, to }) => {
         const sectionRows = rows.slice(from, to);
-        const dataRows = selectDataRows(sectionRows, bodyStart);
+        const dataRows = hasHeader(kind)
+          ? selectDataRows(sectionRows, bodyStart)
+          : sectionRows.filter((r) => r.runs.some((x) => x.x >= bodyStart && x.str.trim() !== ''));
         const columns = resolveColumns(
           dataRows.flatMap((row) => row.runs),
           { bodyStart },

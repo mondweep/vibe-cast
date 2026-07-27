@@ -22,5 +22,12 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  /*
+   * Tests are excluded from the app project deliberately. They read fixtures
+   * from disk and use `import.meta.dirname`, so they need Node types the
+   * shipped bundle must not have — and none of them belong in it. They are
+   * type-checked by tsconfig.test.json instead.
+   */
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/__fixtures__/**"]
 }

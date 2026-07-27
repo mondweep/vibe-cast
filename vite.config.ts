@@ -10,11 +10,14 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // pdf.js is large and only needed once a bulletin is actually
-          // loaded, so it is split out to protect first paint (NFR-3).
-          pdfjs: ['pdfjs-dist'],
-          charts: ['recharts'],
+        // pdf.js is large and only needed once a bulletin is actually loaded,
+        // so it is split out to protect first paint (NFR-3). Written as a
+        // function because Rollup's object form is no longer in the accepted
+        // type union.
+        manualChunks(id: string) {
+          if (id.includes('node_modules/pdfjs-dist')) return 'pdfjs';
+          if (id.includes('node_modules/recharts')) return 'charts';
+          return undefined;
         },
       },
     },
