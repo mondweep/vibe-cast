@@ -98,6 +98,28 @@ asserts that no source file calls `fetch`, `XMLHttpRequest`, `WebSocket`, or
 `sendBeacon`, making the zero-egress guarantee a build-time property as well as a
 CSP one.
 
+## Shareable view URLs
+
+Every view has its own URL, so a colleague can be pointed at the one being
+discussed rather than told where to click:
+
+| View | Path |
+|---|---|
+| Situation Summary | `/` |
+| District Ranking | `/district-ranking` |
+| Response Capacity | `/response-capacity` |
+| Damage Map | `/damage-map` |
+| Scenario Planner | `/scenario-planner` |
+| Trend | `/trend` |
+| Cumulative & Peak | `/cumulative-and-peak` |
+
+Back and forward work, and an unrecognised path lands on the Situation Summary
+rather than a blank screen. Bulletins live in the browser, not the URL, so a
+link opens on the right view with whatever bulletins that reader has loaded.
+
+Slugs are a published contract: a link somebody sent a colleague should keep
+working, so change one only alongside a redirect for the old path.
+
 ## Deployment
 
 Static deploy to Netlify — no backend, no database, no secrets, no functions.

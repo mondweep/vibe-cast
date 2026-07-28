@@ -11,6 +11,7 @@
 
 import { useState } from 'react';
 import { AppShell } from './app-shell';
+import { useConsoleRoute } from './use-console-route';
 import { BulletinLoader } from './bulletin-loader';
 import { DamageMap } from './damage-map';
 import { DistrictRanking } from './district-ranking';
@@ -25,7 +26,6 @@ import {
   DEFAULT_SEVERITY_WEIGHTS,
   type BulletinAgeViewModel,
   type BulletinLoaderState,
-  type ConsoleViewKey,
   type DamagePointViewModel,
   type DeltaViewModel,
   type DistrictRowViewModel,
@@ -123,7 +123,8 @@ export const ConsoleApp = ({
   onRemoveBundledSample,
   onOpenPage,
 }: ConsoleAppProps) => {
-  const [activeView, setActiveView] = useState<ConsoleViewKey>('situation');
+  // Held in the URL, not in component state, so a view can be linked to.
+  const { activeView, selectView } = useConsoleRoute();
   const [sortKey, setSortKey] = useState<DistrictSortKey>('severityIndex');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [expandedDistrict, setExpandedDistrict] = useState<string | null>(null);
@@ -237,7 +238,7 @@ export const ConsoleApp = ({
   return (
     <AppShell
       activeView={activeView}
-      onSelectView={setActiveView}
+      onSelectView={selectView}
       reportDate={data?.summary.reportDate}
       generatedAt={data?.summary.generatedAt}
       bannerSlot={

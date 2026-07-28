@@ -16,7 +16,12 @@ import { aReport } from '../application/services/report.fixture';
 import type { Container } from './container';
 import { App } from './app';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  // The console keeps the active view in the URL, so a test that navigates
+  // leaves the next one starting on a different view. Reset between tests.
+  window.history.replaceState({}, '', '/');
+});
 
 /** The Trend view sizes its chart with a ResponsiveContainer; jsdom has none. */
 beforeAll(() => {
