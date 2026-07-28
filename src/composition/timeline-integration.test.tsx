@@ -17,9 +17,18 @@
  *   2026-07-26       524733        37724    109            2    48742.09          9
  *   2026-07-27       445495        28695     90            0    37139.52          6
  *
- * **23 and 24 July are genuinely missing.** ASDMA's own run has a hole in it,
- * and the console's job is to show it as a hole. Several assertions below exist
- * only to prove nothing is drawn, summed or interpolated across those two days.
+ * **23 and 24 July are deliberately left out.** The console now ships with all
+ * eight consecutive days, so a hole has to be made on purpose to test for one —
+ * and it must be tested for, because interpolating across a missing bulletin is
+ * the single most damaging thing this view could do. Several assertions below
+ * exist only to prove nothing is drawn, summed or interpolated across those two
+ * days.
+ *
+ * The tests that mount the whole `App` therefore inject an **empty** archive.
+ * The bundled 23 and 24 July bulletins would fill the hole in — correctly, in
+ * production — and there would be nothing left here to prove the guarantee
+ * with. What the bundled archive does when it *is* present is asserted in
+ * `app.test.tsx`.
  */
 
 import { readFile } from 'node:fs/promises';
@@ -301,6 +310,9 @@ const aContainer = (load: Container['loadBulletin']['execute']) =>
     exportReport: { execute: vi.fn() },
   }) as unknown as Container;
 
+/** No bundled history: these tests are about the officer's own six bulletins. */
+const noArchive = async (): Promise<readonly FloodSituationReport[]> => [];
+
 const dropIn = async (name: string) => {
   const input = document.querySelector<HTMLInputElement>('input[type="file"]');
   if (!input) throw new Error('no file input rendered');
@@ -319,7 +331,7 @@ describe('six real bulletins — dropped into the console one after another', ()
   it('shows the officer their period totals after loading all six', async () => {
     const load = vi.fn();
     for (const report of reports) load.mockResolvedValueOnce(report);
-    render(<App container={aContainer(load)} />);
+    render(<App container={aContainer(load)} loadArchive={noArchive} />);
 
     for (const stamp of STAMPS) await dropIn(`Daily_Flood_Report_${stamp}.pdf`);
     await waitFor(() => expect(load).toHaveBeenCalledTimes(6));
@@ -349,17 +361,20 @@ describe('six real bulletins — dropped into the console one after another', ()
       '48,742.09',
     );
 
-    // The example is gone: they have six bulletins of their own.
-    expect(screen.queryByTestId('period-sample-note')).toBeNull();
+    // Nothing bundled is left in the count: their own 27 July bulletin
+    // superseded the one the console ships with, and no other bundled day is
+    // present in this test.
+    expect(screen.queryByTestId('period-archive-note')).toBeNull();
   }, 60_000);
 
   it('gives a trend on the very first upload, with 21–26 July shown as a gap', async () => {
     // The user's actual report: one bulletin loaded, no trend visible. The
-    // shipped 27 July example is real ASDMA data and stands as the second point
-    // until the officer's own record can do the job.
+    // bundled 27 July bulletin is real ASDMA data and stands as the second
+    // point. With the rest of the archive withheld here, the six days between
+    // are a genuine hole in what the console holds — and are drawn as one.
     const twentieth = reports.find((report) => String(report.reportDate) === '2026-07-20');
     const load = vi.fn().mockResolvedValue(twentieth);
-    render(<App container={aContainer(load)} />);
+    render(<App container={aContainer(load)} loadArchive={noArchive} />);
 
     await dropIn('Daily_Flood_Report_20260720.pdf');
     await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
@@ -371,15 +386,15 @@ describe('six real bulletins — dropped into the console one after another', ()
     expect(gap?.textContent).toContain('2026-07-21, 2026-07-22, 2026-07-23');
     expect(gap?.textContent).toContain('2026-07-26');
     expect(gap?.textContent).toContain('between 2026-07-20 and 2026-07-27');
-    expect(screen.queryByText(/1 bulletin loaded/)).toBeNull();
-    // And the console says which point they did not choose.
-    expect(screen.getByTestId('trend-sample-note').textContent).toContain('2026-07-27');
+    expect(screen.queryByText(/1 bulletin held/)).toBeNull();
+    // And the console says how many of the points they did not choose.
+    expect(screen.getByTestId('trend-archive-note').textContent).toMatch(/1 of the/);
   }, 60_000);
 
   it('changes the plotted series when the officer changes the metric', async () => {
     const load = vi.fn();
     for (const report of reports) load.mockResolvedValueOnce(report);
-    render(<App container={aContainer(load)} />);
+    render(<App container={aContainer(load)} loadArchive={noArchive} />);
 
     for (const stamp of STAMPS) await dropIn(`Daily_Flood_Report_${stamp}.pdf`);
     await waitFor(() => expect(load).toHaveBeenCalledTimes(6));

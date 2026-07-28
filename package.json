@@ -12,9 +12,10 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "oxlint",
-    "generate:default-bulletin": "vite-node scripts/generate-default-bulletin.ts",
+    "generate:bundled-bulletins": "vite-node scripts/generate-bundled-bulletins.ts",
     "generate:assam-districts": "vite-node scripts/generate-assam-districts.ts",
     "verify:lazy-pdfjs": "vite-node scripts/verify-lazy-pdfjs.ts",
+    "verify:lazy-archive": "vite-node scripts/verify-lazy-archive.ts",
     "typecheck": "tsc -b && tsc --noEmit -p tsconfig.test.json"
   },
   "dependencies": {

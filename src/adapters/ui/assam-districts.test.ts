@@ -16,15 +16,16 @@
  *
  *     npm run generate:assam-districts
  *
- * The same shape as `src/adapters/pdf/default-bulletin.test.ts` does for the
- * bundled bulletin, for the same reason.
+ * The same shape as `src/adapters/pdf/bundled-bulletins.test.ts` does for the
+ * bundled bulletin archive, for the same reason.
  */
 
 import { describe, expect, it } from 'vitest';
 
 import { readBoundaryFixture } from '../../../scripts/assam-districts-source';
 import { ASSAM_DISTRICT_BOUNDARIES } from '../../generated/assam-districts';
-import { DEFAULT_BULLETIN } from '../../generated/default-bulletin';
+import { ARCHIVED_BULLETINS } from '../../generated/bulletin-archive';
+import { NEWEST_BUNDLED_BULLETIN } from '../../generated/bundled-bulletins';
 import { boundaryFor, districtKey } from './choropleth-scale';
 
 describe('the bundled Assam District boundaries', () => {
@@ -74,13 +75,13 @@ describe('the bundled Assam District boundaries', () => {
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
   });
 
-  it('places every District of the real bundled bulletin', () => {
+  it('places every District of the real bundled 27 July bulletin', () => {
     // The reconciliation that matters, run against the shipped 2026-07-27
     // bulletin rather than a fixture: all eight reported Districts must find a
     // polygon. Seven match by name; `Kamrup (M)` needs the alias table. If a
     // future bulletin names a District this cannot place, this fails loudly
     // here rather than losing it quietly on the map.
-    const reported = DEFAULT_BULLETIN.districts.map((district) => String(district.district));
+    const reported = NEWEST_BUNDLED_BULLETIN.districts.map((d) => String(d.district));
     expect(reported).toHaveLength(8);
     expect(reported).toContain('Kamrup (M)');
 
@@ -92,6 +93,77 @@ describe('the bundled Assam District boundaries', () => {
     const placed = reported.map((name) => boundaryFor(name)?.district);
     expect(new Set(placed).size).toBe(reported.length);
     expect(placed).toContain('Kamrup Metropolitan');
+  });
+
+  it('places every District of the archive that the parser reads as a District', () => {
+    // The archive is seven more days of real bulletins, and 20 July alone names
+    // 23 Districts — nearly three times the newest day's eight. A name the
+    // alias table cannot place would vanish from the choropleth, so all eight
+    // days are checked, not just the one the console anchors on.
+    //
+    // KNOWN DEFECT, pre-existing and outside this change: on four of the eight
+    // bulletins the column reader splits a District name that ASDMA wrapped
+    // across two lines in the PDF. "Karbi Anglong" arrives as "Karbi" and
+    // "Anglong"; "Bongaigaon" as "Bongaigao" and "n"; "Kamrup (M)" loses its
+    // stem and leaves "(M)". Those fragments are not Districts and no polygon
+    // exists for them.
+    //
+    // It is pinned here rather than hidden, so it cannot quietly get worse and
+    // so the next person to open `section-assembler` knows what to fix. It does
+    // not reach the screen today: the choropleth and the District ranking are
+    // drawn from the anchoring bulletin alone — the newest bulletin held — and
+    // the archive contributes only statewide totals to Trend and Cumulative &
+    // Peak. An officer who loads one of these PDFs by hand meets the same
+    // defect, and always has.
+    const WRAPPED_FRAGMENTS = ['Karbi', 'Anglong', 'Bongaigao n', 'Bongaigao', 'n', '(M)'];
+
+    const unplaced = [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN].flatMap((report) =>
+      report.districts
+        .map((d) => String(d.district))
+        .filter((name) => boundaryFor(name) === undefined)
+        .map((name) => `${String(report.reportDate)}: ${name}`),
+    );
+
+    const unexpected = unplaced.filter(
+      (entry) => !WRAPPED_FRAGMENTS.includes(entry.split(': ')[1] as string),
+    );
+    expect(unexpected).toEqual([]);
+
+    // And the pin itself: exactly these fragments, on exactly these days.
+    expect(unplaced).toEqual([
+      '2026-07-20: Karbi',
+      '2026-07-20: Anglong',
+      '2026-07-20: Bongaigao n',
+      '2026-07-20: Bongaigao',
+      '2026-07-20: n',
+      '2026-07-20: (M)',
+      '2026-07-21: Karbi',
+      '2026-07-21: Anglong',
+      '2026-07-21: Bongaigao n',
+      '2026-07-21: (M)',
+      '2026-07-23: Karbi',
+      '2026-07-23: Anglong',
+      '2026-07-23: (M)',
+      '2026-07-24: Karbi',
+      '2026-07-24: Anglong',
+    ]);
+  });
+
+  it('places every District of the three archived bulletins the parser reads cleanly', () => {
+    // 22, 25 and 26 July have no wrapped names at all, so on those days the
+    // map is complete. Asserting it keeps the pin above from being read as
+    // "the archive is unmappable" — most of it is fine.
+    const clean = ARCHIVED_BULLETINS.filter((report) =>
+      ['2026-07-22', '2026-07-25', '2026-07-26'].includes(String(report.reportDate)),
+    );
+    expect(clean).toHaveLength(3);
+
+    const unplaced = clean.flatMap((report) =>
+      report.districts
+        .map((d) => String(d.district))
+        .filter((name) => boundaryFor(name) === undefined),
+    );
+    expect(unplaced).toEqual([]);
   });
 
   it('has a distinct comparison key for every District', () => {

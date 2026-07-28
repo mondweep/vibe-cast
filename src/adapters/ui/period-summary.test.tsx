@@ -2,12 +2,26 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { PeriodSummary } from './period-summary';
 import { periodSummaryFixture } from './test-fixtures';
-import type { PeriodSummaryViewModel } from './view-models';
+import type { BundledArchiveViewModel, PeriodSummaryViewModel } from './view-models';
 
 afterEach(cleanup);
 
-const renderSummary = (summary: PeriodSummaryViewModel = periodSummaryFixture, sample?: string) =>
-  render(<PeriodSummary summary={summary} bundledSampleDate={sample} />);
+const renderSummary = (
+  summary: PeriodSummaryViewModel = periodSummaryFixture,
+  archive?: BundledArchiveViewModel,
+) => render(<PeriodSummary summary={summary} archive={archive} />);
+
+const anArchive = (
+  overrides: Partial<BundledArchiveViewModel> = {},
+): BundledArchiveViewModel => ({
+  status: 'ready',
+  fromDate: '2026-07-20',
+  toDate: '2026-07-27',
+  bundledCount: 8,
+  pendingCount: 0,
+  contributingCount: 8,
+  ...overrides,
+});
 
 describe('PeriodSummary — cumulative figures', () => {
   it('totals flood deaths across the loaded bulletins', () => {
@@ -95,7 +109,7 @@ describe('PeriodSummary — what a total is allowed to claim', () => {
       coverage: { ...periodSummaryFixture.coverage, bulletinCount: 1, missingDates: [] },
     });
 
-    expect(screen.getByText(/One bulletin is loaded/)).toBeTruthy();
+    expect(screen.getByText(/One bulletin is held/)).toBeTruthy();
   });
 
   it('says there is nothing to accumulate when no bulletin is loaded', () => {
@@ -191,19 +205,57 @@ describe('PeriodSummary — peaks, and the totals that must never appear', () =>
   });
 });
 
-describe('PeriodSummary — the shipped example', () => {
-  it('says when the figures include the worked example', () => {
-    renderSummary(periodSummaryFixture, '2026-07-27');
+describe('PeriodSummary — the bundled archive', () => {
+  it('says how many of the bulletins behind these figures came with the console', () => {
+    renderSummary(periodSummaryFixture, anArchive({ contributingCount: 6 }));
 
-    expect(screen.getByTestId('period-sample-note').textContent).toMatch(
-      /worked example shipped with this console/,
-    );
-    expect(screen.getByTestId('period-sample-note').textContent).toContain('2026-07-27');
+    const note = screen.getByTestId('period-archive-note');
+    expect(note.textContent).toMatch(/6 of these/);
+    expect(note.textContent).toMatch(/came with the console/);
+    expect(note.textContent).toMatch(/real ASDMA Daily Flood Reports/);
+    expect(note.textContent).toMatch(/20 July 2026 to 27 July 2026/);
   });
 
-  it('says nothing about it once the officer’s own bulletins have replaced it', () => {
+  it('says nothing once the officer’s own bulletins have superseded every bundled day', () => {
+    renderSummary(periodSummaryFixture, anArchive({ contributingCount: 0 }));
+
+    expect(screen.queryByTestId('period-archive-note')).toBeNull();
+  });
+
+  it('says nothing when the console was given no bundled archive at all', () => {
     renderSummary();
 
-    expect(screen.queryByTestId('period-sample-note')).toBeNull();
+    expect(screen.queryByTestId('period-archive-note')).toBeNull();
+  });
+
+  it('warns that these totals are about to change while the history is still loading', () => {
+    renderSummary(
+      { ...periodSummaryFixture, coverage: { ...periodSummaryFixture.coverage, bulletinCount: 1 } },
+      anArchive({ status: 'loading', pendingCount: 7, contributingCount: 1 }),
+    );
+
+    const note = screen.getByTestId('period-archive-loading');
+    expect(note.textContent).toMatch(/Loading the bundled history/);
+    expect(note.textContent).toMatch(/7 more real ASDMA bulletins/);
+    expect(note.textContent).toMatch(/do not quote these totals until it says otherwise/i);
+  });
+
+  it('never tells the officer to go and find earlier PDFs while the archive is in flight', () => {
+    // The advice would be retracted a moment later, which is worse than the
+    // wait it is trying to fill.
+    renderSummary(
+      { ...periodSummaryFixture, coverage: { ...periodSummaryFixture.coverage, bulletinCount: 1 } },
+      anArchive({ status: 'loading', pendingCount: 7, contributingCount: 1 }),
+    );
+
+    expect(screen.queryByText(/load earlier DRIMS PDFs to accumulate/)).toBeNull();
+  });
+
+  it('admits it when the history could not be loaded', () => {
+    renderSummary(periodSummaryFixture, anArchive({ status: 'unavailable', contributingCount: 1 }));
+
+    expect(screen.getByTestId('period-archive-unavailable').textContent).toMatch(
+      /could not be loaded/,
+    );
   });
 });

@@ -420,11 +420,12 @@ td.comparison__projected {
 }
 
 /*
- * The shipped worked example, when it is one of the points on the chart.
- * Tinted like a derived figure because that is what it is to the officer: a
- * number on their screen that did not come out of a PDF they chose.
+ * The bundled archive, wherever it is contributing points to the chart — and
+ * the interim state while it is still arriving. Tinted like a derived figure
+ * because that is what it is to the officer: numbers on their screen that did
+ * not come out of a PDF they chose. Real ASDMA figures, but not theirs.
  */
-.trend__sample-note {
+.trend__archive-note {
   margin-top: var(--s-2);
   padding: var(--s-2) var(--s-3);
   border-left: 3px solid var(--c-derived);
@@ -432,7 +433,7 @@ td.comparison__projected {
   color: var(--c-ink);
 }
 
-.trend__sample-remove {
+.trend__archive-clear {
   font: inherit;
   font-weight: 600;
   color: var(--c-link);

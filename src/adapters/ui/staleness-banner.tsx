@@ -1,11 +1,12 @@
 /**
  * How old is what you are looking at?
  *
- * The console opens on a bundled 27 July 2026 bulletin so an officer can see it
- * working before they have loaded anything. That convenience carries a real
- * hazard: months later the same screen appears, with the same layout and the
- * same confident figures, and nothing about it looks any less authoritative
- * than it did on the day. This banner is what makes the difference visible.
+ * The console ships with an archive of eight real ASDMA bulletins, 20 to 27
+ * July 2026, so an officer sees genuine history before they have loaded
+ * anything. That convenience carries a real hazard: months later the same
+ * screen appears, with the same layout and the same confident figures, and
+ * nothing about it looks any less authoritative than it did on the day. This
+ * banner is what makes the difference visible.
  *
  * Three rules govern it:
  *
@@ -15,10 +16,14 @@
  * 2. **Never colour alone (NFR-8).** Every level carries its name in words and
  *    a distinct shape. Read it in greyscale on a washed-out projector and the
  *    level is still unambiguous; the colour only reinforces what the text says.
- * 3. **The sample is not a bulletin the officer loaded.** A stale bulletin they
- *    chose means their source is out of date. The bundled sample means they are
- *    looking at a demonstration. Those call for different actions, so they get
- *    different copy.
+ * 3. **Bundled history is not a bulletin the officer loaded.** A stale bulletin
+ *    they chose means their source is out of date. Bundled history means
+ *    nothing newer has been loaded at all. Those call for different actions, so
+ *    they get different copy.
+ *
+ * The age is always measured against the **newest bulletin held**, whichever it
+ * is. Bundled history must never make a stale console look current, and equally
+ * must not be reported as stale while the officer is holding something newer.
  *
  * Nothing here computes an age. The assessment arrives as a view model from
  * `domain/timeline/staleness`, which is pure and takes its clock from the
@@ -63,7 +68,7 @@ export const StalenessBanner = ({ age, onLoadBulletin }: StalenessBannerProps) =
   const { level, ageDays, origin, safeForCurrentDecisions } = age;
   const dateInWords = formatReportDateLong(age.reportDate);
   const ageWords = describeAge(ageDays);
-  const isSample = origin === 'bundled-sample';
+  const isBundled = origin === 'bundled-archive';
 
   /**
    * Every line of copy below already tells the officer to load a newer
@@ -73,7 +78,7 @@ export const StalenessBanner = ({ age, onLoadBulletin }: StalenessBannerProps) =
    * trying to avoid.
    */
   const needsNewerBulletin =
-    isSample || level === 'stale' || level === 'obsolete' || level === 'unknown';
+    isBundled || level === 'stale' || level === 'obsolete' || level === 'unknown';
 
   return (
     <section
@@ -92,19 +97,22 @@ export const StalenessBanner = ({ age, onLoadBulletin }: StalenessBannerProps) =
           {BULLETIN_AGE_MARKS[level]}
         </span>
         {BULLETIN_AGE_LABELS[level]}
-        {isSample ? ' · Bundled example' : null}
+        {isBundled ? ' · Bundled history' : null}
       </p>
 
       <div className="staleness__body">
-        {isSample ? (
+        {isBundled ? (
           <p className="staleness__headline">
             {dateInWords === undefined ? (
-              <>Showing a bundled ASDMA bulletin so you can see the console working.</>
+              <>
+                Showing the newest ASDMA bulletin in the archive that ships with this
+                console.
+              </>
             ) : (
               <>
                 Showing the Assam Flood Report as on{' '}
-                <span className="figure">{dateInWords}</span> so you can see the console
-                working.
+                <span className="figure">{dateInWords}</span> — the newest bulletin in the
+                archive that ships with this console, not one you loaded.
               </>
             )}{' '}
             Load today’s bulletin for live figures.

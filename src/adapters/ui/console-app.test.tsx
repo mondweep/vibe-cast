@@ -83,10 +83,10 @@ describe('ConsoleApp', () => {
     expect(screen.getByText('Baseline vs projected')).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: /Trend/ }));
-    expect(screen.getByText('Trend across loaded bulletins')).toBeTruthy();
+    expect(screen.getByText('Trend across every bulletin held')).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: /Cumulative & Peak/ }));
-    expect(screen.getByText('Cumulative & peak across loaded bulletins')).toBeTruthy();
+    expect(screen.getByText('Cumulative & peak across every bulletin held')).toBeTruthy();
   });
 
   it('echoes the trend metric upward so the host can supply that series', async () => {
@@ -110,24 +110,35 @@ describe('ConsoleApp', () => {
     expect((screen.getByLabelText('Metric') as HTMLSelectElement).value).toBe('floodDeaths');
   });
 
-  it('passes the shipped example’s disclosure and removal down to the Trend view', async () => {
-    const onRemoveBundledSample = vi.fn();
+  it('passes the bundled archive’s disclosure and its clear control down to both views', async () => {
+    const onClear = vi.fn();
     const user = userEvent.setup();
     render(
       <ConsoleApp
         loaderState={{ status: 'idle' }}
         onLoadBulletin={vi.fn()}
         data={data}
-        bundledSampleDate="2026-07-27"
-        onRemoveBundledSample={onRemoveBundledSample}
+        archive={{
+          status: 'ready',
+          fromDate: '2026-07-20',
+          toDate: '2026-07-27',
+          bundledCount: 8,
+          pendingCount: 0,
+          contributingCount: 8,
+          onClear,
+        }}
       />,
     );
 
     await user.click(screen.getByRole('button', { name: /Trend/ }));
-    expect(screen.getByTestId('trend-sample-note')).toBeTruthy();
+    expect(screen.getByTestId('trend-archive-note')).toBeTruthy();
 
-    await user.click(screen.getByRole('button', { name: 'Remove the example' }));
-    expect(onRemoveBundledSample).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole('button', { name: 'Clear the bundled history' }));
+    expect(onClear).toHaveBeenCalledTimes(1);
+
+    // Cumulative & Peak counts the same bulletins, so it discloses them too.
+    await user.click(screen.getByRole('button', { name: /Cumulative/ }));
+    expect(screen.getByTestId('period-archive-note')).toBeTruthy();
   });
 
   it('echoes the ration norm upward so the host can recompute coverage days', async () => {
@@ -207,7 +218,7 @@ describe('ConsoleApp', () => {
           asOf: '2026-07-27',
           datedInFuture: false,
           safeForCurrentDecisions: true,
-          origin: 'bundled-sample',
+          origin: 'bundled-archive',
         }}
       />,
     );

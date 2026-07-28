@@ -501,6 +501,53 @@ export const PERIOD_COMPLETENESS_LABELS: Record<PeriodCompleteness, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// The bundled archive
+// ---------------------------------------------------------------------------
+
+/**
+ * How much of the console's own bulletin archive has arrived.
+ *
+ * The console ships with eight consecutive real ASDMA bulletins. Only the
+ * newest is in the entry chunk; the other seven are fetched immediately after
+ * first paint, so there is a short window in which the console holds one
+ * bulletin and is about to hold eight (NFR-4).
+ *
+ * That window has to be *said*, not papered over. Rendering "1 bulletin loaded
+ * — load an earlier PDF to compare" and then silently replacing it a moment
+ * later teaches an officer that the console's own account of what it holds is
+ * unreliable. So `loading` is a state the views draw, in words.
+ *
+ *  - `loading`     the archive chunk is in flight
+ *  - `ready`       all eight are in the timeline
+ *  - `unavailable` the fetch failed; the console says so and carries on with
+ *                  the one bulletin it has, rather than pretending to history
+ *  - `cleared`     the officer asked for their own bulletins only
+ */
+export type BundledArchiveStatus = 'loading' | 'ready' | 'unavailable' | 'cleared';
+
+export type BundledArchiveViewModel = {
+  readonly status: BundledArchiveStatus;
+  /** First and last day the bundle covers. Known before the archive arrives. */
+  readonly fromDate: string;
+  readonly toDate: string;
+  /** Bulletins the console ships with in total, archive and eager together. */
+  readonly bundledCount: number;
+  /** Still in flight. 7 while loading, 0 afterwards. */
+  readonly pendingCount: number;
+  /**
+   * How many bundled bulletins are actually in the timeline right now — after
+   * any the officer has superseded with their own copy, and 0 once cleared.
+   */
+  readonly contributingCount: number;
+  /**
+   * Drops the bundled archive, leaving the officer's own bulletins alone.
+   * `undefined` when they hold nothing of their own, because an empty console
+   * is not an improvement on real history.
+   */
+  readonly onClear?: () => void;
+};
+
+// ---------------------------------------------------------------------------
 // Bulletin loading
 // ---------------------------------------------------------------------------
 
@@ -533,11 +580,11 @@ export type BulletinAgeLevel = 'current' | 'ageing' | 'stale' | 'obsolete' | 'un
  * Where the bulletin on screen came from.
  *
  * A bulletin the officer loaded that happens to be old is a different situation
- * from the example we shipped in the bundle, and the two must not read the
- * same: one means "your source is out of date", the other means "you are
- * looking at a demonstration".
+ * from one out of the archive the console ships with, and the two must not read
+ * the same: one means "your source is out of date", the other means "this is
+ * the history that came with the console, and nothing newer has been loaded".
  */
-export type BulletinOrigin = 'bundled-sample' | 'loaded';
+export type BulletinOrigin = 'bundled-archive' | 'loaded';
 
 export type BulletinAgeViewModel = {
   readonly level: BulletinAgeLevel;

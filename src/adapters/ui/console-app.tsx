@@ -26,6 +26,7 @@ import {
   DEFAULT_SEVERITY_WEIGHTS,
   type BulletinAgeViewModel,
   type BulletinLoaderState,
+  type BundledArchiveViewModel,
   type DamagePointViewModel,
   type DeltaViewModel,
   type DistrictRowViewModel,
@@ -65,7 +66,7 @@ export type ConsoleData = {
     readonly deltas: readonly DeltaViewModel[];
     readonly bulletinCount: number;
   };
-  /** Cumulative and peak figures across every loaded bulletin. */
+  /** Cumulative and peak figures across every bulletin held. */
   readonly period: PeriodSummaryViewModel;
 };
 
@@ -74,7 +75,8 @@ export type ConsoleAppProps = {
   readonly onLoadBulletin: (file: File) => void;
   readonly data?: ConsoleData | null;
   /**
-   * How old the bulletin on screen is, and whether it is the bundled example.
+   * How old the bulletin on screen is, and whether it came out of the bundled
+   * archive or was loaded by the officer.
    * Supplied by the composition root, which owns the `Clock` — this component
    * has no way to ask what day it is, and must not acquire one.
    */
@@ -92,13 +94,12 @@ export type ConsoleAppProps = {
    */
   readonly onTrendMetricChange?: (metric: TrendMetricKey) => void;
   /**
-   * The date of the shipped worked example, when it is still contributing to
-   * the timeline. `undefined` once the officer's own bulletins have replaced
-   * it — which is also when the console must stop saying it is there.
+   * The bulletin archive the console ships with, and how much of it has
+   * arrived. Passed to the two views it shows up in — Trend and Cumulative &
+   * Peak — so each can disclose the bundled points it is drawing, and say so
+   * plainly while the archive is still in flight.
    */
-  readonly bundledSampleDate?: string;
-  /** Removes the shipped example from the timeline. The record is the officer's. */
-  readonly onRemoveBundledSample?: () => void;
+  readonly archive?: BundledArchiveViewModel;
   readonly onOpenPage?: (page: number, source: ProvenanceRef) => void;
 };
 
@@ -119,8 +120,7 @@ export const ConsoleApp = ({
   onRationNormChange,
   onLeversChange,
   onTrendMetricChange,
-  bundledSampleDate,
-  onRemoveBundledSample,
+  archive,
   onOpenPage,
 }: ConsoleAppProps) => {
   // Held in the URL, not in component state, so a view can be linked to.
@@ -226,12 +226,11 @@ export const ConsoleApp = ({
             gaps={data.trend.gaps}
             deltas={data.trend.deltas}
             bulletinCount={data.trend.bulletinCount}
-            bundledSampleDate={bundledSampleDate}
-            onRemoveBundledSample={onRemoveBundledSample}
+            archive={archive}
           />
         );
       case 'period':
-        return <PeriodSummary summary={data.period} bundledSampleDate={bundledSampleDate} />;
+        return <PeriodSummary summary={data.period} archive={archive} />;
     }
   };
 

@@ -2,9 +2,10 @@
  * The composition root's stateful shell.
  *
  * `ConsoleApp` is a driving adapter: it draws what it is given. This component
- * is what gives it — it holds the two things that actually change (the bulletins
- * loaded, and the user's assumptions), recomputes `ConsoleData` whenever either
- * moves, and hands the result down with the callbacks that move them.
+ * is what gives it — it holds the things that actually change (the bulletins
+ * the officer has loaded, the bundled archive, and their assumptions),
+ * recomputes `ConsoleData` whenever any of them moves, and hands the result
+ * down with the callbacks that move them.
  *
  * The timeline accumulates across loads (FR-1.7): dropping a second PDF adds a
  * bulletin, it does not replace the first. Deduplication and same-day
@@ -12,53 +13,66 @@
  * component's — it simply hands each report to the timeline and asks for the
  * ordered result back.
  *
- * **The console never opens empty.** With no bulletins held it shows
- * `DEFAULT_BULLETIN`, the real 27 July 2026 report parsed at build time, so an
- * officer sees the product working the instant the page paints — no fetch, no
- * pdf.js, no loading state (NFR-3, NFR-5, NFR-6).
- *
  * ---------------------------------------------------------------------------
- * What happens to the example once the officer loads something
+ * The console opens on real history
  * ---------------------------------------------------------------------------
  *
- * The example used to be discarded the moment any bulletin arrived. The
- * reasoning was sound — an example the officer did not choose is not their
- * record — but the behaviour was not: loading one bulletin took the console
- * from one bulletin to one bulletin, so the officer had to find and load a
- * *second* PDF before the product would show them a trend at all. The commonest
- * first action a user takes produced no visible change. That is the defect this
- * rule replaces.
+ * It ships with **eight consecutive real ASDMA Daily Flood Reports**, 20 to 27
+ * July 2026, parsed at build time. Not a mock, not a demonstration dataset: the
+ * same PDFs DRIMS published, read by the same parser that reads the officer's.
+ * So a link to this console opens on a working seven-day trend, a real
+ * cumulative death toll and a real peak — no fetch, no pdf.js, no empty state
+ * the recipient has to populate before the product does anything (NFR-3,
+ * NFR-5, NFR-6).
  *
- * The correction starts from something the old reasoning missed: the bundled
- * bulletin is **real ASDMA data**, not a mock. A gap between it and a bulletin
- * the officer loads is a real gap between two real bulletins, and saying so
- * fabricates nothing. What it must never be is *mistaken* for the officer's own
- * record. So it is kept, disclosed, and retired on a rule the officer can
- * predict — retained only while all four of these hold:
+ * They arrive in two pieces, and the split is a first-paint decision (NFR-4):
  *
- *  1. **They have not removed it.** The Trend view offers a one-click removal;
- *     their timeline is theirs.
- *  2. **They hold no bulletin for 27 July 2026.** Their own copy supersedes it,
- *     exactly as the `BulletinTimeline` aggregate specifies for a re-issued day.
- *  3. **Their own record cannot yet show a trend.** The example's job in the
- *     timeline is to make a comparison possible at all; once they hold two
- *     bulletins of their own, that job is done and it bows out.
- *  4. **It is dated later than their latest bulletin,** so it extends their
- *     record forward. This is what stops an officer who loads a November
- *     bulletin being shown a 98-day hole back to a July example.
+ *  - the **newest** bulletin is eager, in the entry chunk, so the console
+ *    renders with figures immediately;
+ *  - the **seven older** ones are behind the `import()` in
+ *    `generated/bundled-bulletins`, so they cost first paint nothing and arrive
+ *    a moment later.
  *
- * Two guarantees are unchanged and hold throughout:
+ * That gap is a state, not a detail to be smoothed over. Between paint and
+ * arrival the console genuinely holds one bulletin and is about to hold eight,
+ * and it says so — `archiveStatus: 'loading'` reaches the Trend and Cumulative
+ * & Peak views, which announce the wait rather than reporting a bulletin count
+ * they are about to change under the reader. A console that silently corrects
+ * its own account of what it holds has taught the officer not to trust that
+ * account.
  *
- *  - It is **never written to the officer's store.** Whatever it does on
- *    screen, it does not enter their history.
- *  - The **headline views always follow the officer's own latest bulletin**
- *    once they have one. The example can appear in the timeline as a comparison
- *    point; it cannot take over the Situation Summary from a bulletin they just
- *    loaded.
+ * ---------------------------------------------------------------------------
+ * What the bundled archive is, and is not
+ * ---------------------------------------------------------------------------
  *
- * And its **age is stated, prominently and in words.** Nothing on a screen ages
- * by itself; `domain/timeline/staleness` and the banner it feeds are what stop
- * a four-month-old example reading as this morning's situation.
+ * It is history that came with the console. Four rules follow from that, and
+ * they are the whole of the policy below:
+ *
+ *  1. **The officer's own copy always wins.** Load a bulletin for a day the
+ *     archive covers and theirs supersedes it — exactly what the
+ *     `BulletinTimeline` aggregate specifies for a re-issued day. No special
+ *     case here; the aggregate is simply given the bundled bulletins first.
+ *  2. **The headline views follow the newest bulletin held**, whether it came
+ *     out of the archive or out of a PDF they dropped in. Staleness is measured
+ *     against that same bulletin, so bundled history can never make a stale
+ *     console look current — and never reports as stale a console that is
+ *     holding something newer.
+ *  3. **It is disclosed wherever it contributes.** Every view that draws a
+ *     bundled point says how many of its points are bundled, and over what
+ *     dates.
+ *  4. **It is theirs to clear.** An officer who wants only their own bulletins
+ *     says so once and the archive goes, leaving their record untouched. The
+ *     control appears only once they hold a bulletin of their own: clearing to
+ *     an empty console is not an improvement on real history.
+ *
+ * And one guarantee that holds throughout: the bundled archive is **never
+ * written to the officer's store.** It is not their record. `reports` below
+ * holds their bulletins and only ever theirs, so there is nothing to pick back
+ * out of IndexedDB later.
+ *
+ * Its **age is stated, prominently and in words.** Nothing on a screen ages by
+ * itself; `domain/timeline/staleness` and the banner it feeds are what stop a
+ * four-month-old archive reading as this morning's situation.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -67,19 +81,25 @@ import type {
   BulletinAgeLevel,
   BulletinAgeViewModel,
   BulletinLoaderState,
+  BundledArchiveStatus,
+  BundledArchiveViewModel,
   ScenarioLeversViewModel,
   SeverityWeights,
   TrendMetricKey,
 } from '../adapters/ui/view-models';
 import type { FloodSituationReport } from '../domain/shared/flood-situation-report';
 import { bulletinTimeline } from '../domain/timeline/bulletin-timeline';
-import { compareReportDates } from '../domain/timeline/report-date';
 import {
   assessStaleness,
   isTooOldForDecisions,
   type StalenessLevel,
 } from '../domain/timeline/staleness';
-import { DEFAULT_BULLETIN } from '../generated/default-bulletin';
+import {
+  ARCHIVE_DATES,
+  BUNDLED_RANGE,
+  NEWEST_BUNDLED_BULLETIN,
+  loadArchivedBulletins,
+} from '../generated/bundled-bulletins';
 import { DEFAULT_ASSUMPTIONS, type ConsoleAssumptions } from './assumptions';
 import type { Container } from './container';
 import { reportToConsoleData, type MappingDependencies } from './report-to-console-data';
@@ -89,6 +109,12 @@ export type AppProps = {
   readonly container: Container;
   /** Overridden only by tests, which assert which domain services were asked. */
   readonly mappingDependencies?: MappingDependencies;
+  /**
+   * Fetches the seven historical bulletins. Injected so a test can hold the
+   * console in its loading state, or fail the load, without a real chunk
+   * fetch — both are states an officer can be in and neither may be guessed at.
+   */
+  readonly loadArchive?: () => Promise<readonly FloodSituationReport[]>;
 };
 
 const messageOf = (error: unknown): string =>
@@ -118,20 +144,21 @@ const AGE_LEVELS: Record<StalenessLevel, BulletinAgeLevel> = {
  */
 const AGE_RECHECK_MS = 60 * 60 * 1000;
 
-/** The day the shipped worked example reports on. */
-const SAMPLE_DATE = DEFAULT_BULLETIN.reportDate;
+/** How the fetch of the historical archive is going. */
+type ArchiveLoad = 'loading' | 'ready' | 'unavailable';
 
-export const App = ({ container, mappingDependencies }: AppProps) => {
+export const App = ({ container, mappingDependencies, loadArchive }: AppProps) => {
   const [reports, setReports] = useState<readonly FloodSituationReport[]>([]);
+  const [archived, setArchived] = useState<readonly FloodSituationReport[]>([]);
+  const [archiveLoad, setArchiveLoad] = useState<ArchiveLoad>('loading');
+  const [archiveCleared, setArchiveCleared] = useState(false);
   const [assumptions, setAssumptions] = useState<ConsoleAssumptions>(DEFAULT_ASSUMPTIONS);
   const [loaderState, setLoaderState] = useState<BulletinLoaderState>({ status: 'idle' });
   const [now, setNow] = useState<Date>(() => container.clock.now());
-  const [sampleRemoved, setSampleRemoved] = useState(false);
   const [trendMetric, setTrendMetric] = useState<TrendMetricKey>('affectedPopulation');
 
   // Bulletins kept from a previous session are part of the timeline the officer
-  // left behind; not restoring them would quietly lose their history — and they
-  // displace the bundled example, because the officer's own record outranks it.
+  // left behind; not restoring them would quietly lose their history.
   useEffect(() => {
     let cancelled = false;
     container.listBulletins
@@ -141,51 +168,100 @@ export const App = ({ container, mappingDependencies }: AppProps) => {
       })
       .catch(() => {
         // A store we cannot read is not a reason to refuse to open. The console
-        // falls back to the bundled example; loading a PDF still works.
+        // falls back to the bundled archive; loading a PDF still works.
       });
     return () => {
       cancelled = true;
     };
   }, [container]);
 
+  /**
+   * Fetch the historical archive, once, straight after first paint.
+   *
+   * A failure is a state the console reports, not one it hides: `unavailable`
+   * reaches the views, which say the history could not be loaded rather than
+   * quietly showing a one-bulletin console that looks like a design choice.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    const fetchArchive = loadArchive ?? loadArchivedBulletins;
+    fetchArchive().then(
+      (bulletins) => {
+        if (cancelled) return;
+        setArchived(bulletins);
+        setArchiveLoad('ready');
+      },
+      () => {
+        if (!cancelled) setArchiveLoad('unavailable');
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [loadArchive]);
+
   useEffect(() => {
     const tick = setInterval(() => setNow(container.clock.now()), AGE_RECHECK_MS);
     return () => clearInterval(tick);
   }, [container]);
 
-  /** The officer's own record, and nothing else. Ordered by the aggregate. */
-  const ownTimeline = useMemo(() => bulletinTimeline(reports), [reports]);
-
   /**
-   * Whether the shipped example still belongs on the chart — the four
-   * conditions set out at the top of this file, in the same order.
+   * The bulletins that came with the console: the eager newest one, plus the
+   * archive once it has arrived. Empty once the officer has cleared it.
    */
-  const sampleRetained = useMemo(() => {
-    if (sampleRemoved) return false;
-    const own = ownTimeline.reports;
-    if (own.some((held) => held.reportDate === SAMPLE_DATE)) return false;
-    if (own.length >= 2) return false;
-    const latest = ownTimeline.latest;
-    return latest === undefined || compareReportDates(SAMPLE_DATE, latest.reportDate) > 0;
-  }, [ownTimeline, sampleRemoved]);
-
-  /** What the Trend and Cumulative views read: the officer's record, plus the example if retained. */
-  const timeline = useMemo(
-    () => (sampleRetained ? ownTimeline.add(DEFAULT_BULLETIN) : ownTimeline),
-    [ownTimeline, sampleRetained],
+  const bundled = useMemo<readonly FloodSituationReport[]>(
+    () => (archiveCleared ? [] : [...archived, NEWEST_BUNDLED_BULLETIN]),
+    [archived, archiveCleared],
   );
 
   /**
-   * The bulletin the single-bulletin views speak for.
+   * Bundled first, the officer's second.
    *
-   * The officer's own latest, always, once they have one — a bulletin they just
-   * dropped in must be the one on screen. The example anchors only the
-   * first-run console, before they have loaded anything.
+   * That order is the entire supersession rule. `BulletinTimeline.add` drops a
+   * day it already holds when a new bulletin arrives for it, so anything the
+   * officer loads for a bundled day replaces the bundled one — and an identical
+   * copy of a bundled PDF hashes to the same `BulletinId` and is a no-op.
    */
-  const anchor = ownTimeline.latest ?? (sampleRetained ? DEFAULT_BULLETIN : undefined);
+  const timeline = useMemo(
+    () => bulletinTimeline([...bundled, ...reports]),
+    [bundled, reports],
+  );
 
-  /** True while the example, and not one of the officer's bulletins, is the anchor. */
-  const showingBundledSample = ownTimeline.latest === undefined;
+  /** The content hashes of the officer's own bulletins. */
+  const ownIds = useMemo(
+    () => new Set(reports.map((report) => report.bulletinId)),
+    [reports],
+  );
+
+  /**
+   * The bulletin the single-bulletin views speak for, and the one staleness is
+   * judged against: the newest held, whichever it is.
+   */
+  const anchor = timeline.latest;
+
+  /** How many of the bulletins on the timeline came with the console. */
+  const bundledContributing = useMemo(
+    () => timeline.reports.filter((report) => !ownIds.has(report.bulletinId)).length,
+    [timeline, ownIds],
+  );
+
+  const onClearArchive = useCallback(() => setArchiveCleared(true), []);
+
+  const archiveStatus: BundledArchiveStatus = archiveCleared ? 'cleared' : archiveLoad;
+
+  const archive: BundledArchiveViewModel = useMemo(
+    () => ({
+      status: archiveStatus,
+      fromDate: String(BUNDLED_RANGE.from),
+      toDate: String(BUNDLED_RANGE.to),
+      bundledCount: BUNDLED_RANGE.count,
+      pendingCount: archiveStatus === 'loading' ? ARCHIVE_DATES.length : 0,
+      contributingCount: bundledContributing,
+      // Offered only once they have something of their own to fall back on.
+      onClear: reports.length > 0 && !archiveCleared ? onClearArchive : undefined,
+    }),
+    [archiveStatus, bundledContributing, reports.length, archiveCleared, onClearArchive],
+  );
 
   const bulletinAge: BulletinAgeViewModel | undefined = useMemo(() => {
     if (anchor === undefined) return undefined;
@@ -199,9 +275,9 @@ export const App = ({ container, mappingDependencies }: AppProps) => {
       asOf: assessment.asOf,
       datedInFuture: assessment.datedInFuture,
       safeForCurrentDecisions: !isTooOldForDecisions(assessment.level),
-      origin: showingBundledSample ? 'bundled-sample' : 'loaded',
+      origin: ownIds.has(anchor.bulletinId) ? 'loaded' : 'bundled-archive',
     };
-  }, [anchor, now, showingBundledSample]);
+  }, [anchor, now, ownIds]);
 
   const data: ConsoleData | null = useMemo(() => {
     if (anchor === undefined) return null;
@@ -221,10 +297,10 @@ export const App = ({ container, mappingDependencies }: AppProps) => {
           // re-issued bulletin for a day already held.
           //
           // `held` is the officer's own record and only ever that — the bundled
-          // example is never folded into it, so it can never be written to
-          // their store and never has to be picked back out again. Whether the
-          // example still appears alongside their record is decided on every
-          // render by `sampleRetained`, from the record itself.
+          // archive is never folded into it, so it can never be written to
+          // their store and never has to be picked back out again. Whether a
+          // bundled bulletin still appears alongside their record is decided on
+          // every render, from the record itself.
           setReports((held) => bulletinTimeline([...held, report]).reports);
           setLoaderState({
             status: 'loaded',
@@ -262,8 +338,6 @@ export const App = ({ container, mappingDependencies }: AppProps) => {
     setAssumptions((current) => ({ ...current, levers }));
   }, []);
 
-  const onRemoveBundledSample = useCallback(() => setSampleRemoved(true), []);
-
   return (
     <ConsoleApp
       loaderState={loaderState}
@@ -274,11 +348,7 @@ export const App = ({ container, mappingDependencies }: AppProps) => {
       onRationNormChange={onRationNormChange}
       onLeversChange={onLeversChange}
       onTrendMetricChange={setTrendMetric}
-      // Disclosed only while it is genuinely one of the points being drawn, and
-      // removable only once the officer has a bulletin of their own to fall
-      // back on — an empty console is not an improvement on an example.
-      bundledSampleDate={sampleRetained ? String(SAMPLE_DATE) : undefined}
-      onRemoveBundledSample={reports.length > 0 ? onRemoveBundledSample : undefined}
+      archive={archive}
     />
   );
 };

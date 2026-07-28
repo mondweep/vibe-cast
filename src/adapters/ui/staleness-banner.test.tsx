@@ -136,22 +136,23 @@ describe('StalenessBanner', () => {
     });
   });
 
-  describe('the bundled sample reads differently from a bulletin the officer loaded', () => {
-    const sample = (overrides: Partial<BulletinAgeViewModel> = {}) =>
-      anAge({ origin: 'bundled-sample', ageDays: 34, level: 'obsolete', safeForCurrentDecisions: false, ...overrides });
+  describe('bundled history reads differently from a bulletin the officer loaded', () => {
+    const bundled = (overrides: Partial<BulletinAgeViewModel> = {}) =>
+      anAge({ origin: 'bundled-archive', ageDays: 34, level: 'obsolete', safeForCurrentDecisions: false, ...overrides });
 
-    it('frames the bundled bulletin as a worked example', () => {
-      render(<StalenessBanner age={sample()} />);
+    it('names it as the archive that ships with the console, not as something loaded', () => {
+      render(<StalenessBanner age={bundled()} />);
       expect(
-        within(banner()).getByText(/so you can see the console working/),
+        within(banner()).getByText(/the archive that ships with this console/),
       ).toBeTruthy();
       expect(within(banner()).getByText(/Load today’s bulletin for live figures/)).toBeTruthy();
     });
 
     it('does not claim the officer loaded it', () => {
-      render(<StalenessBanner age={sample()} />);
+      render(<StalenessBanner age={bundled()} />);
       expect(within(banner()).queryByText(/You loaded/)).toBeNull();
-      expect(banner().getAttribute('data-origin')).toBe('bundled-sample');
+      expect(banner().getAttribute('data-origin')).toBe('bundled-archive');
+      expect(banner().textContent).toMatch(/Bundled history/);
     });
 
     it('says a loaded bulletin was loaded, which is a different situation', () => {
@@ -159,15 +160,15 @@ describe('StalenessBanner', () => {
         <StalenessBanner age={anAge({ origin: 'loaded', ageDays: 34, level: 'obsolete', safeForCurrentDecisions: false })} />,
       );
       expect(within(banner()).getByText(/You loaded this bulletin/)).toBeTruthy();
-      expect(within(banner()).queryByText(/so you can see the console working/)).toBeNull();
+      expect(within(banner()).queryByText(/the archive that ships with this console/)).toBeNull();
       expect(banner().getAttribute('data-origin')).toBe('loaded');
     });
 
-    it('still frames the sample as an example even on the day it was issued', () => {
+    it('still names it as bundled even on the day it was issued', () => {
       // Someone opening the console on 27 July 2026 must still be told these
       // are bundled figures, not a live feed. Freshness is not provenance.
-      render(<StalenessBanner age={sample({ ageDays: 0, level: 'current', safeForCurrentDecisions: true })} />);
-      expect(within(banner()).getByText(/so you can see the console working/)).toBeTruthy();
+      render(<StalenessBanner age={bundled({ ageDays: 0, level: 'current', safeForCurrentDecisions: true })} />);
+      expect(within(banner()).getByText(/the archive that ships with this console/)).toBeTruthy();
     });
   });
 
@@ -277,7 +278,7 @@ describe('StalenessBanner', () => {
       // path had gone quiet.
       render(
         <StalenessBanner
-          age={anAge({ level: 'current', ageDays: 0, origin: 'bundled-sample' })}
+          age={anAge({ level: 'current', ageDays: 0, origin: 'bundled-archive' })}
           onLoadBulletin={vi.fn()}
         />,
       );

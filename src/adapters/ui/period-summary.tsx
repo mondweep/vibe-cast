@@ -29,14 +29,19 @@ import {
   PERIOD_COMPLETENESS_LABELS,
   formatNumber,
   formatReportDateLong,
+  type BundledArchiveViewModel,
   type PeriodFigureViewModel,
   type PeriodSummaryViewModel,
 } from './view-models';
 
 export type PeriodSummaryProps = {
   readonly summary: PeriodSummaryViewModel;
-  /** Set while the shipped worked example is one of the bulletins counted. */
-  readonly bundledSampleDate?: string;
+  /**
+   * The console's own bundled archive, while any of it is among the bulletins
+   * counted — and while it is still arriving, which these figures must admit
+   * to rather than quietly restating a moment later.
+   */
+  readonly archive?: BundledArchiveViewModel;
 };
 
 const figureOf = (value: number | undefined, precision: number): string =>
@@ -83,6 +88,71 @@ const CoverageNote = ({ summary }: { readonly summary: PeriodSummaryViewModel })
   );
 };
 
+/**
+ * Which of these bulletins came with the console.
+ *
+ * A cumulative death toll drawn mostly from bundled history is a real figure —
+ * every bulletin behind it is a real ASDMA bulletin — but it is not a figure
+ * the officer assembled, and it must not read as one. While the archive is
+ * still in flight the totals on screen are about to change, and saying so is
+ * cheaper than letting an officer quote a number that moves.
+ */
+const ArchiveNote = ({
+  archive,
+  bulletinCount,
+}: {
+  readonly archive?: BundledArchiveViewModel;
+  readonly bulletinCount: number;
+}) => {
+  if (archive === undefined || archive.status === 'cleared') return null;
+
+  const from = formatReportDateLong(archive.fromDate) ?? archive.fromDate;
+  const to = formatReportDateLong(archive.toDate) ?? archive.toDate;
+
+  if (archive.status === 'loading') {
+    return (
+      <p className="text-small text-muted" data-testid="period-archive-loading">
+        <strong>Loading the bundled history…</strong> {archive.pendingCount} more real ASDMA
+        bulletins are on their way, taking this period to{' '}
+        <span className="figure">
+          {from} to {to}
+        </span>
+        . Every figure below will be recomputed over the full period when they arrive — do
+        not quote these totals until it says otherwise.
+      </p>
+    );
+  }
+
+  if (archive.status === 'unavailable') {
+    return (
+      <p className="text-small text-muted" data-testid="period-archive-unavailable">
+        <strong>The bundled history could not be loaded.</strong> These figures cover only
+        what is listed above, not the{' '}
+        <span className="figure">
+          {from} to {to}
+        </span>{' '}
+        archive this console ships with. Reload the page to try again.
+      </p>
+    );
+  }
+
+  if (archive.contributingCount === 0) return null;
+
+  return (
+    <p className="text-small text-muted" data-testid="period-archive-note">
+      <strong className="figure">
+        {archive.contributingCount} of these {bulletinCount}
+      </strong>{' '}
+      bulletins came with the console: real ASDMA Daily Flood Reports for{' '}
+      <span className="figure">
+        {from} to {to}
+      </span>
+      , bundled rather than loaded by you. Clear the bundled history from the Trend view if
+      you want your own bulletins only.
+    </p>
+  );
+};
+
 const CompletenessMark = ({ figure }: { readonly figure: PeriodFigureViewModel }) => (
   <span
     className={`period__completeness period__completeness--${figure.completeness}`}
@@ -93,16 +163,20 @@ const CompletenessMark = ({ figure }: { readonly figure: PeriodFigureViewModel }
   </span>
 );
 
-export const PeriodSummary = ({ summary, bundledSampleDate }: PeriodSummaryProps) => {
+export const PeriodSummary = ({ summary, archive }: PeriodSummaryProps) => {
   const { coverage, cumulative, peaks } = summary;
-  const single = coverage.bulletinCount < 2;
+  // While the bundled archive is in flight the console is about to hold eight
+  // bulletins, so telling the officer to go and find earlier PDFs would be
+  // advice it retracts on its own a moment later.
+  const loading = archive?.status === 'loading';
+  const single = coverage.bulletinCount < 2 && !loading;
 
   return (
     <div className="panel-stack">
       <section className="panel" aria-labelledby="period-heading">
         <div className="panel__head">
           <h2 className="panel__title" id="period-heading">
-            Cumulative &amp; peak across loaded bulletins
+            Cumulative &amp; peak across every bulletin held
           </h2>
           <DerivedBadge
             formula="Totals of per-bulletin events; highest and latest of point-in-time levels"
@@ -116,18 +190,12 @@ export const PeriodSummary = ({ summary, bundledSampleDate }: PeriodSummaryProps
         {single ? (
           <p className="text-small text-muted">
             {coverage.bulletinCount === 0
-              ? 'No bulletin is loaded, so there is nothing to accumulate.'
-              : 'One bulletin is loaded. Its own figures are the total and the peak — ' +
+              ? 'No bulletin is held, so there is nothing to accumulate.'
+              : 'One bulletin is held. Its own figures are the total and the peak — ' +
                 'load earlier DRIMS PDFs to accumulate across days.'}
           </p>
         ) : null}
-        {bundledSampleDate !== undefined ? (
-          <p className="text-small text-muted" data-testid="period-sample-note">
-            These figures include the worked example shipped with this console, the ASDMA
-            bulletin for <span className="figure">{bundledSampleDate}</span>. Remove it from
-            the Trend view if you want your own bulletins only.
-          </p>
-        ) : null}
+        <ArchiveNote archive={archive} bulletinCount={coverage.bulletinCount} />
       </section>
 
       <section className="callout callout--assumption" aria-labelledby="period-rule-heading">

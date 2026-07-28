@@ -27,6 +27,8 @@ import { TableScroll } from './table-scroll';
 import {
   TREND_METRICS,
   formatNumber,
+  formatReportDateLong,
+  type BundledArchiveViewModel,
   type DeltaViewModel,
   type TimelineGapViewModel,
   type TrendMetricKey,
@@ -78,12 +80,13 @@ export type TrendViewProps = {
   readonly deltas: readonly DeltaViewModel[];
   readonly bulletinCount: number;
   /**
-   * The date of the worked example shipped with the console, while it is still
-   * one of the points on the chart. Disclosed rather than blended in: a point
-   * the officer did not load must not read as one they did.
+   * The archive of real ASDMA bulletins the console ships with, and how much of
+   * it has arrived. Disclosed rather than blended in: a point the officer did
+   * not load must not read as one they did — and while the archive is still in
+   * flight, the view says so instead of announcing a count it is about to
+   * change.
    */
-  readonly bundledSampleDate?: string;
-  readonly onRemoveBundledSample?: () => void;
+  readonly archive?: BundledArchiveViewModel;
   /** Explicit dimensions bypass ResponsiveContainer (used by tests). */
   readonly chartWidth?: number;
   readonly chartHeight?: number;
@@ -96,6 +99,76 @@ const DIRECTION_MARK: Record<DeltaViewModel['direction'], string> = {
   unknown: '? not reported',
 };
 
+/**
+ * What the console says about its own bundled history, on the view where that
+ * history is most visible.
+ *
+ * Three things have to be true of this note at once. It must name the archive
+ * as *bundled* — points the officer did not load must never read as points they
+ * did. It must say the archive is **real ASDMA data**, because it is, and an
+ * officer who thinks the line is synthetic will discount a genuine trend. And
+ * while the archive is still arriving it must say *that*, rather than reporting
+ * a bulletin count it is about to change underneath the reader.
+ */
+const ArchiveNote = ({
+  archive,
+  pointCount,
+}: {
+  readonly archive?: BundledArchiveViewModel;
+  readonly pointCount: number;
+}) => {
+  if (archive === undefined || archive.status === 'cleared') return null;
+
+  const from = formatReportDateLong(archive.fromDate) ?? archive.fromDate;
+  const to = formatReportDateLong(archive.toDate) ?? archive.toDate;
+
+  if (archive.status === 'loading') {
+    return (
+      <p className="trend__archive-note text-small" data-testid="trend-archive-loading">
+        <strong>Loading the bundled history…</strong> {archive.pendingCount} more real ASDMA
+        bulletins are on their way. This console ships with{' '}
+        <span className="figure">
+          {from} to {to}
+        </span>
+        , and the chart, the deltas and the gap list will fill in the moment they arrive.
+      </p>
+    );
+  }
+
+  if (archive.status === 'unavailable') {
+    return (
+      <p className="trend__archive-note text-small" data-testid="trend-archive-unavailable">
+        <strong>The bundled history could not be loaded.</strong> Only the{' '}
+        <span className="figure">{to}</span> bulletin, which ships inside the console itself,
+        is on this chart. Reload the page to try again, or load your own DRIMS PDFs — nothing
+        here is estimated to fill the gap.
+      </p>
+    );
+  }
+
+  if (archive.contributingCount === 0) return null;
+
+  return (
+    <p className="trend__archive-note text-small" data-testid="trend-archive-note">
+      <strong className="figure">
+        {archive.contributingCount} of the {pointCount}
+      </strong>{' '}
+      points on this chart come from the bulletin archive bundled with this console — real
+      ASDMA Daily Flood Reports for{' '}
+      <span className="figure">
+        {from} to {to}
+      </span>
+      , shipped with the console rather than loaded by you. Load a bulletin for any of those
+      days and your own copy supersedes the bundled one.{' '}
+      {archive.onClear ? (
+        <button type="button" className="trend__archive-clear" onClick={archive.onClear}>
+          Clear the bundled history
+        </button>
+      ) : null}
+    </p>
+  );
+};
+
 export const TrendView = ({
   metricKey,
   onMetricChange,
@@ -103,8 +176,7 @@ export const TrendView = ({
   gaps,
   deltas,
   bulletinCount,
-  bundledSampleDate,
-  onRemoveBundledSample,
+  archive,
   chartWidth,
   chartHeight = 280,
 }: TrendViewProps) => {
@@ -166,7 +238,7 @@ export const TrendView = ({
       <section className="panel" aria-labelledby="trend-heading">
         <div className="panel__head">
           <h2 className="panel__title" id="trend-heading">
-            Trend across loaded bulletins
+            Trend across every bulletin held
           </h2>
           <div className="assumption">
             <label htmlFor="trend-metric">Metric</label>
@@ -191,31 +263,20 @@ export const TrendView = ({
           </div>
         </div>
 
-        {bulletinCount < 2 ? (
+        {/*
+          * Suppressed while the archive is in flight. Announcing "1 bulletin
+          * loaded — load an earlier DRIMS PDF to compare" and then replacing it
+          * with an eight-day chart a moment later would be a lie the console
+          * corrects on its own, which is worse than a wait it admits to.
+          */}
+        {bulletinCount < 2 && archive?.status !== 'loading' ? (
           <p className="text-small text-muted">
-            {bulletinCount} bulletin loaded. A single bulletin is a valid timeline and yields no
+            {bulletinCount} bulletin held. A single bulletin is a valid timeline and yields no
             deltas — load an earlier DRIMS PDF to compare.
           </p>
         ) : null}
 
-        {bundledSampleDate !== undefined ? (
-          <p className="trend__sample-note text-small" data-testid="trend-sample-note">
-            One point on this chart —{' '}
-            <span className="figure">{bundledSampleDate}</span> — is the worked example
-            shipped with this console, not a bulletin you loaded. It is a real ASDMA
-            bulletin, so the comparison is genuine, and it leaves the timeline as soon as
-            your own record covers that day.{' '}
-            {onRemoveBundledSample ? (
-              <button
-                type="button"
-                className="trend__sample-remove"
-                onClick={onRemoveBundledSample}
-              >
-                Remove the example
-              </button>
-            ) : null}
-          </p>
-        ) : null}
+        <ArchiveNote archive={archive} pointCount={data.length} />
 
         <div className="trend__chart" data-testid="trend-chart">
           {chartWidth === undefined ? (

@@ -1,20 +1,21 @@
 /**
  * GENERATED FILE — DO NOT EDIT BY HAND.
  *
- * Produced by `scripts/generate-default-bulletin.ts` from
+ * The newest bulletin the console ships with, already parsed.
+ *
+ * This one is **eager**: it is in the entry chunk, so the console renders with
+ * real figures on first paint without loading pdf.js and without touching the
+ * network (NFR-3, NFR-5, NFR-6). Its seven predecessors are not — see
+ * `bulletin-archive.ts`.
+ *
+ * Produced by `scripts/generate-bundled-bulletins.ts` from
  * `fixtures/Daily_Flood_Report_20260727.pdf`. Regenerate with:
  *
- *     npm run generate:default-bulletin
- *
- * This is the real 2026-07-27 ASDMA Daily Flood Report, already parsed, so the
- * console can open on a working example without loading pdf.js and without
- * touching the network (NFR-3, NFR-5, NFR-6). It is a **worked example**, not
- * today's situation: `src/domain/timeline/staleness.ts` and the staleness
- * banner exist to make sure no officer can mistake it for one.
+ *     npm run generate:bundled-bulletins
  *
  * Any edit made here will be reported as a failure by
- * `src/adapters/pdf/default-bulletin.test.ts`, which reparses the fixture PDF
- * and compares.
+ * `src/adapters/pdf/bundled-bulletins.test.ts`, which reparses the fixture
+ * PDFs and compares.
  */
 
 import type {
@@ -27,7 +28,7 @@ import type {
   RevenueCircleName,
 } from '../domain/shared/administrative-unit';
 
-export const DEFAULT_BULLETIN: FloodSituationReport = {
+export const NEWEST_BUNDLED_BULLETIN: FloodSituationReport = {
   "bulletinId": "4ecdaf4b086d499713163847e6fd91bec383b0ebdb6f88a5b2df38b9d8145fe7" as BulletinId,
   "reportDate": "2026-07-27" as ReportDate,
   "generatedAt": "27-07-2026 09:49 PM",

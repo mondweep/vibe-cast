@@ -164,31 +164,94 @@ describe('TrendView', () => {
   });
 });
 
-describe('TrendView — the shipped worked example on the chart', () => {
-  it('discloses a point the officer did not load', () => {
-    renderTrend({ bundledSampleDate: '2026-07-27' });
-
-    const note = screen.getByTestId('trend-sample-note');
-    expect(note.textContent).toContain('2026-07-27');
-    expect(note.textContent).toMatch(/worked example shipped with this console/);
-    // It is real ASDMA data, so the comparison is genuine — that has to be said
-    // too, or the officer will discount a point they should trust.
-    expect(note.textContent).toMatch(/real ASDMA bulletin/);
+describe('TrendView — the bundled archive on the chart', () => {
+  const archive = (overrides = {}) => ({
+    status: 'ready' as const,
+    fromDate: '2026-07-20',
+    toDate: '2026-07-27',
+    bundledCount: 8,
+    pendingCount: 0,
+    contributingCount: 8,
+    ...overrides,
   });
 
-  it('lets the officer take it out of their timeline', () => {
-    const onRemoveBundledSample = vi.fn();
-    renderTrend({ bundledSampleDate: '2026-07-27', onRemoveBundledSample });
+  it('discloses how many of the points on the chart the officer did not load', () => {
+    renderTrend({ archive: archive({ contributingCount: 5 }) });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Remove the example' }));
-
-    expect(onRemoveBundledSample).toHaveBeenCalledTimes(1);
+    const note = screen.getByTestId('trend-archive-note');
+    expect(note.textContent).toMatch(/5 of the/);
+    expect(note.textContent).toMatch(/bundled with this console/);
+    // It is real ASDMA data, so the trend is genuine — that has to be said too,
+    // or the officer will discount a line they should trust.
+    expect(note.textContent).toMatch(/real ASDMA Daily Flood Reports/);
+    expect(note.textContent).toMatch(/20 July 2026 to 27 July 2026/);
+    // And the supersession rule, because it is the thing they can act on.
+    expect(note.textContent).toMatch(/your own copy supersedes the bundled one/);
   });
 
-  it('says nothing at all once the example has left the timeline', () => {
+  it('lets the officer clear the bundled history, under its own name', () => {
+    const onClear = vi.fn();
+    renderTrend({ archive: archive({ onClear }) });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear the bundled history' }));
+
+    expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers no way to clear it when there would be nothing left to show', () => {
+    renderTrend({ archive: archive() });
+
+    expect(screen.queryByRole('button', { name: 'Clear the bundled history' })).toBeNull();
+  });
+
+  it('says nothing at all once the bundled history has been cleared', () => {
+    renderTrend({ archive: archive({ status: 'cleared', contributingCount: 0 }) });
+
+    expect(screen.queryByTestId('trend-archive-note')).toBeNull();
+    expect(screen.queryByTestId('trend-archive-loading')).toBeNull();
+  });
+
+  it('says nothing once every bundled day has been superseded by the officer’s own', () => {
+    renderTrend({ archive: archive({ contributingCount: 0 }) });
+
+    expect(screen.queryByTestId('trend-archive-note')).toBeNull();
+  });
+
+  it('says the history is loading rather than reporting a count it is about to change', () => {
+    // The defect this prevents: "1 bulletin held — load an earlier DRIMS PDF to
+    // compare" flashing up and being silently replaced by an eight-day chart a
+    // moment later.
+    renderTrend({
+      bulletinCount: 1,
+      archive: archive({ status: 'loading', pendingCount: 7, contributingCount: 1 }),
+    });
+
+    const note = screen.getByTestId('trend-archive-loading');
+    expect(note.textContent).toMatch(/Loading the bundled history/);
+    expect(note.textContent).toMatch(/7 more real ASDMA bulletins/);
+    expect(note.textContent).toMatch(/20 July 2026 to 27 July 2026/);
+    expect(screen.queryByText(/1 bulletin held/)).toBeNull();
+  });
+
+  it('admits it when the history could not be loaded, rather than looking deliberate', () => {
+    renderTrend({
+      bulletinCount: 1,
+      archive: archive({ status: 'unavailable', contributingCount: 1 }),
+    });
+
+    const note = screen.getByTestId('trend-archive-unavailable');
+    expect(note.textContent).toMatch(/could not be loaded/);
+    expect(note.textContent).toMatch(/27 July 2026/);
+    expect(note.textContent).toMatch(/nothing here is estimated to fill the gap/);
+    // And the honest count is restored: it really does hold one bulletin now.
+    expect(screen.getByText(/1 bulletin held/)).toBeTruthy();
+  });
+
+  it('says nothing when the console was given no bundled archive at all', () => {
     renderTrend();
 
-    expect(screen.queryByTestId('trend-sample-note')).toBeNull();
+    expect(screen.queryByTestId('trend-archive-note')).toBeNull();
+    expect(screen.queryByTestId('trend-archive-loading')).toBeNull();
   });
 });
 
