@@ -167,16 +167,34 @@ describe('BulletinLoader — where to get a bulletin', () => {
     expect(screen.getByText(/only from India/i)).toBeTruthy();
   });
 
-  it('keeps the link available once a bulletin is loaded, and in the compact header', () => {
+  it('keeps the link available once a bulletin is loaded', () => {
     // The moment an officer most needs the newest bulletin is when they are
     // looking at an old one.
-    render(<BulletinLoader state={loadedState} onLoad={vi.fn()} compact />);
+    render(<BulletinLoader state={loadedState} onLoad={vi.fn()} />);
 
     expect(sourceLink().getAttribute('href')).toBe(SDRF_URL);
-    // The header has 2.75rem to work in (NFR-11), so the note is trimmed — but
-    // the geo-restriction is never the part that gets dropped.
-    expect(screen.getByText('Reachable only from India.')).toBeTruthy();
-    expect(screen.queryByText(/India VPN/)).toBeNull();
+  });
+
+  it('stays inside the header in compact mode, carrying nothing that will not fit', () => {
+    // Measured in the running console at 1366x768: the compact loader rendered
+    // 156px tall inside a 44px (2.75rem) header. Its own button was clipped off
+    // the top of the viewport at y=-57 and the status line spilled over the
+    // content below. The header can hold the file picker and nothing else.
+    render(<BulletinLoader state={{ status: 'idle' }} onLoad={vi.fn()} compact />);
+
+    expect(screen.getByRole('button', { name: /choose bulletin pdf/i })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /SDRF Assam/i })).toBeNull();
+    expect(screen.queryByText(/only from India/i)).toBeNull();
+  });
+
+  it('does not claim no bulletin is loaded while one is on screen', () => {
+    // In the header this sat beside a title reading "Assam Flood Report as on
+    // 2026-07-27" and contradicted it. The console is never empty — it opens on
+    // the bundled example — so "idle" means the officer has not loaded one of
+    // their own, which is not the same statement and must not be made here.
+    render(<BulletinLoader state={{ status: 'idle' }} onLoad={vi.fn()} compact />);
+
+    expect(screen.queryByText(/no bulletin loaded/i)).toBeNull();
   });
 
   it('never fetches it — the app makes no request of its own (NFR-5)', () => {

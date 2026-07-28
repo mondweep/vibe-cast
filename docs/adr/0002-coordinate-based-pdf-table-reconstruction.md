@@ -1,6 +1,7 @@
 # ADR-0002: Coordinate-based PDF table reconstruction
 
-- **Status:** Accepted
+- **Status:** Accepted; the reconciliation claim **amended 2026-07-28** after it
+  was falsified in the field (see the amendment below)
 - **Date:** 2026-07-27
 - **Deciders:** Ingestion swarm
 
@@ -43,6 +44,39 @@ PDF → [1] TextRunExtractor    → positioned runs {str, x, y, width, height, p
 **Number parsing is explicit and total.** A dedicated `parseDrimsNumber` handles: float noise (`2025.9200000000003`), `Nil` → `Zero`, `SNR` → `Unknown`, blank → `Unknown`, split tokens rejoined before parse. It returns a discriminated union `{kind: 'value'|'zero'|'unknown'}` — **never a bare number** — so callers cannot accidentally treat unknown as zero. This is the anti-corruption layer's core guarantee (PRD §3.3).
 
 **Reconciliation is mandatory.** Every section with a stated Total row is checked against an independent sum of its district rows. A mismatch marks the section `Degraded` and surfaces in the UI. This converts the failure mode from *silent corruption* to *visible warning* — the whole reason the technique is acceptable at all.
+
+> ⚠ **Amended 2026-07-28. The sentence above was too broad, and the gap it left
+> was the one that actually bit.**
+>
+> Reconciliation catches a section that was *found and misread*. It is blind to
+> a section that was **never found at all** — there is no stated Total to
+> compare against, so nothing disagrees and nothing is flagged.
+>
+> That is not hypothetical. On the 25 and 26 July 2026 bulletins the gutter
+> threshold in `deriveBodyStart` mis-detected the label column, every District
+> name was read as a section label, and only 2 of 23 sections were recognised.
+> The result — a husk carrying 46 "districts" in a state that has 35, several of
+> them sentences of Remarks prose — was published as `confidence: high` with
+> **zero reconciliation failures**. The safety net this ADR relies on did not
+> move.
+>
+> **The correction has two parts.** Provenance is now *exhaustive*: a section in
+> the 23-section catalogue that was never located is recorded as `failed` rather
+> than silently omitted, so "we found two" and "there were only two" stop being
+> indistinguishable downstream. And a document-level integrity check
+> (`document-integrity.ts`) applies four independent tests — sections recognised
+> against the catalogue, district count against Assam's 35, district names that
+> are names rather than sentences, and a statewide population total present —
+> any one of which catches the case above on its own. A document-level breach
+> demotes every section, so the confidence check consumers already make becomes
+> a true whole-document check without needing new vocabulary.
+>
+> **The general lesson, worth more than the fix:** a validity check that
+> compares two things the parser produced can only catch disagreement between
+> them. It cannot catch absence. Completeness has to be asserted against an
+> expectation held *outside* the parse — here, the known section catalogue and
+> the known number of districts in Assam. Reconciliation was necessary and is
+> not sufficient.
 
 ## Consequences
 

@@ -45,3 +45,48 @@ describe('DerivedBadge', () => {
     expect(detail?.getAttribute('data-open')).toBe('true');
   });
 });
+
+describe('DerivedBadge — dismissing the derivation', () => {
+  // Reported from a phone against the deployed build: the panel opened and then
+  // could not be closed. It overlays its own trigger, so clicking the badge
+  // again — the only exit there was — is unreachable, and touch has no
+  // hover-off. Each route below is tested because each covers a different user:
+  // pointer, keyboard, and someone who taps away.
+  const open = async () => {
+    const user = userEvent.setup();
+    render(<DerivedBadge formula="Inmates ÷ Affected Population" workings="28,695 ÷ 445,495 = 6.4%" />);
+    await user.click(screen.getByRole('button', { name: /derived/i }));
+    expect(screen.getByRole('button', { name: /derived/i }).getAttribute('aria-expanded')).toBe('true');
+    return user;
+  };
+
+  it('closes on the close button, and returns focus to the badge', async () => {
+    const user = await open();
+    await user.click(screen.getByRole('button', { name: /close the derivation/i }));
+
+    const marker = screen.getByRole('button', { name: /derived/i });
+    expect(marker.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(marker);
+  });
+
+  it('closes on Escape, and returns focus to the badge', async () => {
+    const user = await open();
+    await user.keyboard('{Escape}');
+
+    const marker = screen.getByRole('button', { name: /derived/i });
+    expect(marker.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(marker);
+  });
+
+  it('closes when the user taps away from it', async () => {
+    const user = await open();
+    await user.click(document.body);
+
+    expect(screen.getByRole('button', { name: /derived/i }).getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('offers no close button until it is open, so screen readers do not hear one per figure', () => {
+    render(<DerivedBadge formula="a ÷ b" workings="1 ÷ 2 = 0.5" />);
+    expect(screen.queryByRole('button', { name: /close the derivation/i })).toBeNull();
+  });
+});

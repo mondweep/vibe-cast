@@ -178,9 +178,14 @@ export const BulletinLoader = ({ state, onLoad, compact = false }: BulletinLoade
           Choose bulletin PDF
         </button>
 
-        {/* Kept in the compact header too: the moment an officer most needs
-            today's bulletin is when they are looking at an old one. */}
-        <SourceLink compact={compact} />
+        {/* Full mode only. The header is 2.75rem under NFR-11 and the source
+            link plus its geo-restriction note cannot fit; the compact loader
+            rendered 156px tall inside a 44px header, clipping its own button
+            off the top of the viewport and spilling its status line over the
+            content beneath. The staleness banner already carries the link and
+            the reload button in full, directly beside the sentence saying the
+            bulletin is old — which is the better place for it anyway. */}
+        {!compact ? <SourceLink compact={compact} /> : null}
 
         <input
           ref={inputRef}
@@ -192,7 +197,12 @@ export const BulletinLoader = ({ state, onLoad, compact = false }: BulletinLoade
         />
 
         <div role="status" aria-live="polite" className="loader__status">
-          {state.status === 'idle' ? (
+          {/* Only in full mode. In the header this sat beside a title reading
+              "Assam Flood Report as on 2026-07-27" and flatly contradicted it:
+              a bulletin *is* on screen, the officer simply has not loaded one
+              of their own. The staleness banner names the bundled example
+              explicitly, so nothing is lost by staying quiet here. */}
+          {state.status === 'idle' && !compact ? (
             <span className="text-muted">No bulletin loaded</span>
           ) : null}
           {state.status === 'parsing' ? <span>Reading {state.fileName}…</span> : null}
