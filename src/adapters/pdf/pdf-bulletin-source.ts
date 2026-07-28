@@ -60,6 +60,10 @@ import {
   toCount,
   type DrimsNumber,
 } from './drims-number';
+import {
+  applyIntegrityToProvenance,
+  checkDocumentIntegrity,
+} from './document-integrity';
 import { compoundField, simpleBreakdown } from './inline-breakdown';
 import { reconcileDrims } from './reconciliation';
 import {
@@ -789,7 +793,7 @@ export const createPdfBulletinSource = (
         failures: [],
       };
 
-      const provenance: SectionProvenance[] = [];
+      const sectionProvenance: SectionProvenance[] = [];
 
       for (const table of tables) {
         const before = draft.failures.length;
@@ -804,7 +808,7 @@ export const createPdfBulletinSource = (
           confidence = 'failed';
         }
         if (confidence === 'high' && draft.failures.length > before) confidence = 'degraded';
-        provenance.push({ kind: table.kind, sourcePages: table.sourcePages, confidence });
+        sectionProvenance.push({ kind: table.kind, sourcePages: table.sourcePages, confidence });
       }
 
       const districts = [...draft.districts.values()].map((d) => ({
@@ -879,6 +883,30 @@ export const createPdfBulletinSource = (
           animalsEvacuated: d.animalsEvacuated,
         },
         remarks: d.remarks,
+      }));
+
+      /**
+       * The completeness invariant (see `document-integrity.ts`).
+       *
+       * It runs on what the parse produced rather than on the PDF, and it runs
+       * last, because the questions it asks — did we find the sections, are
+       * these districts possible, are these names names, is the headline figure
+       * there — can only be asked of a finished report. Reconciliation cannot
+       * ask them: it validates within the sections it found, so it is silent
+       * about the twenty-one it did not.
+       */
+      const integrity = checkDocumentIntegrity({
+        recognisedSections: tables.map((table) => table.kind),
+        districtNames: districts.map((d) => d.district as string),
+        statewidePopulationAffected: draft.statewide.populationAffected,
+      });
+
+      const provenance = applyIntegrityToProvenance(sectionProvenance, integrity, (kind) => ({
+        kind,
+        // A section we never found has no pages, and unknown is not zero: the
+        // entry exists precisely so its absence cannot pass for absence of harm.
+        sourcePages: [],
+        confidence: 'failed',
       }));
 
       const report: FloodSituationReport = {

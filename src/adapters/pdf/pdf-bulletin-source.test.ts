@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { NoTextLayerError, NotADrimsBulletinError } from '../../application/ports';
 import type { SectionKind } from '../../domain/shared/flood-situation-report';
+import { DRIMS_SECTION_CATALOGUE } from './document-integrity';
 import {
   createPdfBulletinSource,
   type ContentHasher,
@@ -57,6 +58,41 @@ const table = (
 });
 
 const bulletin = () => new Blob(['%PDF-1.7'], { type: 'application/pdf' });
+
+/**
+ * Pad a table or two out to a whole bulletin.
+ *
+ * The adapter now judges the document as well as its sections (see
+ * `document-integrity.ts`): a parse that yields two of twenty-three sections is
+ * a husk, and every section of a husk is marked `failed` regardless of how
+ * cleanly it read. That is the point of the check — on 2026-07-25 the two
+ * sections that *were* found were the corrupt ones — but it means a test about
+ * one section's confidence has to hand the adapter a document that is not
+ * itself a husk, or it measures the document verdict instead.
+ *
+ * The padding is inert. `District` is a header label, so `isDistrictRow`
+ * rejects it: no district is created, no total is stated, no reconciliation
+ * runs. The one exception is the population section, which is padded with an
+ * explicit statewide zero, because "every DRIMS bulletin states a population
+ * affected" is itself one of the document-level invariants — and a stated zero
+ * is a figure ASDMA reported, not a figure we invented (ADR-0005).
+ */
+const INERT_ROW = ['District'];
+
+const confidenceOf = (
+  report: { readonly provenance: readonly { kind: SectionKind; confidence: string }[] },
+  kind: SectionKind,
+): string | undefined => report.provenance.find((p) => p.kind === kind)?.confidence;
+
+const wholeBulletin = (tables: readonly SectionTable[]): readonly SectionTable[] => {
+  const present = new Set(tables.map((t) => t.kind));
+  const padding = DRIMS_SECTION_CATALOGUE.filter((kind) => !present.has(kind)).map((kind) =>
+    kind === 'population-and-crop-area-submerged'
+      ? table(kind, [['Total', '0', '0', '0', '0', '0']])
+      : table(kind, [INERT_ROW]),
+  );
+  return [...tables, ...padding];
+};
 
 const sourceWith = (
   tables: readonly SectionTable[],
@@ -302,31 +338,37 @@ describe('PdfBulletinSource — casualties are structurally unsummable', () => {
 
 describe('PdfBulletinSource — totals are verified, not trusted', () => {
   it('is silent when ASDMA’s Total agrees with our sum', async () => {
-    const report = await sourceWith([
-      table('animals-affected', [
-        ['Charaideo', '3', '1', '1', '1'],
-        ['Jorhat', '3', '1', '1', '1'],
-        ['Total', '6', '2', '2', '2'],
+    const report = await sourceWith(
+      wholeBulletin([
+        table('animals-affected', [
+          ['Charaideo', '3', '1', '1', '1'],
+          ['Jorhat', '3', '1', '1', '1'],
+          ['Total', '6', '2', '2', '2'],
+        ]),
       ]),
-    ]).parse(bulletin());
+    ).parse(bulletin());
 
     expect(report.reconciliationFailures).toEqual([]);
-    expect(report.provenance[0]!.confidence).toBe('high');
+    expect(confidenceOf(report, 'animals-affected')).toBe('high');
   });
 
   it('publishes a mismatch and degrades the section, keeping both numbers', async () => {
-    const report = await sourceWith([
-      table('animals-affected', [
-        ['Charaideo', '3', '1', '1', '1'],
-        ['Jorhat', '3', '1', '1', '1'],
-        ['Total', '99', '2', '2', '2'],
+    const report = await sourceWith(
+      wholeBulletin([
+        table('animals-affected', [
+          ['Charaideo', '3', '1', '1', '1'],
+          ['Jorhat', '3', '1', '1', '1'],
+          ['Total', '99', '2', '2', '2'],
+        ]),
       ]),
-    ]).parse(bulletin());
+    ).parse(bulletin());
 
     expect(report.reconciliationFailures).toEqual([
       { section: 'animals-affected', column: 'Total', statedTotal: 99, computedTotal: 6 },
     ]);
-    expect(report.provenance[0]!.confidence).toBe('degraded');
+    expect(confidenceOf(report, 'animals-affected')).toBe('degraded');
+    // One degraded section is not a degraded document: the other 22 read fine.
+    expect(confidenceOf(report, 'houses-damaged')).toBe('high');
   });
 
   it('does not throw the data away when it degrades a section', async () => {
@@ -369,15 +411,17 @@ describe('PdfBulletinSource — one bad section never fails the document (FR-1.5
       ],
     };
 
-    const report = await sourceWith([
-      exploding,
-      table('animals-affected', [['Charaideo', '3', '1', '1', '1']], [3]),
-    ]).parse(bulletin());
+    const report = await sourceWith(
+      wholeBulletin([
+        exploding,
+        table('animals-affected', [['Charaideo', '3', '1', '1', '1']], [3]),
+      ]),
+    ).parse(bulletin());
 
-    expect(report.provenance.map((p) => [p.kind, p.confidence])).toEqual([
-      ['houses-damaged', 'failed'],
-      ['animals-affected', 'high'],
-    ]);
+    expect(confidenceOf(report, 'houses-damaged')).toBe('failed');
+    expect(confidenceOf(report, 'animals-affected')).toBe('high');
+    // FR-1.5 exactly: one section is lost, the other twenty-two are not.
+    expect(report.provenance.filter((p) => p.confidence === 'failed')).toHaveLength(1);
     // The section that failed contributes no figures — and no zeros.
     expect(report.districts[0]!.houses.fullySeverelyKuccha).toEqual({
       kind: 'unknown',
@@ -391,24 +435,85 @@ describe('PdfBulletinSource — one bad section never fails the document (FR-1.5
   });
 
   it('marks an empty section as failed rather than as a table of zeros', async () => {
-    const report = await sourceWith([table('rescue-operation', [], [4])]).parse(bulletin());
-    expect(report.provenance).toEqual([
-      { kind: 'rescue-operation', sourcePages: [4], confidence: 'failed' },
-    ]);
+    const report = await sourceWith(wholeBulletin([table('rescue-operation', [], [4])])).parse(
+      bulletin(),
+    );
+    expect(report.provenance).toContainEqual({
+      kind: 'rescue-operation',
+      sourcePages: [4],
+      confidence: 'failed',
+    });
+  });
+});
+
+describe('PdfBulletinSource — the document is judged as well as its sections', () => {
+  it('refuses a husk: two sections of twenty-three cannot present as a report', async () => {
+    // The 2026-07-25 and 2026-07-26 failure in miniature. Reconciliation is
+    // silent — it validates within the sections it found, so it has no opinion
+    // about the twenty-one it did not — and the document is still refused.
+    const report = await sourceWith([
+      table('districts-affected', [['2', 'Sivasagar, Jorhat']]),
+      table('remarks', [['Sivasagar', 'water receding']]),
+    ]).parse(bulletin());
+
+    expect(report.reconciliationFailures).toEqual([]);
+    expect(report.provenance.some((p) => p.confidence === 'high')).toBe(false);
+    expect(report.provenance).toHaveLength(DRIMS_SECTION_CATALOGUE.length);
+  });
+
+  it('gives every unfound section an entry, so its absence cannot go unnoticed', async () => {
+    const report = await sourceWith([table('remarks', [['Sivasagar', 'water receding']])]).parse(
+      bulletin(),
+    );
+
+    expect(report.provenance).toContainEqual({
+      kind: 'villages-affected',
+      sourcePages: [],
+      confidence: 'failed',
+    });
+  });
+
+  it('publishes the garbage rather than deleting it (ADR-0005)', async () => {
+    // A Remarks sentence read as a district name. It is kept, and the document
+    // is marked untrustworthy, because silently dropping it would leave an
+    // operator with a shorter district list and no reason to doubt it.
+    const prose = `(Sonari - ${'Additional reports are being prepared. '.repeat(4)})`;
+    const report = await sourceWith(
+      wholeBulletin([table('remarks', [[prose, 'x']])]),
+    ).parse(bulletin());
+
+    expect(report.districts.map((d) => d.district as string)).toContain(prose.trim());
+    expect(report.provenance.some((p) => p.confidence === 'high')).toBe(false);
+  });
+
+  it('does not judge a complete, plausible document at all', async () => {
+    const report = await sourceWith(
+      wholeBulletin([table('animals-affected', [['Charaideo', '3', '1', '1', '1']], [3])]),
+    ).parse(bulletin());
+
+    expect(report.provenance.every((p) => p.confidence === 'high')).toBe(true);
   });
 });
 
 describe('PdfBulletinSource — provenance', () => {
   it('records the source pages of every section it recognised', async () => {
-    const report = await sourceWith([
-      table('animals-affected', [['Charaideo', '1', '1', '0', '0']], [3]),
-      table('infrastructure-road', [['Charaideo', '0', '(Mahmora | 0)', 'Nil']], [5, 6, 7]),
-    ]).parse(bulletin());
+    const report = await sourceWith(
+      wholeBulletin([
+        table('animals-affected', [['Charaideo', '1', '1', '0', '0']], [3]),
+        table('infrastructure-road', [['Charaideo', '0', '(Mahmora | 0)', 'Nil']], [5, 6, 7]),
+      ]),
+    ).parse(bulletin());
 
-    expect(report.provenance).toEqual([
-      { kind: 'animals-affected', sourcePages: [3], confidence: 'high' },
-      { kind: 'infrastructure-road', sourcePages: [5, 6, 7], confidence: 'high' },
-    ]);
+    expect(report.provenance).toContainEqual({
+      kind: 'animals-affected',
+      sourcePages: [3],
+      confidence: 'high',
+    });
+    expect(report.provenance).toContainEqual({
+      kind: 'infrastructure-road',
+      sourcePages: [5, 6, 7],
+      confidence: 'high',
+    });
   });
 });
 

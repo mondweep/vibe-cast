@@ -22,6 +22,7 @@
 import type { SectionKind } from '../../domain/shared/flood-situation-report';
 import {
   bandIndexFor,
+  DEFAULT_MIN_COLUMN_GAP,
   resolveColumns,
   selectDataRows,
   type ColumnBand,
@@ -113,12 +114,30 @@ export const FALLBACK_BODY_START = 74;
  * Where the table body begins, measured from the document rather than assumed.
  *
  * The Particulars gutter is the leftmost column of every page; the body is the
- * next one. A 1.5pt minimum gap is wide enough to ignore the sub-point splits
- * inside a wrapped label and narrow enough to find the 2.4pt channel between
- * the gutter and the first data column.
+ * next one. Taken over the union of every run in the document, the gutter is a
+ * single connected block of ink — an intra-label gap on one line is closed by a
+ * longer label elsewhere — so the body starts at the second band.
+ *
+ * The channel between the two is NARROW, and how narrow is not ours to choose:
+ * DRIMS sizes the Particulars column to its widest label, so the channel is
+ * 1.6pt on 2026-07-27, 1.3pt on the 26th, 0.7pt on the 25th, 0.5pt on the 22nd
+ * and 0.3pt on the 20th and 21st. The previous 1.5pt threshold found it in one
+ * bulletin of six; in the other five the gutter and the body merged into one
+ * band and the fallback took over. That was survivable while the fallback
+ * happened to land inside the channel and catastrophic when it did not: on the
+ * 25th and 26th the fallback sat RIGHT of the District column, so every
+ * district name was read as a section label, 21 of 23 sections were never
+ * found, and the bulletin still presented as healthy.
+ *
+ * So the threshold is `DEFAULT_MIN_COLUMN_GAP` — the same 0.2pt the column
+ * resolver already trusts to separate two columns without splitting a word,
+ * whose justification (the widest gap between two runs of one word is 0.1pt)
+ * is exactly the justification needed here. Every gap the six bulletins present
+ * is at least 0.3pt, and every threshold from 0.05 to 0.5 yields the identical
+ * answer on all six: the plateau is wide, not a fitted constant.
  */
 export const deriveBodyStart = (runs: readonly TextRun[]): number => {
-  const bands = resolveColumns(runs, { minGap: 1.5 });
+  const bands = resolveColumns(runs, { minGap: DEFAULT_MIN_COLUMN_GAP });
   return bands.length >= 2 ? bands[1]!.start - 0.5 : FALLBACK_BODY_START;
 };
 
