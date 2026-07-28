@@ -64,6 +64,31 @@
   --c-damage-anganwadi: #9c2a68;
   --c-damage-other: #4a545f;
 
+  /*
+   * District choropleth — a sequential ramp for the map's base layer.
+   *
+   * Single hue (~40°), monotonic in lightness (L* ≈ 95, 89, 82, 73, 63), so it
+   * survives a greyscale print and every form of colour vision deficiency: the
+   * order is carried by lightness, and hue only reinforces it. It is never the
+   * only channel regardless — each District carries its figure as text and the
+   * legend prints the numeric bands (NFR-8).
+   *
+   * The darkest step stops at L* 63 on purpose. This is ground, not figure: a
+   * saturated ramp would take the eye off the damage markers, which are the
+   * subject of the view.
+   */
+  --c-choropleth-1: #f7f2e4;
+  --c-choropleth-2: #eddfbe;
+  --c-choropleth-3: #dfc793;
+  --c-choropleth-4: #cbab68;
+  --c-choropleth-5: #b18d43;
+  /*
+   * Reported, and the figure is nil. Cool where the ramp is warm, so it reads
+   * as off the scale rather than as its bottom rung — a District that reported
+   * zero is good news, not a faint amount of bad news.
+   */
+  --c-choropleth-nil: #dde8e3;
+
   /* --- Type ------------------------------------------------------------ */
   --font-ui: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
   --font-figure: 'IBM Plex Mono', 'SF Mono', 'Consolas', 'Roboto Mono', ui-monospace, monospace;

@@ -82,7 +82,9 @@ ASDMA can change the layout with no notice. Nothing prevents this. Reconciliatio
 
 ### Boundary data for choropleth
 
-District boundaries for Assam are obtainable. **Revenue Circle boundaries — the level where decisions are actually made — largely are not** available as open GeoJSON. This is why the choropleth is a `Should` and the point map is a `Must` (ADR-0008). The point map needs no external data at all.
+District boundaries for Assam are obtainable — and, as of 2026-07-28, **sourced and bundled**: all 33 Districts of Census 2011 lineage, published by the DataMeet India community under CC BY 4.0, simplified to ~200 m and shipped at 18.5 kB gzipped. The District choropleth is therefore built, not deferred (ADR-0009), and it needs no external data at run time because the boundaries are in the bundle.
+
+**Revenue Circle boundaries — the level where decisions are actually made — remain unavailable** as open GeoJSON. That gap is unchanged and is now stated in the UI beside the map, so an unshaded Circle inside a shaded District is never read as good news. The point map itself still needs no external data at all.
 
 ---
 
@@ -97,8 +99,8 @@ District boundaries for Assam are obtainable. **Revenue Circle boundaries — th
 | Derived decision metrics | **Yes** | Simple arithmetic |
 | Severity ranking | **Yes** | Normalise + weight; weights user-adjustable |
 | Point map of damage | **Yes** | lon/lat already in the bulletin |
-| District choropleth | **Probably** | Needs sourced GeoJSON |
-| Revenue-circle choropleth | **Unlikely** | Boundary data largely unavailable |
+| District choropleth | **Yes — shipped** | GeoJSON sourced and bundled, 18.5 kB gzipped (ADR-0009) |
+| Revenue-circle choropleth | **No** | Boundary data unavailable; the limitation is stated in the UI |
 | Scenario projection | **Yes** | Pure function over the parsed report |
 | Multi-day trend | **Yes** | User loads several PDFs; IndexedDB persists them |
 | **Automatic daily fetch** | **No — not from a static site** | See §5 |
@@ -152,7 +154,7 @@ Assuming this codebase as the starting point:
 | Scenario planner | Small | Low — arithmetic over the parsed report |
 | Persistence + export | Small | Low |
 | Netlify deployment | Trivial | Low |
-| Choropleth (if pursued) | Medium | Medium — gated on boundary data |
+| Choropleth | Medium | **Resolved** — boundary data sourced and bundled (ADR-0009) |
 | Automation (Option B) | Small | Medium — gated on URL pattern and IP access |
 
 **Roughly 70% of the total effort is PDF extraction and its hardening.** Everything downstream is comparatively straightforward. Any plan that under-weights extraction will slip.
@@ -168,7 +170,7 @@ The single highest-value next step is **acquiring 5–10 bulletins from differen
 | The PDF were a scan with no text layer | **Marginal.** OCR on dense tables runs ~85–95% per cell, which compounds badly across a 31-page document. Would need human verification of every figure — defeating the purpose. |
 | ASDMA published a JSON/CSV feed | **Trivially feasible.** Most of the effort here exists solely to undo a PDF. |
 | The layout changed weekly | **Unsustainable.** Parser maintenance would exceed the product's value. |
-| Revenue-circle boundaries were open data | **Materially better.** The choropleth would become a `Must`, and the map would be the primary view rather than a supporting one. |
+| Revenue-circle boundaries were open data | **Materially better.** District shading already ships; shading to Revenue Circle would make the map the primary view rather than a supporting one. |
 
 ---
 

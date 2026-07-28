@@ -41,7 +41,8 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [0005](docs/adr/0005-unknown-is-not-zero.md) | Unknown is not zero |
 | [0006](docs/adr/0006-severity-index-relative-and-user-weighted.md) | Severity index is relative and user-weighted |
 | [0007](docs/adr/0007-static-netlify-deployment.md) | Static deployment on Netlify |
-| [0008](docs/adr/0008-svg-point-map-not-mapping-library.md) | Inline SVG point map, deferred choropleth |
+| [0008](docs/adr/0008-svg-point-map-not-mapping-library.md) | Inline SVG point map, deferred choropleth *(partially superseded by 0009)* |
+| [0009](docs/adr/0009-district-boundaries-and-choropleth.md) | District boundaries bundled; choropleth shipped; projection corrected |
 
 ## Design principles
 
@@ -112,8 +113,13 @@ Static deploy to Netlify — no backend, no database, no secrets, no functions.
   so CI runners and hosting providers outside the country cannot reach it at all.
   For users in Assam the link simply works. See
   [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) §5.
-- **No revenue-circle choropleth.** Boundary GeoJSON at that granularity is not
-  reliably available as open data. The point map needs no external data (ADR-0008).
+- **No Revenue Circle choropleth.** District boundaries are bundled and the District
+  choropleth ships (ADR-0009), but boundary GeoJSON at Revenue Circle granularity is
+  not available as open data. The map says so: an unshaded part of a shaded District
+  means nothing at all. Revenue Circle figures are in the District drill-down instead.
+- **No rivers on the map.** The bulletin carries river names and gauge readings but no
+  channel geometry, and there is none in the boundary data. The Brahmaputra is absent
+  and labelled as absent rather than approximated (ADR-0009).
 - **Scanned PDFs are not supported.** OCR is out of scope for v1; a PDF without a
   text layer is rejected with a clear message rather than parsed into garbage.
 - **Trend needs multiple bulletins.** One PDF is one snapshot. Load several to get deltas.

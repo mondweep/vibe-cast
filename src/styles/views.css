@@ -165,10 +165,12 @@
 }
 
 /*
- * The map is an inline SVG with a fixed 1000x720 viewBox, so it scales to
- * whatever box it is given. `max-width` is the belt to that braces: without
- * it, a `1fr` track resolving to its min-content width can hand the SVG a box
- * wider than the content well and push the page sideways.
+ * The map is an inline SVG whose viewBox is 1000 wide and ~740.7 tall — the
+ * height is derived from the projection (ADR-0009) rather than chosen, so the
+ * aspect ratio is Assam's and not the box's. It scales to whatever container
+ * it is given. `max-width` is the belt to that braces: without it, a `1fr`
+ * track resolving to its min-content width can hand the SVG a box wider than
+ * the content well and push the page sideways.
  */
 .map__canvas {
   width: 100%;
@@ -227,6 +229,59 @@
   flex: none;
   width: 18px;
   height: 18px;
+}
+
+/*
+ * District boundaries — ground, not figure.
+ *
+ * Hairline weight in the ordinary rule colour. The damage markers are the
+ * subject of this view and the geography exists to say where they are; a
+ * heavier boundary would compete with them for the eye.
+ */
+.map__district {
+  stroke: var(--c-rule);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+/* A District with no row in the bulletin gets a broken edge as well as its
+ * stipple, so "nobody has reported from here" is legible in greyscale. */
+.map__district[data-shading='absent'] {
+  stroke: var(--c-rule-strong);
+  stroke-dasharray: 2 2;
+}
+
+/* Reported, and nil. A definite edge — this District is accounted for. */
+.map__district[data-shading='reported-nil'] {
+  stroke: var(--c-rule-strong);
+}
+
+.map__choropleth-legend {
+  margin-top: var(--s-3);
+}
+
+.map__choropleth-legend h3 {
+  margin-bottom: var(--s-2);
+}
+
+.map__measure {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--s-2);
+  font-size: var(--fs-small);
+}
+
+.map__measure select {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--fs-small);
+  padding: 2px 4px;
+  border: 1px solid var(--c-rule-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-ink);
 }
 
 /* --- Scenario planner ---------------------------------------------------- */

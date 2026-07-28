@@ -1,31 +1,56 @@
 /**
- * Damage map (FR-2.6).
+ * Damage map (FR-2.6) and District choropleth (FR-2.7).
  *
  * Geography is latent in the bulletin: infrastructure rows carry longitude and
  * latitude, but the PDF renders them as text columns, so a reader cannot see
  * that damage clusters along one road corridor. This plots them.
  *
- * Deliberately an inline SVG scatter over Assam's bounding box rather than a
- * mapping library: no tile server to reach (NFR-5/NFR-6, the console must work
- * offline in a control room), no dependency, no bundle cost.
+ * Deliberately an inline SVG over Assam rather than a mapping library: no tile
+ * server to reach (NFR-5/NFR-6, the console must work offline in a control
+ * room), no dependency, no bundle cost beyond the boundaries themselves.
  *
- * Two distinctions are structural rather than decorative:
+ * Assam is now actually drawn. The first version of this view put the points
+ * on an empty field, and an officer told us the truth about it: without the
+ * map it does not add value. District boundaries turned out to be obtainable
+ * after all, so they are bundled and rendered beneath the markers, shaded by
+ * the measure the user picks (ADR-0009, which reverses ADR-0008 on this).
+ *
+ * Three distinctions are structural rather than decorative:
  *  - Damage class is carried by *shape*, so the map survives greyscale and
  *    colour blindness (NFR-8).
  *  - Approximate coordinates — the bare `94, 27` in the Charaideo fisheries
  *    rows — are drawn hollow and dashed, because two significant figures
  *    locate a District, not a site. Plotting them as if they were precise is
  *    exactly the mistake the risk register calls out (PRD §9).
+ *  - A District that reported nil, a District whose figure is missing, and a
+ *    District that is not in the bulletin at all are three different shades,
+ *    never one (`choropleth-scale.ts`).
  */
 
-import { ASSAM_BOUNDS } from '../../domain/shared/administrative-unit';
+import { useState } from 'react';
 import type { DamageClass } from '../../domain/shared/flood-situation-report';
-import { DAMAGE_CLASS_LABELS, type DamagePointViewModel } from './view-models';
+import {
+  buildChoropleth,
+  describeDistrict,
+  DEFAULT_CHOROPLETH_MEASURE,
+  type ChoroplethMeasureKey,
+} from './choropleth-scale';
+import { ChoroplethLegend, DistrictLayer, MapPatternDefs } from './district-layer';
+import {
+  MAP_PAD as PAD,
+  VIEW_HEIGHT,
+  VIEW_WIDTH,
+  projectLatitude,
+  projectLongitude,
+} from './map-projection';
+import {
+  DAMAGE_CLASS_LABELS,
+  type DamagePointViewModel,
+  type DistrictRowViewModel,
+} from './view-models';
 
-const VIEW_WIDTH = 1000;
-/** ~630 km east–west against ~455 km north–south at this latitude. */
-const VIEW_HEIGHT = 720;
-const PAD = 28;
+export { projectLatitude, projectLongitude } from './map-projection';
+
 /** Points within this many user units of each other are drawn as one marker. */
 const CLUSTER_CELL = 18;
 
@@ -94,18 +119,6 @@ export const shapePath = (shape: Shape, x: number, y: number, r: number): string
   }
 };
 
-export const projectLongitude = (longitude: number): number =>
-  PAD +
-  ((longitude - ASSAM_BOUNDS.minLongitude) /
-    (ASSAM_BOUNDS.maxLongitude - ASSAM_BOUNDS.minLongitude)) *
-    (VIEW_WIDTH - PAD * 2);
-
-export const projectLatitude = (latitude: number): number =>
-  PAD +
-  ((ASSAM_BOUNDS.maxLatitude - latitude) /
-    (ASSAM_BOUNDS.maxLatitude - ASSAM_BOUNDS.minLatitude)) *
-    (VIEW_HEIGHT - PAD * 2);
-
 export type DamageCluster = {
   readonly key: string;
   readonly x: number;
@@ -163,6 +176,14 @@ export type DamageMapProps = {
   readonly selectedClasses?: readonly DamageClass[];
   readonly onToggleClass?: (damageClass: DamageClass) => void;
   readonly onSelectCluster?: (cluster: DamageCluster) => void;
+  /**
+   * The bulletin's District rows, which drive the choropleth.
+   *
+   * Omitted means "no District figures were supplied", which is not the same
+   * as "no District reported" — so the boundaries still draw, as a plain base
+   * layer, and no shading legend is offered.
+   */
+  readonly districts?: readonly DistrictRowViewModel[];
 };
 
 export const DamageMap = ({
@@ -170,7 +191,14 @@ export const DamageMap = ({
   selectedClasses,
   onToggleClass,
   onSelectCluster,
+  districts,
 }: DamageMapProps) => {
+  // Which measure is shaded is presentational state and nothing outside this
+  // view needs it, so unlike the severity weights it is not echoed upward.
+  const [measureKey, setMeasureKey] = useState<ChoroplethMeasureKey>(
+    DEFAULT_CHOROPLETH_MEASURE,
+  );
+
   const visible = selectedClasses
     ? points.filter((point) => selectedClasses.includes(point.damageClass))
     : points;
@@ -180,6 +208,8 @@ export const DamageMap = ({
   ).length;
 
   const classesPresent = Array.from(new Set(points.map((point) => point.damageClass)));
+  const choropleth = buildChoropleth(districts ?? [], measureKey);
+  const shaded = districts !== undefined;
 
   return (
     <section className="panel" aria-labelledby="map-heading">
@@ -190,6 +220,9 @@ export const DamageMap = ({
         <span className="panel__note">
           {visible.length} damage site{visible.length === 1 ? '' : 's'} plotted across Assam ·{' '}
           {approximateCount} with approximate coordinates
+          {shaded
+            ? ` · ${String(choropleth.counts.reported + choropleth.counts['reported-nil'] + choropleth.counts.unknown)} of ${String(choropleth.districts.length)} Districts reporting`
+            : ''}
         </span>
       </div>
 
@@ -198,17 +231,21 @@ export const DamageMap = ({
           className="map__canvas"
           viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
           role="img"
-          aria-label={`Infrastructure damage across Assam: ${visible.length} sites in ${clusters.length} map markers.`}
+          aria-label={
+            shaded
+              ? `Assam by District, shaded by ${choropleth.measure.label}, with ${visible.length} infrastructure damage sites in ${clusters.length} map markers.`
+              : `Assam by District, with ${visible.length} infrastructure damage sites in ${clusters.length} map markers.`
+          }
           data-testid="damage-map-canvas"
+          data-choropleth={shaded ? choropleth.measure.key : 'off'}
         >
-          <rect
-            x={PAD}
-            y={PAD}
-            width={VIEW_WIDTH - PAD * 2}
-            height={VIEW_HEIGHT - PAD * 2}
-            fill="none"
-            stroke="var(--c-rule-strong)"
-          />
+          <MapPatternDefs />
+          {/*
+           * The graticule sits *beneath* the Districts on purpose. Over the
+           * fills it was chartjunk crossing every polygon; underneath, it
+           * shows only outside Assam, where it is doing the one job it has —
+           * saying which degree of longitude you are looking at.
+           */}
           {[90, 91, 92, 93, 94, 95, 96].map((longitude) => (
             <line
               key={`lon-${longitude}`}
@@ -241,6 +278,17 @@ export const DamageMap = ({
           <text className="map__frame-label" x={PAD} y={PAD - 20}>
             28.2°N
           </text>
+
+          <DistrictLayer model={choropleth} />
+
+          <rect
+            x={PAD}
+            y={PAD}
+            width={VIEW_WIDTH - PAD * 2}
+            height={VIEW_HEIGHT - PAD * 2}
+            fill="none"
+            stroke="var(--c-rule-strong)"
+          />
 
           {clusters.map((cluster) => {
             const size = cluster.members.length;
@@ -353,8 +401,34 @@ export const DamageMap = ({
             Overlapping sites of the same damage class are drawn as one marker carrying the
             count. Embankment Breached and Embankment Affected are never merged.
           </p>
+
+          {shaded ? (
+            <ChoroplethLegend
+              model={choropleth}
+              measureKey={measureKey}
+              onMeasureChange={setMeasureKey}
+            />
+          ) : (
+            <p className="text-small text-muted" data-testid="choropleth-off">
+              District boundaries are drawn for orientation only — no District figures were
+              supplied to this map, which is not the same as no District having reported.
+            </p>
+          )}
         </div>
       </div>
+
+      {/*
+       * The same figures the shading carries, as sentences. A choropleth read
+       * by colour alone is a choropleth that excludes people (NFR-8), and a
+       * screen reader gets nothing at all from a `<path>` fill.
+       */}
+      {shaded ? (
+        <ul className="visually-hidden">
+          {choropleth.districts.map((district) => (
+            <li key={district.district}>{describeDistrict(district, choropleth.measure)}</li>
+          ))}
+        </ul>
+      ) : null}
 
       <ul className="visually-hidden">
         {visible.map((point) => (

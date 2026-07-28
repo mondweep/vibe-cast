@@ -166,7 +166,9 @@ export const ConsoleApp = ({
           />
         );
       case 'map':
-        return <DamageMap points={data.damagePoints} />;
+        // The District rows drive the choropleth as well as the ranking table:
+        // one set of figures, two readings of it (FR-2.7).
+        return <DamageMap points={data.damagePoints} districts={data.districts} />;
       case 'scenario':
         return (
           <ScenarioPlanner

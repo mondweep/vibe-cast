@@ -377,7 +377,7 @@ Pure function: `(FloodSituationReport, ScenarioLever[]) → ProjectedOutcome`. N
 | FR-2.4 | **Rivers above DL/HFL** panel, attributed to CWC with issue time | Must |
 | FR-2.5 | **Impact composition** — population, crop, houses, animals per district | Must |
 | FR-2.6 | **Damage map** — lat/long infrastructure points, clustered, typed by damage class | Must |
-| FR-2.7 | **Choropleth** by district where boundaries are available (see §9 risk) | Should |
+| FR-2.7 | **District choropleth** — District boundaries are bundled (Census 2011 lineage, CC BY 4.0, ~18.5 kB gzipped), so this is **shipped**, not deferred. Shaded by a user-chosen measure; Districts reporting nil, Districts with the measure unreported, and Districts absent from the bulletin are three distinct treatments, never one (ADR-0009). Revenue Circle boundaries remain unavailable, and the UI says so. | Must (was Should) |
 | FR-2.8 | Every figure traceable to its source page via a provenance affordance | Must |
 | FR-2.9 | Casualty figures displayed with flood deaths and general drownings **visually separated**, never summed | Must |
 
@@ -447,7 +447,7 @@ Static SPA on Netlify. No backend, no database, no API keys, no server-side stat
 |---|---|---|---|
 | **DRIMS changes the PDF layout** | Critical — extraction breaks silently | Medium | Reconciliation (FR-1.4) turns silent breakage into loud breakage. Section recognition is label-driven, not position-driven, so column shifts degrade gracefully. Golden-file test against the 2026-07-27 bulletin. |
 | **A future bulletin is scanned rather than digital** | Critical — no text layer | Low | Detect absent text layer and say so plainly rather than producing garbage. OCR is explicitly out of scope for v1. |
-| **Revenue-circle boundary GeoJSON unavailable** | Medium — no choropleth | **High** | Point map from the lat/long already in the bulletin works with zero external data. Choropleth is Should, not Must, precisely because of this. |
+| **Revenue-circle boundary GeoJSON unavailable** | Low — District choropleth shipped; Revenue Circle shading still not possible | **Realised** (District part resolved 2026-07-28) | **District** boundaries turned out to be obtainable and are now bundled — Census 2011 lineage, CC BY 4.0, 18.5 kB gzipped — so FR-2.7 shipped as a District choropleth (ADR-0009). **Revenue Circle** boundaries remain unavailable, so the map is explicitly labelled as shading to District only: an unshaded Circle within a shaded District is stated in the UI to mean nothing. The Revenue Circle figures themselves are not lost — they are in the FR-2.3 drill-down. |
 | **Severity index is misread as official** | High — reputational | Medium | Every derived figure labelled, formula shown, weights user-editable. The product's honesty about its own arithmetic is a feature. |
 | **Truncated coordinates plot wrongly** | Medium | High (present in source) | Precision validation; `ApproximateCoordinate` rendered distinctly. |
 | **Officers treat projections as forecasts** | High | Medium | FR-4.3 and FR-4.7 — projections never shown without baseline, always typographically distinct, always with derivation. |

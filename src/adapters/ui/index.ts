@@ -20,6 +20,16 @@ export {
   type DamageCluster,
   type DamageMapProps,
 } from './damage-map';
+export {
+  buildChoropleth,
+  boundaryFor,
+  choroplethBands,
+  districtKey,
+  CHOROPLETH_MEASURES,
+  type ChoroplethMeasureKey,
+  type ChoroplethModel,
+  type DistrictShading,
+} from './choropleth-scale';
 export { DerivedBadge, DerivedBadgeFor, type DerivedBadgeProps } from './derived-badge';
 export { DistrictRanking, type DistrictRankingProps } from './district-ranking';
 export { Provenance, formatPages, type ProvenanceProps } from './provenance';
