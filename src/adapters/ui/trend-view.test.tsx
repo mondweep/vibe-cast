@@ -191,3 +191,77 @@ describe('TrendView — the shipped worked example on the chart', () => {
     expect(screen.queryByTestId('trend-sample-note')).toBeNull();
   });
 });
+
+describe('TrendView — a break in the line always explains itself', () => {
+  // Reported from the field: a bulletin was loaded and read, the line broke at
+  // its date, and the panel beside it said "No gaps". Both statements were
+  // individually true and jointly baffling. A null has two causes and they are
+  // not the same fact about the world.
+  const held = (date: string, value: number | undefined) => ({ date, value });
+
+  it('names a loaded bulletin that does not report the chosen metric', () => {
+    render(
+      <TrendView
+        observations={[
+          held('2026-07-22', 653164),
+          held('2026-07-23', undefined),
+          held('2026-07-25', 654838),
+        ]}
+        gaps={[]}
+        deltas={[]}
+        bulletinCount={3}
+        metricKey="affectedPopulation"
+        onMetricChange={vi.fn()}
+        chartWidth={640}
+        chartHeight={240}
+      />,
+    );
+
+    // Scoped to the note: the date also appears as an axis tick label.
+    const note = screen.getByText(/loaded and read, but/).closest('p') as HTMLElement;
+    expect(note.textContent).toMatch(/2026-07-23/);
+    expect(note.textContent).toMatch(/does not report/);
+    expect(note.textContent).toMatch(/Population Affected/);
+    expect(note.textContent).toMatch(/not reported is not the same as none/);
+  });
+
+  it('does not call it a timeline gap — the record is complete, the series is not', () => {
+    render(
+      <TrendView
+        observations={[held('2026-07-22', 653164), held('2026-07-23', undefined)]}
+        gaps={[]}
+        deltas={[]}
+        bulletinCount={2}
+        metricKey="affectedPopulation"
+        onMetricChange={vi.fn()}
+        chartWidth={640}
+        chartHeight={240}
+      />,
+    );
+
+    // The "no gaps" statement stays, because it is true: we hold a bulletin for
+    // every date. It simply must no longer be the only thing said.
+    expect(screen.getByText(/No gaps: every date/)).toBeTruthy();
+    const note = screen.getByText(/loaded and read, but/).closest('p') as HTMLElement;
+    expect(note.textContent).toMatch(/2026-07-23/);
+    // and it is not described as a missing bulletin
+    expect(note.textContent).not.toMatch(/No bulletin for/);
+  });
+
+  it('says nothing when every loaded bulletin reports the metric', () => {
+    render(
+      <TrendView
+        observations={[held('2026-07-22', 653164), held('2026-07-25', 654838)]}
+        gaps={[]}
+        deltas={[]}
+        bulletinCount={2}
+        metricKey="affectedPopulation"
+        onMetricChange={vi.fn()}
+        chartWidth={640}
+        chartHeight={240}
+      />,
+    );
+
+    expect(screen.queryByText(/loaded and read, but/)).toBeNull();
+  });
+});

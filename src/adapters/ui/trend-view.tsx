@@ -110,7 +110,18 @@ export const TrendView = ({
 }: TrendViewProps) => {
   const metric = TREND_METRICS.find((candidate) => candidate.key === metricKey);
   const precision = metric?.precision ?? 0;
+  const metricLabel = metric?.label ?? 'this measure';
   const data = withExplicitGaps(observations, gaps);
+
+  /*
+   * Dates we hold a bulletin for, where this particular measure came back
+   * unreported. `withExplicitGaps` already distinguishes the two causes of a
+   * null via `missing`; until now nothing surfaced the distinction, so both
+   * rendered as an identical unexplained break.
+   */
+  const unreportedDates = data
+    .filter((datum) => !datum.missing && datum.value === null)
+    .map((datum) => datum.date);
 
   const chart = (
     <LineChart
@@ -224,6 +235,29 @@ export const TrendView = ({
         <p className="callout__title" id="gaps-heading">
           Timeline gaps
         </p>
+        {/*
+          * A break in the line has two quite different causes, and conflating
+          * them is what made this view baffling: a reader saw the line stop
+          * while this panel said "No gaps".
+          *
+          *   - no bulletin for that date        -> a timeline gap, listed below
+          *   - bulletin held, measure unreported -> listed here, by date
+          *
+          * The second is not a gap in the record and must not be reported as
+          * one; it is a hole in this particular series, and it moves when the
+          * officer changes the metric. Saying so is the only way the chart and
+          * this panel stop contradicting each other.
+          */}
+        {unreportedDates.length > 0 ? (
+          <p className="trend__gap-note">
+            <strong className="figure">{unreportedDates.join(', ')}</strong> —{' '}
+            {unreportedDates.length === 1 ? 'this bulletin was' : 'these bulletins were'} loaded
+            and read, but {unreportedDates.length === 1 ? 'does' : 'do'} not report{' '}
+            <strong>{metricLabel}</strong>. The point is left empty rather than drawn as zero,
+            because not reported is not the same as none. Another metric may well plot for{' '}
+            {unreportedDates.length === 1 ? 'that date' : 'those dates'}.
+          </p>
+        ) : null}
         {gaps.length === 0 ? (
           <p className="trend__gap-note text-muted">
             No gaps: every date between the first and last loaded bulletin has a bulletin.
