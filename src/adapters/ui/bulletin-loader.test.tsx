@@ -3,7 +3,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BulletinLoader } from './bulletin-loader';
 import { degradedProvenance, failedProvenance, inmatesProvenance } from './test-fixtures';
-import type { BulletinLoaderState } from './view-models';
+import type { BulletinLoaderState, SectionConfidenceViewModel } from './view-models';
+import type {
+  ExtractionConfidence,
+  SectionKind,
+} from '../../domain/shared/flood-situation-report';
 
 afterEach(cleanup);
 
@@ -207,5 +211,70 @@ describe('BulletinLoader — where to get a bulletin', () => {
     } finally {
       globalThis.fetch = original;
     }
+  });
+});
+
+describe('BulletinLoader — extraction confidence stays out of the way when clean', () => {
+  // Measured on a 412x915 phone: the always-expanded 23-row list stood 1313px
+  // tall and pushed the Trend chart to y=1860 in a 1649px document — past the
+  // end of the scroll. Reported by a user who could not reach the chart.
+  // Real SectionKind values: the 23-section DRIMS catalogue is what the panel
+  // renders in production, and a synthetic string would not typecheck against
+  // the published language.
+  const CATALOGUE: readonly SectionKind[] = [
+    'rivers-above-danger-level', 'districts-affected', 'revenue-circles-affected',
+    'villages-affected', 'population-and-crop-area-submerged', 'relief-camps-opened',
+    'inmates-in-relief-camps', 'non-camp-inmates', 'lives-lost-confirmed',
+    'lives-lost-missing', 'animals-affected', 'animals-washed-away', 'houses-damaged',
+    'houses-damaged-others', 'rescue-operation', 'relief-distributed',
+    'relief-distributed-others', 'infrastructure-road', 'infrastructure-bridge',
+    'infrastructure-embankment-breached', 'infrastructure-embankment-affected',
+    'infrastructure-others', 'remarks',
+  ];
+
+  const sectionsAll = (confidence: ExtractionConfidence): SectionConfidenceViewModel[] =>
+    CATALOGUE.map((section, i) => ({
+      section,
+      sectionLabel: `Section ${i}`,
+      confidence: i === 0 ? confidence : 'high',
+      sourcePages: [1],
+    }));
+
+  const loadedWith = (sections: SectionConfidenceViewModel[]): BulletinLoaderState => ({
+    status: 'loaded',
+    fileName: 'b.pdf',
+    reportDate: '2026-07-26',
+    sections,
+    reconciliationWarnings: [],
+  });
+
+  const disclosure = () =>
+    document.querySelector('.section-confidence__disclosure') as HTMLDetailsElement;
+
+  it('collapses to one line when every section read cleanly', () => {
+    render(<BulletinLoader state={loadedWith(sectionsAll('high'))} onLoad={vi.fn()} />);
+
+    expect(disclosure().open).toBe(false);
+    expect(screen.getByText(/All 23 sections read at high confidence/i)).toBeTruthy();
+  });
+
+  it('stays open when a section is degraded — that changes whether figures can be trusted', () => {
+    render(<BulletinLoader state={loadedWith(sectionsAll('degraded'))} onLoad={vi.fn()} />);
+
+    expect(disclosure().open).toBe(true);
+  });
+
+  it('stays open when a section could not be read at all', () => {
+    render(<BulletinLoader state={loadedWith(sectionsAll('failed'))} onLoad={vi.fn()} />);
+
+    expect(disclosure().open).toBe(true);
+  });
+
+  it('keeps every section reachable even while collapsed, for screen readers and find-in-page', () => {
+    render(<BulletinLoader state={loadedWith(sectionsAll('high'))} onLoad={vi.fn()} />);
+
+    // <details> keeps its contents in the DOM; collapsing hides them visually
+    // without removing the record of what was read.
+    expect(document.querySelectorAll('.section-confidence__row')).toHaveLength(23);
   });
 });

@@ -49,6 +49,40 @@
   font-weight: 600;
 }
 
+/* --- Extraction confidence ----------------------------------------------
+ * Collapsed to a single line on a clean read (see the comment in
+ * bulletin-loader.tsx). `<details>` rather than a hand-rolled toggle: it is
+ * keyboard-operable, announced as a disclosure, and its open state survives
+ * find-in-page — all of which a div with an onClick has to reimplement badly.
+ */
+
+.section-confidence__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+  /* 44px touch target: this is opened and closed on a phone. */
+  min-height: 44px;
+  padding: var(--s-1) 0;
+  cursor: pointer;
+  list-style-position: outside;
+}
+
+.section-confidence__summary:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.section-confidence__summary .panel__title {
+  display: inline;
+}
+
+.section-confidence__disclosure[open] .section-confidence__summary {
+  margin-bottom: var(--s-2);
+  border-bottom: 1px solid var(--c-rule);
+}
+
 .section-confidence {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));

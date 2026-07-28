@@ -100,32 +100,57 @@ const SectionConfidence = ({
   const failed = sections.filter((section) => section.confidence === 'failed');
   const degraded = sections.filter((section) => section.confidence === 'degraded');
 
+  /*
+   * Quiet when healthy, loud when not.
+   *
+   * The full list is 23 rows. Measured on a 412x915 phone it stood 1313px tall
+   * — 1.4 screens — and pushed the Trend chart to y=1860 in a document only
+   * 1649px long, i.e. off the end of the scroll entirely. A reader had to
+   * scroll past a page and a half of reassurance to reach the view they had
+   * chosen.
+   *
+   * A clean read is reassurance, not content: it collapses to one line. A
+   * degraded or failed section is the opposite — it changes whether the
+   * figures can be trusted at all — so it stays open and stays prominent.
+   */
+  const clean = failed.length === 0 && degraded.length === 0;
+
+  const summary = clean
+    ? `All ${sections.length} sections read at high confidence`
+    : `${sections.length} sections · ${degraded.length} degraded · ${failed.length} could not be read`;
+
   return (
-    <section className="panel" aria-labelledby="confidence-heading">
-      <div className="panel__head">
-        <h2 className="panel__title" id="confidence-heading">
-          Extraction confidence by section
-        </h2>
-        <span className="panel__note">
-          {sections.length} sections · {degraded.length} degraded · {failed.length} could not
-          be read
-        </span>
-      </div>
-      <ul className="section-confidence">
-        {sections.map((section) => (
-          <li className="section-confidence__row" key={section.section}>
-            <span>{section.sectionLabel}</span>
-            <span className="text-micro text-muted">{CONFIDENCE_LABELS[section.confidence]}</span>
-            <Provenance source={section} />
-          </li>
-        ))}
-      </ul>
-      {failed.length > 0 ? (
-        <p className="text-small" style={{ marginTop: 'var(--s-2)' }}>
-          Sections that could not be read are shown throughout the console as “not reported”.
-          They are never rendered as zero.
-        </p>
-      ) : null}
+    <section
+      className="panel"
+      aria-labelledby="confidence-heading"
+      data-clean={clean ? 'true' : 'false'}
+    >
+      <details className="section-confidence__disclosure" open={!clean}>
+        <summary className="section-confidence__summary">
+          <h2 className="panel__title" id="confidence-heading">
+            Extraction confidence by section
+          </h2>
+          <span className="panel__note">{summary}</span>
+        </summary>
+
+        <ul className="section-confidence">
+          {sections.map((section) => (
+            <li className="section-confidence__row" key={section.section}>
+              <span>{section.sectionLabel}</span>
+              <span className="text-micro text-muted">
+                {CONFIDENCE_LABELS[section.confidence]}
+              </span>
+              <Provenance source={section} />
+            </li>
+          ))}
+        </ul>
+        {failed.length > 0 ? (
+          <p className="text-small" style={{ marginTop: 'var(--s-2)' }}>
+            Sections that could not be read are shown throughout the console as “not reported”.
+            They are never rendered as zero.
+          </p>
+        ) : null}
+      </details>
     </section>
   );
 };
