@@ -15,6 +15,7 @@ import { BulletinLoader } from './bulletin-loader';
 import { DamageMap } from './damage-map';
 import { DistrictRanking } from './district-ranking';
 import { ResponseCapacity } from './response-capacity';
+import { PeriodSummary } from './period-summary';
 import { ScenarioPlanner } from './scenario-planner';
 import { SeverityWeightsPanel } from './severity-weights';
 import { SituationSummary } from './situation-summary';
@@ -30,6 +31,7 @@ import {
   type DistrictRowViewModel,
   type DistrictSortKey,
   type FirstFailurePointViewModel,
+  type PeriodSummaryViewModel,
   type ProvenanceRef,
   type ResponseCapacityViewModel,
   type ScenarioComparisonRow,
@@ -50,11 +52,21 @@ export type ConsoleData = {
   readonly scenarioComparisons: readonly ScenarioComparisonRow[];
   readonly firstFailure?: FirstFailurePointViewModel | null;
   readonly trend: {
+    /**
+     * Which series `observations` actually holds.
+     *
+     * Supplied by the composition root, which is the only layer that can read
+     * the timeline. It is here so that the metric named on screen and the
+     * metric plotted cannot drift apart: they come from the same object.
+     */
+    readonly metricKey: TrendMetricKey;
     readonly observations: readonly TrendObservation[];
     readonly gaps: readonly TimelineGapViewModel[];
     readonly deltas: readonly DeltaViewModel[];
     readonly bulletinCount: number;
   };
+  /** Cumulative and peak figures across every loaded bulletin. */
+  readonly period: PeriodSummaryViewModel;
 };
 
 export type ConsoleAppProps = {
@@ -70,6 +82,23 @@ export type ConsoleAppProps = {
   readonly onWeightsChange?: (weights: SeverityWeights) => void;
   readonly onRationNormChange?: (norm: number) => void;
   readonly onLeversChange?: (levers: ScenarioLeversViewModel) => void;
+  /**
+   * Which series the Trend view should plot.
+   *
+   * Without this the console holds the choice and nothing else can see it, so
+   * the chart draws Population Affected whatever the dropdown says. The
+   * selection is echoed upward like every other assumption: this component
+   * still owns the *current value*, the composition root owns the data.
+   */
+  readonly onTrendMetricChange?: (metric: TrendMetricKey) => void;
+  /**
+   * The date of the shipped worked example, when it is still contributing to
+   * the timeline. `undefined` once the officer's own bulletins have replaced
+   * it — which is also when the console must stop saying it is there.
+   */
+  readonly bundledSampleDate?: string;
+  /** Removes the shipped example from the timeline. The record is the officer's. */
+  readonly onRemoveBundledSample?: () => void;
   readonly onOpenPage?: (page: number, source: ProvenanceRef) => void;
 };
 
@@ -89,6 +118,9 @@ export const ConsoleApp = ({
   onWeightsChange,
   onRationNormChange,
   onLeversChange,
+  onTrendMetricChange,
+  bundledSampleDate,
+  onRemoveBundledSample,
   onOpenPage,
 }: ConsoleAppProps) => {
   const [activeView, setActiveView] = useState<ConsoleViewKey>('situation');
@@ -114,6 +146,11 @@ export const ConsoleApp = ({
   const applyRationNorm = (norm: number) => {
     setRationNorm(norm);
     onRationNormChange?.(norm);
+  };
+
+  const applyTrendMetric = (metric: TrendMetricKey) => {
+    setMetricKey(metric);
+    onTrendMetricChange?.(metric);
   };
 
   const onSort = (key: DistrictSortKey) => {
@@ -183,13 +220,17 @@ export const ConsoleApp = ({
         return (
           <TrendView
             metricKey={metricKey}
-            onMetricChange={setMetricKey}
+            onMetricChange={applyTrendMetric}
             observations={data.trend.observations}
             gaps={data.trend.gaps}
             deltas={data.trend.deltas}
             bulletinCount={data.trend.bulletinCount}
+            bundledSampleDate={bundledSampleDate}
+            onRemoveBundledSample={onRemoveBundledSample}
           />
         );
+      case 'period':
+        return <PeriodSummary summary={data.period} bundledSampleDate={bundledSampleDate} />;
     }
   };
 

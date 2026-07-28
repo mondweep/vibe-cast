@@ -7,6 +7,7 @@ import {
   comparisonsFixture,
   damagePointsFixture,
   districtRowsFixture,
+  periodSummaryFixture,
   summaryFixture,
   trendDeltas,
   trendGaps,
@@ -36,11 +37,13 @@ const data: ConsoleData = {
   scenarioComparisons: comparisonsFixture,
   firstFailure: null,
   trend: {
+    metricKey: 'affectedPopulation',
     observations: trendObservations,
     gaps: trendGaps,
     deltas: trendDeltas,
     bulletinCount: 3,
   },
+  period: periodSummaryFixture,
 };
 
 describe('ConsoleApp', () => {
@@ -81,6 +84,50 @@ describe('ConsoleApp', () => {
 
     await user.click(screen.getByRole('button', { name: /Trend/ }));
     expect(screen.getByText('Trend across loaded bulletins')).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: /Cumulative & Peak/ }));
+    expect(screen.getByText('Cumulative & peak across loaded bulletins')).toBeTruthy();
+  });
+
+  it('echoes the trend metric upward so the host can supply that series', async () => {
+    // Without this the console alone knows which metric is selected, and the
+    // chart keeps drawing Population Affected whatever the dropdown says.
+    const onTrendMetricChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <ConsoleApp
+        loaderState={{ status: 'idle' }}
+        onLoadBulletin={vi.fn()}
+        data={data}
+        onTrendMetricChange={onTrendMetricChange}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Trend/ }));
+    fireEvent.change(screen.getByLabelText('Metric'), { target: { value: 'floodDeaths' } });
+
+    expect(onTrendMetricChange).toHaveBeenLastCalledWith('floodDeaths');
+    expect((screen.getByLabelText('Metric') as HTMLSelectElement).value).toBe('floodDeaths');
+  });
+
+  it('passes the shipped example’s disclosure and removal down to the Trend view', async () => {
+    const onRemoveBundledSample = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <ConsoleApp
+        loaderState={{ status: 'idle' }}
+        onLoadBulletin={vi.fn()}
+        data={data}
+        bundledSampleDate="2026-07-27"
+        onRemoveBundledSample={onRemoveBundledSample}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Trend/ }));
+    expect(screen.getByTestId('trend-sample-note')).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Remove the example' }));
+    expect(onRemoveBundledSample).toHaveBeenCalledTimes(1);
   });
 
   it('echoes the ration norm upward so the host can recompute coverage days', async () => {

@@ -1,0 +1,209 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { PeriodSummary } from './period-summary';
+import { periodSummaryFixture } from './test-fixtures';
+import type { PeriodSummaryViewModel } from './view-models';
+
+afterEach(cleanup);
+
+const renderSummary = (summary: PeriodSummaryViewModel = periodSummaryFixture, sample?: string) =>
+  render(<PeriodSummary summary={summary} bundledSampleDate={sample} />);
+
+describe('PeriodSummary — cumulative figures', () => {
+  it('totals flood deaths across the loaded bulletins', () => {
+    const { container } = renderSummary();
+
+    expect(container.querySelector('[data-total="flood-deaths"]')?.textContent).toBe('41');
+  });
+
+  it('shows the workings, so the total can be checked against the PDFs', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector('[data-cumulative="flood-deaths"]') as HTMLElement;
+    expect(row.textContent).toContain('5 + 21 + 9 + 4 + 2 + 0 = 41');
+  });
+
+  it('names the worst single bulletin as well as the total', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector('[data-cumulative="flood-deaths"]') as HTMLElement;
+    expect(row.textContent).toContain('21');
+    expect(row.textContent).toContain('on 2026-07-21');
+  });
+
+  it('keeps flood deaths and other drownings as separate rows', () => {
+    // PRD §4.2: they are different events, and there is no combined row on
+    // screen because there is no combined figure anywhere in the product.
+    const { container } = renderSummary();
+
+    expect(container.querySelector('[data-total="flood-deaths"]')?.textContent).toBe('41');
+    expect(container.querySelector('[data-total="general-drownings"]')?.textContent).toBe('1');
+    // 41 + 1 appears nowhere: there is no combined row, and no combined figure
+    // anywhere in the product for one to be built from.
+    const totals = Array.from(container.querySelectorAll('[data-total]')).map(
+      (cell) => cell.textContent,
+    );
+    expect(totals).not.toContain('42');
+  });
+
+  it('marks every cumulative figure as derived', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector('[data-cumulative="flood-deaths"]') as HTMLElement;
+    expect(row.textContent).toContain('derived');
+  });
+});
+
+describe('PeriodSummary — what a total is allowed to claim', () => {
+  it('never prints a bare total: the period is stated with it', () => {
+    renderSummary();
+
+    const coverage = screen.getByTestId('period-coverage');
+    expect(coverage.textContent).toContain('6 bulletins');
+    expect(coverage.textContent).toContain('20 July 2026 to 27 July 2026');
+    expect(coverage.textContent).toContain('2 days missing');
+    expect(coverage.textContent).toContain('2026-07-23, 2026-07-24');
+  });
+
+  it('says plainly that nothing is estimated for the missing days', () => {
+    renderSummary();
+
+    expect(screen.getByTestId('period-coverage').textContent).toMatch(
+      /nothing is estimated for them/i,
+    );
+  });
+
+  it('flags an incomplete figure rather than letting it pass as a count', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector('[data-cumulative="flood-deaths"]') as HTMLElement;
+    expect(row.querySelector('[data-completeness="partial"]')).not.toBeNull();
+  });
+
+  it('says so when a period has no missing days at all', () => {
+    renderSummary({
+      ...periodSummaryFixture,
+      coverage: { ...periodSummaryFixture.coverage, missingDates: [] },
+    });
+
+    expect(screen.getByTestId('period-coverage').textContent).toMatch(/no days missing/);
+  });
+
+  it('does not pretend a single bulletin is a period', () => {
+    renderSummary({
+      ...periodSummaryFixture,
+      coverage: { ...periodSummaryFixture.coverage, bulletinCount: 1, missingDates: [] },
+    });
+
+    expect(screen.getByText(/One bulletin is loaded/)).toBeTruthy();
+  });
+
+  it('says there is nothing to accumulate when no bulletin is loaded', () => {
+    renderSummary({
+      coverage: {
+        bulletinCount: 0,
+        fromDate: undefined,
+        toDate: undefined,
+        missingDates: [],
+        description: 'no bulletins loaded',
+      },
+      cumulative: [],
+      peaks: [],
+    });
+
+    expect(screen.getByText(/nothing to accumulate/)).toBeTruthy();
+  });
+});
+
+describe('PeriodSummary — peaks, and the totals that must never appear', () => {
+  it('reports the peak of a stock with the day it was reached', () => {
+    const { container } = renderSummary();
+
+    expect(container.querySelector('[data-peak-value="population-affected"]')?.textContent).toBe(
+      '654,838',
+    );
+    expect(container.querySelector('[data-peak-date="population-affected"]')?.textContent).toBe(
+      '2026-07-25',
+    );
+    expect(container.querySelector('[data-peak-value="camp-inmates"]')?.textContent).toBe(
+      '37,724',
+    );
+    expect(container.querySelector('[data-peak-date="camp-inmates"]')?.textContent).toBe(
+      '2026-07-26',
+    );
+  });
+
+  it('keeps the decimals of a fractional measure', () => {
+    const { container } = renderSummary();
+
+    expect(container.querySelector('[data-peak-value="crop-area-submerged"]')?.textContent).toBe(
+      '48,742.09',
+    );
+  });
+
+  it('shows the latest value beside the peak, so a receding flood reads as receding', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector('[data-peak="population-affected"]') as HTMLElement;
+    expect(row.textContent).toContain('445,495');
+    expect(row.textContent).toContain('on 2026-07-27');
+  });
+
+  it('offers no cumulative for a point-in-time figure, and says why', () => {
+    // 654,838 + 524,733 + … is 3,205,823 — a number that would lead a bulletin
+    // and that counts the same person six times. It must not be computable
+    // from anything on this screen.
+    const { container } = renderSummary();
+
+    const row = container.querySelector('[data-peak="population-affected"]') as HTMLElement;
+    expect(row.textContent).toContain('Not applicable — point-in-time figure');
+    expect(screen.queryByText('3,205,823')).toBeNull();
+  });
+
+  it('explains the flow/stock rule in the officer’s own terms', () => {
+    renderSummary();
+
+    expect(screen.getByText(/Levels are never added/)).toBeTruthy();
+    expect(
+      screen.getByText(/The same person affected on six days is one person, not six/),
+    ).toBeTruthy();
+    expect(screen.getByText(/Flood deaths are never added to other drownings/)).toBeTruthy();
+  });
+
+  it('renders an unreported figure as “not reported”, never as zero', () => {
+    const { container } = renderSummary({
+      ...periodSummaryFixture,
+      peaks: [
+        {
+          ...periodSummaryFixture.peaks[0]!,
+          peak: undefined,
+          peakDate: undefined,
+          latest: undefined,
+          latestDate: undefined,
+          completeness: 'unavailable',
+        },
+      ],
+    });
+
+    const row = container.querySelector('[data-peak="population-affected"]') as HTMLElement;
+    expect(row.textContent).toContain('—');
+    expect(row.textContent).not.toContain('0');
+  });
+});
+
+describe('PeriodSummary — the shipped example', () => {
+  it('says when the figures include the worked example', () => {
+    renderSummary(periodSummaryFixture, '2026-07-27');
+
+    expect(screen.getByTestId('period-sample-note').textContent).toMatch(
+      /worked example shipped with this console/,
+    );
+    expect(screen.getByTestId('period-sample-note').textContent).toContain('2026-07-27');
+  });
+
+  it('says nothing about it once the officer’s own bulletins have replaced it', () => {
+    renderSummary();
+
+    expect(screen.queryByTestId('period-sample-note')).toBeNull();
+  });
+});

@@ -19,6 +19,8 @@ import type {
   DeltaViewModel,
   DerivedFigure,
   DistrictRowViewModel,
+  PeriodCoverageViewModel,
+  PeriodSummaryViewModel,
   ProvenanceRef,
   ResponseCapacityViewModel,
   ScenarioComparisonRow,
@@ -509,6 +511,111 @@ export const trendGaps: readonly TimelineGapViewModel[] = [
     missingDates: ['2026-07-25', '2026-07-26'],
   },
 ];
+
+/**
+ * Cumulative and peak figures over the six real July 2026 bulletins.
+ *
+ * Every number here is the verified statewide figure from the ASDMA PDFs in
+ * `fixtures/`, so a UI test that renders 654,838 is rendering the same number
+ * the composition test computes. 23 and 24 July are genuinely missing — a real
+ * gap the console must state rather than smooth over.
+ */
+export const periodCoverageFixture: PeriodCoverageViewModel = {
+  bulletinCount: 6,
+  fromDate: '2026-07-20',
+  toDate: '2026-07-27',
+  missingDates: ['2026-07-23', '2026-07-24'],
+  description:
+    '6 bulletins, 2026-07-20 to 2026-07-27, 2 days missing (2026-07-23, 2026-07-24)',
+};
+
+const PERIOD_CAVEAT =
+  'Derived here, not reported by ASDMA: cumulative over 6 bulletins, 2026-07-20 to ' +
+  '2026-07-27, 2 days missing (2026-07-23, 2026-07-24). No bulletin covers the missing ' +
+  'days, so anything reported on them is not in this total. Nothing is estimated for them.';
+
+const PEAK_CAVEAT =
+  'Derived here, not reported by ASDMA: highest and latest across 6 bulletins, ' +
+  '2026-07-20 to 2026-07-27, 2 days missing (2026-07-23, 2026-07-24). This is a ' +
+  'point-in-time figure, so it is never totalled across bulletins — the same people, ' +
+  'camps or hectares are counted again in every bulletin.';
+
+export const periodSummaryFixture: PeriodSummaryViewModel = {
+  coverage: periodCoverageFixture,
+  cumulative: [
+    {
+      key: 'flood-deaths',
+      label: 'Human Lives Lost — Flood',
+      kind: 'flow',
+      precision: 0,
+      rationale: 'Deaths reported in the period covered by each bulletin.',
+      cumulative: 41,
+      cumulativeWorkings: '5 + 21 + 9 + 4 + 2 + 0 = 41',
+      peak: 21,
+      peakDate: '2026-07-21',
+      latest: 0,
+      latestDate: '2026-07-27',
+      completeness: 'partial',
+      caveat: PERIOD_CAVEAT,
+    },
+    {
+      key: 'general-drownings',
+      label: 'Human Lives Lost — Other Drowning',
+      kind: 'flow',
+      precision: 0,
+      rationale: 'Non-flood drownings, totalled on their own (PRD §4.2).',
+      cumulative: 1,
+      cumulativeWorkings: '0 + 0 + 1 + 0 + 0 + 0 = 1',
+      peak: 1,
+      peakDate: '2026-07-22',
+      latest: 0,
+      latestDate: '2026-07-27',
+      completeness: 'partial',
+      caveat: PERIOD_CAVEAT,
+    },
+  ],
+  peaks: [
+    {
+      key: 'population-affected',
+      label: 'Population Affected',
+      kind: 'stock',
+      precision: 0,
+      rationale: 'A level at the moment the bulletin was compiled.',
+      peak: 654838,
+      peakDate: '2026-07-25',
+      latest: 445495,
+      latestDate: '2026-07-27',
+      completeness: 'partial',
+      caveat: PEAK_CAVEAT,
+    },
+    {
+      key: 'camp-inmates',
+      label: 'Inmates in Relief Camps',
+      kind: 'stock',
+      precision: 0,
+      rationale: 'A level at the moment the bulletin was compiled.',
+      peak: 37724,
+      peakDate: '2026-07-26',
+      latest: 28695,
+      latestDate: '2026-07-27',
+      completeness: 'partial',
+      caveat: PEAK_CAVEAT,
+    },
+    {
+      key: 'crop-area-submerged',
+      label: 'Crop Area Submerged',
+      kind: 'stock',
+      precision: 2,
+      rationale: 'The area under water when the bulletin was compiled.',
+      peak: 48742.09,
+      peakDate: '2026-07-26',
+      latest: 37139.52,
+      latestDate: '2026-07-27',
+      completeness: 'partial',
+      caveat: PEAK_CAVEAT,
+    },
+  ],
+};
 
 export const trendDeltas: readonly DeltaViewModel[] = [
   {

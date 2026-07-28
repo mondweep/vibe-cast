@@ -55,6 +55,7 @@ import type {
   ResponseRowViewModel,
   RevenueCircleRowViewModel,
   SeverityContribution,
+  TrendMetricKey,
 } from '../adapters/ui/view-models';
 
 import type { ConsoleAssumptions } from './assumptions';
@@ -73,6 +74,7 @@ import {
   type StatewideDerived,
 } from './situation-view';
 import { firstFailureFrom, scenarioComparisonsFrom } from './scenario-view';
+import { periodSummaryFrom } from './period-view';
 import { trendFrom } from './trend-view-model';
 
 // ---------------------------------------------------------------------------
@@ -111,6 +113,14 @@ export type MappingInput = {
   /** Every bulletin loaded so far, latest included (FR-1.7). */
   readonly timeline: BulletinTimeline;
   readonly assumptions: ConsoleAssumptions;
+  /**
+   * Which series the Trend view is showing.
+   *
+   * It arrives here because the timeline lives at this layer: the console can
+   * say which metric the officer picked, but only the composition root can turn
+   * that into a series. Defaults to Population Affected, the view's own default.
+   */
+  readonly trendMetric?: TrendMetricKey;
 };
 
 // ---------------------------------------------------------------------------
@@ -272,7 +282,7 @@ export const reportToConsoleData = (
   input: MappingInput,
   deps: MappingDependencies = DEFAULT_MAPPING_DEPENDENCIES,
 ): ConsoleData => {
-  const { report, timeline, assumptions } = input;
+  const { report, timeline, assumptions, trendMetric } = input;
 
   const summary = deps.summarise(report, summaryOptions);
   const norm = normOf(assumptions.rationNormKgPerPersonPerDay);
@@ -298,6 +308,8 @@ export const reportToConsoleData = (
     trend: trendFrom(
       timeline,
       (held) => deps.summarise(held, summaryOptions).derived.unshelteredAffected.value,
+      trendMetric,
     ),
+    period: periodSummaryFrom(timeline),
   };
 };

@@ -13,13 +13,18 @@
  *    bulletins three days apart do not make a day-over-day change.
  */
 
-import { valueOf } from '../domain/shared/quantity';
 import type { FloodSituationReport } from '../domain/shared/flood-situation-report';
 import type { BulletinTimeline } from '../domain/timeline/bulletin-timeline';
 import { dayOverDayDeltas, deltaFor, type HeadlineMetric } from '../domain/timeline/delta';
 import { detectGaps } from '../domain/timeline/gap-detection';
+import { MEASURES, type Measure } from '../domain/timeline/measure';
+import { seriesOf } from '../domain/timeline/period-totals';
 import type { ConsoleData } from '../adapters/ui/console-app';
-import type { DeltaViewModel, TrendObservation } from '../adapters/ui/view-models';
+import type {
+  DeltaViewModel,
+  TrendMetricKey,
+  TrendObservation,
+} from '../adapters/ui/view-models';
 
 const directionOf = (
   from: number | undefined,
@@ -61,22 +66,64 @@ const REPORTED_ROWS: readonly { readonly metric: HeadlineMetric; readonly label:
 export type TrendViewModel = ConsoleData['trend'];
 
 /**
+ * Which Temporal Comparison measure each dropdown entry plots.
+ *
+ * A `Record` over every `TrendMetricKey`, so adding an option to the dropdown
+ * without saying what it plots is a compile error rather than a chart that
+ * silently keeps drawing Population Affected — which is exactly the defect this
+ * mapping exists to close.
+ *
+ * `undefined` means the series is not a reported measure at all: Unsheltered
+ * Affected is the Situation Assessment context's derived figure, supplied by
+ * the injected reader below.
+ */
+const SERIES_MEASURE: Readonly<Record<TrendMetricKey, Measure | undefined>> = {
+  affectedPopulation: MEASURES['population-affected'],
+  campInmates: MEASURES['camp-inmates'],
+  reliefCamps: MEASURES['relief-camps'],
+  cropAreaSubmerged: MEASURES['crop-area-submerged'],
+  floodDeaths: MEASURES['flood-deaths'],
+  unshelteredAffected: undefined,
+};
+
+const observationsFor = (
+  timeline: BulletinTimeline,
+  metric: TrendMetricKey,
+  unshelteredOf: (report: FloodSituationReport) => number | undefined,
+): readonly TrendObservation[] => {
+  const measure = SERIES_MEASURE[metric];
+  if (measure === undefined) {
+    return timeline.reports.map((report) => ({
+      date: String(report.reportDate),
+      value: unshelteredOf(report),
+    }));
+  }
+  return seriesOf(timeline, measure).map((point) => ({
+    date: String(point.date),
+    // Stays `undefined` where the bulletin reported nothing, so the chart
+    // draws a hole rather than a drop to zero (ADR-0005).
+    value: point.value,
+  }));
+};
+
+/**
  * @param unshelteredOf the Situation Assessment context's Unsheltered Affected
  *        for one bulletin — injected rather than recomputed here, so the trend
  *        line and the Situation Summary can never disagree about the same day.
+ * @param metric which series to plot. Chosen by the officer in the Trend view
+ *        and echoed up to the composition root, which is the only layer that
+ *        can read the timeline.
  */
 export const trendFrom = (
   timeline: BulletinTimeline,
   unshelteredOf: (report: FloodSituationReport) => number | undefined,
+  metric: TrendMetricKey = 'affectedPopulation',
 ): TrendViewModel => {
   const byDate = new Map<string, FloodSituationReport>(
     timeline.reports.map((report) => [String(report.reportDate), report]),
   );
 
-  const observations: readonly TrendObservation[] = timeline.reports.map((report) => ({
-    date: String(report.reportDate),
-    value: valueOf(report.statewideTotals.populationAffected),
-  }));
+  const observations = observationsFor(timeline, metric, unshelteredOf);
 
   const deltas: DeltaViewModel[] = [];
   for (const day of dayOverDayDeltas(timeline)) {
@@ -106,6 +153,7 @@ export const trendFrom = (
   }
 
   return {
+    metricKey: metric,
     observations,
     gaps: detectGaps(timeline).map((gap) => ({
       afterDate: String(gap.after),

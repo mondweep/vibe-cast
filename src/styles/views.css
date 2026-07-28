@@ -385,6 +385,52 @@ td.comparison__projected {
   font-size: var(--fs-small);
 }
 
+/*
+ * The shipped worked example, when it is one of the points on the chart.
+ * Tinted like a derived figure because that is what it is to the officer: a
+ * number on their screen that did not come out of a PDF they chose.
+ */
+.trend__sample-note {
+  margin-top: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-left: 3px solid var(--c-derived);
+  background: var(--c-derived-soft);
+  color: var(--c-ink);
+}
+
+.trend__sample-remove {
+  font: inherit;
+  font-weight: 600;
+  color: var(--c-link);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* --- Cumulative & Peak --------------------------------------------------- */
+
+/*
+ * The period a figure covers, stated as prose rather than as a chip: it has to
+ * survive being read aloud, and "6 bulletins, 2 days missing" is the half of
+ * every cumulative figure that stops it being a lie.
+ */
+.period__coverage {
+  font-size: var(--fs-small);
+  color: var(--c-ink);
+  margin: 0;
+}
+
+.period__completeness {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+}
+
+.period__completeness--complete { color: var(--c-ok); }
+.period__completeness--partial { color: var(--c-warning); }
+.period__completeness--unavailable { color: var(--c-ink-faint); }
+
 .delta {
   font-family: var(--font-figure);
   font-variant-numeric: tabular-nums;

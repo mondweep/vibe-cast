@@ -77,6 +77,13 @@ export type TrendViewProps = {
   /** Day-over-day deltas. The host supplies only *adjacent* pairs. */
   readonly deltas: readonly DeltaViewModel[];
   readonly bulletinCount: number;
+  /**
+   * The date of the worked example shipped with the console, while it is still
+   * one of the points on the chart. Disclosed rather than blended in: a point
+   * the officer did not load must not read as one they did.
+   */
+  readonly bundledSampleDate?: string;
+  readonly onRemoveBundledSample?: () => void;
   /** Explicit dimensions bypass ResponsiveContainer (used by tests). */
   readonly chartWidth?: number;
   readonly chartHeight?: number;
@@ -96,10 +103,13 @@ export const TrendView = ({
   gaps,
   deltas,
   bulletinCount,
+  bundledSampleDate,
+  onRemoveBundledSample,
   chartWidth,
   chartHeight = 280,
 }: TrendViewProps) => {
   const metric = TREND_METRICS.find((candidate) => candidate.key === metricKey);
+  const precision = metric?.precision ?? 0;
   const data = withExplicitGaps(observations, gaps);
 
   const chart = (
@@ -111,8 +121,11 @@ export const TrendView = ({
     >
       <CartesianGrid stroke="var(--c-rule)" strokeDasharray="2 2" />
       <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-      <YAxis tickFormatter={(value: number) => formatNumber(value)} tick={{ fontSize: 11 }} />
-      <Tooltip formatter={(value: number) => formatNumber(value)} />
+      <YAxis
+        tickFormatter={(value: number) => formatNumber(value, precision)}
+        tick={{ fontSize: 11 }}
+      />
+      <Tooltip formatter={(value: number) => formatNumber(value, precision)} />
       {gaps.map((gap) => (
         <ReferenceArea
           key={`${gap.afterDate}-${gap.beforeDate}`}
@@ -160,8 +173,8 @@ export const TrendView = ({
             </select>
             {metric?.derived ? (
               <DerivedBadge
-                formula="Affected Population − Inmates − Non-Camp Inmates"
-                workings="Computed per bulletin, then plotted."
+                formula={metric.formula ?? metric.label}
+                workings={metric.workings ?? 'Computed per bulletin, then plotted.'}
               />
             ) : null}
           </div>
@@ -171,6 +184,25 @@ export const TrendView = ({
           <p className="text-small text-muted">
             {bulletinCount} bulletin loaded. A single bulletin is a valid timeline and yields no
             deltas — load an earlier DRIMS PDF to compare.
+          </p>
+        ) : null}
+
+        {bundledSampleDate !== undefined ? (
+          <p className="trend__sample-note text-small" data-testid="trend-sample-note">
+            One point on this chart —{' '}
+            <span className="figure">{bundledSampleDate}</span> — is the worked example
+            shipped with this console, not a bulletin you loaded. It is a real ASDMA
+            bulletin, so the comparison is genuine, and it leaves the timeline as soon as
+            your own record covers that day.{' '}
+            {onRemoveBundledSample ? (
+              <button
+                type="button"
+                className="trend__sample-remove"
+                onClick={onRemoveBundledSample}
+              >
+                Remove the example
+              </button>
+            ) : null}
           </p>
         ) : null}
 

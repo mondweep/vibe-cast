@@ -32,6 +32,7 @@ export {
 } from './choropleth-scale';
 export { DerivedBadge, DerivedBadgeFor, type DerivedBadgeProps } from './derived-badge';
 export { DistrictRanking, type DistrictRankingProps } from './district-ranking';
+export { PeriodSummary, type PeriodSummaryProps } from './period-summary';
 export { Provenance, formatPages, type ProvenanceProps } from './provenance';
 export { ResponseCapacity, type ResponseCapacityProps } from './response-capacity';
 export { ScenarioPlanner, type ScenarioPlannerProps } from './scenario-planner';

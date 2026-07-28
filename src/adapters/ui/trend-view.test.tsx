@@ -130,4 +130,64 @@ describe('TrendView', () => {
 
     expect(onMetricChange).toHaveBeenCalledWith('unshelteredAffected');
   });
+
+  it('offers a series for each headline measure an officer tracks', () => {
+    renderTrend();
+
+    for (const label of [
+      'Population Affected',
+      'Inmates in Relief Camps',
+      'Relief Camps',
+      'Crop Area Submerged',
+      'Human Lives Lost — Flood',
+    ]) {
+      expect(screen.getByRole('option', { name: label })).toBeTruthy();
+    }
+  });
+
+  it('reports the metric the host asked for back to the host, whichever it is', () => {
+    const onMetricChange = vi.fn();
+    renderTrend({ onMetricChange });
+
+    fireEvent.change(screen.getByLabelText('Metric'), { target: { value: 'floodDeaths' } });
+    fireEvent.change(screen.getByLabelText('Metric'), { target: { value: 'cropAreaSubmerged' } });
+
+    expect(onMetricChange).toHaveBeenNthCalledWith(1, 'floodDeaths');
+    expect(onMetricChange).toHaveBeenNthCalledWith(2, 'cropAreaSubmerged');
+  });
+
+  it('names the plotted series on the line, so the chart cannot disagree with the label', () => {
+    const { container } = renderTrend({ metricKey: 'campInmates' });
+
+    expect(container.querySelector('.recharts-line')).not.toBeNull();
+    expect((screen.getByLabelText('Metric') as HTMLSelectElement).value).toBe('campInmates');
+  });
+});
+
+describe('TrendView — the shipped worked example on the chart', () => {
+  it('discloses a point the officer did not load', () => {
+    renderTrend({ bundledSampleDate: '2026-07-27' });
+
+    const note = screen.getByTestId('trend-sample-note');
+    expect(note.textContent).toContain('2026-07-27');
+    expect(note.textContent).toMatch(/worked example shipped with this console/);
+    // It is real ASDMA data, so the comparison is genuine — that has to be said
+    // too, or the officer will discount a point they should trust.
+    expect(note.textContent).toMatch(/real ASDMA bulletin/);
+  });
+
+  it('lets the officer take it out of their timeline', () => {
+    const onRemoveBundledSample = vi.fn();
+    renderTrend({ bundledSampleDate: '2026-07-27', onRemoveBundledSample });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove the example' }));
+
+    expect(onRemoveBundledSample).toHaveBeenCalledTimes(1);
+  });
+
+  it('says nothing at all once the example has left the timeline', () => {
+    renderTrend();
+
+    expect(screen.queryByTestId('trend-sample-note')).toBeNull();
+  });
 });

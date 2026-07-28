@@ -262,6 +262,96 @@ describe('App — the bundled bulletin and its age', () => {
     expect(screen.getByText(/1 bulletin loaded/)).toBeTruthy();
   });
 
+  it('keeps showing a trend the moment one earlier bulletin is loaded', async () => {
+    // The defect this replaces: loading a bulletin took the console from one
+    // bulletin to one bulletin, so the commonest first action a user takes
+    // produced no trend at all. The shipped 27 July example is real ASDMA data
+    // and stays on the chart as the second point.
+    const load = vi.fn().mockResolvedValue(bulletin('2026-07-20', 'asdma-20-july', 362_933));
+    const { container } = aContainer({
+      ...atAssamTime('2026-07-27T21:49:00+05:30'),
+      loadBulletin: { execute: load } as unknown as Container['loadBulletin'],
+    });
+
+    render(<App container={container} />);
+    await dropIn(pdf('Daily_Flood_Report_20260720.pdf'));
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+
+    // The bulletin they just dropped in is the one on screen — not the example.
+    await waitFor(() =>
+      expect(banner().textContent).toMatch(/Assam Flood Report as on 20 July 2026/),
+    );
+    expect(banner().getAttribute('data-origin')).toBe('loaded');
+
+    await userEvent.click(screen.getByRole('button', { name: /Trend/ }));
+
+    // Two points, and the six days ASDMA did not report between them read as a
+    // gap — never as a line drawn from the 20th to the 27th.
+    expect(screen.queryByText(/1 bulletin loaded/)).toBeNull();
+    const gap = screen.getByText(/No bulletin for/).closest('li');
+    expect(gap?.textContent).toContain('2026-07-21');
+    expect(gap?.textContent).toContain('2026-07-26');
+    expect(gap?.textContent).toContain('between 2026-07-20 and 2026-07-27');
+  });
+
+  it('says on the chart which point the officer did not load', async () => {
+    const load = vi.fn().mockResolvedValue(bulletin('2026-07-20', 'asdma-20-july', 362_933));
+    const { container } = aContainer({
+      loadBulletin: { execute: load } as unknown as Container['loadBulletin'],
+    });
+
+    render(<App container={container} />);
+    await dropIn(pdf('Daily_Flood_Report_20260720.pdf'));
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+    await userEvent.click(screen.getByRole('button', { name: /Trend/ }));
+
+    expect(screen.getByTestId('trend-sample-note').textContent).toContain('2026-07-27');
+  });
+
+  it('lets the officer remove the example, leaving their own record alone', async () => {
+    const load = vi.fn().mockResolvedValue(bulletin('2026-07-20', 'asdma-20-july', 362_933));
+    const { container } = aContainer({
+      loadBulletin: { execute: load } as unknown as Container['loadBulletin'],
+    });
+
+    render(<App container={container} />);
+    await dropIn(pdf('Daily_Flood_Report_20260720.pdf'));
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+    await userEvent.click(screen.getByRole('button', { name: /Trend/ }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove the example' }));
+
+    await waitFor(() => expect(screen.getByText(/1 bulletin loaded/)).toBeTruthy());
+    expect(screen.queryByTestId('trend-sample-note')).toBeNull();
+    expect(screen.queryByText(/No bulletin for/)).toBeNull();
+  });
+
+  it('retires the example once the officer holds two bulletins of their own', async () => {
+    // Its job in the timeline is to make a comparison possible at all. Once
+    // their own record can show a trend, the demonstration is over.
+    const load = vi
+      .fn()
+      .mockResolvedValueOnce(bulletin('2026-07-20', 'asdma-20', 362_933))
+      .mockResolvedValueOnce(bulletin('2026-07-21', 'asdma-21', 564_660));
+    const { container } = aContainer({
+      loadBulletin: { execute: load } as unknown as Container['loadBulletin'],
+    });
+
+    const { container: dom } = render(<App container={container} />);
+    await dropIn(pdf('bulletin-20.pdf'));
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+    await dropIn(pdf('bulletin-21.pdf'));
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(2));
+
+    await userEvent.click(screen.getByRole('button', { name: /Trend/ }));
+
+    await waitFor(() => expect(screen.getByText(/No gaps/)).toBeTruthy());
+    expect(screen.queryByTestId('trend-sample-note')).toBeNull();
+    // Their own two consecutive days, and no third point from a demonstration.
+    expect(dom.querySelector('[data-delta="2026-07-20→2026-07-21"]')).not.toBeNull();
+    expect(dom.querySelector('[data-delta="2026-07-21→2026-07-27"]')).toBeNull();
+  });
+
   it('drops the example entirely once the officer loads a bulletin of any date', async () => {
     const load = vi.fn().mockResolvedValue(bulletin('2026-11-03', 'todays-bulletin', 12_000));
     const { container } = aContainer({

@@ -35,7 +35,8 @@ export type ConsoleViewKey =
   | 'capacity'
   | 'map'
   | 'scenario'
-  | 'trend';
+  | 'trend'
+  | 'period';
 
 export type ConsoleView = {
   readonly key: ConsoleViewKey;
@@ -74,6 +75,11 @@ export const CONSOLE_VIEWS: readonly ConsoleView[] = [
     key: 'trend',
     label: 'Trend',
     question: "What changed since yesterday's bulletin?",
+  },
+  {
+    key: 'period',
+    label: 'Cumulative & Peak',
+    question: 'Across every bulletin loaded, what has accumulated and what peaked when?',
   },
 ];
 
@@ -376,19 +382,34 @@ export type TrendMetricKey =
   | 'affectedPopulation'
   | 'campInmates'
   | 'unshelteredAffected'
-  | 'reliefCamps';
+  | 'reliefCamps'
+  | 'cropAreaSubmerged'
+  | 'floodDeaths';
 
 export type TrendMetric = {
   readonly key: TrendMetricKey;
   readonly label: string;
   readonly derived: boolean;
+  /** Decimal places. Crop Area Submerged is the only fractional series. */
+  readonly precision?: number;
+  /** Present only on a derived series; shown in its badge. */
+  readonly formula?: string;
+  readonly workings?: string;
 };
 
 export const TREND_METRICS: readonly TrendMetric[] = [
   { key: 'affectedPopulation', label: 'Population Affected', derived: false },
   { key: 'campInmates', label: 'Inmates in Relief Camps', derived: false },
-  { key: 'unshelteredAffected', label: 'Unsheltered Affected', derived: true },
+  {
+    key: 'unshelteredAffected',
+    label: 'Unsheltered Affected',
+    derived: true,
+    formula: 'Affected Population − Inmates − Non-Camp Inmates',
+    workings: 'Computed per bulletin, then plotted.',
+  },
   { key: 'reliefCamps', label: 'Relief Camps', derived: false },
+  { key: 'cropAreaSubmerged', label: 'Crop Area Submerged', derived: false, precision: 2 },
+  { key: 'floodDeaths', label: 'Human Lives Lost — Flood', derived: false },
 ];
 
 export type TrendObservation = {
@@ -413,6 +434,70 @@ export type DeltaViewModel = {
   readonly delta: number | undefined;
   readonly direction: 'up' | 'down' | 'unchanged' | 'unknown';
   readonly derived: boolean;
+};
+
+// ---------------------------------------------------------------------------
+// Cumulative and peak, across every loaded bulletin
+// ---------------------------------------------------------------------------
+
+/**
+ * Whether a figure may legally be totalled across bulletins.
+ *
+ * Mirrors `MeasureKind` in the Temporal Comparison context, restated as the
+ * UI's own type (ADR-0001). It is carried into the view model rather than
+ * inferred from which table a row happens to sit in, so the console can *say*
+ * why a stock has no total instead of leaving a blank cell.
+ */
+export type PeriodFigureKind = 'flow' | 'stock';
+
+export type PeriodCompleteness = 'complete' | 'partial' | 'unavailable';
+
+export type PeriodCoverageViewModel = {
+  readonly bulletinCount: number;
+  readonly fromDate: string | undefined;
+  readonly toDate: string | undefined;
+  readonly missingDates: readonly string[];
+  /** "6 bulletins, 2026-07-20 to 2026-07-27, 2 days missing (…)". */
+  readonly description: string;
+};
+
+export type PeriodFigureViewModel = {
+  readonly key: string;
+  /** ASDMA's own heading for the measure. */
+  readonly label: string;
+  readonly kind: PeriodFigureKind;
+  readonly precision: number;
+  /** Why the measure is a flow or a stock, in words. */
+  readonly rationale: string;
+  /** The highest single bulletin, and the day it was reported. */
+  readonly peak: number | undefined;
+  readonly peakDate: string | undefined;
+  readonly latest: number | undefined;
+  readonly latestDate: string | undefined;
+  /**
+   * Present only on a flow. A stock has no cumulative — not because the number
+   * is unavailable, but because it would be meaningless.
+   */
+  readonly cumulative?: number | undefined;
+  /** The sum with real numbers in it: "5 + 21 + 9 + 4 + 2 + 0 = 41". */
+  readonly cumulativeWorkings?: string;
+  readonly completeness: PeriodCompleteness;
+  /** The sentence that must travel with the figure. Never empty. */
+  readonly caveat: string;
+};
+
+export type PeriodSummaryViewModel = {
+  readonly coverage: PeriodCoverageViewModel;
+  /** Flows: totalled across the period. */
+  readonly cumulative: readonly PeriodFigureViewModel[];
+  /** Stocks: peak and latest only. */
+  readonly peaks: readonly PeriodFigureViewModel[];
+};
+
+export const PERIOD_COMPLETENESS_LABELS: Record<PeriodCompleteness, string> = {
+  complete: 'Every loaded bulletin reported this',
+  partial: 'Incomplete — see the note',
+  unavailable: 'Not reported by any loaded bulletin',
 };
 
 // ---------------------------------------------------------------------------
