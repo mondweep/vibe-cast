@@ -49,6 +49,17 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          // Build-time scripts are not shipped, but they are load-bearing: the
+          // Drive sync decides what enters `fixtures/`, so its pure parts are
+          // held to the same standard as the app's.
+          name: 'scripts',
+          environment: 'node',
+          include: ['scripts/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
           name: 'ui',
           environment: 'jsdom',
           include: ['src/adapters/ui/**/*.test.tsx', 'src/adapters/ui/**/*.test.ts'],

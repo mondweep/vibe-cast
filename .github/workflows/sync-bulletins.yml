@@ -1,0 +1,161 @@
+# Keeps the bundled bulletin archive current from the owner's public Drive
+# folder, so publishing a new ASDMA Daily Flood Report is an upload rather than
+# a commit.
+#
+# Shape of the job: fetch new PDFs into `fixtures/`, re-run the generators that
+# turn fixtures into the bundled archive, prove the result still builds and
+# still passes, and only then commit. Netlify deploys from the branch.
+#
+# Secrets: none, deliberately. The only credential in play is the automatic
+# `GITHUB_TOKEN`, which is not a configured secret and needs nothing clicked
+# beyond workflow write permission. The Drive folder is public; if it ever
+# stops being public, `scripts/fetch-drive-bulletins.ts` fails with a message
+# naming exactly what changed — and the fix is to re-share the folder, not to
+# add an API key. Should a future step genuinely require a secret, it must fail
+# loudly naming which one, rather than degrading to a silent no-op.
+
+name: Sync bulletins from Drive
+
+on:
+  workflow_dispatch:
+    inputs:
+      folder_id:
+        description: 'Drive folder to read (blank = the folder the script defaults to)'
+        required: false
+        default: ''
+  schedule:
+    # 20:00 UTC is 01:30 IST the following morning.
+    #
+    # ASDMA compiles the Daily Flood Report late in the evening IST and it is
+    # uploaded to Drive after that, so any earlier slot races the very bulletin
+    # this exists to collect and would spend a day behind. 01:30 IST clears
+    # publication with hours to spare and still lands long before the working
+    # day the figures are meant to inform. It is also well outside GitHub's
+    # on-the-hour congestion, which delays scheduled runs.
+    - cron: '0 20 * * *'
+
+# The job commits the fixtures and the regenerated archive.
+permissions:
+  contents: write
+
+# Two syncs pushing to the same branch would conflict; queue instead. Never
+# cancel in progress — a cancelled run can leave a downloaded fixture
+# uncommitted and the next run would simply see it as missing and refetch.
+concurrency:
+  group: sync-bulletins
+  cancel-in-progress: false
+
+env:
+  # The branch Netlify builds. Note that GitHub only fires `schedule` for
+  # workflows on the repository's DEFAULT branch, so this file must exist there
+  # for the nightly run to happen at all, even though it commits here.
+  # See docs/BULLETIN-SYNC.md.
+  TARGET_BRANCH: claude/assam-flood-monitoring-prd-4fet9c
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the branch Netlify deploys
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Fetch new bulletins from Drive
+        id: fetch
+        env:
+          DRIVE_FOLDER_ID: ${{ inputs.folder_id }}
+        shell: bash
+        run: |
+          # An empty input must mean "use the script's default", not "read the
+          # folder whose id is the empty string".
+          if [ -z "${DRIVE_FOLDER_ID}" ]; then unset DRIVE_FOLDER_ID; fi
+          npx vite-node scripts/fetch-drive-bulletins.ts
+
+      - name: Anything new?
+        id: check
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain fixtures/)" ]; then
+            echo "new=true" >> "$GITHUB_OUTPUT"
+            git status --short fixtures/
+          else
+            echo "new=false" >> "$GITHUB_OUTPUT"
+            echo "No new fixtures — nothing to regenerate, test or commit."
+          fi
+
+      # Everything below runs only when a fixture actually arrived.
+
+      - name: Regenerate the bundled archive
+        if: steps.check.outputs.new == 'true'
+        shell: bash
+        run: |
+          # The generator's script name is discovered rather than hard-coded:
+          # it has already been renamed once (generate:default-bulletin became
+          # generate:bundled-bulletins), and a workflow that silently skipped a
+          # renamed generator would commit fixtures the bundle never picked up.
+          # Every `generate:*` script is run — they are idempotent, and running
+          # one too many costs seconds while missing one ships a stale archive.
+          mapfile -t generators < <(node -e '
+            const scripts = require("./package.json").scripts ?? {};
+            for (const name of Object.keys(scripts)) if (name.startsWith("generate:")) console.log(name);
+          ')
+          if [ "${#generators[@]}" -eq 0 ]; then
+            echo "::error title=No generator::package.json defines no \"generate:*\" script, so the new fixtures cannot be turned into the bundled archive. Nothing has been committed." >&2
+            exit 1
+          fi
+          for name in "${generators[@]}"; do
+            echo "--- npm run ${name}"
+            npm run "${name}"
+          done
+
+      # The gates. A bulletin that breaks the parser must not reach the
+      # deployed console — that failure has already happened once to this
+      # project, and it is the reason the commit comes last rather than first.
+      - name: Test
+        if: steps.check.outputs.new == 'true'
+        run: npx vitest run
+
+      - name: Build
+        if: steps.check.outputs.new == 'true'
+        run: npm run build
+
+      - name: Commit and push
+        if: steps.check.outputs.new == 'true'
+        shell: bash
+        env:
+          DATES: ${{ steps.fetch.outputs.dates }}
+        run: |
+          git config user.name 'Claude'
+          git config user.email 'noreply@anthropic.com'
+          git add fixtures src/generated
+          if git diff --cached --quiet; then
+            echo "Nothing staged after regeneration; not committing."
+            exit 0
+          fi
+          git commit \
+            --message "chore(bulletins): add ${DATES:-new} from Drive" \
+            --message "Fetched from the public Drive folder and regenerated the bundled archive. Tests and build passed before this commit was made."
+          git push origin "HEAD:refs/heads/${TARGET_BRANCH}"
+
+      # Last, so a rejected file never costs us the good bulletins of the same
+      # day: those are already committed above. The run still goes red, because
+      # a bulletin that downloaded but could not be validated is something a
+      # human needs to look at — a corrupt upload, or a parser that has stopped
+      # reading a format ASDMA has changed.
+      - name: Fail if any bulletin was rejected
+        if: always() && steps.fetch.outputs.rejected != '' && steps.fetch.outputs.rejected != '0'
+        run: |
+          echo "::error title=Bulletin rejected::${{ steps.fetch.outputs.rejected }} downloaded bulletin(s) failed validation and were not committed. See the fetch step's log for the reason." >&2
+          exit 1
