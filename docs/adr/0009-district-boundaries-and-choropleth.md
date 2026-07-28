@@ -53,7 +53,7 @@ use in a control room. Nothing here reopens that.
 
 `fixtures/assam-districts.geojson` → `src/generated/assam-districts.ts`, via
 `scripts/generate-assam-districts.ts` (`npm run generate:assam-districts`).
-This follows `generate-default-bulletin.ts` exactly, for the same reasons: the
+This follows `generate-bundled-bulletins.ts` exactly, for the same reasons: the
 committed artefact costs no build-time work, the GeoJSON envelope and per-
 feature `properties` never reach the bundle, and the shape stays under the type
 checker.

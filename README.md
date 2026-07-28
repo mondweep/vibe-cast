@@ -4,6 +4,8 @@ A decision console for the **ASDMA Daily Flood Report** — the bulletin publish
 
 Load the bulletin PDF; get a ranked, related, projected, comparable and mapped situation picture aimed at scenario planning and operational decisions.
 
+**It opens on real history.** Eight consecutive real ASDMA bulletins — 20 to 27 July 2026 — ship with the console, already parsed, so a link you send someone lands on a working seven-day trend and a real cumulative picture rather than an empty screen they have to populate first.
+
 ---
 
 ## The problem
@@ -29,6 +31,7 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [`docs/PRD.md`](docs/PRD.md) | Product requirements, domain-driven design: bounded contexts, ubiquitous language, aggregates, invariants |
 | [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) | Feasibility assessment with verified evidence from the real bulletin |
 | [`docs/adr/`](docs/adr/) | Architecture decision records |
+| [`docs/BULLETIN-SYNC.md`](docs/BULLETIN-SYNC.md) | Keeping the bundled archive current from a Drive folder, and what to do when it breaks |
 
 ### Architecture decisions
 
@@ -43,6 +46,7 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [0007](docs/adr/0007-static-netlify-deployment.md) | Static deployment on Netlify |
 | [0008](docs/adr/0008-svg-point-map-not-mapping-library.md) | Inline SVG point map, deferred choropleth *(partially superseded by 0009)* |
 | [0009](docs/adr/0009-district-boundaries-and-choropleth.md) | District boundaries bundled; choropleth shipped; projection corrected |
+| [0010](docs/adr/0010-bundled-bulletin-archive.md) | Eight bulletins ship pre-parsed; the historical seven are split out of first paint |
 
 ## Design principles
 
@@ -62,13 +66,52 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 
 ```bash
 npm install
-npm run dev            # development server
-npm test               # all tests
-npm run test:coverage  # with coverage thresholds
-npm run build          # production build to dist/
+npm run dev                       # development server
+npm test                          # all tests
+npm run test:coverage             # with coverage thresholds
+npm run build                     # production build to dist/
+npm run verify:lazy-pdfjs         # after a build: pdf.js is not in first paint
+npm run verify:lazy-archive       # after a build: nor is the historical archive
+npm run generate:bundled-bulletins # re-parse fixtures/ into src/generated/
 ```
 
-Load `fixtures/Daily_Flood_Report_20260727.pdf` to try it against the real bulletin.
+The console opens on the bundled archive, so there is nothing to load to see it
+working. To try the parser itself, load any PDF from `fixtures/`.
+
+## The bundled bulletin archive
+
+The console ships with the eight consecutive ASDMA Daily Flood Reports for
+**20–27 July 2026**, parsed at build time into `src/generated/`. They are real
+bulletins, read by the same parser that reads yours — not a demonstration
+dataset — so the Trend view draws a genuine seven-day line with no gaps and
+Cumulative & Peak reports a genuine period on first open.
+
+Shipping the *parsed* reports rather than the PDFs is what makes this affordable:
+9.9 MB of PDF becomes 76 kB gzipped of data, and the default path loads no pdf.js
+at all.
+
+| | |
+|---|---|
+| **Eager** | The newest bulletin (27 July), in the entry chunk. First paint renders with real figures and no waiting. |
+| **Lazy** | The seven older ones, behind a dynamic `import()`, ~76 kB gzipped in their own chunk. They arrive just after first paint, and the console *says* it is waiting rather than reporting a bulletin count it is about to change. |
+
+`npm run verify:lazy-archive` asserts against the built `dist/` that the archive
+is a separate chunk, is dynamically imported, and is not reachable statically
+from anything loaded eagerly. First paint is **232.7 kB gzipped**, against the
+300 kB NFR-4 budget.
+
+Four rules govern the archive once it is on screen:
+
+- **Your own copy always wins.** Load a bulletin for a day the archive covers and
+  yours supersedes it.
+- **The headline views follow the newest bulletin held**, archive or loaded — and
+  staleness is measured against that same bulletin, so bundled history can never
+  make a stale console look current.
+- **It is disclosed wherever it contributes.** Every view that draws a bundled
+  point says how many of its points are bundled, and over what dates.
+- **It is yours to clear.** One click on the Trend view removes it, leaving your
+  own bulletins untouched. It is never written to your browser's storage — it is
+  not your record.
 
 ## Project structure
 
@@ -88,8 +131,10 @@ src/
 │   ├── pdf/                      # pdf.js — implements BulletinSource
 │   ├── persistence/              # IndexedDB — implements ReportRepository
 │   └── ui/                       # React — driving adapter
+├── composition/                  # Object graph, stateful shell, domain → view mapping
+├── generated/                    # Committed build artefacts (bulletin archive, boundaries)
 ├── architecture.test.ts          # Fitness tests enforcing the dependency rule
-└── main.tsx                      # Composition root
+└── main.tsx                      # Browser entry point
 ```
 
 The dependency rule — dependencies point inward only — is enforced by
@@ -144,7 +189,10 @@ Static deploy to Netlify — no backend, no database, no secrets, no functions.
   and labelled as absent rather than approximated (ADR-0009).
 - **Scanned PDFs are not supported.** OCR is out of scope for v1; a PDF without a
   text layer is rejected with a clear message rather than parsed into garbage.
-- **Trend needs multiple bulletins.** One PDF is one snapshot. Load several to get deltas.
+- **Bundled history stops at 27 July 2026.** The archive is fixed at build time, so
+  it ages. The staleness banner states its age in words on every screen, and the
+  figures are marked unsafe for current decisions once they are old enough — but
+  the console cannot fetch a newer bulletin for you (see above).
 
 ## Contact
 
