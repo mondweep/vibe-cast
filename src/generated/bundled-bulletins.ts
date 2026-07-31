@@ -31,6 +31,9 @@ export const BUNDLED_DATES: readonly ReportDate[] = [
   '2026-07-25' as ReportDate,
   '2026-07-26' as ReportDate,
   '2026-07-27' as ReportDate,
+  '2026-07-28' as ReportDate,
+  '2026-07-29' as ReportDate,
+  '2026-07-30' as ReportDate,
 ];
 
 /** The days held in the lazily-loaded archive — every bundled day but the newest. */
@@ -42,13 +45,16 @@ export const ARCHIVE_DATES: readonly ReportDate[] = [
   '2026-07-24' as ReportDate,
   '2026-07-25' as ReportDate,
   '2026-07-26' as ReportDate,
+  '2026-07-27' as ReportDate,
+  '2026-07-28' as ReportDate,
+  '2026-07-29' as ReportDate,
 ];
 
 /** First and last day of the bundle, for copy that must not outrun the data. */
 export const BUNDLED_RANGE = {
   from: '2026-07-20' as ReportDate,
-  to: '2026-07-27' as ReportDate,
-  count: 8,
+  to: '2026-07-30' as ReportDate,
+  count: 11,
 } as const;
 
 /**

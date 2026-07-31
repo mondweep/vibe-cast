@@ -2,26 +2,35 @@
  * The guarantee that makes shipping generated data safe.
  *
  * `src/generated/newest-bulletin.ts` and `src/generated/bulletin-archive.ts`
- * are committed source: between them they are the eight-bulletin archive the
+ * are committed source: between them they are the eleven-bulletin archive the
  * console opens on, and nothing at build time or run time reparses the PDFs to
  * check them. That is the whole point — the default path costs no pdf.js
  * (NFR-3) — but it means the artefacts could drift from the bulletins they
  * claim to be, and drift in a flood console is figures on a screen that no
  * document supports.
  *
- * So the check moves here. This test parses all eight real fixture PDFs, fresh,
- * on every run, and asserts the results are the committed constants. It fails
- * if anyone hand-edits a generated file, and it fails if the parser changes
- * without the artefacts being regenerated. Either way the fix is the same:
+ * So the check moves here. This test parses all eleven real fixture PDFs,
+ * fresh, on every run, and asserts the results are the committed constants. It
+ * fails if anyone hand-edits a generated file, and it fails if the parser
+ * changes without the artefacts being regenerated. Either way the fix is the
+ * same:
  *
  *     npm run generate:bundled-bulletins
  *
  * It covers **every bundled bulletin**, not just the eager one. An archive
- * verified only at its newest day would be seven-eighths unchecked, and the
- * seven unchecked days are precisely the ones the Trend view draws.
+ * verified only at its newest day would be ten-elevenths unchecked, and the ten
+ * unchecked days are precisely the ones the Trend view draws.
  *
  * Where `golden.test.ts` asserts the parser reads Appendix B correctly, this
  * asserts that what we *ship* is what the parser reads.
+ *
+ * PROVENANCE OF THE EXPECTED FIGURES. Nothing below was copied from parser
+ * output. Every statewide figure was read out of the PDF's own `Total` row via
+ * the text layer, WITHOUT this parser, by clustering pdf.js runs into visual
+ * lines and printing the lines beginning `Total` — the method `golden.test.ts`
+ * documents at length. A pin taken from the received value would be a
+ * tautology, and a tautology could not have caught the parser defect that has
+ * already bitten this project twice.
  */
 
 import { readFile } from 'node:fs/promises';
@@ -40,7 +49,17 @@ import {
 import { createPdfBulletinSource } from './pdf-bulletin-source';
 import { createPdfJsLoader, type PdfJsModule } from './pdfjs-loader';
 
-/** Oldest first — the order the generator emits, and the order the archive holds. */
+/**
+ * Oldest first — the order the generator emits, and the order the archive
+ * holds.
+ *
+ * Eleven now, not eight. The generator used to hold a hard-coded list of dates
+ * and therefore silently ignored any fixture the Drive sync added; it now
+ * discovers `fixtures/Daily_Flood_Report_YYYYMMDD.pdf` from disk, so this list
+ * is the one remaining place where "what is on disk" is restated by hand. It is
+ * kept deliberately: if the two disagree, `covers every day the fixtures hold`
+ * below says so.
+ */
 const STAMPS = [
   '20260720',
   '20260721',
@@ -50,6 +69,9 @@ const STAMPS = [
   '20260725',
   '20260726',
   '20260727',
+  '20260728',
+  '20260729',
+  '20260730',
 ] as const;
 
 const fixture = (stamp: string): string =>
@@ -75,11 +97,11 @@ describe('the bundled bulletin archive', () => {
     expect(freshlyParsed.size).toBe(STAMPS.length);
   });
 
-  it('ships the newest bulletin exactly as the parser reads the 27 July fixture', () => {
+  it('ships the newest bulletin exactly as the parser reads the 30 July fixture', () => {
     // If this fails, do not edit the generated file to make it pass — run
     // `npm run generate:bundled-bulletins` and read the diff, because the
     // parser changed.
-    expect(NEWEST_BUNDLED_BULLETIN).toEqual(freshlyParsed.get('20260727'));
+    expect(NEWEST_BUNDLED_BULLETIN).toEqual(freshlyParsed.get('20260730'));
   });
 
   it.each(STAMPS.slice(0, -1))(
@@ -90,15 +112,24 @@ describe('the bundled bulletin archive', () => {
     },
   );
 
-  it('holds seven archived bulletins and one eager one — eight in all', () => {
-    expect(ARCHIVED_BULLETINS).toHaveLength(7);
-    expect(BUNDLED_DATES).toHaveLength(8);
-    expect(BUNDLED_RANGE).toEqual({ from: '2026-07-20', to: '2026-07-27', count: 8 });
+  it('holds ten archived bulletins and one eager one — eleven in all', () => {
+    // Eleven because `fixtures/` holds eleven Daily Flood Report PDFs, one per
+    // day from 20 to 30 July 2026 inclusive. The eager/archive split is always
+    // "the newest one, and all the rest", so ten archived follows from eleven.
+    expect(ARCHIVED_BULLETINS).toHaveLength(10);
+    expect(BUNDLED_DATES).toHaveLength(11);
+    expect(BUNDLED_RANGE).toEqual({ from: '2026-07-20', to: '2026-07-30', count: 11 });
   });
 
-  it('covers eight consecutive days, so the console opens on a trend with no gaps', () => {
+  it('covers eleven consecutive days, so the console opens on a trend with no gaps', () => {
     // The Trend view draws a break wherever a day is missing, and it is right
     // to. That break must never come from the bundle itself.
+    //
+    // 28 July is present. An earlier upload under that name was a 9 kB HTML
+    // page from the ASDMA website rather than a PDF; the sync correctly refused
+    // it, and for a while the bundle genuinely did have a one-day hole here.
+    // The real bulletin has since been uploaded, so the range is contiguous
+    // again — and this assertion is what stops anyone assuming otherwise.
     expect(BUNDLED_DATES.map(String)).toEqual([
       '2026-07-20',
       '2026-07-21',
@@ -108,6 +139,9 @@ describe('the bundled bulletin archive', () => {
       '2026-07-25',
       '2026-07-26',
       '2026-07-27',
+      '2026-07-28',
+      '2026-07-29',
+      '2026-07-30',
     ]);
   });
 
@@ -141,24 +175,35 @@ describe('the bundled bulletin archive', () => {
     expect(bundled.map((r) => r.bulletinId)).toEqual(
       STAMPS.map((stamp) => freshlyParsed.get(stamp)?.bulletinId),
     );
-    expect(new Set(bundled.map((r) => r.bulletinId)).size).toBe(8);
+    expect(new Set(bundled.map((r) => r.bulletinId)).size).toBe(11);
   });
 
   it('is dated and reconciled throughout, so the console never opens on a broken archive', () => {
+    // 23 sections read cleanly on every one of the eleven. A degraded section
+    // in bundled history would be a permanent asterisk on the first screen an
+    // officer ever sees.
+    //
+    // 28 July is the reason this assertion earns its keep. It arrived parsing
+    // to a husk — channel detection failed to find the Particulars gutter,
+    // silently fell back to `FALLBACK_BODY_START` (74pt), landed right of the
+    // District column, and produced 23 of 23 sections demoted to `failed` with
+    // "districts" carved out of Remarks prose. This test is what refused to let
+    // that ship. The fix belongs in the parser and was made there; do NOT
+    // weaken this check to accommodate a future one.
     for (const report of [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN]) {
       expect(report.reconciliationFailures).toEqual([]);
       expect(report.provenance.every((p) => p.confidence === 'high')).toBe(true);
-      // 23 sections read cleanly on every one of the eight. A degraded section
-      // in bundled history would be a permanent asterisk on the first screen.
       expect(report.provenance).toHaveLength(23);
     }
-    expect(NEWEST_BUNDLED_BULLETIN.generatedAt).toBe('27-07-2026 09:49 PM');
+    expect(NEWEST_BUNDLED_BULLETIN.generatedAt).toBe('30-07-2026 08:38 PM');
   });
 
-  it('reports the verified statewide affected population for each of the eight days', () => {
-    // Independently verified against the printed bulletins. If the parser ever
-    // starts reading a different total, that is a data defect and it stops here
-    // rather than on an officer's screen.
+  it('reports the verified statewide affected population for each of the eleven days', () => {
+    // Independently verified against the printed bulletins — each figure is the
+    // `Total Population` cell of the PDF's own `Total` row in the Population
+    // And Crop Area Submerged section, read through the text layer without this
+    // parser. If the parser ever starts reading a different total, that is a
+    // data defect and it stops here rather than on an officer's screen.
     const affected = [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN].map((report) => [
       String(report.reportDate),
       report.statewideTotals.populationAffected,
@@ -173,16 +218,199 @@ describe('the bundled bulletin archive', () => {
       ['2026-07-25', { kind: 'known', unit: 'count', value: 654838 }],
       ['2026-07-26', { kind: 'known', unit: 'count', value: 524733 }],
       ['2026-07-27', { kind: 'known', unit: 'count', value: 445495 }],
+      // "Total 140672 143687 48280 332639 45341.98", page 2.
+      ['2026-07-28', { kind: 'known', unit: 'count', value: 332639 }],
+      ['2026-07-29', { kind: 'known', unit: 'count', value: 300031 }],
+      ['2026-07-30', { kind: 'known', unit: 'count', value: 212441 }],
     ]);
   });
 
+  it('reports the verified relief posture for each of the eleven days', () => {
+    // The three figures the response views are built on, pinned for the same
+    // reason and read the same way. Relief Camps and Relief Distribution
+    // Centres share one `Total` row in the Relief Camps / Centres Opened
+    // section — "Total <both> <camps> <centres>" — so on 30 July the printed
+    // row is "Total 112 62 50": 62 camps and 50 centres, never 112 of either.
+    // Camp Inmates is the leading cell of the Inmates In Relief Camps `Total`
+    // row ("Total 13294 5826 5735 1686 38 9").
+    const posture = [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN].map((report) => ({
+      date: String(report.reportDate),
+      camps: report.statewideTotals.reliefCamps,
+      inmates: report.statewideTotals.campInmates,
+      nonCamp: report.statewideTotals.nonCampInmates,
+    }));
+
+    const known = (value: number) => ({ kind: 'known', unit: 'count', value });
+
+    expect(posture).toEqual([
+      { date: '2026-07-20', camps: known(50), inmates: known(9697), nonCamp: known(34905) },
+      { date: '2026-07-21', camps: known(72), inmates: known(12375), nonCamp: known(100318) },
+      { date: '2026-07-22', camps: known(106), inmates: known(24418), nonCamp: known(290826) },
+      { date: '2026-07-23', camps: known(103), inmates: known(24124), nonCamp: known(239864) },
+      { date: '2026-07-24', camps: known(96), inmates: known(25205), nonCamp: known(200056) },
+      { date: '2026-07-25', camps: known(90), inmates: known(18902), nonCamp: known(123114) },
+      { date: '2026-07-26', camps: known(109), inmates: known(37724), nonCamp: known(153833) },
+      { date: '2026-07-27', camps: known(90), inmates: known(28695), nonCamp: known(51777) },
+      // "Total 115 81 34" / "Total 32477 16116 13840 2445 56 20" /
+      // "Total 16314 7667 6433 2214 42743 30145 141032", pages 2 and 3.
+      { date: '2026-07-28', camps: known(81), inmates: known(32477), nonCamp: known(16314) },
+      { date: '2026-07-29', camps: known(71), inmates: known(16567), nonCamp: known(72210) },
+      { date: '2026-07-30', camps: known(62), inmates: known(13294), nonCamp: known(62289) },
+    ]);
+  });
+
+  it('reads 28 July in full — the bulletin that once parsed to a husk', () => {
+    // The regression pin for the worst failure this archive has had. 28 July
+    // arrived yielding 23 of 23 sections `failed`, no statewide totals at all,
+    // and eighteen "districts" carved out of Remarks prose — a husk that only
+    // the integrity check stopped from shipping. Every figure below comes from
+    // the PDF's own printed rows, read through the text layer without this
+    // parser, so a parser that agrees is evidence rather than a tautology:
+    //
+    //   p1 "7 Sivasagar, Charaideo, Golaghat, Jorhat, Nagaon, Sonitpur,
+    //       Kamrup (M)"                                 -> districts affected
+    //   p1 "Total 21"                                   -> revenue circles
+    //   p1 "Total 622"                                  -> villages
+    //   p2 "Total 140672 143687 48280 332639 45341.98"  -> male female children
+    //                                                      POPULATION crop area
+    //   p2 "Total 115 81 34"                            -> both CAMPS centres
+    //   p2 "Total 32477 16116 13840 2445 56 20"         -> CAMP INMATES ...
+    //   p3 "Total 16314 7667 6433 2214 42743 30145 ..." -> NON-CAMP INMATES ...
+    //   p3 "Total 7 7 0 3 4 0 0 0"                      -> both FLOOD DEATHS
+    const byDate = new Map(
+      [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN].map((r) => [String(r.reportDate), r]),
+    );
+    const twentyEighth = byDate.get('2026-07-28');
+
+    expect(twentyEighth?.generatedAt).toBe('28-07-2026 09:14 PM');
+    expect(twentyEighth?.statewideTotals).toMatchObject({
+      districtsAffected: { kind: 'known', unit: 'count', value: 7 },
+      revenueCirclesAffected: { kind: 'known', unit: 'count', value: 21 },
+      villagesAffected: { kind: 'known', unit: 'count', value: 622 },
+      populationAffected: { kind: 'known', unit: 'count', value: 332639 },
+      cropAreaSubmerged: { kind: 'known', unit: 'Hect', value: 45341.98 },
+      reliefCamps: { kind: 'known', unit: 'count', value: 81 },
+      reliefDistributionCentres: { kind: 'known', unit: 'count', value: 34 },
+      campInmates: { kind: 'known', unit: 'count', value: 32477 },
+      nonCampInmates: { kind: 'known', unit: 'count', value: 16314 },
+    });
+
+    // Ten real District names, not eighteen fragments of prose. The husk's
+    // "districts" ran to hundreds of characters each; these are Districts.
+    expect(twentyEighth?.districts.map((d) => String(d.district))).toEqual([
+      'Sivasagar',
+      'Charaideo',
+      'Golaghat',
+      'Jorhat',
+      'Nagaon',
+      'Sonitpur',
+      'Kamrup (M)',
+      'Cachar',
+      'Dibrugarh',
+      'Hojai',
+    ]);
+    expect(twentyEighth?.provenance.every((p) => p.confidence === 'high')).toBe(true);
+  });
+
+  it('reads the two newest days in full, section for section', () => {
+    // 29 and 30 July are the days this archive most recently gained, so they
+    // get the same scrutiny the older ones received when they arrived. Every
+    // figure below is from that PDF's own `Total` row, read without the parser:
+    //
+    //   29 Jul p1 "Total 21"                                  -> revenue circles
+    //          p1 "Total 551"                                 -> villages
+    //          p2 "Total 124621 129134 46276 300031 21523.08" -> male female
+    //                                                            children
+    //                                                            POPULATION crop
+    //          p2 "Total 101 71 30"                           -> both camps CENTRES
+    //          p2 "Total 16567 7363 7136 2012 45 11"          -> CAMP INMATES ...
+    //          p3 "Total 72210 29256 29420 13534 2324 ..."    -> NON-CAMP INMATES
+    //          p3 "Total 3 3 0 2 1 0 0 0"                     -> both FLOOD DEATHS
+    //   and `districtsAffected` from the page-1 cell: "7 Charaideo, Golaghat,
+    //   Sivasagar, Nagaon, Biswanath, Jorhat, Kamrup (M)".
+    //
+    //   30 Jul p1 "Total 21" / p1 "Total 437"
+    //          p2 "Total 89197 90941 32303 212441 17198.09"
+    //          p2 "Total 112 62 50" / p2 "Total 13294 5826 5735 1686 38 9"
+    //          p3 "Total 62289 27061 25495 9733 13971 17903 0"
+    //          p3 "Total 2 2 0 0 1 1 0 0"
+    //   and page 1: "8 Golaghat, Sivasagar, Biswanath, Charaideo, Kamrup (M),
+    //   Jorhat, Dhemaji, Nagaon".
+    //
+    // Note that `districtsAffected` (7 and 8) is a smaller number than the
+    // districts the bulletin *names* (12 on both days): the later sections also
+    // list quiet districts reporting explicit zeros. Conflating the two is an
+    // easy and consequential mistake, so both are asserted.
+    const byDate = new Map(
+      [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN].map((r) => [String(r.reportDate), r]),
+    );
+
+    const twentyNinth = byDate.get('2026-07-29');
+    expect(twentyNinth?.generatedAt).toBe('29-07-2026 09:44 PM');
+    expect(twentyNinth?.statewideTotals).toMatchObject({
+      districtsAffected: { kind: 'known', unit: 'count', value: 7 },
+      revenueCirclesAffected: { kind: 'known', unit: 'count', value: 21 },
+      villagesAffected: { kind: 'known', unit: 'count', value: 551 },
+      populationAffected: { kind: 'known', unit: 'count', value: 300031 },
+      cropAreaSubmerged: { kind: 'known', unit: 'Hect', value: 21523.08 },
+      reliefCamps: { kind: 'known', unit: 'count', value: 71 },
+      reliefDistributionCentres: { kind: 'known', unit: 'count', value: 30 },
+      campInmates: { kind: 'known', unit: 'count', value: 16567 },
+      nonCampInmates: { kind: 'known', unit: 'count', value: 72210 },
+    });
+    expect(twentyNinth?.districts).toHaveLength(12);
+
+    const thirtieth = byDate.get('2026-07-30');
+    expect(thirtieth?.generatedAt).toBe('30-07-2026 08:38 PM');
+    expect(thirtieth?.statewideTotals).toMatchObject({
+      districtsAffected: { kind: 'known', unit: 'count', value: 8 },
+      revenueCirclesAffected: { kind: 'known', unit: 'count', value: 21 },
+      villagesAffected: { kind: 'known', unit: 'count', value: 437 },
+      populationAffected: { kind: 'known', unit: 'count', value: 212441 },
+      cropAreaSubmerged: { kind: 'known', unit: 'Hect', value: 17198.09 },
+      reliefCamps: { kind: 'known', unit: 'count', value: 62 },
+      reliefDistributionCentres: { kind: 'known', unit: 'count', value: 50 },
+      campInmates: { kind: 'known', unit: 'count', value: 13294 },
+      nonCampInmates: { kind: 'known', unit: 'count', value: 62289 },
+    });
+    expect(thirtieth?.districts).toHaveLength(12);
+  });
+
+  it('sums the district flood deaths of the three newest days to the printed totals', () => {
+    // Never added to general drownings — the type has no `total` (PRD §4.2).
+    // 28 July prints "Total 7 7 0 3 4 0 0 0", 29 July "Total 3 3 0 2 1 0 0 0"
+    // and 30 July "Total 2 2 0 0 1 1 0 0"; the second cell is the Flood Death
+    // column in all three.
+    const sumDeaths = (report: FloodSituationReport | undefined): number =>
+      (report?.districts ?? [])
+        .map((d) => d.casualties.floodDeaths)
+        .filter((q) => q.kind === 'known')
+        .reduce((acc, q) => acc + q.value, 0);
+
+    const byDate = new Map(
+      [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN].map((r) => [String(r.reportDate), r]),
+    );
+
+    expect(sumDeaths(byDate.get('2026-07-28'))).toBe(7);
+    expect(sumDeaths(byDate.get('2026-07-29'))).toBe(3);
+    expect(sumDeaths(byDate.get('2026-07-30'))).toBe(2);
+  });
+
   it('preserves unknown as unknown, not as zero (ADR-0005)', () => {
-    // Dhemaji is the sharpest case in the 27 July bulletin: an explicit
-    // reported zero for population, and no row at all in Villages Affected.
-    // Serialising through TypeScript source must not flatten the second into
-    // the first.
-    const dhemaji = NEWEST_BUNDLED_BULLETIN.districts.find((d) => d.district === 'Dhemaji');
-    expect(dhemaji?.population.total).toEqual({ kind: 'known', unit: 'count', value: 0 });
-    expect(dhemaji?.villagesAffected).toEqual({ kind: 'unknown', unit: 'count' });
+    // Dibrugarh is the sharpest case in the 30 July bulletin, and it is the
+    // same shape Dhemaji had on 27 July: the Population And Crop Area Submerged
+    // table gives it an explicit reported zero, and the Villages Affected table
+    // does not list it at all — that table names only the eight affected
+    // districts (Golaghat 69, Sivasagar 216, Biswanath 4, Charaideo 66, Kamrup
+    // (M) 8, Jorhat 66, Dhemaji 1, Nagaon 7, Total 437). Serialising through
+    // TypeScript source must not flatten the absent row into the reported zero.
+    //
+    // Dhemaji itself is no longer the example: on 30 July it *is* affected, with
+    // one village, so it no longer demonstrates the distinction.
+    const dibrugarh = NEWEST_BUNDLED_BULLETIN.districts.find(
+      (d) => String(d.district) === 'Dibrugarh',
+    );
+    expect(dibrugarh?.population.total).toEqual({ kind: 'known', unit: 'count', value: 0 });
+    expect(dibrugarh?.villagesAffected).toEqual({ kind: 'unknown', unit: 'count' });
   });
 });

@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT BY HAND.
  *
- * The bundled historical archive — 7 real ASDMA bulletins, 2026-07-20 to 2026-07-26.
+ * The bundled historical archive — 10 real ASDMA bulletins, 2026-07-20 to 2026-07-29.
  *
  * **Nothing may import this module statically.** It is reached only through
  * the `import()` in `bundled-bulletins.ts`, which is what keeps it out of the
@@ -58371,6 +58371,14935 @@ export const ARCHIVED_BULLETINS: readonly FloodSituationReport[] = [
         "sourcePages": [
           23,
           24,
+        ],
+        "confidence": "high",
+      },
+    ],
+    "reconciliationFailures": [],
+  },
+  {
+    "bulletinId": "4ecdaf4b086d499713163847e6fd91bec383b0ebdb6f88a5b2df38b9d8145fe7" as BulletinId,
+    "reportDate": "2026-07-27" as ReportDate,
+    "generatedAt": "27-07-2026 09:49 PM",
+    "rivers": {
+      "aboveDangerLevel": [
+        "Dhansiri (S) (Numaligarh)",
+      ],
+      "aboveHighestFloodLevel": [],
+    },
+    "districts": [
+      {
+        "district": "Sivasagar" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Nazira" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 41,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 17885,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 8551,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 18,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4050,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1340,
+            },
+          },
+          {
+            "circle": "Demow" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 24,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 9465,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 463,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 6,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 16,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 567,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 10615,
+            },
+          },
+          {
+            "circle": "Sivsagar" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 114,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 71452,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 4321,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 11,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 19,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 6098,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 20187,
+            },
+          },
+          {
+            "circle": "Amguri" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 46,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 39152,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 78.5,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 23,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 12,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 13980,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 6813,
+            },
+          },
+          {
+            "circle": "Sonari RC part" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 7,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 6507,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 7,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 6507,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 232,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 67831,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 61163,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 15467,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 144461,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 13413.5,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 58,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 59,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 24695,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 11892,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 10497,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2281,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 15,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 10,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 45462,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 19797,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 18603,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 7062,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 125,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 45,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 326,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 39278,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 27198,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 139251,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 200,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 600,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 22000,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 82,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 5,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 250,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 98,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 21,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 281,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 1079.624,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 188.96,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 43.76,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 2918,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 5.2,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [
+            "NDRF",
+            "Local People",
+            "Army/Paramilitary force",
+            "DDRF",
+            "Civil Defence/Trained Volunteers",
+            "SDRF",
+            "Circle Office/Local Administration",
+          ],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 114,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 61,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 59,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Nazira - under assesment), (Demow - Under Assestment), (Amguri - Under Assestment) Report Generated On: 27-07-2026 09:49 PM",
+      },
+      {
+        "district": "Golaghat" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Golaghat" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 28,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 13386,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 923,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 532,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 115,
+            },
+          },
+          {
+            "circle": "Khumtai" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 16,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5004,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 880.55,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 86,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2086,
+            },
+          },
+          {
+            "circle": "Bokakhat" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 22,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2717,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 180.6,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 315,
+            },
+          },
+          {
+            "circle": "Dergaon" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 45,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 17065,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 427.35,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 12,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3372,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 111,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 17657,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 14920,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 5595,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 38172,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 2411.5,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 7,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 22,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 618,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 211,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 264,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 120,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 21,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 5888,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2744,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2113,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1031,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1143,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1038,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4727,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4018,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 4417,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 102.936,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 18.237,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 5.4726,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 547.11,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 31,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 53.03,
+          },
+        },
+        "rescue": {
+          "agencies": [
+            "DDRF",
+            "SDRF",
+          ],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 19,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Golaghat - 03 nos. of amrit sarovar affected namely 1.Amrit Sarovar at Dui Noi Mukh Sabalombi Gut 2. Amrit Sarovar at Bosa Bhorolua 3 Amrit sarovar at Khumtai Krisok SHG Uttar Komarbondha), (Bokakhat - 1 Poresh Doley son of Binanda Doley Borpak 2 Pratap Das son of Lt Nomal Das Bortika 3 Dilip Das son of Late Bhunu Das vill Borpak 4 Jitu Das son of Biren Das vill Borpak All the above-mentioned beneficiaries' boats have been partially damaged due to flood on 21.07.2026 under Bokakhat Revenue Circle ), (Dergaon - Distributed Suji, Sagoo)",
+      },
+      {
+        "district": "Charaideo" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Mahmora" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 67,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 67128,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 7340,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 9,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 6,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1251,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Sonari" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 80,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 121276,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 8512,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 358,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Sapekhati" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 1797,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 149,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 71578,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 77014,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 39812,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 188404,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 17649,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 11,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 6,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1609,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 576,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 663,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 300,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 44,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 26,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 648,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1262,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1341,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1490,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5661,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 10,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3500,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 7350,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [
+            "SDRF",
+            "Health",
+          ],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 44,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 36,
+          },
+        },
+        "remarks": "(Mahmora - House Damages and the type of damages (partially/severe/fully) is yet to be ascertained and will be determined after detailed field assessments.), (Sonari - \"Fair Price Shops Damaged (Silakuti GPSS- 2, Pub Abhoipur GPSS- 10, Pachim Abhoipur GPSS- 4\"), Fish Net Damaged- 8 Nos, CM relief packets distribution ongoing.)",
+      },
+      {
+        "district": "Jorhat" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Teok" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 25,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 27366,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 716.5,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 9,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 521,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Mariani" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 6,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Jorhat West" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 57,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 41931,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 2025.9200000000003,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1252,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 427,
+            },
+          },
+          {
+            "circle": "Titabor" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 16,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5161,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 580.2,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Jorhat East" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 23,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 108,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 30824,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 30364,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 13270,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 74458,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 3345.62,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 14,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 3,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1773,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 723,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 726,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 303,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 17,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 4,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 427,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 131,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 133,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 163,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 269,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 538,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 16237,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5172,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 60,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 62,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 247,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 89,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 4,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 8.532,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 1.614,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0.4842,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 48.42,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 186.82,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Teok - Chainlink fenching damage 35m Slope erosion in two parts 40m At Changmaigarh Amrit Sarovar PH1,Chainlink fenching damage 30m Slope erosion in two parts 35m At Changmai garh Amrit Sarovar phase 2 ,Chainlink fenching damage 35m Slope erosion in two parts 40m At Phukanbari Amrit Sarovar ), (Mariani - The grazing land of the affected areas is partially inundated with flood water. There is acute shortage of fodder for the flood affected livestock as reported by Veterinary dept.), (Jorhat West - No. of spot sources affected 72 nos, No of IHHL 80 nos, spot source disinfected 12 nos.), (Jorhat East - 9 nos. of spot source disinfected and 110 leaflets distributed under Jorhat East Revenue Circle by PHE, Jorhat.)",
+      },
+      {
+        "district": "Nagaon" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Nagaon" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 14,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Samaguri" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 123,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Kampur" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 196,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 30,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 319,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 4,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 920,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 663,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 7642,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4319,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 47.37,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Kamrup (M)" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Dispur" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0.9,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 1,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0.9,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Dhemaji" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Sissiborgaon" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Dibrugarh" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Dibrugarh East" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Naharkatia" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Tengakhat" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Moran" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Dibrugarh West" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Naharkatia - As per report received from Joint Director of Health Services under Naharkatia Revenue Circle today Medical Team Deployed -3Nos, on 27.07.2026), (Tengakhat - As per report received from Joint Director of Health Services under Tengakhat Revenue Circle today Medical Team Deployed -2 Nos, on 27.07.2026), (Moran - As per report received from Joint Director of Health Services under Moran Revenue Circle today Medical Team Deployed -1no, on 27.07.2026), (Dibrugarh West - As per report received from the Veterinary Officer, State Veterinary Dispensary, Dibrugarh 4 (four) Nos Veterinary camp have been organized under Dibrugarh West Revenue Circle on 27.07.2026 As per report received from Joint Director of Health Services under Dibrugarh West Revenue Circle today Medical Team Deployed -2nos, on 27.07.2026)",
+      },
+    ],
+    "infrastructureDamage": [
+      {
+        "damageClass": "road",
+        "district": "Charaideo" as DistrictName,
+        "circle": "Sonari" as RevenueCircleName,
+        "name": "Thukubill Satra Road",
+        "department": "PWD (Roads)",
+        "village": "Dakhin Saonari Habi Gaon",
+        "location": "dakhin sonari habi gaon",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 95.032543,
+          "latitude": 27.015787,
+        },
+        "remarks": "flood water overtop 3.50 KM",
+      },
+      {
+        "damageClass": "road",
+        "district": "Dhemaji" as DistrictName,
+        "circle": "Sissiborgaon" as RevenueCircleName,
+        "name": "Road from Silasuti GP office to Silabrahmapur",
+        "department": "PWD (Roads)",
+        "village": "Brohmapurkac hari",
+        "location": "At 2nd KM",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.756054,
+          "latitude": 27.659483,
+        },
+        "remarks": "The extent of damaged occurred on dated 6-07- 2026. approximately 80.00 meters.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Dhemaji" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Road on Sengajan Kachari - Napam Kuli to Bambazar Road",
+        "department": "PWD (Roads)",
+        "village": "No. 1 Chengajankach ari",
+        "location": "At 1st KM",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.8591,
+          "latitude": 27.63067,
+        },
+        "remarks": "The extent of damaged occurred on dated 6-07- 2026. approximately 10.00 meters.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "Titabor" as RevenueCircleName,
+        "name": "1/1 Doijan Bridge approach road",
+        "department": "PWD (Roads)",
+        "village": "Doijan Grant",
+        "location": "Ch.3.6 KM to Ch. 3.7 KM",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.1074,
+          "latitude": 26.65291,
+        },
+        "remarks": "Due to excess flood water, a section of approach road of 1/1 doijan bridge has been affected and vehicular movement has been restricted",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Kopahtoli Road (Kopahoni Road)",
+        "department": "PWD (Roads)",
+        "village": "Mejenga no 1 Grant",
+        "location": "Majenga Kopahoni (Ch. 0.550 KM to Ch.0.560 KM)",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.156269,
+          "latitude": 26.600589,
+        },
+        "remarks": "Due to excess flood water, a section of Kopatoli road has been eroded and vehicular movement has been restricted.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Gar-ali Road at 40th KM",
+        "department": "PWD (Roads)",
+        "village": "Block No 4",
+        "location": "Senijan, Bekajan and Panikhaiti",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.164942,
+          "latitude": 26.369761,
+        },
+        "remarks": "GAR-ALI ROAD AT 40TH KM (FROM CH.39560.00 M TO CH.39960.00 M) HAVE BEEN DAMAGED AND ERODED BY THE FLOOD WATER OF RIVER SENIJAN ON 06TH JULY/2026 IN THE AFTERNOON DUE TO FLASH FLOOD",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Gohain Gaon Ali",
+        "department": "PWD (Roads)",
+        "village": "Block No 3",
+        "location": "Gohain Gaon",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.157433,
+          "latitude": 26.398562,
+        },
+        "remarks": "GOHAIN ALI ROAD AT 2ND KM HAVE BEEN OVERTOPPED AND ERODED and A 1200MM DIA HUME PIPE CULVERT HAS BEEN DAMAGED BY FLASH FLOOD WATER OF RIVER BEKAJAN IN THE AFTERNOON OF 6TH JULY2026",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Kakodunga Block-2 to Gar Ali Road",
+        "department": "PWD (Roads)",
+        "village": "Block No 2",
+        "location": "Doklongia Gaon and No.2 Sereli Missing Gaon",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.15407,
+          "latitude": 26.399711,
+        },
+        "remarks": "KAKODUNGA BLOCK-2 TO GAR ALI ROAD AT 2ND KM HAVE BEEN OVERTOPPED AND ERODED BY FLASH FLOOD WATER OF RIVER BEKAJAN IN THE AFTERNOON OF 06TH JULY/2026",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "RCC BR. NO.36/2 ON GAR ALI ROAD AT BALIJAN MISSING GAON, BEKAJAN",
+        "department": "PWD (Roads)",
+        "village": "Kakodonga Habi Gaon -2",
+        "location": "Balijan and Gorajan",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.165465,
+          "latitude": 26.418992,
+        },
+        "remarks": "BRIDGE APPROACH ROAD OF RCC BR. NO.36/2 ON GAR ALI ROAD AT BALIJAN MISSING GAON, BEKAJAN HAVE BEEN ERODED AND DAMAGED BY THE FLASH FLOOD WATER OF RIVER BALIJAN IN THE MORNING OF 20TH JULY2026",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "GAR-ALI ROAD 40th KM",
+        "department": "PWD (Roads)",
+        "village": "Half Mile Belt",
+        "location": "Senijan, Bekajan and Panikhaiti",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.165002,
+          "latitude": 26.369765,
+        },
+        "remarks": "GAR-ALI ROAD AT 40TH KM HAVE BEEN DAMAGED AND ERODED BY THE FLASH FLOOD WATER OF RIVER SENIJAN ON 20TH JULY/2026 IN THE MORNING.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "GAR-ALI ROAD 33rd KM",
+        "department": "PWD (Roads)",
+        "village": "Gorajan Gaon",
+        "location": "Balijan, Gorajan, Kulapani",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.167214,
+          "latitude": 26.461906,
+        },
+        "remarks": "GAR-ALI ROAD AT 33RD KM HAVE BEEN SUBMERGED AND ERODED BY THE FLASH FLOOD WATER OF SHILDUBI RIVER ON 22ND JULY/2026 IN THE MORNING.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "Demow" as RevenueCircleName,
+        "name": "Habi Gaon Road",
+        "department": "PWD (Roads)",
+        "village": "Rajabari NC",
+        "location": "Habi Gaon",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.724511,
+          "latitude": 27.059774,
+        },
+        "remarks": "Over Topping due to Flood.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "Amguri" as RevenueCircleName,
+        "name": "Dupdaria Ali",
+        "department": "PWD (Roads)",
+        "village": "Lunpuria( Dupdor)",
+        "location": "Dupdaria Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.4672,
+          "latitude": 26.9499,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Damu Ali",
+        "department": "PWD (Roads)",
+        "village": "Ganak",
+        "location": "Damu Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6589,
+          "latitude": 26.8907,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Thiya Ali",
+        "department": "PWD (Roads)",
+        "village": "Namti Pathar",
+        "location": "Thiya Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5708,
+          "latitude": 26.8905,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Namdongia Koiri Gaon Road",
+        "department": "PWD (Roads)",
+        "village": "Sensua Namdongia",
+        "location": "Namdongia Koiri Gaon Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6578,
+          "latitude": 26.8371,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Deopani Satra Road",
+        "department": "PWD (Roads)",
+        "village": "Sensua Namdongia",
+        "location": "Deopani Satra Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6552,
+          "latitude": 26.831,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Rangagara Road",
+        "department": "PWD (Roads)",
+        "village": "Aila Habi",
+        "location": "Rangagara Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.7003,
+          "latitude": 26.8119,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Gohain Bari Road",
+        "department": "PWD (Roads)",
+        "village": "Gohain Gaon",
+        "location": "Gohain Bari Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.7072,
+          "latitude": 26.8267,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Dulakakhoriya to Dhonekhana Road",
+        "department": "PWD (Roads)",
+        "village": "Dulia",
+        "location": "Dulakakhoriya to Dhonekhana Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6821,
+          "latitude": 26.8318,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Bamgaon Road",
+        "department": "PWD (Roads)",
+        "village": "Borbam grant",
+        "location": "Bamgaon Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6849,
+          "latitude": 26.8297,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Seuni Ali to Roadghaiting",
+        "department": "PWD (Roads)",
+        "village": "Morapukhuri",
+        "location": "Seuni Ali to Roadghaiting",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5551,
+          "latitude": 26.857,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Chintamonigarh to Mukalani Road",
+        "department": "PWD (Roads)",
+        "village": "Chirakhunda",
+        "location": "Chintamonigarh to Mukalani Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.4381,
+          "latitude": 26.9377,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Hatighuli Road",
+        "department": "PWD (Roads)",
+        "village": "Phukonfodia",
+        "location": "Hatighuli Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.4902,
+          "latitude": 26.9369,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Tingiripam Abhaypuria",
+        "department": "PWD (Roads)",
+        "village": "Ganak",
+        "location": "Tingiripam Abhaypuria",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6714,
+          "latitude": 26.8875,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Dimaruguri Road",
+        "department": "PWD (Roads)",
+        "village": "Mout Gaon (Dikshu)",
+        "location": "Dimaruguri Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.4627,
+          "latitude": 26.9518,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Khanamukh Road",
+        "department": "PWD (Roads)",
+        "village": "Mout Gaon(Dupdor)",
+        "location": "Khanamukh Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.4751,
+          "latitude": 26.9447,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Benudhar Sharma Road",
+        "department": "PWD (Roads)",
+        "village": "Boga Gohain",
+        "location": "Benudhar Sharma Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5565,
+          "latitude": 26.9085,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Charing Baruati",
+        "department": "PWD (Roads)",
+        "village": "Kakati",
+        "location": "Charing Baruati",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5382,
+          "latitude": 26.9152,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1 no Baruati",
+        "department": "PWD (Roads)",
+        "village": "Jehenia Gharfalia",
+        "location": "1 no Baruati",
+        "coordinate": {
+          "kind": "approximate",
+          "longitude": 94.52,
+          "latitude": 26.9062,
+          "reason": "insufficient-precision",
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Boga Gohain Ali",
+        "department": "PWD (Roads)",
+        "village": "Gajpuria Kakati",
+        "location": "Boga Gohain Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5294,
+          "latitude": 26.9033,
+        },
+        "remarks": "Road Overtoped by flood water in multiple stretches.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Charing Dulia Gaon",
+        "department": "PWD (Roads)",
+        "village": "Chaliha KaKoti",
+        "location": "Charing Dulia Gaon",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5294,
+          "latitude": 26.9033,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Naga Ali Charing",
+        "department": "PWD (Roads)",
+        "village": "Kakati",
+        "location": "Naga Ali Charing",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5373,
+          "latitude": 26.9158,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Naga Ali",
+        "department": "PWD (Roads)",
+        "village": "Gohain Gaon",
+        "location": "Naga Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5401,
+          "latitude": 26.9228,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Namdang Ali Dulakakhoriya",
+        "department": "PWD (Roads)",
+        "village": "Namdang Kumar",
+        "location": "Namdang Ali Dulakakhoriya",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6539,
+          "latitude": 26.8355,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Sunari Bari",
+        "department": "PWD (Roads)",
+        "village": "Boga Gohain",
+        "location": "Sunari Bari",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5384,
+          "latitude": 26.9208,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Takoria Ali",
+        "department": "PWD (Roads)",
+        "village": "Kakati",
+        "location": "Takoria Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5254,
+          "latitude": 26.9104,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Phukan Phadiya Road",
+        "department": "PWD (Roads)",
+        "village": "Phukonfodia",
+        "location": "Phukan Phadiya Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5316,
+          "latitude": 26.9412,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Moglow Ali Kawaimari Panchayat to Khanamukh Panchayat",
+        "department": "PWD (Roads)",
+        "village": "Burha Gaon",
+        "location": "Moglow Ali Kawaimari Panchayat to Khanamukh Panchayat",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.4732,
+          "latitude": 26.9612,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Tikha Belimukhia to Chetia Changmai Road",
+        "department": "PWD (Roads)",
+        "village": "Mout Gaon (Dikshu)",
+        "location": "Tikha Belimukhia to Chetia Changmai Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6068,
+          "latitude": 26.8839,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Tikha Belimukhia to Khemdoi connecting Road",
+        "department": "PWD (Roads)",
+        "village": "Jula Gaon",
+        "location": "Tikha Belimukhia to Khemdoi connecting Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6255,
+          "latitude": 26.8746,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Tikha Belimukhia to Bharaluwa Road",
+        "department": "PWD (Roads)",
+        "village": "Belimukhia",
+        "location": "Tikha Belimukhia to Bharaluwa Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5885,
+          "latitude": 26.8862,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Mahmora Pathar Tamulibari Gaon Road",
+        "department": "PWD (Roads)",
+        "village": "Namti Pathar",
+        "location": "Mahmora Pathar Tamulibari Gaon Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5911,
+          "latitude": 26.8937,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Kirai Ali to Namti Pothar",
+        "department": "PWD (Roads)",
+        "village": "Ghurachuwa Kamar",
+        "location": "Kirai Ali to Namti Pothar",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.5949,
+          "latitude": 26.9033,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Moutgaon Road",
+        "department": "PWD (Roads)",
+        "village": "Mout Gaon(Dupdor)",
+        "location": "Moutgaon Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6017,
+          "latitude": 26.8711,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Waksung Road",
+        "department": "PWD (Roads)",
+        "village": "Belimukhia",
+        "location": "Waksung Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.587,
+          "latitude": 26.8688,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Adarsha Gaon Road",
+        "department": "PWD (Roads)",
+        "village": "Ganak",
+        "location": "Adarsha Gaon Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.6472,
+          "latitude": 26.8855,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "Sonari RC part" as RevenueCircleName,
+        "name": "Gumutha Dhudar Ali",
+        "department": "PWD (Roads)",
+        "village": "Deodhai Gaon",
+        "location": "Gumutha Dhudar Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.769251,
+          "latitude": 26.955166,
+        },
+        "remarks": "Sonari RC (sivasagar Dist Part)",
+      },
+      {
+        "damageClass": "other",
+        "district": "Charaideo" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "3.37",
+        "department": "PRAMUD",
+        "village": "Fishery",
+        "location": "Borbil No.1",
+        "coordinate": undefined,
+        "remarks": "27",
+      },
+      {
+        "damageClass": "other",
+        "district": "Charaideo" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "7",
+        "department": "944 No Ligiribari",
+        "village": "Education",
+        "location": "Dhamdhuli",
+        "coordinate": undefined,
+        "remarks": "26.96966",
+      },
+      {
+        "damageClass": "other",
+        "district": "Charaideo" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "6",
+        "department": "BORAHI",
+        "village": "Women &",
+        "location": "Na- Gaon",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "0.8",
+        "department": "fishery",
+        "village": "Fishery",
+        "location": "Barichuwa",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "0.35",
+        "department": "Fishery/Pond",
+        "village": "Fishery",
+        "location": "Kaiborta Gaon (Rangamati T.E.)",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "6",
+        "department": "GELABIL",
+        "village": "Education",
+        "location": "dergaon town",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "KARAYANI HIGH",
+        "village": "Education",
+        "location": "Koraianibhakat",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "4",
+        "department": "25 No. Uppar",
+        "village": "Women &",
+        "location": "Uppar",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Laughoga bosti line road",
+        "village": "PWD (Roads)",
+        "location": "Chabukdhara",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Gormora chapori to ckahala ghat",
+        "village": "PWD (Roads)",
+        "location": "No. 2 Gormora",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Bhola Hazarika path",
+        "village": "PWD (Roads)",
+        "location": "Jelehuwa gaon",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "16.41",
+        "department": "Fishery/pond",
+        "village": "Fishery",
+        "location": "Bogariani",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "23",
+        "department": "TEOK BAGAN LP",
+        "village": "Education Deptt.",
+        "location": "Jogduarhabi",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "3",
+        "department": "ANUSUCHIT",
+        "village": "Education",
+        "location": "Gelekoni",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "32",
+        "department": "Teok Bagan-II",
+        "village": "Women & Child Developme nt",
+        "location": "Teok Grant",
+        "coordinate": undefined,
+        "remarks": "26.83542 5",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "24",
+        "department": "Puthinodi Ring",
+        "village": "P&RD",
+        "location": "Boloma Pathar",
+        "coordinate": undefined,
+        "remarks": "26.75134",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "0.15",
+        "department": "Fish Pond affected",
+        "village": "Fishery",
+        "location": "Gharpholia- Maibelia Gaon",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "577 NO TIRUAL",
+        "village": "Education",
+        "location": "Deberapar",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "10",
+        "department": "248 No.",
+        "village": "Education",
+        "location": "Khongia",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "9",
+        "department": "2 No. Niz",
+        "village": "Women &",
+        "location": "Na Hatia",
+        "coordinate": undefined,
+        "remarks": "26.81198",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "8",
+        "department": "DAKHINPAT LP",
+        "village": "Education Deptt.",
+        "location": "Dakhinpat Gaon",
+        "coordinate": undefined,
+        "remarks": "26.60786 1",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Bengenakhua",
+        "village": "Women &",
+        "location": "Thengal Gaon",
+        "coordinate": undefined,
+        "remarks": "26.57853",
+      },
+      {
+        "damageClass": "other",
+        "district": "Kamrup (M)" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "2",
+        "department": "Fisheries/Pond",
+        "village": "Fishery",
+        "location": "Tintukura Nonke",
+        "coordinate": undefined,
+        "remarks": "26.1234",
+      },
+      {
+        "damageClass": "other",
+        "district": "Nagaon" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Barhampur",
+        "village": "PWD",
+        "location": "Niz-Chapanala",
+        "coordinate": undefined,
+        "remarks": "26.33614",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "12",
+        "department": "Dulakakharia",
+        "village": "PHE",
+        "location": "Dulakakhoria",
+        "coordinate": undefined,
+        "remarks": "26.82977",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "94",
+        "department": "625 No.",
+        "village": "Education",
+        "location": "No.3 Khula",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "5",
+        "department": "Borsayak",
+        "village": "Women & Child Developme nt",
+        "location": "Borsayak Dibrual",
+        "coordinate": undefined,
+        "remarks": "26.85699 2",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "3",
+        "department": "Dhitaipukhuri",
+        "village": "Education",
+        "location": "Bhajoni Gaon",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "18",
+        "department": "538 No. Nahar",
+        "village": "Education",
+        "location": "Khanikor Gaon",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+    ],
+    "statewideTotals": {
+      "districtsAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 6,
+      },
+      "revenueCirclesAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 21,
+      },
+      "villagesAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 631,
+      },
+      "populationAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 445495,
+      },
+      "cropAreaSubmerged": {
+        "kind": "known",
+        "unit": "Hect",
+        "value": 37139.52,
+      },
+      "reliefCamps": {
+        "kind": "known",
+        "unit": "count",
+        "value": 90,
+      },
+      "reliefDistributionCentres": {
+        "kind": "known",
+        "unit": "count",
+        "value": 94,
+      },
+      "campInmates": {
+        "kind": "known",
+        "unit": "count",
+        "value": 28695,
+      },
+      "nonCampInmates": {
+        "kind": "known",
+        "unit": "count",
+        "value": 51777,
+      },
+    },
+    "provenance": [
+      {
+        "kind": "rivers-above-danger-level",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "districts-affected",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "revenue-circles-affected",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "villages-affected",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "population-and-crop-area-submerged",
+        "sourcePages": [
+          1,
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "relief-camps-opened",
+        "sourcePages": [
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "inmates-in-relief-camps",
+        "sourcePages": [
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "non-camp-inmates",
+        "sourcePages": [
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "lives-lost-confirmed",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "lives-lost-missing",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "animals-affected",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "animals-washed-away",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "houses-damaged",
+        "sourcePages": [
+          3,
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "houses-damaged-others",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "rescue-operation",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "relief-distributed",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "relief-distributed-others",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-road",
+        "sourcePages": [
+          5,
+          6,
+          7,
+          8,
+          9,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-bridge",
+        "sourcePages": [
+          9,
+          10,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-embankment-breached",
+        "sourcePages": [
+          10,
+          11,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-embankment-affected",
+        "sourcePages": [
+          11,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-others",
+        "sourcePages": [
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "remarks",
+        "sourcePages": [
+          30,
+          31,
+        ],
+        "confidence": "high",
+      },
+    ],
+    "reconciliationFailures": [],
+  },
+  {
+    "bulletinId": "7ada1ffacacc1c9ad203d87b54e510c913be65e7972414abaf4bac6a7b5aba69" as BulletinId,
+    "reportDate": "2026-07-28" as ReportDate,
+    "generatedAt": "28-07-2026 09:14 PM",
+    "rivers": {
+      "aboveDangerLevel": [
+        "Dhansiri (S) (Numaligarh)",
+      ],
+      "aboveHighestFloodLevel": [],
+    },
+    "districts": [
+      {
+        "district": "Sivasagar" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Amguri" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 44,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 25852,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 9300,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 18,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 19310,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Nazira" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 40,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 15945,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 6785,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 17,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3913,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1000,
+            },
+          },
+          {
+            "circle": "Sonari RC part" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 15,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3676,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 170,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 589,
+            },
+          },
+          {
+            "circle": "Demow" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 28,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5805,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 1700.5,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 10,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1027,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Sivsagar" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 114,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 45796,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 4321,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 11,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5737,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 9875,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 241,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 45013,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 43748,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 8313,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 97074,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 22276.5,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 56,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 11,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 29987,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 15171,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 12789,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2000,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 19,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 8,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 11464,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 5242,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 4814,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1408,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 39253,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 27175,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 139146,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 7,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 68665,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 58318,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 413536,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1800,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2100,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 77000,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 186,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 560,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 580,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 350,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 789,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 921.6,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [
+            "Local People",
+            "SDRF",
+          ],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 63,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 18,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Amguri - As reported by Gaon Pradhan a person namely Jitu das, s/o- Barun Das, age about 40, village aila habi gaon has been seriously injured due to flood drowning. Rescued by local public. Currently under treatment at Jorhat medical College hospital.), (Sonari RC part - Under Assesment), (Sivsagar - 9828 nos of CM relief kit distributed at rudrasagar and banmukh GP)",
+      },
+      {
+        "district": "Charaideo" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Mahmora" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 67,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 21480,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 7640,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 141,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Sonari" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 89,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 121276,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 9012,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 358,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 156,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 55875,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 62732,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 24149,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 142756,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 16652,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 5,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 4,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 499,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 184,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 245,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 59,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 4,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 7,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 824,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 941,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1886,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 906,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1181,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3286,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 10,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 72,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 6890,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 27.05,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [
+            "VETERINARY",
+            "HEALTH",
+          ],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 52,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Mahmora - House damage assessment is in process detail report will be uploaded soon. ), (Sonari - Till Today 1300 nos CM relief packets distributed in Sonari Municipal Board )",
+      },
+      {
+        "district": "Golaghat" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Khumtai" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 16,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5004,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 880.55,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 72,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Bokakhat" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 22,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1725,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 233.5,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Dergaon" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 38,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 15323,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 427.35,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 12,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4850,
+            },
+          },
+          {
+            "circle": "Golaghat" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 28,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 13386,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 923,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 532,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 104,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 16296,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 13782,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 5360,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 35438,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 2464.4,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 7,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 15,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 604,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 206,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 255,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 120,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 21,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 4850,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2425,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1619,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 806,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1608,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 809,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1609,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 809,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 82.464,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 14.55,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 4.365,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 436.5,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 48.88,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 25.15,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 10,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Dergaon - Submerged 6 nos of Amrit Sarovar- 1. Amrit Sarovar at Sarubhereki Sarovar 2. Amrit Sarovar at Borbhereki Part 1 3. Amrit Sarovar at Borbhereki Part 2 4. Amrit Sarovar at Sib Mandir Parichalona Samiti 6. Majukuchi Amrit Sarovar Vety Camp- 1 No. at Pulikaraini Banuwabosti)",
+      },
+      {
+        "district": "Jorhat" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Teok" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 18,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 13316,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 724.5,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 498,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Titabor" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 18,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2761,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 593.2,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Jorhat West" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 39,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 41238,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 1602.1200000000001,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 889,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Jorhat East" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 18,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Mariani" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 56,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 6.6,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 87,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 23488,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 23425,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 10458,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 57371,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 2944.42,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 13,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 2,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1387,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 555,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 551,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 266,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 12,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 3,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 293,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 540,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 964,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1157,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 18,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 58,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2142,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 6.62,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 1.29,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0.38,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 1115.4404,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 74.39,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Titabor - No. of spot source 12 nos, IHHL affected 75 nos. No. of spot source disinfected 22 nos.), (Jorhat West - No. of spot source affected.. 30, No. of IHHL affected 46 nos. No. of spot source disinfected 14 nos. Leaflet distributed 250 nos. No. of spot source repaired 14 nos. ), (Jorhat East - 3 Medical teams on 27/07/2026, 4 Medical teams on 28/07/2027 were deployed for health camp and 3 veterinary teams are deployed on 28/07/2026 for Veterinary Camp in the flood affected areas under Jorhat East Revenue Circle.100 leaflets are distributed among the flood affected people by PHE, Jorhat on 28/07/2026.), (Mariani - This Report is due to heavy rainfall in nearby Hiills and water blockage as on 28/07/2026 causing Flash Floods under Mariani Revenue Circle. The crop Submergence Report is Submitted by ADO, due to heavy rainfall and it doesnot indicate damage. )",
+      },
+      {
+        "district": "Nagaon" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Nagaon" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 14,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 650,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Kampur" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 131,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Samaguri" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 7,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 114,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 25,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 895,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 2,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 765,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 680,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5750,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3792,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 40.5,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Sonitpur" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Chariduar" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 2.66,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 1,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 2.66,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "Report Generated On: 28-07-2026 09:14 PM",
+      },
+      {
+        "district": "Kamrup (M)" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Sonapur" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 107,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 8,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 107,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Cachar" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Silchar" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Udharbond" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Katigorah" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Dibrugarh" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Tengakhat" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Moran" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Dibrugarh West" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Naharkatia" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Tengakhat - As per report received from Joint Director of Health Services under Tengakhat Revenue Circle today Medical Team Deployed -1 nos, on 28.07.2026), (Moran - As per report received from the Veterinary Officer, State Veterinary Dispensary, Dibrugarh 1(one) Nos Veterinary camp have been organized under Moran Revenue Circle on 28.07.2026 As per report received from Joint Director of Health Services under Moran Revenue Circle today Medical Team Deployed - 1 nos, on 28.07.2026), (Dibrugarh West - As per report received from Joint Director of Health Services under Dibrugarh West Revenue Circle today Medical Team Deployed - 2 nos, on 28.07.2026), (Naharkatia - As per report received from Joint Director of Health Services under Naharkatia Revenue Circle today Medical Team Deployed -3 nos, on 28.07.2026)",
+      },
+      {
+        "district": "Hojai" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Doboka" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Doboka - 1. 10000 nos. of Halogen Tablets, 1280 packets of Chemical Packets and 750 nos. of Leaflets were distributed by PHE, Hojai on 27.07.2026 at Dighaljar, Burigaon, Sutargaon, Dighaljar LP School area. as reported by EE (PHE), Hojai Division dated 28.07.2026)",
+      },
+    ],
+    "infrastructureDamage": [
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "Silchar" as RevenueCircleName,
+        "name": "Budhurail Kathal Road",
+        "department": "PWD (Roads)",
+        "village": "Silchar Town",
+        "location": "Budhurail Silchar Town",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Silchar Udharbond, the damaged was occured due to heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 27.07.2026, Ch. 3930.00m to Ch.3955.00 m, Ch. 3960.00m to Ch.4010.00 m, Ch. 3905.00m to Ch.3960.00 m,",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Birbal Bazar to Silchar Medical College Road, (Meherpur to Atalbasti)",
+        "department": "PWD (Roads)",
+        "village": "Silchar Town",
+        "location": "Birbal Bazar, Medical Point , Meherpur, Atalbasti",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Silchar Udharbond, the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 27.07.2026, Ch. 3070.00 m to Ch.3114.50m.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Chincoorie Road",
+        "department": "PWD (Roads)",
+        "village": "Silchar Town",
+        "location": "Chincoorie",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Silchar Udharbond, the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 27.07.2026, Ch. 2000.00m",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Sonai Road to Silchar Medical College Road via Shreepoll School",
+        "department": "PWD (Roads)",
+        "village": "Silchar Town",
+        "location": "Sonai Road, Gungoor, Shreepoll School point",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Silchar Udharbond, the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 27.07.2026, Ch. 0.00.m, to Ch.400.00 m, Ch.400.00m to Ch.800.00m",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Silchar N.H By-Pass Road Silchar Kathal Road",
+        "department": "PWD (Roads)",
+        "village": "Silchar Town",
+        "location": "National Highway point, Silchar Kathal",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Silchar Udharbond, the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 27.07.2026, Ch. 3930.00m to Ch.3124.00 m",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Ramnagar to South point School",
+        "department": "PWD (Roads)",
+        "village": "Silchar Town",
+        "location": "National Highway, Ramnagar to South Point School",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Silchar Udharbond, the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 27.07.2026, Ch. 3930.00m to Ch.3124.00 m, Ch. 3160.00m to Ch.3124.00 m, Ch. 3088.00m.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "Udharbond" as RevenueCircleName,
+        "name": "Pangram Amranagar Road Udharbond",
+        "department": "PWD (Roads)",
+        "village": "Pangram Part – I",
+        "location": "Amranagar Pangram",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 92.896669,
+          "latitude": 24.949002,
+        },
+        "remarks": "As reported by EE PWD Silchar Udharbond, the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 27.07.2026, Ch.7200.00 M to Ch.7500.00 M",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "Katigorah" as RevenueCircleName,
+        "name": "Bypass Toad At Rajatilla breach portoion of Katigorah Harinagar",
+        "department": "PWD (Roads)",
+        "village": "Harinagar Part – I",
+        "location": "Rajatillah, Harinagar",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD , the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 27.07.2026, Ch. 330.00m , Ch.370.00m",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Silchar Kalain Road",
+        "department": "PWD (Roads)",
+        "village": "Barjatrapur",
+        "location": "Ujangram, Nizjoynagar to Rani Ferry",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD , the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 27.07.2026, Ch. 21900.00m to Ch. 22300 m,",
+      },
+      {
+        "damageClass": "road",
+        "district": "Golaghat" as DistrictName,
+        "circle": "Dergaon" as RevenueCircleName,
+        "name": "NH37 to Negheriting road",
+        "department": "PWD (Roads)",
+        "village": "No. 1 Negheriting grant",
+        "location": "Negheriting",
+        "coordinate": undefined,
+        "remarks": "Submerged",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "Teok" as RevenueCircleName,
+        "name": "Kawoimari Kumabheti Road",
+        "department": "PWD (Roads)",
+        "village": "2 No Kawoimari",
+        "location": "2 No. Kawoimari",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.399057,
+          "latitude": 26.884252,
+        },
+        "remarks": "Road surface sumberged erosion of side slope at some portion. affected lenghth 800 mtr.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Nagaon" as DistrictName,
+        "circle": "Kampur" as RevenueCircleName,
+        "name": "PWRD BARHAMPUR TERRITORIAL ROAD SUB- DIVISION",
+        "department": "PWD (Roads)",
+        "village": "Garubandha Gaon",
+        "location": "Garubandha",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 92.722172,
+          "latitude": 26.150081,
+        },
+        "remarks": "AS REPORTED BY ASSTT EXECUTIVE ENGINEER PWRD BARHAMPUR TERRITORIAL ROAD SUB- DIVISION ON DATED 28.07.2026 ROAD FROM GARUBANDHA BR. APPROACH (BUG BR. NO 5/1) TO PATIAPAM CH. 300.00 M TO 1300.00 M SUBMERGED 1.5 M DEPTH.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "Sonari RC part" as RevenueCircleName,
+        "name": "17 GUMUTHA DHUDOR ALI",
+        "department": "PWD (Roads)",
+        "village": "Deodhai Gaon",
+        "location": "SIV",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.769251,
+          "latitude": 26.955166,
+        },
+        "remarks": "",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "Demow" as RevenueCircleName,
+        "name": "Dighalpasi Road",
+        "department": "PWD (Roads)",
+        "village": "Lachan",
+        "location": "Dighal Pasi",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.806892,
+          "latitude": 26.974858,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Sepon Sunpura road.",
+        "department": "PWD (Roads)",
+        "village": "Fakalani",
+        "location": "Sepon Sunpura Road",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.769793,
+          "latitude": 26.973725,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Taimua Ali",
+        "department": "PWD (Roads)",
+        "village": "Gohain gaon (Bokota Mouza)",
+        "location": "Taimua Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.661971,
+          "latitude": 27.015819,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Betbari Alimur NH-37",
+        "department": "PWD (Roads)",
+        "village": "Sukan pukhuri",
+        "location": "Betbari Alimur",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.662659,
+          "latitude": 27.015861,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Daya Ali",
+        "department": "PWD (Roads)",
+        "village": "Handique",
+        "location": "Daya Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.720427,
+          "latitude": 26.969884,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Bhadhara Ali",
+        "department": "PWD (Roads)",
+        "village": "Bhakot",
+        "location": "Bhadhara Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.711831,
+          "latitude": 26.99307,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Borpatra Ali",
+        "department": "PWD (Roads)",
+        "village": "Dehingia",
+        "location": "Dehingia",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.657044,
+          "latitude": 26.985266,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Haripara Ali",
+        "department": "PWD (Roads)",
+        "village": "Handique",
+        "location": "Haripara Ali",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.726976,
+          "latitude": 26.996567,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Betbari Ali",
+        "department": "PWD (Roads)",
+        "village": "Laibill",
+        "location": "Betbari",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.664056,
+          "latitude": 27.015889,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Nawjan Ali",
+        "department": "PWD (Roads)",
+        "village": "Garukhuti",
+        "location": "Nawjan",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.638184,
+          "latitude": 26.99821,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Pothaligarh to Lakhmoni Ghat connecting road",
+        "department": "PWD (Roads)",
+        "village": "Gohain gaon (Bokota Mouza)",
+        "location": "Pothaligarh to Lakhmoni",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.797205,
+          "latitude": 26.99155,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Bhajoni Ali",
+        "department": "PWD (Roads)",
+        "village": "Garbhanga",
+        "location": "Bhajani",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.0498,
+          "latitude": 26.974687,
+        },
+        "remarks": "Road Overtoped by flood water.",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Jorhat" as DistrictName,
+        "circle": "Teok" as RevenueCircleName,
+        "name": "Jhanji L/Bank",
+        "department": "Water",
+        "village": "Dulia Bharali",
+        "location": "1. Tamulichiga Ch.",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.2983,
+          "latitude": 26.88336,
+        },
+        "remarks": "1. Tamulichiga Ch.",
+      },
+      {
+        "damageClass": "other",
+        "district": "Charaideo" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "TAWKAKMUKH",
+        "village": "Women & Child Developm ent",
+        "location": "Bonamali T.E.",
+        "coordinate": undefined,
+        "remarks": "27",
+      },
+      {
+        "damageClass": "other",
+        "district": "Charaideo" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "9",
+        "department": "CHARIMUTHIA",
+        "village": "Education",
+        "location": "Charimuthia Gaon",
+        "coordinate": undefined,
+        "remarks": "26.9731",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "0.554",
+        "department": "Pond",
+        "village": "Fishery",
+        "location": "Garigaon",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "5",
+        "department": "NO 1",
+        "village": "Education",
+        "location": "Goroimari Gaon",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Bilotia to Disoi road",
+        "village": "PWD (Roads)",
+        "location": "Bilotia Kaibartta",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "0.624",
+        "department": "Fishery/Pond",
+        "village": "Fishery",
+        "location": "Dakhin Dolijalia",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "2",
+        "department": "Koraiani AAM",
+        "village": "Health & Family Welfare",
+        "location": "Koraianibhakat",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Dergaon PHC",
+        "village": "Health & Family Welfare",
+        "location": "Dhemaji Kaibartta",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "PWSS",
+        "village": "PHE",
+        "location": "Bosa Gaon",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "0.532",
+        "department": "Pond",
+        "village": "Fishery",
+        "location": "Charingia",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "3.6",
+        "department": "Power",
+        "village": "APDCL",
+        "location": "Badulipukhuri",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Road cum",
+        "village": "PWD",
+        "location": "Badulipukhuri",
+        "coordinate": undefined,
+        "remarks": "26.78712",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "8",
+        "department": "Power department",
+        "village": "APDCL",
+        "location": "Badulipukhuri Majgaon",
+        "coordinate": undefined,
+        "remarks": "26.81852 5",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "2",
+        "department": "Gomti Devi",
+        "village": "Education",
+        "location": "Titabar Town",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Sarbodaya",
+        "village": "Education",
+        "location": "Malowpam",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "55",
+        "department": "73 No.Telial",
+        "village": "Women &",
+        "location": "Telial",
+        "coordinate": undefined,
+        "remarks": "26.89459",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "8",
+        "department": "AMGURI GIRLS",
+        "village": "Education",
+        "location": "Amguri Town",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "40",
+        "department": "DHEKIAL",
+        "village": "PHE",
+        "location": "Dhekial",
+        "coordinate": undefined,
+        "remarks": "26.86479",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "CONDUCTOR",
+        "village": "APDCL",
+        "location": "Bolomia Chowdang",
+        "coordinate": undefined,
+        "remarks": "26.86912 3",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "LT POLE",
+        "village": "APDCL",
+        "location": "Charingia",
+        "coordinate": undefined,
+        "remarks": "26.9008",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "18",
+        "department": "PENGERA MVS",
+        "village": "Education Deptt.",
+        "location": "Duliacharat.",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1.2",
+        "department": "LPS conductors",
+        "village": "APDCL",
+        "location": "Garmur Miri",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "30",
+        "department": "Bogoriguri",
+        "village": "Women &",
+        "location": "Tipomia",
+        "coordinate": undefined,
+        "remarks": "26.90981",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "65",
+        "department": "10 No. Line",
+        "village": "PHE",
+        "location": "Bakupukhuri",
+        "coordinate": undefined,
+        "remarks": "28.7537",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "24",
+        "department": "Poles",
+        "village": "APDCL",
+        "location": "Garmur Miri",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "4",
+        "department": "Transformers",
+        "village": "APDCL",
+        "location": "Garmur Miri",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "26",
+        "department": "2NO",
+        "village": "Women &",
+        "location": "Deodhai Gaon",
+        "coordinate": undefined,
+        "remarks": "26.9359",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "17",
+        "department": "Saraguwa",
+        "village": "Women &",
+        "location": "Sarugua Gaon",
+        "coordinate": undefined,
+        "remarks": "27.08336",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "40",
+        "department": "SUKAFA",
+        "village": "Education",
+        "location": "2 no Konwar",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+    ],
+    "statewideTotals": {
+      "districtsAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 7,
+      },
+      "revenueCirclesAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 21,
+      },
+      "villagesAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 622,
+      },
+      "populationAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 332639,
+      },
+      "cropAreaSubmerged": {
+        "kind": "known",
+        "unit": "Hect",
+        "value": 45341.98,
+      },
+      "reliefCamps": {
+        "kind": "known",
+        "unit": "count",
+        "value": 81,
+      },
+      "reliefDistributionCentres": {
+        "kind": "known",
+        "unit": "count",
+        "value": 34,
+      },
+      "campInmates": {
+        "kind": "known",
+        "unit": "count",
+        "value": 32477,
+      },
+      "nonCampInmates": {
+        "kind": "known",
+        "unit": "count",
+        "value": 16314,
+      },
+    },
+    "provenance": [
+      {
+        "kind": "rivers-above-danger-level",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "districts-affected",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "revenue-circles-affected",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "villages-affected",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "population-and-crop-area-submerged",
+        "sourcePages": [
+          1,
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "relief-camps-opened",
+        "sourcePages": [
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "inmates-in-relief-camps",
+        "sourcePages": [
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "non-camp-inmates",
+        "sourcePages": [
+          2,
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "lives-lost-confirmed",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "lives-lost-missing",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "animals-affected",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "animals-washed-away",
+        "sourcePages": [
+          3,
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "houses-damaged",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "houses-damaged-others",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "rescue-operation",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "relief-distributed",
+        "sourcePages": [
+          4,
+          5,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "relief-distributed-others",
+        "sourcePages": [
+          5,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-road",
+        "sourcePages": [
+          5,
+          6,
+          7,
+          8,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-bridge",
+        "sourcePages": [
+          8,
+          9,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-embankment-breached",
+        "sourcePages": [
+          9,
+          10,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-embankment-affected",
+        "sourcePages": [
+          10,
+          11,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-others",
+        "sourcePages": [
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "remarks",
+        "sourcePages": [
+          30,
+          31,
+        ],
+        "confidence": "high",
+      },
+    ],
+    "reconciliationFailures": [],
+  },
+  {
+    "bulletinId": "af31820b5710d9662f125999660bbdc9b40f68878f661c737940c5e45dd228da" as BulletinId,
+    "reportDate": "2026-07-29" as ReportDate,
+    "generatedAt": "29-07-2026 09:44 PM",
+    "rivers": {
+      "aboveDangerLevel": [],
+      "aboveHighestFloodLevel": [],
+    },
+    "districts": [
+      {
+        "district": "Charaideo" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Mahmora" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 28,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 16015,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 5000,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 121,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Sonari" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 89,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 121546,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 6600,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 358,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 117,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 53177,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 60691,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 23693,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 137561,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 11600,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 5,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 5,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 479,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 173,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 234,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 60,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 8,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 4,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 546,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 704,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 986,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 606,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 884,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1636,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 50.4,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [
+            "health",
+            "veterinary",
+          ],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 21,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Mahmora - Total 7592 nos of CM Sir's Special Relief Packets were distributed under Mahmora Revenue Circle on 29-07-2026. Bhoralipukhuri GP - 435 pkt Bordoba GP - 35 pkt Desangpani GP - 2159 pkt Doba GP - 2770 pkt Nizkhaloighugura GP - 1041 pkt Milon GP - 808 pkt Sepon GP - 197 pkt Kakotibari GP - 147 pkt), (Sonari - O/o Designated Officer, Food Safety , Charaideo damage office components (Lat- 27.02529, Long- 95.018035), O/o DPMU, Charaideo, damage office components (Lat- 27.025532, Long- 95.018296), CM Packet distributed till today-40622 Pck, Cumulative- 41922, Total received packets till today 48422 Pck )",
+      },
+      {
+        "district": "Golaghat" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Golaghat" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 24,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 11015,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 830,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 362,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 80,
+            },
+          },
+          {
+            "circle": "Khumtai" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 14,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3544,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 420,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 60,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Bokakhat" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 11,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1143,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 75,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Dergaon" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 26,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 12257,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 395.85,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 759,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 75,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 12755,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 10812,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 4392,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 27959,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 1720.85,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 7,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 9,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 422,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 142,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 175,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 90,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 15,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 839,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 441,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 301,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 97,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 466,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 445,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 446,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 445,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 35.76,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 6.327,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 1.8931,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 189.81,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 29.95,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 7,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Golaghat - 03 No. MGNREGA and 01 no. FC schemes got affected under Golaghat East Dev. Block)",
+      },
+      {
+        "district": "Sivasagar" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Nazira" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 40,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 13043,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 5238,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 11,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3081,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Sivsagar" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 137,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 44983,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 359,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 11,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5737,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 70701,
+            },
+          },
+          {
+            "circle": "Amguri" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 31,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 18645,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 340.03,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 16,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5236,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Demow" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 18,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 4353,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 320,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 7,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 532,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 319,
+            },
+          },
+          {
+            "circle": "Sonari RC part" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 15,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 3576,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 400,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 241,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 38222,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 36971,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 9407,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 84600,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 6657.03,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 46,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 12,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 14586,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 6614,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 6290,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1668,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 10,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 4,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 71020,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 28678,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 28991,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 13351,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 341,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 433,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 891,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1531,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2412,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 56,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 105,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 29,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 58,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 54,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 361.29,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 64.29,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 19.34,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 2222.567,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 763.52,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [
+            "Circle Office/Local Administration",
+            "SDRF",
+            "Civil Defence/Trained Volunteers",
+          ],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 78,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 17,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Sivsagar - 8789 Nos of CM Relief Packet distributed ), (Demow - cattle feed (solid dana) 250 qntl distributed)",
+      },
+      {
+        "district": "Nagaon" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Nagaon" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 14,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 460,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Samaguri" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 99,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 16,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 559,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2520,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1560,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Biswanath" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Halem" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 10,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 9.5,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Gohpur" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 5,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 12,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 14.5,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Jorhat" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Jorhat West" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 39,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 39350,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 5,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 889,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Titabor" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 12,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1591,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 662.7,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Mariani" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Jorhat East" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 7,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 416,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 12,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Teok" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 16,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8554,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 190,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 2,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 191,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 351,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 82,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 20467,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 20660,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 8784,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 49911,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 864.7,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 13,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 4,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 1080,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 434,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 437,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 194,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 12,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 3,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 351,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 137,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 128,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 86,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 971,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1222,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1879,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 1581,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 630,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 34,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 123,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 11013,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 5.81,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 1.05,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0.32,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 31.59,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 52.6,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 2,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Jorhat West - No of spot source affected-12 nos, IHHL affected- 18 nos, spot source disinfected- 15 nos.), (Jorhat East - 32 Leaflets distributed in Flood affected Areas under Jorhat East Revenue Circle on 29/07/2026), (Teok - Teok CKB College submerged by flood water and damaged furniture, building floor etc. The damage caused by the flood is so severe that the college cannot bear the financial brunt to repair/ rebuild/ new purchase all the articles damaged/ washed away by the terrible flood.)",
+      },
+      {
+        "district": "Kamrup (M)" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Sonapur" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 8,
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 107,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "known",
+          "unit": "count",
+          "value": 8,
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 107,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Cachar" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Silchar" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Dhemaji" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Jonai" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Jonai - Today i.e. 29/07/2026, GR is distributed to the already affected families of Arun Chapori and Madhupur village. Rice 20Q 2KG 800GM Dal 3Q 79Kg 500GM Salt 1Q 13 KG 850gm Mustard Oil 113.850 Litre)",
+      },
+      {
+        "district": "Dibrugarh" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Naharkatia" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Tengakhat" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Dibrugarh West" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          {
+            "circle": "Moran" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "(Naharkatia - As per report received from Veterinary Officer, State Veterinary Dispensary Naharkatia today 3 Nos. of Veterinary Health and treatment Camp conducted at flood affected areas of Naharkatia Revenue Circle on 29.07.2026 As per report received from Joint Director of Health Services, Dibrugarh today 03 nos. of medical team deployed under Naharkatia Revenue Circle as on 29.07.2026 ), (Tengakhat - As per report received from Joint Director of Health Services today 2 Nos Medical Team deployed under Tengakhat Revenue Circle as on 29.07.2026 As pre report received from the Veterinary Officer, State Veterinary Dispensary, Dibrugarh 4 (Four) Nos Veterinary camp have been organized under Tengakhat Revenue Circle on 29.07.2026), (Dibrugarh West - As per report received from Joint Director of Health Services, Dibrugarh 02 nos. of medical team deployed under Dibrugarh west Revenue Circle as on 29.07.2026), (Moran - As per report received from Joint Director of Health Services under Moran Revenue Circle today Medical Team Deployed - 1 no, on 29.07.2026)",
+      },
+      {
+        "district": "Lakhimpur" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Narayanpur" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "",
+      },
+      {
+        "district": "Sribhumi" as DistrictName,
+        "revenueCircles": [
+          {
+            "circle": "Patherkandi" as RevenueCircleName,
+            "villagesAffected": {
+              "kind": "unknown",
+              "unit": "count",
+            },
+            "populationAffected": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "cropAreaSubmerged": {
+              "kind": "known",
+              "unit": "Hect",
+              "value": 0,
+            },
+            "reliefCamps": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "reliefDistributionCentres": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "campInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "nonCampInmates": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        ],
+        "villagesAffected": {
+          "kind": "unknown",
+          "unit": "count",
+        },
+        "population": {
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "cropAreaSubmerged": {
+          "kind": "known",
+          "unit": "Hect",
+          "value": 0,
+        },
+        "reliefCamps": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "reliefDistributionCentres": {
+          "kind": "known",
+          "unit": "count",
+          "value": 0,
+        },
+        "campInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "pregnantOrLactating": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsWithDisability": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "nonCampInmates": {
+          "total": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "male": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "female": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "children": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animals": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "casualties": {
+          "floodDeaths": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "generalDrownings": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "missing": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "animals": {
+          "affected": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+          "washedAway": {
+            "big": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "small": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+            "poultry": {
+              "kind": "known",
+              "unit": "count",
+              "value": 0,
+            },
+          },
+        },
+        "houses": {
+          "fullySeverelyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "fullySeverelyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyKuccha": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "partiallyPukka": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherHuts": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "otherCattleSheds": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "relief": {
+          "rice": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "dal": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "salt": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "mustardOil": {
+            "kind": "known",
+            "unit": "L",
+            "value": 0,
+          },
+          "greenFodder": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "wheatBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+          "riceBran": {
+            "kind": "known",
+            "unit": "Q",
+            "value": 0,
+          },
+        },
+        "rescue": {
+          "agencies": [],
+          "medicalTeams": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "boats": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "helicopters": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByBoat": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "personsEvacuatedByHelicopter": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+          "animalsEvacuated": {
+            "kind": "known",
+            "unit": "count",
+            "value": 0,
+          },
+        },
+        "remarks": "Report Generated On: 29-07-2026 09:44 PM",
+      },
+    ],
+    "infrastructureDamage": [
+      {
+        "damageClass": "road",
+        "district": "Biswanath" as DistrictName,
+        "circle": "Halem" as RevenueCircleName,
+        "name": "Ghimorujan to Jakapara Road",
+        "department": "PWD (Roads)",
+        "village": "Jakapara",
+        "location": "Ghimorujan - Jakapara",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 93.572035,
+          "latitude": 26.831403,
+        },
+        "remarks": "side berm affected for a reach length of 700 m (approx)",
+      },
+      {
+        "damageClass": "road",
+        "district": "Biswanath" as DistrictName,
+        "circle": "Gohpur" as RevenueCircleName,
+        "name": "Panigaon road",
+        "department": "PWD (Roads)",
+        "village": "DUBIA PATHAR",
+        "location": "Panigaon road at Dubia Pathar",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 93.69364,
+          "latitude": 26.900442,
+        },
+        "remarks": "70-80 mtr. road submerged due to water level rising in Dubia river.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "Silchar" as RevenueCircleName,
+        "name": "Nayagram to Rangti Basti Road",
+        "department": "PWD (Roads)",
+        "village": "Ambicapur Part – VIII",
+        "location": "Nayagram Rangti",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 28.07.2026, Ch. 00.00 m to Ch. 2400.00m",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Bairagi Bazar to Patharigram Phase II",
+        "department": "PWD (Roads)",
+        "village": "Pathari Gram",
+        "location": "Pathari Gram, Bairagi Bazar",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 28.07.2026, Ch. 0.00 m to Ch.700.00m, Ch. 1000.00 m to Ch. 1700.00m",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Jaroiltala Chandranathpur Road",
+        "department": "PWD (Roads)",
+        "village": "Jaroiltola",
+        "location": "Jaroiltala Chandranathpur",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 28.07.2026, Ch. 1000.00 m to Ch.1300.00m, Ch. 3,400.00m",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Barsangan Kowapar Road to Nunapani",
+        "department": "PWD (Roads)",
+        "village": "Barsangan Grant",
+        "location": "Barsangan kuwapar Nunapani",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 28.07.2026, Ch. 1000.00 m to Ch.1200.00m., Ch. 1200.00m to Ch.1400.00m",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Kalingar Road",
+        "department": "PWD (Roads)",
+        "village": "Kalinagar Part – I",
+        "location": "Kalingar Pt I",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 28.07.2026, Ch. 400.00 m to Ch.450.00.m.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Ganigram PWD Road",
+        "department": "PWD (Roads)",
+        "village": "Chandranathpur",
+        "location": "Chandpur Gonigram",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 28.07.2026, Ch. 6500.00 m",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Silchar Hailakandi Road near Assam University",
+        "department": "PWD (Roads)",
+        "village": "Irongmara Grant",
+        "location": "Dorgakuna",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 28.07.2026, Ch. 12,400.00 m.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Cachar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Masimpur Kumartilla Road Phase I, II",
+        "department": "PWD (Roads)",
+        "village": "Masimpur Grant",
+        "location": "Kumartilla",
+        "coordinate": undefined,
+        "remarks": "As reported by EE PWD Borkhola Katigorah TRD the damaged was occured heavy rainfall/Water logging on 24.07.2026, however the damaged reprot is received on 28.07.2026, Ch. 1400.00 m to Ch.2500.00.m.",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "Mariani" as RevenueCircleName,
+        "name": "Puroikhowa to Gabharu",
+        "department": "PWD (Roads)",
+        "village": "Phukanhabi Gaon",
+        "location": "Machkhowa, Puroikhowa, Mogroi",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.452985,
+          "latitude": 26.70091,
+        },
+        "remarks": "Erosion of side slope at single side of the bridge (Br no 1/2 Puroikhowa to Gabharu",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Naginijan T.E road",
+        "department": "PWD (Roads)",
+        "village": "Naginijan",
+        "location": "Naginijan T.E and Mogroi",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.450919,
+          "latitude": 26.680031,
+        },
+        "remarks": "Erosion of side slope at both sides of the bridge (Br no 3/1 Naginijan TE Road)",
+      },
+      {
+        "damageClass": "road",
+        "district": "Jorhat" as DistrictName,
+        "circle": "Teok" as RevenueCircleName,
+        "name": "Seleng TE Road",
+        "department": "PWD (Roads)",
+        "village": "Boisahabi Grant",
+        "location": "Seleng TE",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.51079,
+          "latitude": 26.769522,
+        },
+        "remarks": "",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "Nazira" as RevenueCircleName,
+        "name": "Dimow kinar b/r to 3/1 dimow kinar",
+        "department": "PWD (Roads)",
+        "village": "Amkotia Gohain",
+        "location": "dimow kinar",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Amkotia ali to mechagarh",
+        "department": "PWD (Roads)",
+        "village": "Amkotia Gohain",
+        "location": "amkotia",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Bahgarh ali b/r 1/1 to mechagarh",
+        "department": "PWD (Roads)",
+        "village": "Mechagarh Gohain",
+        "location": "Mechagarh",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Garali Borpool to Gar Ali Gohain Gaon",
+        "department": "PWD (Roads)",
+        "village": "Gohain Gaon",
+        "location": "Gohain Gaon",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Chattai ali to B/r no 21 to Madhuri molagaon roads",
+        "department": "PWD (Roads)",
+        "village": "Maduri Gohain",
+        "location": "madhuri",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Naginimara jojoli to tiponia Roads",
+        "department": "PWD (Roads)",
+        "village": "Tipomia",
+        "location": "Naginimara jojoli to tiponia",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "Sivsagar" as RevenueCircleName,
+        "name": "Baksu Na Ali Road",
+        "department": "PWD (Roads)",
+        "village": "Dimual",
+        "location": "Dimual",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.743502,
+          "latitude": 26.976603,
+        },
+        "remarks": "Damage due to Flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Kakojan Khelua Road",
+        "department": "PWD (Roads)",
+        "village": "Dimual",
+        "location": "Dimual Khelua",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.768708,
+          "latitude": 26.972132,
+        },
+        "remarks": "Damage due to Flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Baksu to Dhitai Connecting Road Via Kotaki Koch",
+        "department": "PWD (Roads)",
+        "village": "Kotaki Koch",
+        "location": "Kotaki Koch",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.750913,
+          "latitude": 26.975437,
+        },
+        "remarks": "Damage due to Flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Dimual Dorika Road",
+        "department": "PWD (Roads)",
+        "village": "Dimual",
+        "location": "Dimual",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.740481,
+          "latitude": 26.975712,
+        },
+        "remarks": "Damage due to Flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "Demow" as RevenueCircleName,
+        "name": "Deroi Koibartta road",
+        "department": "PWD (Roads)",
+        "village": "Khamun",
+        "location": "Khamun",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.73619,
+          "latitude": 27.0572,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Potia Gaon Road",
+        "department": "PWD (Roads)",
+        "village": "Potia",
+        "location": "potia",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.76786,
+          "latitude": 27.03669,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Tetelitol to Hologuri Road",
+        "department": "PWD (Roads)",
+        "village": "Chandbasa",
+        "location": "Chandbesa",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.789698,
+          "latitude": 27.049857,
+        },
+        "remarks": "Damage due to Flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Guwala Basti road",
+        "department": "PWD (Roads)",
+        "village": "Khamun",
+        "location": "Guwala Basti",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.732885,
+          "latitude": 27.037628,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Kutuhaguri road",
+        "department": "PWD (Roads)",
+        "village": "Jabalating",
+        "location": "Jabalating",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.76909,
+          "latitude": 27.019209,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Bakhor Bengena Road",
+        "department": "PWD (Roads)",
+        "village": "Dehinga",
+        "location": "Jabalating",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.760328,
+          "latitude": 27.021711,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Hologuri new line to kakotihabi road",
+        "department": "PWD (Roads)",
+        "village": "Halaguri Bagisha",
+        "location": "Halaguri Bagicha",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.83182,
+          "latitude": 27.090737,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Khamun Khanikar Gaon road",
+        "department": "PWD (Roads)",
+        "village": "2 no Konwar Gaon",
+        "location": "2 No. Konwar Gaon",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.73357,
+          "latitude": 27.039204,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Kutharkota to Goroimari road",
+        "department": "PWD (Roads)",
+        "village": "Amlaguri Bagisha",
+        "location": "Amlaguri",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.802897,
+          "latitude": 27.076223,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Nemuguri Kharahat Connecting road",
+        "department": "PWD (Roads)",
+        "village": "Deoriting",
+        "location": "Deoriting",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.769343,
+          "latitude": 27.047642,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Father Ali road",
+        "department": "PWD (Roads)",
+        "village": "Amlaguri Bagisha",
+        "location": "Amlaguri",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.809855,
+          "latitude": 27.076977,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Chenimora to Mousal Road",
+        "department": "PWD (Roads)",
+        "village": "Amlaguri Bagisha",
+        "location": "Mousal",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.766561,
+          "latitude": 27.07362,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Jutuliting to Kalithan Road",
+        "department": "PWD (Roads)",
+        "village": "Chandbasa",
+        "location": "Chandbesa",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.77902,
+          "latitude": 27.0472,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Boropial Habi to Borbam road",
+        "department": "PWD (Roads)",
+        "village": "Boropial Habi",
+        "location": "Boropial habi",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.76897,
+          "latitude": 27.04568,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Nitai Khamun road",
+        "department": "PWD (Roads)",
+        "village": "Khamun",
+        "location": "Khamun",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.73238,
+          "latitude": 27.03684,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Deoriting bagan Borline road",
+        "department": "PWD (Roads)",
+        "village": "Deoriting",
+        "location": "Deoriting",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.7645,
+          "latitude": 27.0518,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Punibil Chandbesa road to Mohkhuti Pothar road",
+        "department": "PWD (Roads)",
+        "village": "Chandbasa",
+        "location": "Chandbessa",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.783466,
+          "latitude": 27.05337,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Mohkhuti Tiniali to Mohkhuti Bagan line road",
+        "department": "PWD (Roads)",
+        "village": "Mohkhuti Grant",
+        "location": "Mohkhuti",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.749121,
+          "latitude": 27.061997,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Khamun Mazdur Ali road",
+        "department": "PWD (Roads)",
+        "village": "Khamun",
+        "location": "Khamun",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.75869,
+          "latitude": 27.058273,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Kutharkota to Mousal road",
+        "department": "PWD (Roads)",
+        "village": "Amlaguri Bagisha",
+        "location": "Amlaguri",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.802363,
+          "latitude": 27.079583,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Saral Pathar to Gohain chuk road",
+        "department": "PWD (Roads)",
+        "village": "Charal Pather",
+        "location": "Charal Pathar",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.77273,
+          "latitude": 27.06196,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Deoriting Boropial habi road",
+        "department": "PWD (Roads)",
+        "village": "Boropial Habi",
+        "location": "Boropial Habi",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.761026,
+          "latitude": 27.055289,
+        },
+        "remarks": "damage due to flood",
+      },
+      {
+        "damageClass": "road",
+        "district": "Sribhumi" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Bridge Name",
+        "department": "Departmen t",
+        "village": "Village",
+        "location": "Location",
+        "coordinate": undefined,
+        "remarks": "Remarks",
+      },
+      {
+        "damageClass": "embankment-breached",
+        "district": "Biswanath" as DistrictName,
+        "circle": "Halem" as RevenueCircleName,
+        "name": "Chatrang Embankment",
+        "department": "Water",
+        "village": "Madhya",
+        "location": "Madhya",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 93.61539,
+          "latitude": 26.86893,
+        },
+        "remarks": "Due to sharp",
+      },
+      {
+        "damageClass": "embankment-breached",
+        "district": "Biswanath" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Charang Embankment",
+        "department": "Water",
+        "village": "Delhouse Bagicha",
+        "location": "Delhouse Bagicha",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 93.61656,
+          "latitude": 26.87073,
+        },
+        "remarks": "Due to sharp",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "Sivsagar" as RevenueCircleName,
+        "name": "Darika Bund R/B from",
+        "department": "Water",
+        "village": "Kathpar",
+        "location": "Kathpar",
+        "coordinate": undefined,
+        "remarks": "Overtoping from",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Dhaiali to Desangmukh",
+        "department": "Resource",
+        "village": "",
+        "location": "",
+        "coordinate": undefined,
+        "remarks": "Ch. 150M to 1150",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "PWD rOAD",
+        "department": "Deptt.",
+        "village": "",
+        "location": "",
+        "coordinate": undefined,
+        "remarks": "M.",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Darika Bund L/B from",
+        "department": "Water",
+        "village": "KhataPathar",
+        "location": "Raghuguri,",
+        "coordinate": undefined,
+        "remarks": "Ovrtopping from",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Bahgarh to AT road.",
+        "department": "Resource",
+        "village": "",
+        "location": "Gohanchuk,",
+        "coordinate": undefined,
+        "remarks": "Ch. 1200m to",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Darika Bund L/B from NH",
+        "department": "Water",
+        "village": "DeoliaKhat",
+        "location": "Gauravnagar,",
+        "coordinate": undefined,
+        "remarks": "Ovrtopping from",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "way to Dhaiali",
+        "department": "Resource",
+        "village": "",
+        "location": "Deoliakhat,",
+        "coordinate": undefined,
+        "remarks": "Ch. 40m to 80m,",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Darika Bund R/B from AT",
+        "department": "Water",
+        "village": "Nowjan",
+        "location": "Nowjan,",
+        "coordinate": {
+          "kind": "precise",
+          "longitude": 94.65043,
+          "latitude": 27.00482,
+        },
+        "remarks": "Overtoping from",
+      },
+      {
+        "damageClass": "embankment-affected",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "Road to Dhaiali",
+        "department": "Resource",
+        "village": "",
+        "location": "Mechgaon",
+        "coordinate": undefined,
+        "remarks": "Ch. 000 to 2200m,",
+      },
+      {
+        "damageClass": "other",
+        "district": "Charaideo" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "5",
+        "department": "1 No Hologuri",
+        "village": "Women &",
+        "location": "No.1 Sologuri",
+        "coordinate": undefined,
+        "remarks": "27.07528",
+      },
+      {
+        "damageClass": "other",
+        "district": "Charaideo" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "2",
+        "department": "Lakua BPHC",
+        "village": "Health & Family Welfare",
+        "location": "Nahar Habi Gaon",
+        "coordinate": undefined,
+        "remarks": "27.00043 6",
+      },
+      {
+        "damageClass": "other",
+        "district": "Charaideo" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "3",
+        "department": "Singlopathar SC",
+        "village": "Health & Family Welfare",
+        "location": "Sonari Town",
+        "coordinate": undefined,
+        "remarks": "27.028",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "6",
+        "department": "Hindupur sisumukti Lp",
+        "village": "Education Deptt.",
+        "location": "Chalang Pothar FV",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "2.86",
+        "department": "Fishery",
+        "village": "Fishery",
+        "location": "Bosa Gaon",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Agri bund",
+        "village": "Panchayat and Rural Deptt.",
+        "location": "Mahimelia",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "0.056",
+        "department": "Pond",
+        "village": "Fishery",
+        "location": "Buralikson (Khumtai Mouza)",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Golaghat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "0.412",
+        "department": "Fishery/ Pond",
+        "village": "Fishery",
+        "location": "Dakhin Dolijalia",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "4.15",
+        "department": "Nil",
+        "village": "Nil",
+        "location": "Nil",
+        "coordinate": undefined,
+        "remarks": "Nil",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "3",
+        "department": "Charaipani FIS",
+        "village": "Irrigation",
+        "location": "56 no Grant",
+        "coordinate": undefined,
+        "remarks": "26.54756 6",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "0.75",
+        "department": "Nil",
+        "village": "Nil",
+        "location": "Nil",
+        "coordinate": undefined,
+        "remarks": "Nil",
+      },
+      {
+        "damageClass": "other",
+        "district": "Jorhat" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "19.6",
+        "department": "Nil",
+        "village": "Nil",
+        "location": "Nil",
+        "coordinate": undefined,
+        "remarks": "Nil",
+      },
+      {
+        "damageClass": "other",
+        "district": "Lakhimpur" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Hume pipe",
+        "village": "Panchayat and Rural Deptt.",
+        "location": "No1 Dhemagarh",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Lakhimpur" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Earthen road",
+        "village": "Panchayat and Rural Deptt.",
+        "location": "No1 Dhemagarh",
+        "coordinate": undefined,
+        "remarks": "",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "11200",
+        "department": "Weavers Losing",
+        "village": "Handloom",
+        "location": "Santak grant",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "151",
+        "department": "Ponds under mechagarh",
+        "village": "Fishery",
+        "location": "Mechagarh Gohain",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "33",
+        "department": "625 NO.",
+        "village": "Education",
+        "location": "No.3 Khula Grazing",
+        "coordinate": undefined,
+        "remarks": "26.93828",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "85",
+        "department": "153 NO",
+        "village": "Women &",
+        "location": "Banmukh Dihingia",
+        "coordinate": undefined,
+        "remarks": "26.95177",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "17",
+        "department": "DESANGMUKH",
+        "village": "Education",
+        "location": "Lepai",
+        "coordinate": undefined,
+        "remarks": "27.06396",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "39",
+        "department": "PM SHRI 806 NO.",
+        "village": "Education",
+        "location": "Khanikar",
+        "coordinate": undefined,
+        "remarks": "0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "22",
+        "department": "NAMTIDOL PWSS",
+        "village": "PHE",
+        "location": "Namtial",
+        "coordinate": undefined,
+        "remarks": "26.83560 1",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sivasagar" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "11",
+        "department": "PWSS barderoi mes nabeel nopthar lps dhaiali nabeel adarsha majdur lps joradubi mising janajati lps ambari lps",
+        "village": "Education Deptt. Education Deptt. Education Deptt. Education Deptt. Education Deptt.",
+        "location": "Borderoi Nabeel Nabeel Sarugua Gaon Saruderoi",
+        "coordinate": undefined,
+        "remarks": "1 0 0 0 0 0",
+      },
+      {
+        "damageClass": "other",
+        "district": "Sribhumi" as DistrictName,
+        "circle": "" as RevenueCircleName,
+        "name": "1",
+        "department": "Protection bund at Asairghat village road",
+        "village": "Water Resource Deptt.",
+        "location": "Achairghat",
+        "coordinate": undefined,
+        "remarks": "24.49962 3",
+      },
+    ],
+    "statewideTotals": {
+      "districtsAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 7,
+      },
+      "revenueCirclesAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 21,
+      },
+      "villagesAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 551,
+      },
+      "populationAffected": {
+        "kind": "known",
+        "unit": "count",
+        "value": 300031,
+      },
+      "cropAreaSubmerged": {
+        "kind": "known",
+        "unit": "Hect",
+        "value": 21523.08,
+      },
+      "reliefCamps": {
+        "kind": "known",
+        "unit": "count",
+        "value": 71,
+      },
+      "reliefDistributionCentres": {
+        "kind": "known",
+        "unit": "count",
+        "value": 30,
+      },
+      "campInmates": {
+        "kind": "known",
+        "unit": "count",
+        "value": 16567,
+      },
+      "nonCampInmates": {
+        "kind": "known",
+        "unit": "count",
+        "value": 72210,
+      },
+    },
+    "provenance": [
+      {
+        "kind": "rivers-above-danger-level",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "districts-affected",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "revenue-circles-affected",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "villages-affected",
+        "sourcePages": [
+          1,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "population-and-crop-area-submerged",
+        "sourcePages": [
+          1,
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "relief-camps-opened",
+        "sourcePages": [
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "inmates-in-relief-camps",
+        "sourcePages": [
+          2,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "non-camp-inmates",
+        "sourcePages": [
+          2,
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "lives-lost-confirmed",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "lives-lost-missing",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "animals-affected",
+        "sourcePages": [
+          3,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "animals-washed-away",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "houses-damaged",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "houses-damaged-others",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "rescue-operation",
+        "sourcePages": [
+          4,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "relief-distributed",
+        "sourcePages": [
+          5,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "relief-distributed-others",
+        "sourcePages": [
+          5,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-road",
+        "sourcePages": [
+          5,
+          6,
+          7,
+          8,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-bridge",
+        "sourcePages": [
+          9,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-embankment-breached",
+        "sourcePages": [
+          9,
+          10,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-embankment-affected",
+        "sourcePages": [
+          10,
+          11,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "infrastructure-others",
+        "sourcePages": [
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+        ],
+        "confidence": "high",
+      },
+      {
+        "kind": "remarks",
+        "sourcePages": [
+          24,
+          25,
         ],
         "confidence": "high",
       },

@@ -56,8 +56,43 @@ export type SectionTable = {
   readonly rows: readonly LogicalRow[];
 };
 
+/**
+ * Where the table body begins — and, inseparably, how we came to believe it.
+ *
+ * A bare `number` was the bug. `deriveBodyStart` used to return one whether it
+ * had measured the document or substituted a constant, so the caller could not
+ * tell a reading from a guess, and a guess that happened to land right of the
+ * District column produced a bulletin of Remarks prose that every downstream
+ * check called healthy. The number and its provenance are therefore one value,
+ * and the only way to reach the number is to have looked at the `kind`.
+ */
+export type BodyStartDerivation =
+  /** Measured: the pages that show the gutter agree on where the body begins. */
+  | {
+      readonly kind: 'measured';
+      readonly bodyStart: number;
+      /** Pages that voted for this value. */
+      readonly agreeingPages: number;
+      /** Pages that showed a gutter and therefore had a vote to cast. */
+      readonly gutterPages: number;
+    }
+  /** A caller supplied the geometry — a test or a diagnostic, not a reading. */
+  | { readonly kind: 'supplied'; readonly bodyStart: number }
+  /**
+   * Not measurable. `bodyStart` is `FALLBACK_BODY_START`, kept only so the
+   * document can still be assembled and *published as a husk* (ADR-0005:
+   * nothing is deleted or zeroed), never so it can pass for a reading.
+   */
+  | { readonly kind: 'unmeasurable'; readonly bodyStart: number; readonly detail: string };
+
+/** A document reduced to its sections, and the geometry they were cut with. */
+export type AssembledDocument = {
+  readonly bodyStart: BodyStartDerivation;
+  readonly tables: readonly SectionTable[];
+};
+
 export interface SectionAssembler {
-  assemble(runs: readonly TextRun[]): readonly SectionTable[];
+  assemble(runs: readonly TextRun[]): AssembledDocument;
 }
 
 /**
@@ -107,38 +142,130 @@ const ITEMISED_SECTIONS: ReadonlySet<SectionKind> = new Set<SectionKind>([
 const ITEM_CIRCLE_COLUMN = 2;
 const ITEM_DEPARTMENT_COLUMN = 4;
 
-/** Fallback gutter width, used only when the document is too sparse to measure. */
+/**
+ * The gutter width assumed when the document cannot be measured at all.
+ *
+ * Reachable only through `kind: 'unmeasurable'`, which forces the whole
+ * document to `failed`. It exists so an unreadable bulletin can still be
+ * assembled and shown to an operator — the husk is published, not deleted
+ * (ADR-0005) — and for no other purpose. It is not a default.
+ */
 export const FALLBACK_BODY_START = 74;
+
+/**
+ * Clearance below the body's left edge, so a run sitting exactly on it counts
+ * as body. Absorbs the sub-point jitter between pages (76.22 vs 76.2), the same
+ * allowance `bandIndexFor` already makes.
+ */
+const BODY_START_CLEARANCE = 0.5;
+
+/**
+ * How close a page's leftmost ink must be to the document's leftmost ink for
+ * that page to count as showing the Particulars gutter.
+ */
+const GUTTER_ALIGNMENT_TOLERANCE = 0.5;
+
+/** Resolution at which two pages are taken to have voted for the same edge. */
+const VOTE_PRECISION = 10;
+
+const unmeasurable = (detail: string): BodyStartDerivation => ({
+  kind: 'unmeasurable',
+  bodyStart: FALLBACK_BODY_START,
+  detail,
+});
 
 /**
  * Where the table body begins, measured from the document rather than assumed.
  *
- * The Particulars gutter is the leftmost column of every page; the body is the
- * next one. Taken over the union of every run in the document, the gutter is a
- * single connected block of ink — an intra-label gap on one line is closed by a
- * longer label elsewhere — so the body starts at the second band.
- *
- * The channel between the two is NARROW, and how narrow is not ours to choose:
- * DRIMS sizes the Particulars column to its widest label, so the channel is
- * 1.6pt on 2026-07-27, 1.3pt on the 26th, 0.7pt on the 25th, 0.5pt on the 22nd
- * and 0.3pt on the 20th and 21st. The previous 1.5pt threshold found it in one
- * bulletin of six; in the other five the gutter and the body merged into one
- * band and the fallback took over. That was survivable while the fallback
- * happened to land inside the channel and catastrophic when it did not: on the
- * 25th and 26th the fallback sat RIGHT of the District column, so every
- * district name was read as a section label, 21 of 23 sections were never
- * found, and the bulletin still presented as healthy.
- *
- * So the threshold is `DEFAULT_MIN_COLUMN_GAP` — the same 0.2pt the column
+ * The Particulars gutter is the leftmost column of the table; the body is the
+ * next one, and the boundary is the channel of blank paper between them. The
+ * channel is NARROW, and how narrow is not ours to choose: DRIMS sizes the
+ * Particulars column to its widest label, so the channel is 1.6pt on
+ * 2026-07-27, 1.3pt on the 26th, 1.25pt on the 28th and 0.3pt on the 20th. The
+ * threshold is therefore `DEFAULT_MIN_COLUMN_GAP` — the same 0.2pt the column
  * resolver already trusts to separate two columns without splitting a word,
- * whose justification (the widest gap between two runs of one word is 0.1pt)
- * is exactly the justification needed here. Every gap the six bulletins present
- * is at least 0.3pt, and every threshold from 0.05 to 0.5 yields the identical
- * answer on all six: the plateau is wide, not a fitted constant.
+ * whose justification (the widest gap between two runs of one word is 0.1pt) is
+ * exactly the justification needed here.
+ *
+ * WHY PER PAGE, AND BY VOTE. Taking the ink over the whole document at once
+ * asks the channel to be clear on every page simultaneously, and DRIMS does not
+ * guarantee that: a Particulars label wider than its own column overflows to
+ * the right and bridges the channel. On 2026-07-28 the label `Rivers flowing
+ * above Danger Level (as per CWC bulletin issued at 8 AM)` wraps to a line
+ * `CWC bulletin issued at`, 74.5pt of ink in a 37.5pt column, which runs from
+ * 37.80 clean across the channel at 75.26 and merges the gutter into the body.
+ * ONE run out of 7,799 — and the document-wide answer moved from 75.26 to
+ * 114.26, right of the District column, which is the whole failure.
+ *
+ * A page, by contrast, is a complete rendering of both columns, and the pages
+ * are independent witnesses. So each page that shows the gutter votes, and the
+ * plurality wins: on the 28th nine pages say 75.26 and one says 114.26. A page
+ * whose leftmost ink is not the document's leftmost ink is a continuation page
+ * carrying no Particulars label at all — its first band is already table body,
+ * so it abstains rather than voting for a boundary it cannot see.
+ *
+ * WHEN THE PAGES DO NOT AGREE, WE SAY SO. No plurality (no gutter page at all,
+ * or a tie) is `unmeasurable`, not a constant quietly substituted. Every one of
+ * the eleven bulletins has a clear plurality — 9 to 12 agreeing pages against
+ * at most one dissenter — so the loud path is genuinely reserved for documents
+ * we cannot read.
  */
-export const deriveBodyStart = (runs: readonly TextRun[]): number => {
-  const bands = resolveColumns(runs, { minGap: DEFAULT_MIN_COLUMN_GAP });
-  return bands.length >= 2 ? bands[1]!.start - 0.5 : FALLBACK_BODY_START;
+export const deriveBodyStart = (runs: readonly TextRun[]): BodyStartDerivation => {
+  const meaningful = runs.filter((run) => run.str.trim() !== '');
+  if (meaningful.length === 0) return unmeasurable('the document contains no text runs');
+
+  const gutterLeft = Math.min(...meaningful.map((run) => run.x));
+
+  const byPage = new Map<number, TextRun[]>();
+  for (const run of meaningful) {
+    const existing = byPage.get(run.page);
+    if (existing === undefined) byPage.set(run.page, [run]);
+    else existing.push(run);
+  }
+
+  // Bucketed so sub-point jitter between pages does not split one edge into
+  // two candidates; the bucket reports the leftmost edge that fell into it.
+  const votes = new Map<number, { edge: number; pages: number }>();
+  for (const pageRuns of byPage.values()) {
+    const bands = resolveColumns(pageRuns, { minGap: DEFAULT_MIN_COLUMN_GAP });
+    if (bands.length < 2) continue;
+    if (Math.abs(bands[0]!.start - gutterLeft) > GUTTER_ALIGNMENT_TOLERANCE) continue;
+    const edge = bands[1]!.start;
+    const bucket = Math.round(edge * VOTE_PRECISION);
+    const existing = votes.get(bucket);
+    if (existing === undefined) votes.set(bucket, { edge, pages: 1 });
+    else {
+      existing.edge = Math.min(existing.edge, edge);
+      existing.pages += 1;
+    }
+  }
+
+  if (votes.size === 0) {
+    return unmeasurable(
+      `no page shows a Particulars gutter left of a table body (leftmost ink at ` +
+        `${gutterLeft.toFixed(2)}pt across ${byPage.size} page(s))`,
+    );
+  }
+
+  const ranked = [...votes.values()].sort((a, b) => b.pages - a.pages || a.edge - b.edge);
+  const winner = ranked[0]!;
+  const runnerUp = ranked[1];
+  if (runnerUp !== undefined && runnerUp.pages === winner.pages) {
+    return unmeasurable(
+      `the pages disagree about where the table body begins and none has a ` +
+        `plurality: ${ranked
+          .filter((candidate) => candidate.pages === winner.pages)
+          .map((candidate) => `${candidate.edge.toFixed(2)}pt on ${candidate.pages} page(s)`)
+          .join(', ')}`,
+    );
+  }
+
+  return {
+    kind: 'measured',
+    bodyStart: winner.edge - BODY_START_CLEARANCE,
+    agreeingPages: winner.pages,
+    gutterPages: ranked.reduce((total, candidate) => total + candidate.pages, 0),
+  };
 };
 
 const namesSomething = (cell: string): boolean => {
@@ -192,10 +319,18 @@ export const createSectionAssembler = (
 
   return {
     assemble(runs) {
-      const rows = clusterer.cluster(runs);
-      if (rows.length === 0) return [];
+      // Derived before the early returns: "we could not locate the gutter" is
+      // itself the finding, and a document that yields no tables must still be
+      // able to say whether that was because it was empty or because we were
+      // reading it in the wrong place.
+      const derivation: BodyStartDerivation =
+        dependencies.bodyStart === undefined
+          ? deriveBodyStart(runs)
+          : { kind: 'supplied', bodyStart: dependencies.bodyStart };
+      const bodyStart = derivation.bodyStart;
 
-      const bodyStart = dependencies.bodyStart ?? deriveBodyStart(runs);
+      const rows = clusterer.cluster(runs);
+      if (rows.length === 0) return { bodyStart: derivation, tables: [] };
 
       const fragments: LabelFragment[] = [];
       rows.forEach((row, rowIndex) => {
@@ -207,7 +342,7 @@ export const createSectionAssembler = (
       });
 
       const boundaries = recogniser.findBoundaries(fragments);
-      if (boundaries.length === 0) return [];
+      if (boundaries.length === 0) return { bodyStart: derivation, tables: [] };
 
       // A kind printed as two labelled blocks (the revenue-circle count and
       // the revenue-circle table) is one section to us.
@@ -232,7 +367,7 @@ export const createSectionAssembler = (
           return acc;
         }, []);
 
-      return spans.map(({ kind, label, from, to }) => {
+      const tables = spans.map(({ kind, label, from, to }) => {
         const sectionRows = rows.slice(from, to);
         const dataRows = hasHeader(kind)
           ? selectDataRows(sectionRows, bodyStart)
@@ -268,6 +403,8 @@ export const createSectionAssembler = (
           })),
         };
       });
+
+      return { bodyStart: derivation, tables };
     },
   };
 };

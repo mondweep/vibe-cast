@@ -63,6 +63,7 @@ import {
 import {
   applyIntegrityToProvenance,
   checkDocumentIntegrity,
+  type TableGeometry,
 } from './document-integrity';
 import { compoundField, simpleBreakdown } from './inline-breakdown';
 import { reconcileDrims } from './reconciliation';
@@ -71,6 +72,7 @@ import {
   cellAt,
   createSectionAssembler,
   totalRowOf,
+  type BodyStartDerivation,
   type LogicalRow,
   type SectionAssembler,
   type SectionTable,
@@ -672,6 +674,19 @@ const DAMAGE_CLASSES: Partial<Record<SectionKind, DamageClass>> = {
   'infrastructure-others': 'other',
 };
 
+/**
+ * Translate the assembler's account of the geometry into the one question the
+ * document-level check asks: did we measure it, or invent it?
+ *
+ * A `supplied` body start is a caller taking responsibility for the geometry —
+ * a test, or a diagnostic reproducing a known-bad layout — and is not a guess
+ * the parser made. An `unmeasurable` one is, and it fails the document.
+ */
+const geometryOf = (derivation: BodyStartDerivation): TableGeometry =>
+  derivation.kind === 'unmeasurable'
+    ? { kind: 'guessed', detail: derivation.detail }
+    : { kind: 'measured' };
+
 const flatten = (raw: string): string => raw.replace(/\s*\n\s*/g, ' ').trim();
 
 const tighten = (raw: string): string => raw.replace(/\s+/g, '').toLowerCase();
@@ -772,7 +787,7 @@ export const createPdfBulletinSource = (
       }
 
       const bodyRuns = allRuns.filter((run) => !isFurniture(run));
-      const tables = assembler.assemble(bodyRuns);
+      const { bodyStart, tables } = assembler.assemble(bodyRuns);
 
       const draft: Draft = {
         districts: new Map(),
@@ -889,13 +904,21 @@ export const createPdfBulletinSource = (
        * The completeness invariant (see `document-integrity.ts`).
        *
        * It runs on what the parse produced rather than on the PDF, and it runs
-       * last, because the questions it asks — did we find the sections, are
-       * these districts possible, are these names names, is the headline figure
-       * there — can only be asked of a finished report. Reconciliation cannot
-       * ask them: it validates within the sections it found, so it is silent
-       * about the twenty-one it did not.
+       * last, because most of the questions it asks — are these districts
+       * possible, are these names names, is the headline figure there — can
+       * only be asked of a finished report. Reconciliation cannot ask them: it
+       * validates within the sections it found, so it is silent about the
+       * twenty-one it did not.
+       *
+       * The one question that is not about the output is `tableGeometry`: it
+       * asks whether the Particulars gutter was measured or guessed, and it is
+       * the cause the other four detect the symptoms of. It is passed here
+       * rather than acted on at the assembler, because a guessed gutter must
+       * not throw away the parse — the husk is published, marked untrustworthy,
+       * so an operator can see exactly what went wrong (ADR-0005).
        */
       const integrity = checkDocumentIntegrity({
+        tableGeometry: geometryOf(bodyStart),
         recognisedSections: tables.map((table) => table.kind),
         districtNames: districts.map((d) => d.district as string),
         statewidePopulationAffected: draft.statewide.populationAffected,

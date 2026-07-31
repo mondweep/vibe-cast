@@ -17,18 +17,26 @@
  * That is a design gap, not a coding slip: a per-section check can only ever
  * see the sections that exist. The missing invariant is about the document.
  *
- * Four questions are asked here, each of which would independently have caught
+ * Five questions are asked here, each of which would independently have caught
  * that failure:
  *
- *  1. Were the sections found? A DRIMS bulletin always contains the whole
+ *  1. Was the geometry measured, or guessed? Every column band in the document
+ *     is cut relative to the Particulars gutter. If the gutter could not be
+ *     located and a constant was substituted for it, nothing below is evidence
+ *     — and on 2026-07-25 the substituted constant happened to land right of
+ *     the District column, which is precisely how the husk was made. This is
+ *     the *cause* the other four questions detect the *symptoms* of, and it is
+ *     asked first because it is the only one that can be answered before the
+ *     document has been misread.
+ *  2. Were the sections found? A DRIMS bulletin always contains the whole
  *     catalogue. Two of twenty-three is not a bulletin we read.
- *  2. Are the districts possible? Assam has 35 districts. A bulletin naming 46
+ *  3. Are the districts possible? Assam has 35 districts. A bulletin naming 46
  *     has not been read, it has been misread.
- *  3. Are the district *names* names? A district is a proper noun of a couple
+ *  4. Are the district *names* names? A district is a proper noun of a couple
  *     of words. `(Sonari - Additional reports are currently being prepared and
  *     will be submitted tomorrow upon completion.)` is a sentence that reached
  *     the District column because the column was in the wrong place.
- *  4. Is the headline figure there? Statewide population affected is the one
+ *  5. Is the headline figure there? Statewide population affected is the one
  *     number every DRIMS bulletin states. Its absence is not a quiet day.
  *
  * Nothing here drops, zeroes or repairs anything (ADR-0005). A breach does not
@@ -106,10 +114,26 @@ export const minimumRecognisedSections = (): number =>
 
 /** Which invariant a document broke. */
 export type IntegrityCheck =
+  | 'table-geometry-measured'
   | 'sections-recognised'
   | 'district-count-within-assam'
   | 'district-names-are-names'
   | 'statewide-population-present';
+
+/**
+ * Where the geometry the document was cut with came from.
+ *
+ * Deliberately two states and not a number: this module judges the parse, and
+ * what it needs to know about the Particulars gutter is not *where* the parser
+ * put it but *whether the parser found it or invented it*. A guess may happen
+ * to be right; it is never evidence, because nothing distinguishes the run
+ * where it landed inside the channel from the run where it landed right of the
+ * District column. `detail` carries the measurement's own account of why it
+ * failed, so the breach names a cause rather than an alarm.
+ */
+export type TableGeometry =
+  | { readonly kind: 'measured' }
+  | { readonly kind: 'guessed'; readonly detail: string };
 
 /**
  * One broken invariant, with enough detail to be interrogable rather than
@@ -131,6 +155,14 @@ export type DocumentIntegrity = {
 };
 
 export type DocumentIntegrityInput = {
+  /**
+   * Whether the Particulars gutter was measured from the document or guessed.
+   *
+   * Not optional, and deliberately so: a caller that forgets to state it will
+   * not compile, which is the only way a "we guessed" can never again reach
+   * this function as silence.
+   */
+  readonly tableGeometry: TableGeometry;
   /** The section kinds the recogniser actually found, in any order. */
   readonly recognisedSections: readonly SectionKind[];
   /** The district names the parse produced, exactly as they will be published. */
@@ -160,6 +192,20 @@ const abbreviate = (name: string): string =>
  */
 export const checkDocumentIntegrity = (input: DocumentIntegrityInput): DocumentIntegrity => {
   const breaches: IntegrityBreach[] = [];
+
+  if (input.tableGeometry.kind === 'guessed') {
+    breaches.push({
+      check: 'table-geometry-measured',
+      // Every band in every section was cut relative to a number we invented.
+      // A parse whose geometry was guessed is not a degraded parse, it is an
+      // unattributable one: the sections it found may be sound or may be prose,
+      // and nothing in the output tells the two apart.
+      severity: 'failed',
+      detail:
+        'the Particulars gutter was guessed, not measured, so every column band ' +
+        `in the document is unattributable — ${input.tableGeometry.detail}`,
+    });
+  }
 
   const recognised = new Set(input.recognisedSections);
   const missingSections = DRIMS_SECTION_CATALOGUE.filter((kind) => !recognised.has(kind));

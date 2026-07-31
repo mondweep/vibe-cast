@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { DEFAULT_MIN_COLUMN_GAP } from './column-resolver';
 import {
   bodyRowsOf,
   cellAt,
   createSectionAssembler,
   deriveBodyStart,
+  FALLBACK_BODY_START,
   totalRowOf,
   type RowStartPolicy,
 } from './section-assembler';
@@ -40,7 +42,7 @@ describe('SectionAssembler', () => {
     };
 
     const runs = rows.flatMap((r) => r.runs);
-    const tables = createSectionAssembler({ clusterer, recogniser, bodyStart: 74 }).assemble(runs);
+    const tables = createSectionAssembler({ clusterer, recogniser, bodyStart: 74 }).assemble(runs).tables;
 
     expect(clusterer.cluster).toHaveBeenCalledWith(runs);
     expect(recogniser.findBoundaries).toHaveBeenCalledWith([
@@ -70,7 +72,7 @@ describe('SectionAssembler', () => {
       clusterer: clustererReturning(rows),
       recogniser,
       bodyStart: 74,
-    }).assemble(rows.flatMap((r) => r.runs));
+    }).assemble(rows.flatMap((r) => r.runs)).tables;
 
     expect(tables.map((t) => t.rows.map((r) => r.cells))).toEqual([
       [['Charaideo', '8492']],
@@ -98,7 +100,7 @@ describe('SectionAssembler', () => {
       clusterer: clustererReturning(rows),
       recogniser,
       bodyStart: 74,
-    }).assemble(rows.flatMap((r) => r.runs));
+    }).assemble(rows.flatMap((r) => r.runs)).tables;
 
     expect(tables).toHaveLength(1);
     expect(tables[0]!.rows.map((r) => r.cells[0])).toContain('Charaideo');
@@ -120,7 +122,7 @@ describe('SectionAssembler', () => {
       clusterer: clustererReturning(rows),
       recogniser,
       bodyStart: 74,
-    }).assemble(rows.flatMap((r) => r.runs));
+    }).assemble(rows.flatMap((r) => r.runs)).tables;
 
     expect(tables[0]!.sourcePages).toEqual([5, 6]);
     expect(tables[0]!.rows[1]!.pages).toEqual([6]);
@@ -132,7 +134,7 @@ describe('SectionAssembler', () => {
       clusterer: clustererReturning(rows),
       recogniser: { recognise: vi.fn(), findBoundaries: vi.fn(() => []) },
       bodyStart: 74,
-    }).assemble(rows.flatMap((r) => r.runs));
+    }).assemble(rows.flatMap((r) => r.runs)).tables;
     expect(tables).toEqual([]);
   });
 
@@ -140,7 +142,7 @@ describe('SectionAssembler', () => {
     const tables = createSectionAssembler({
       clusterer: clustererReturning([]),
       recogniser: { recognise: vi.fn(), findBoundaries: vi.fn(() => []) },
-    }).assemble([]);
+    }).assemble([]).tables;
     expect(tables).toEqual([]);
   });
 });
@@ -156,7 +158,7 @@ describe('SectionAssembler — logical rows', () => {
         ]),
       },
       bodyStart: 74,
-    }).assemble(rows.flatMap((r) => r.runs))[0]!;
+    }).assemble(rows.flatMap((r) => r.runs)).tables[0]!;
 
   it('joins a continuation line into the row above it', () => {
     const table = assembleRows([
@@ -237,7 +239,7 @@ describe('SectionAssembler — the row-start policy is injectable', () => {
         findBoundaries: vi.fn(() => [{ kind, label: 'l', rowIndex: 0 }]),
       },
       bodyStart: 74,
-    }).assemble(rows.flatMap((r) => r.runs))[0]!;
+    }).assemble(rows.flatMap((r) => r.runs)).tables[0]!;
 
   it('opens a new row per damaged item in the infrastructure tables', () => {
     expect(assembleAs('infrastructure-road').rows.map((r) => r.cells[2])).toEqual([
@@ -266,7 +268,7 @@ describe('SectionAssembler — the row-start policy is injectable', () => {
       },
       rowStartPolicy,
       bodyStart: 74,
-    }).assemble(rows.flatMap((r) => r.runs))[0]!;
+    }).assemble(rows.flatMap((r) => r.runs)).tables[0]!;
 
     expect(rowStartPolicy).toHaveBeenCalled();
     expect(rowStartPolicy.mock.calls[0]![1]).toBe('animals-affected');
@@ -281,12 +283,119 @@ describe('deriveBodyStart', () => {
       run('Rivers flowing above danger level', 76.22, 100, 108.76),
       run('Dhansiri (S)', 270.05, 100, 40),
     ];
-    expect(deriveBodyStart(runs)).toBeCloseTo(75.72, 2);
+    const derived = deriveBodyStart(runs);
+    expect(derived.kind).toBe('measured');
+    expect(derived.bodyStart).toBeCloseTo(75.72, 2);
   });
 
-  it('falls back rather than throwing when the document is a single column', () => {
-    expect(deriveBodyStart([run('only', 36, 100)])).toBe(74);
-    expect(deriveBodyStart([])).toBe(74);
+  it('outvotes the page whose Particulars label overflows across the channel', () => {
+    // The 2026-07-28 shape, reduced to its essentials. The gutter runs from
+    // 36.48 and the body from 75.26 on every page; on page 1 alone the label
+    // line `CWC bulletin issued at` is 74.5pt of ink in a 37.5pt column, so it
+    // starts inside the gutter and ends at 112.30, right across the channel.
+    // Taken over the whole document's ink at once that single run merges the
+    // two columns and the boundary moves to 114.26 — right of the District
+    // column, which is how the husk was made.
+    const gutterPage = (page: number): TextRun[] => [
+      run('Population', 36.48, 100, 36.48, page),
+      run('Charaideo', 75.26, 100, 33.14, page),
+      run('142756', 114.26, 100, 24.48, page),
+    ];
+    const overflowing: TextRun[] = [
+      run('Particulars', 36.48, 120, 35.46, 1),
+      run('CWC bulletin issued at', 37.8, 110, 74.5, 1),
+      run('Rivers flowing above danger', 114.26, 110, 91.71, 1),
+      ...gutterPage(1),
+    ];
+
+    const derived = deriveBodyStart([...overflowing, ...gutterPage(2), ...gutterPage(3)]);
+    expect(derived.kind).toBe('measured');
+    expect(derived.bodyStart).toBeCloseTo(74.76, 2);
+    expect(derived).toMatchObject({ agreeingPages: 2, gutterPages: 3 });
+  });
+
+  it('ignores continuation pages, which carry no Particulars label to measure from', () => {
+    // A page whose leftmost ink is already table body has no opinion about
+    // where the body begins, and must not be allowed to vote for one.
+    const withGutter = (page: number): TextRun[] => [
+      run('Population', 36.48, 100, 36.48, page),
+      run('Charaideo', 75.26, 100, 33.14, page),
+    ];
+    const continuation: TextRun[] = [
+      run('Sivasagar', 143.06, 100, 30.41, 9),
+      run('Nazira', 211.01, 100, 20.53, 9),
+    ];
+
+    const derived = deriveBodyStart([...withGutter(1), ...withGutter(2), ...continuation]);
+    expect(derived).toMatchObject({ kind: 'measured', agreeingPages: 2, gutterPages: 2 });
+  });
+
+  it('says it could not measure a document with no channel at all', () => {
+    // Not "returns 74". The caller is made to look at `kind` before it can
+    // reach a number, and the number it reaches is marked as a guess.
+    const derived = deriveBodyStart([run('only', 36, 100)]);
+    expect(derived.kind).toBe('unmeasurable');
+    expect(derived.bodyStart).toBe(FALLBACK_BODY_START);
+    expect(derived).toMatchObject({ detail: expect.stringContaining('no page shows') });
+  });
+
+  it('says it could not measure an empty document', () => {
+    expect(deriveBodyStart([])).toEqual({
+      kind: 'unmeasurable',
+      bodyStart: FALLBACK_BODY_START,
+      detail: 'the document contains no text runs',
+    });
+  });
+
+  it('refuses to pick a winner when the pages split evenly', () => {
+    // A tie is a document we cannot read, not a document to guess at. The
+    // detail names both candidates so the disagreement is interrogable.
+    const derived = deriveBodyStart([
+      run('Population', 36.48, 100, 36.48, 1),
+      run('Charaideo', 75.26, 100, 33.14, 1),
+      run('Population', 36.48, 100, 36.48, 2),
+      run('Charaideo', 99.5, 100, 33.14, 2),
+    ]);
+    expect(derived.kind).toBe('unmeasurable');
+    expect(derived).toMatchObject({ detail: expect.stringContaining('75.26pt') });
+    expect(derived).toMatchObject({ detail: expect.stringContaining('99.50pt') });
+  });
+
+  it('gives the same answer over a wide range of channel thresholds', () => {
+    // The 1.5pt threshold that caused the original bug was fitted to one
+    // fixture. `DEFAULT_MIN_COLUMN_GAP` is not: the tightest real boundary in
+    // the corpus is 0.3pt and the widest gap inside one word is 0.1pt, so any
+    // threshold strictly between them reads the same document the same way.
+    expect(DEFAULT_MIN_COLUMN_GAP).toBeGreaterThan(0.1);
+    expect(DEFAULT_MIN_COLUMN_GAP).toBeLessThan(0.3);
+  });
+});
+
+describe('SectionAssembler — the geometry it publishes', () => {
+  const emptyRecogniser: SectionRecogniser = {
+    recognise: vi.fn(),
+    findBoundaries: vi.fn(() => []),
+  };
+
+  it('reports a supplied body start as supplied, not as a measurement', () => {
+    const assembled = createSectionAssembler({
+      clusterer: clustererReturning([]),
+      recogniser: emptyRecogniser,
+      bodyStart: 74,
+    }).assemble([]);
+    expect(assembled.bodyStart).toEqual({ kind: 'supplied', bodyStart: 74 });
+  });
+
+  it('reports an unmeasurable document as unmeasurable even when it yields no tables', () => {
+    // The two are different findings and must not look alike: "there was
+    // nothing to read" and "we did not know where to read" are the difference
+    // between an empty bulletin and a misread one.
+    const assembled = createSectionAssembler({
+      clusterer: clustererReturning([]),
+      recogniser: emptyRecogniser,
+    }).assemble([run('only', 36, 100)]);
+    expect(assembled.tables).toEqual([]);
+    expect(assembled.bodyStart.kind).toBe('unmeasurable');
   });
 });
 

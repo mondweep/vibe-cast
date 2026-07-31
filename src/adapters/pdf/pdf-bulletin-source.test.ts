@@ -9,7 +9,12 @@ import {
   type PageTextContent,
   type PdfDocumentLoader,
 } from './pdf-bulletin-source';
-import type { LogicalRow, SectionAssembler, SectionTable } from './section-assembler';
+import type {
+  BodyStartDerivation,
+  LogicalRow,
+  SectionAssembler,
+  SectionTable,
+} from './section-assembler';
 import type { TextRun } from './text-run';
 
 // ---------------------------------------------------------------------------
@@ -41,8 +46,17 @@ const loaderReturning = (pages: readonly PageTextContent[]): PdfDocumentLoader =
   load: vi.fn(async () => pages),
 });
 
-const assemblerReturning = (tables: readonly SectionTable[]): SectionAssembler => ({
-  assemble: vi.fn(() => tables),
+/**
+ * An assembler that hands back fixed tables and, with them, its account of the
+ * geometry it cut them with. The default is `supplied`: these tables did not
+ * come from a measurement at all, and a test about section confidence must not
+ * accidentally be a test about a guessed gutter.
+ */
+const assemblerReturning = (
+  tables: readonly SectionTable[],
+  bodyStart: BodyStartDerivation = { kind: 'supplied', bodyStart: 74 },
+): SectionAssembler => ({
+  assemble: vi.fn(() => ({ bodyStart, tables })),
 });
 
 const table = (
@@ -490,6 +504,47 @@ describe('PdfBulletinSource — the document is judged as well as its sections',
     const report = await sourceWith(
       wholeBulletin([table('animals-affected', [['Charaideo', '3', '1', '1', '1']], [3])]),
     ).parse(bulletin());
+
+    expect(report.provenance.every((p) => p.confidence === 'high')).toBe(true);
+  });
+
+  it('refuses a document whose gutter the assembler could not measure', async () => {
+    // The safety property, isolated from the geometry. This document is
+    // FLAWLESS by every other test in this file — all 23 sections, one real
+    // district, a stated statewide population — and it is refused anyway,
+    // because the assembler said it guessed where the table body begins.
+    // Nothing about the parse has to go visibly wrong for this to fire, which
+    // is the whole point: on 2026-07-25 nothing did.
+    const report = await createPdfBulletinSource({
+      loader: loaderReturning([{ page: 1, runs: mastheadRuns() }]),
+      assembler: assemblerReturning(
+        wholeBulletin([
+          table('population-and-crop-area-submerged', [
+            ['Sivasagar', '1', '1', '1', '332639', '0'],
+            ['Total', '1', '1', '1', '332639', '0'],
+          ]),
+        ]),
+        { kind: 'unmeasurable', bodyStart: 74, detail: 'no page shows a Particulars gutter' },
+      ),
+      hasher: { hash: vi.fn(async () => 'a'.repeat(64)) },
+    }).parse(bulletin());
+
+    expect(report.provenance.every((p) => p.confidence === 'failed')).toBe(true);
+    expect(report.provenance.some((p) => p.confidence === 'high')).toBe(false);
+  });
+
+  it('does not treat a caller-supplied gutter as a guess', async () => {
+    // A test or a diagnostic that supplies the geometry has taken
+    // responsibility for it. Only the parser's own failure to measure is a
+    // breach, or every fixture-driven test would report one.
+    const report = await createPdfBulletinSource({
+      loader: loaderReturning([{ page: 1, runs: mastheadRuns() }]),
+      assembler: assemblerReturning(
+        wholeBulletin([table('animals-affected', [['Charaideo', '3', '1', '1', '1']], [3])]),
+        { kind: 'supplied', bodyStart: 76 },
+      ),
+      hasher: { hash: vi.fn(async () => 'a'.repeat(64)) },
+    }).parse(bulletin());
 
     expect(report.provenance.every((p) => p.confidence === 'high')).toBe(true);
   });

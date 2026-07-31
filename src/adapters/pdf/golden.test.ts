@@ -14,15 +14,21 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { isKnown, valueOf, type Quantity } from '../../domain/shared/quantity';
+import { count, isKnown, valueOf, type Quantity } from '../../domain/shared/quantity';
 import type { FloodSituationReport } from '../../domain/shared/flood-situation-report';
 import {
   ASSAM_DISTRICT_COUNT,
+  checkDocumentIntegrity,
+  describeIntegrity,
   DRIMS_SECTION_CATALOGUE,
   MAX_DISTRICT_NAME_LENGTH,
 } from './document-integrity';
-import { createPdfBulletinSource } from './pdf-bulletin-source';
-import { createSectionAssembler } from './section-assembler';
+import { createPdfBulletinSource, type PageTextContent } from './pdf-bulletin-source';
+import {
+  createSectionAssembler,
+  deriveBodyStart,
+  FALLBACK_BODY_START,
+} from './section-assembler';
 import { createPdfJsLoader, type PdfJsModule } from './pdfjs-loader';
 
 const fixturePath = (stamp: string): string =>
@@ -358,7 +364,7 @@ describe('golden file — Daily_Flood_Report_20260727.pdf', () => {
 // ---------------------------------------------------------------------------
 
 /**
- * Six real bulletins, not one.
+ * Eleven real bulletins, not one.
  *
  * Pinning a single golden file proved to be pinning a single *layout*. DRIMS
  * sizes the Particulars gutter to its widest label, so the channel between the
@@ -367,7 +373,10 @@ describe('golden file — Daily_Flood_Report_20260727.pdf', () => {
  * label on the 25th and 26th, found 2 of 23 sections, invented districts out
  * of Remarks prose — and reported `confidence: high` throughout. One fixture
  * could not have caught that, and no amount of care within one fixture would
- * have.
+ * have. Six did not catch the next one either: 28 July is the bulletin where a
+ * Particulars label overflows its own column and bridges the channel, and it
+ * produced the same husk until the boundary was measured per page and by vote
+ * (see `deriveBodyStart`).
  *
  * So every bulletin we have is parsed here, and each is held to the same five
  * questions the completeness invariant asks. The detailed 27 July assertions
@@ -391,6 +400,24 @@ describe('golden file — Daily_Flood_Report_20260727.pdf', () => {
  * and `districtsAffected` from the `No. of Districts Affected` cell on page 1
  * ("10 Golaghat, Charaideo, Kamrup, Hojai, ..."). Nothing here was taken from
  * parser output, so a parser that agrees is evidence and not a tautology.
+ *
+ * 2026-07-28 had never been read at all — the parser produced a husk with no
+ * statewide totals — so its figures come from nowhere but this transcription:
+ *
+ *   p1  "Total 21"                                    -> revenue circles
+ *   p1  "Total 622"                                   -> villages
+ *   p2  "Total 140672 143687 48280 332639 45341.98"   -> male female children
+ *                                                        POPULATION crop area
+ *   p2  "Total 115 81 34"                             -> total CAMPS centres
+ *   p2  "Total 32477 16116 13840 2445 56 20"          -> CAMP INMATES ...
+ *   p3  "Total 16314 7667 6433 2214 42743 ..."        -> NON-CAMP INMATES ...
+ *   p3  "Total 7 7 0 3 4 0 0 0"                       -> total FLOOD DEATHS
+ *                                                        general drownings ...
+ *
+ * with `7 Sivasagar, Charaideo, Golaghat, Jorhat, Nagaon, Sonitpur, Kamrup (M)`
+ * on page 1 and `Report Generated On: 28-07-2026 09:14 PM` on page 31. Read
+ * them off the printed PDF if you doubt them; that is the point of listing the
+ * rows rather than only the answers.
  */
 type ExpectedBulletin = {
   readonly stamp: string;
@@ -468,6 +495,41 @@ const BULLETINS: readonly ExpectedBulletin[] = [
     districtsNamed: 13,
   },
   {
+    stamp: '20260723',
+    reportDate: '2026-07-23',
+    generatedAt: '23-07-2026 11:45 PM',
+    districtsAffected: 11,
+    revenueCirclesAffected: 37,
+    villagesAffected: 883,
+    populationAffected: 721024,
+    cropAreaSubmerged: 25375.443,
+    reliefCamps: 103,
+    reliefDistributionCentres: 255,
+    campInmates: 24124,
+    nonCampInmates: 239864,
+    floodDeaths: 6,
+    // 11 affected + Darrang and Udalguri reporting zeros, + 3 fragments of
+    // `Karbi Anglong` and `Kamrup (M)` wrapping in the narrow District column
+    // — the same known defect pinned on 20 July below.
+    districtsNamed: 16,
+  },
+  {
+    stamp: '20260724',
+    reportDate: '2026-07-24',
+    generatedAt: '27-07-2026 02:14 PM',
+    districtsAffected: 12,
+    revenueCirclesAffected: 37,
+    villagesAffected: 856,
+    populationAffected: 705148,
+    cropAreaSubmerged: 56606.777,
+    reliefCamps: 96,
+    reliefDistributionCentres: 267,
+    campInmates: 25205,
+    nonCampInmates: 200056,
+    floodDeaths: 14,
+    districtsNamed: 19,
+  },
+  {
     stamp: '20260725',
     reportDate: '2026-07-25',
     generatedAt: '27-07-2026 02:14 PM',
@@ -514,6 +576,59 @@ const BULLETINS: readonly ExpectedBulletin[] = [
     nonCampInmates: 51777,
     floodDeaths: 0,
     districtsNamed: 8,
+  },
+  {
+    // The bulletin that produced a husk: 23 sections demoted, no statewide
+    // totals at all, and 18 "districts" cut out of Remarks prose — because one
+    // Particulars label on page 1 overflows its column and bridges the channel
+    // the gutter is measured by. Every figure here is transcribed above.
+    stamp: '20260728',
+    reportDate: '2026-07-28',
+    generatedAt: '28-07-2026 09:14 PM',
+    districtsAffected: 7,
+    revenueCirclesAffected: 21,
+    villagesAffected: 622,
+    populationAffected: 332639,
+    cropAreaSubmerged: 45341.98,
+    reliefCamps: 81,
+    reliefDistributionCentres: 34,
+    campInmates: 32477,
+    nonCampInmates: 16314,
+    floodDeaths: 7,
+    // 7 affected + Cachar, Dibrugarh and Hojai reporting explicit zeros.
+    districtsNamed: 10,
+  },
+  {
+    stamp: '20260729',
+    reportDate: '2026-07-29',
+    generatedAt: '29-07-2026 09:44 PM',
+    districtsAffected: 7,
+    revenueCirclesAffected: 21,
+    villagesAffected: 551,
+    populationAffected: 300031,
+    cropAreaSubmerged: 21523.08,
+    reliefCamps: 71,
+    reliefDistributionCentres: 30,
+    campInmates: 16567,
+    nonCampInmates: 72210,
+    floodDeaths: 3,
+    districtsNamed: 12,
+  },
+  {
+    stamp: '20260730',
+    reportDate: '2026-07-30',
+    generatedAt: '30-07-2026 08:38 PM',
+    districtsAffected: 8,
+    revenueCirclesAffected: 21,
+    villagesAffected: 437,
+    populationAffected: 212441,
+    cropAreaSubmerged: 17198.09,
+    reliefCamps: 62,
+    reliefDistributionCentres: 50,
+    campInmates: 13294,
+    nonCampInmates: 62289,
+    floodDeaths: 2,
+    districtsNamed: 12,
   },
 ];
 
@@ -642,5 +757,89 @@ describe('a bulletin read with a mislocated Particulars gutter', () => {
       expect(husk.statewideTotals.populationAffected).toEqual({ kind: 'unknown', unit: 'count' });
       expect(husk.districts.some((d) => d.district.length > MAX_DISTRICT_NAME_LENGTH)).toBe(true);
     });
+  });
+});
+
+/**
+ * A bulletin whose geometry genuinely cannot be measured.
+ *
+ * The block above supplies a *wrong* gutter and shows the wreckage is refused.
+ * This one supplies none: the document is fed to the real derivation, which
+ * genuinely finds no channel, and the question is whether that fact travels.
+ * Before the fix it did not — `deriveBodyStart` substituted `FALLBACK_BODY_START`
+ * and returned a bare `number`, so "measured 75.26" and "guessed 74" were the
+ * same value to everything downstream, and which of the two you had was the
+ * difference between the 27 July parse and the 28 July husk.
+ *
+ * The document is a real bulletin with every run widened past its neighbour, so
+ * the ink is one connected block on every page and no vertical channel exists
+ * anywhere. That is not a contrived shape: it is exactly what one overflowing
+ * `CWC bulletin issued at` did to 28 July, taken to its limit.
+ */
+describe('a bulletin whose Particulars gutter cannot be measured at all', () => {
+  const FLOOD_THE_PAGE = 400;
+
+  /** The same fixture, with no blank vertical strip left anywhere on any page. */
+  const inkFlooded = async (stamp: string): Promise<readonly PageTextContent[]> => {
+    const pdfjs = (await import('pdfjs-dist/legacy/build/pdf.mjs')) as unknown as PdfJsModule;
+    const bytes = await readFile(fixturePath(stamp));
+    const pages = await createPdfJsLoader(pdfjs).load(
+      new Blob([new Uint8Array(bytes)], { type: 'application/pdf' }),
+    );
+    return pages.map((page) => ({
+      page: page.page,
+      runs: page.runs.map((run) => ({ ...run, width: Math.max(run.width, FLOOD_THE_PAGE) })),
+    }));
+  };
+
+  let pages: readonly PageTextContent[];
+  let report: FloodSituationReport;
+
+  beforeAll(async () => {
+    pages = await inkFlooded('20260728');
+    report = await createPdfBulletinSource({ loader: { load: async () => pages } }).parse(
+      new Blob([new Uint8Array(await readFile(fixturePath('20260728')))], {
+        type: 'application/pdf',
+      }),
+    );
+  }, 60_000);
+
+  it('says it could not measure the gutter, and says why', () => {
+    // A typed outcome, not a number. There is no way to read the fallback
+    // without having read the `kind` that condemns it.
+    const derivation = deriveBodyStart(
+      pages.flatMap((page) => page.runs.map((run) => ({ ...run, page: page.page }))),
+    );
+    expect(derivation.kind).toBe('unmeasurable');
+    expect(derivation.bodyStart).toBe(FALLBACK_BODY_START);
+    expect(derivation).toMatchObject({
+      detail: expect.stringContaining('no page shows a Particulars gutter'),
+    });
+  });
+
+  it('refuses the document rather than publishing the fallback as a reading', () => {
+    expect(report.provenance).toHaveLength(DRIMS_SECTION_CATALOGUE.length);
+    expect(report.provenance.some((p) => p.confidence === 'high')).toBe(false);
+    expect(report.provenance.every((p) => p.confidence === 'failed')).toBe(true);
+  });
+
+  it('names the geometry as the cause, above and beyond the symptoms', () => {
+    // The integrity verdict, taken directly: the breach is about the *cause*,
+    // and it carries the measurement's own account of the failure. A document
+    // that read perfectly on a guessed gutter would still be refused by it.
+    const integrity = checkDocumentIntegrity({
+      tableGeometry: { kind: 'guessed', detail: 'no page shows a Particulars gutter' },
+      recognisedSections: DRIMS_SECTION_CATALOGUE,
+      districtNames: ['Sivasagar'],
+      statewidePopulationAffected: count(332639),
+    });
+    expect(integrity.confidence).toBe('failed');
+    expect(describeIntegrity(integrity)).toContain('[table-geometry-measured]');
+    expect(describeIntegrity(integrity)).toContain('no page shows a Particulars gutter');
+  });
+
+  it('keeps whatever it read, rather than deleting it (ADR-0005)', () => {
+    expect(report.reportDate).toBe('2026-07-28');
+    expect(report.statewideTotals.populationAffected).toEqual({ kind: 'unknown', unit: 'count' });
   });
 });

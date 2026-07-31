@@ -11,7 +11,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { count, unknownCount } from '../../domain/shared/quantity';
-import type { SectionKind } from '../../domain/shared/flood-situation-report';
+import type { ExtractionConfidence, SectionKind } from '../../domain/shared/flood-situation-report';
 import {
   applyIntegrityToProvenance,
   ASSAM_DISTRICT_COUNT,
@@ -25,6 +25,7 @@ import {
 
 /** A document that breaks nothing: the 2026-07-27 shape. */
 const healthy = {
+  tableGeometry: { kind: 'measured' } as const,
   recognisedSections: DRIMS_SECTION_CATALOGUE,
   districtNames: ['Sivasagar', 'Golaghat', 'Charaideo', 'Jorhat', 'Nagaon', 'Kamrup (M)'],
   statewidePopulationAffected: count(445495),
@@ -49,6 +50,61 @@ describe('checkDocumentIntegrity', () => {
     expect(integrity.confidence).toBe('high');
     expect(integrity.breaches).toEqual([]);
     expect(integrity.missingSections).toEqual([]);
+  });
+
+  describe('was the geometry measured, or guessed?', () => {
+    it('fails a document whose Particulars gutter was guessed, however well it read', () => {
+      // Everything else about this document is perfect: all 23 sections, six
+      // real district names, a stated population. It is still refused, because
+      // every band in it was cut relative to a number nobody measured. This is
+      // the assertion the whole fix exists for — it holds whatever the parse
+      // happened to produce, so it does not depend on the geometry fix
+      // generalising to the next bulletin DRIMS ships.
+      const integrity = checkDocumentIntegrity({
+        ...healthy,
+        tableGeometry: { kind: 'guessed', detail: 'the document contains no text runs' },
+      });
+      expect(integrity.confidence).toBe('failed');
+      expect(integrity.breaches.map((b) => b.check)).toContain('table-geometry-measured');
+    });
+
+    it('carries the measurement’s own reason through, so the breach names a cause', () => {
+      const integrity = checkDocumentIntegrity({
+        ...healthy,
+        tableGeometry: {
+          kind: 'guessed',
+          detail: 'the pages disagree about where the table body begins',
+        },
+      });
+      const breach = integrity.breaches.find((b) => b.check === 'table-geometry-measured')!;
+      expect(breach.severity).toBe('failed');
+      expect(breach.detail).toContain('the pages disagree about where the table body begins');
+      expect(breach.detail).toContain('guessed, not measured');
+    });
+
+    it('says nothing when the geometry was measured', () => {
+      expect(checkDocumentIntegrity(healthy).breaches).toEqual([]);
+    });
+
+    it('demotes every section of a guessed-geometry document, including clean ones', () => {
+      // The end of the silent-substitution path: a guess can no longer present
+      // as a clean read anywhere downstream.
+      const integrity = checkDocumentIntegrity({
+        ...healthy,
+        tableGeometry: { kind: 'guessed', detail: 'why' },
+      });
+      const published = applyIntegrityToProvenance(
+        DRIMS_SECTION_CATALOGUE.map((kind) => ({
+          kind,
+          sourcePages: [1],
+          confidence: 'high' as ExtractionConfidence,
+        })),
+        integrity,
+        (kind) => ({ kind, sourcePages: [], confidence: 'failed' }),
+      );
+      expect(published.some((p) => p.confidence === 'high')).toBe(false);
+      expect(published.every((p) => p.confidence === 'failed')).toBe(true);
+    });
   });
 
   describe('were the sections found?', () => {
@@ -202,6 +258,7 @@ describe('checkDocumentIntegrity', () => {
   it('reports every broken invariant, not merely the first', () => {
     // 26 July broke three at once. Fixing one of them must not silence the rest.
     const integrity = checkDocumentIntegrity({
+      tableGeometry: { kind: 'guessed', detail: 'no page shows a Particulars gutter' },
       recognisedSections: HUSK_SECTIONS,
       districtNames: [...Array.from({ length: 45 }, (_, i) => `D${i}`), REMARKS_PROSE],
       statewidePopulationAffected: unknownCount(),
@@ -211,6 +268,7 @@ describe('checkDocumentIntegrity', () => {
       'district-names-are-names',
       'sections-recognised',
       'statewide-population-present',
+      'table-geometry-measured',
     ]);
     expect(integrity.confidence).toBe('failed');
   });

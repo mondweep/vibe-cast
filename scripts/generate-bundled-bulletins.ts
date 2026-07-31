@@ -48,6 +48,7 @@
  */
 
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { readdirSync } from 'node:fs';
 import path from 'node:path';
 
 import type { FloodSituationReport } from '../src/domain/shared/flood-situation-report';
@@ -67,16 +68,37 @@ const GENERATED = path.join(ROOT, 'src', 'generated');
  *
  * The **last** entry is the eager one. The rest are the archive.
  */
-export const BUNDLED_STAMPS = [
-  '20260720',
-  '20260721',
-  '20260722',
-  '20260723',
-  '20260724',
-  '20260725',
-  '20260726',
-  '20260727',
-] as const;
+export const BUNDLED_STAMPS: readonly string[] = discoverBundledStamps();
+
+/**
+ * Read the fixture directory rather than hold a list.
+ *
+ * A hard-coded list silently broke the whole ingestion chain: the Drive sync
+ * would download a new bulletin, this generator would ignore it, the tests and
+ * the build would pass, and CI would commit a change that altered nothing. The
+ * deployed console would sit unchanged while every signal said success — the
+ * worst shape of failure, and the one this project has already been bitten by
+ * once in the parser.
+ *
+ * Discovery makes "what is in fixtures/" and "what the console ships" the same
+ * statement by construction, so they cannot drift.
+ */
+function discoverBundledStamps(): readonly string[] {
+  const dir = path.join(ROOT, 'fixtures');
+  const stamps = readdirSync(dir)
+    .map((name) => /^Daily_Flood_Report_(\d{8})\.pdf$/.exec(name)?.[1])
+    .filter((stamp): stamp is string => stamp !== undefined)
+    .sort();
+
+  if (stamps.length === 0) {
+    throw new Error(
+      `No Daily_Flood_Report_YYYYMMDD.pdf files found in ${dir}. The console ships ` +
+        'its archive from these, so generating an empty one would quietly strip the ' +
+        'history from the deployed site.',
+    );
+  }
+  return stamps;
+}
 
 const fixtureFor = (stamp: string): string =>
   path.join(ROOT, 'fixtures', `Daily_Flood_Report_${stamp}.pdf`);
