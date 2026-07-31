@@ -1,7 +1,7 @@
 /**
  * How old is what you are looking at?
  *
- * The console ships with an archive of eight real ASDMA bulletins, 20 to 27
+ * The console ships with an archive of eleven real ASDMA bulletins, 20 to 30
  * July 2026, so an officer sees genuine history before they have loaded
  * anything. That convenience carries a real hazard: months later the same
  * screen appears, with the same layout and the same confident figures, and

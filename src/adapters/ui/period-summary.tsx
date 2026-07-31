@@ -165,7 +165,7 @@ const CompletenessMark = ({ figure }: { readonly figure: PeriodFigureViewModel }
 
 export const PeriodSummary = ({ summary, archive }: PeriodSummaryProps) => {
   const { coverage, cumulative, peaks } = summary;
-  // While the bundled archive is in flight the console is about to hold eight
+  // While the bundled archive is in flight the console is about to hold eleven
   // bulletins, so telling the officer to go and find earlier PDFs would be
   // advice it retracts on its own a moment later.
   const loading = archive?.status === 'loading';

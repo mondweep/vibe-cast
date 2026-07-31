@@ -17,10 +17,10 @@
  * The console opens on real history
  * ---------------------------------------------------------------------------
  *
- * It ships with **eight consecutive real ASDMA Daily Flood Reports**, 20 to 27
+ * It ships with **eleven consecutive real ASDMA Daily Flood Reports**, 20 to 30
  * July 2026, parsed at build time. Not a mock, not a demonstration dataset: the
  * same PDFs DRIMS published, read by the same parser that reads the officer's.
- * So a link to this console opens on a working seven-day trend, a real
+ * So a link to this console opens on a working ten-day trend, a real
  * cumulative death toll and a real peak — no fetch, no pdf.js, no empty state
  * the recipient has to populate before the product does anything (NFR-3,
  * NFR-5, NFR-6).
@@ -29,12 +29,12 @@
  *
  *  - the **newest** bulletin is eager, in the entry chunk, so the console
  *    renders with figures immediately;
- *  - the **seven older** ones are behind the `import()` in
+ *  - the **ten older** ones are behind the `import()` in
  *    `generated/bundled-bulletins`, so they cost first paint nothing and arrive
  *    a moment later.
  *
  * That gap is a state, not a detail to be smoothed over. Between paint and
- * arrival the console genuinely holds one bulletin and is about to hold eight,
+ * arrival the console genuinely holds one bulletin and is about to hold eleven,
  * and it says so — `archiveStatus: 'loading'` reaches the Trend and Cumulative
  * & Peak views, which announce the wait rather than reporting a bulletin count
  * they are about to change under the reader. A console that silently corrects
@@ -110,7 +110,7 @@ export type AppProps = {
   /** Overridden only by tests, which assert which domain services were asked. */
   readonly mappingDependencies?: MappingDependencies;
   /**
-   * Fetches the seven historical bulletins. Injected so a test can hold the
+   * Fetches the ten historical bulletins. Injected so a test can hold the
    * console in its loading state, or fail the load, without a real chunk
    * fetch — both are states an officer can be in and neither may be guessed at.
    */

@@ -266,7 +266,7 @@ export const TrendView = ({
         {/*
           * Suppressed while the archive is in flight. Announcing "1 bulletin
           * loaded — load an earlier DRIMS PDF to compare" and then replacing it
-          * with an eight-day chart a moment later would be a lie the console
+          * with an eleven-day chart a moment later would be a lie the console
           * corrects on its own, which is worse than a wait it admits to.
           */}
         {bulletinCount < 2 && archive?.status !== 'loading' ? (

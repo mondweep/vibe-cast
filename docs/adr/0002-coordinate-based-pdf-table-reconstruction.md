@@ -78,6 +78,60 @@ PDF → [1] TextRunExtractor    → positioned runs {str, x, y, width, height, p
 > the known number of districts in Assam. Reconciliation was necessary and is
 > not sufficient.
 
+> ⚠ **Amended again, 2026-07-31. The 28 July bulletin produced the same husk.
+> The amendment above caught it — the document was refused, and never reached
+> the screen — but the cause lay a layer below: a fallback that was allowed to
+> be silent.**
+>
+> `deriveBodyStart` returned a bare `number`. When it could not locate the
+> Particulars gutter it substituted `FALLBACK_BODY_START` and returned that,
+> indistinguishable in type and in value from a measurement. Whether the
+> constant happened to land *inside* the gutter channel or *right of the
+> District column* was the difference between a correct parse and a bulletin of
+> Remarks prose — and nothing downstream could tell which had happened. It is
+> the same defect class as the one above, one stage earlier: not "we compared
+> the wrong things" but "we answered a question we could not answer".
+>
+> **First correction — the fallback is loud.** Table geometry is now a typed
+> outcome (`BodyStartDerivation`: `measured` | `supplied` | `unmeasurable`) and
+> the number cannot be reached without reading the discriminant that qualifies
+> it. `unmeasurable` still carries `FALLBACK_BODY_START`, because ADR-0005 says
+> the husk is published rather than deleted — but it travels into
+> `checkDocumentIntegrity` as a fifth invariant (`table-geometry-measured`,
+> severity `failed`), so a guessed gutter refuses the document *whatever the
+> parse happened to produce*. A document that read all 23 sections perfectly on
+> a guessed gutter is still refused. That property holds independently of
+> whether the geometry fix below generalises to the next layout DRIMS ships,
+> which is exactly why it was built first.
+>
+> **Second correction — the gutter is measured per page, by vote.** Taking the
+> ink over the whole document at once requires the gutter/body channel to be
+> clear on *every page simultaneously*, and DRIMS does not guarantee that: a
+> Particulars label wider than its own column overflows to the right and bridges
+> the channel. On 28 July the label line `CWC bulletin issued at` is 74.5pt of
+> ink in a 37.5pt column; it starts at x=37.80, inside the gutter, and ends at
+> 112.30, well right of the channel at 75.26. That **one run out of 7,799**
+> merged the two columns and moved the document-wide boundary to 114.26 — right
+> of the District column, which is the whole failure.
+>
+> A page, by contrast, is a complete rendering of both columns, and pages are
+> independent witnesses. Each page whose leftmost ink is the document's leftmost
+> ink casts one vote; continuation pages, which carry no Particulars label at
+> all, abstain rather than voting for a boundary they cannot see. The plurality
+> wins — nine pages to one on 28 July — and no plurality (no gutter page at all,
+> or a tie) is `unmeasurable` rather than a constant quietly substituted.
+>
+> No threshold was tuned to achieve this. The channel threshold remains
+> `DEFAULT_MIN_COLUMN_GAP` (0.2pt), and every value from 0.02 to 0.3 yields
+> byte-identical output on all eleven bulletins — a plateau an order of
+> magnitude wide, bounded below by the 0.1pt gap inside a single word and above
+> by the 0.3pt narrowest real column boundary in the corpus.
+>
+> **The general lesson:** a geometric feature that must hold across an entire
+> document is only as robust as its worst line. Measuring it on independent
+> witnesses and taking the consensus is not a heuristic bolted on top; it is the
+> honest reading of a document whose renderer does not respect its own cells.
+
 ## Consequences
 
 **Positive**

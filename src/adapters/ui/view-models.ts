@@ -457,7 +457,7 @@ export type PeriodCoverageViewModel = {
   readonly fromDate: string | undefined;
   readonly toDate: string | undefined;
   readonly missingDates: readonly string[];
-  /** "6 bulletins, 2026-07-20 to 2026-07-27, 2 days missing (…)". */
+  /** "11 bulletins, 2026-07-20 to 2026-07-30, no days missing". */
   readonly description: string;
 };
 
@@ -507,10 +507,10 @@ export const PERIOD_COMPLETENESS_LABELS: Record<PeriodCompleteness, string> = {
 /**
  * How much of the console's own bulletin archive has arrived.
  *
- * The console ships with eight consecutive real ASDMA bulletins. Only the
- * newest is in the entry chunk; the other seven are fetched immediately after
+ * The console ships with eleven consecutive real ASDMA bulletins. Only the
+ * newest is in the entry chunk; the other ten are fetched immediately after
  * first paint, so there is a short window in which the console holds one
- * bulletin and is about to hold eight (NFR-4).
+ * bulletin and is about to hold eleven (NFR-4).
  *
  * That window has to be *said*, not papered over. Rendering "1 bulletin loaded
  * — load an earlier PDF to compare" and then silently replacing it a moment
@@ -518,7 +518,7 @@ export const PERIOD_COMPLETENESS_LABELS: Record<PeriodCompleteness, string> = {
  * unreliable. So `loading` is a state the views draw, in words.
  *
  *  - `loading`     the archive chunk is in flight
- *  - `ready`       all eight are in the timeline
+ *  - `ready`       all eleven are in the timeline
  *  - `unavailable` the fetch failed; the console says so and carries on with
  *                  the one bulletin it has, rather than pretending to history
  *  - `cleared`     the officer asked for their own bulletins only

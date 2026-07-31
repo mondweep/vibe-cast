@@ -121,10 +121,10 @@ describe('ConsoleApp', () => {
         archive={{
           status: 'ready',
           fromDate: '2026-07-20',
-          toDate: '2026-07-27',
-          bundledCount: 8,
+          toDate: '2026-07-30',
+          bundledCount: 11,
           pendingCount: 0,
-          contributingCount: 8,
+          contributingCount: 11,
           onClear,
         }}
       />,

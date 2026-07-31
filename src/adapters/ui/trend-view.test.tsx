@@ -168,10 +168,10 @@ describe('TrendView — the bundled archive on the chart', () => {
   const archive = (overrides = {}) => ({
     status: 'ready' as const,
     fromDate: '2026-07-20',
-    toDate: '2026-07-27',
-    bundledCount: 8,
+    toDate: '2026-07-30',
+    bundledCount: 11,
     pendingCount: 0,
-    contributingCount: 8,
+    contributingCount: 11,
     ...overrides,
   });
 
@@ -184,7 +184,7 @@ describe('TrendView — the bundled archive on the chart', () => {
     // It is real ASDMA data, so the trend is genuine — that has to be said too,
     // or the officer will discount a line they should trust.
     expect(note.textContent).toMatch(/real ASDMA Daily Flood Reports/);
-    expect(note.textContent).toMatch(/20 July 2026 to 27 July 2026/);
+    expect(note.textContent).toMatch(/20 July 2026 to 30 July 2026/);
     // And the supersession rule, because it is the thing they can act on.
     expect(note.textContent).toMatch(/your own copy supersedes the bundled one/);
   });
@@ -219,17 +219,17 @@ describe('TrendView — the bundled archive on the chart', () => {
 
   it('says the history is loading rather than reporting a count it is about to change', () => {
     // The defect this prevents: "1 bulletin held — load an earlier DRIMS PDF to
-    // compare" flashing up and being silently replaced by an eight-day chart a
+    // compare" flashing up and being silently replaced by an eleven-day chart a
     // moment later.
     renderTrend({
       bulletinCount: 1,
-      archive: archive({ status: 'loading', pendingCount: 7, contributingCount: 1 }),
+      archive: archive({ status: 'loading', pendingCount: 10, contributingCount: 1 }),
     });
 
     const note = screen.getByTestId('trend-archive-loading');
     expect(note.textContent).toMatch(/Loading the bundled history/);
-    expect(note.textContent).toMatch(/7 more real ASDMA bulletins/);
-    expect(note.textContent).toMatch(/20 July 2026 to 27 July 2026/);
+    expect(note.textContent).toMatch(/10 more real ASDMA bulletins/);
+    expect(note.textContent).toMatch(/20 July 2026 to 30 July 2026/);
     expect(screen.queryByText(/1 bulletin held/)).toBeNull();
   });
 
@@ -241,7 +241,9 @@ describe('TrendView — the bundled archive on the chart', () => {
 
     const note = screen.getByTestId('trend-archive-unavailable');
     expect(note.textContent).toMatch(/could not be loaded/);
-    expect(note.textContent).toMatch(/27 July 2026/);
+    // The newest bundled day, which is the one bulletin the entry chunk carries
+    // and therefore the only one still on the chart when the fetch fails.
+    expect(note.textContent).toMatch(/30 July 2026/);
     expect(note.textContent).toMatch(/nothing here is estimated to fill the gap/);
     // And the honest count is restored: it really does hold one bulletin now.
     expect(screen.getByText(/1 bulletin held/)).toBeTruthy();

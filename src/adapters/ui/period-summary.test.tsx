@@ -16,10 +16,10 @@ const anArchive = (
 ): BundledArchiveViewModel => ({
   status: 'ready',
   fromDate: '2026-07-20',
-  toDate: '2026-07-27',
-  bundledCount: 8,
+  toDate: '2026-07-30',
+  bundledCount: 11,
   pendingCount: 0,
-  contributingCount: 8,
+  contributingCount: 11,
   ...overrides,
 });
 
@@ -213,7 +213,7 @@ describe('PeriodSummary — the bundled archive', () => {
     expect(note.textContent).toMatch(/6 of these/);
     expect(note.textContent).toMatch(/came with the console/);
     expect(note.textContent).toMatch(/real ASDMA Daily Flood Reports/);
-    expect(note.textContent).toMatch(/20 July 2026 to 27 July 2026/);
+    expect(note.textContent).toMatch(/20 July 2026 to 30 July 2026/);
   });
 
   it('says nothing once the officer’s own bulletins have superseded every bundled day', () => {
@@ -231,12 +231,12 @@ describe('PeriodSummary — the bundled archive', () => {
   it('warns that these totals are about to change while the history is still loading', () => {
     renderSummary(
       { ...periodSummaryFixture, coverage: { ...periodSummaryFixture.coverage, bulletinCount: 1 } },
-      anArchive({ status: 'loading', pendingCount: 7, contributingCount: 1 }),
+      anArchive({ status: 'loading', pendingCount: 10, contributingCount: 1 }),
     );
 
     const note = screen.getByTestId('period-archive-loading');
     expect(note.textContent).toMatch(/Loading the bundled history/);
-    expect(note.textContent).toMatch(/7 more real ASDMA bulletins/);
+    expect(note.textContent).toMatch(/10 more real ASDMA bulletins/);
     expect(note.textContent).toMatch(/do not quote these totals until it says otherwise/i);
   });
 
@@ -245,7 +245,7 @@ describe('PeriodSummary — the bundled archive', () => {
     // wait it is trying to fill.
     renderSummary(
       { ...periodSummaryFixture, coverage: { ...periodSummaryFixture.coverage, bulletinCount: 1 } },
-      anArchive({ status: 'loading', pendingCount: 7, contributingCount: 1 }),
+      anArchive({ status: 'loading', pendingCount: 10, contributingCount: 1 }),
     );
 
     expect(screen.queryByText(/load earlier DRIMS PDFs to accumulate/)).toBeNull();
