@@ -159,7 +159,11 @@ Assuming this codebase as the starting point:
 
 **Roughly 70% of the total effort is PDF extraction and its hardening.** Everything downstream is comparatively straightforward. Any plan that under-weights extraction will slip.
 
-The single highest-value next step is **acquiring 5–10 bulletins from different dates** — including a low-water day and a peak-flood day — and running the parser against all of them. One bulletin proves the approach; ten prove it survives contact with reality. Layout drift, sections that appear only during severe events, and districts that report differently from one another are all invisible with a sample of one.
+The single highest-value next step was **acquiring 5–10 bulletins from different dates** — including a low-water day and a peak-flood day — and running the parser against all of them. One bulletin proves the approach; ten prove it survives contact with reality.
+
+**This has since been done, and the estimate above was right for the wrong reason.** Thirteen consecutive bulletins (20 July – 1 August 2026) are now in `fixtures/` and all thirteen ship pre-parsed. Every parser defect of consequence found so far was invisible at a sample of one — but none of them was layout drift between *severe* and *quiet* days, which is what this paragraph predicted. They were all the same shape instead: **a column gets narrower and something the parser assumed about geometry stops being true.** A gutter threshold fitted to one bulletin; a District name wrapped mid-word when the column tightened; an unnamed block whose column bands were measured together with its neighbour's. The variable that matters is not how bad the flood is, it is how long the longest section label is that day.
+
+The corollary is the useful part: a bulletin count is not coverage. What made the difference was checks that state what the answer must *look like* — 23 sections present, districts within Assam, names that are names — rather than checks that compare two things the parser produced. See ADR-0002.
 
 ---
 

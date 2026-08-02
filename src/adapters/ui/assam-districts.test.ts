@@ -75,68 +75,61 @@ describe('the bundled Assam District boundaries', () => {
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
   });
 
-  it('places every District of the real bundled 30 July bulletin bar the wrapped one', () => {
-    // The reconciliation that matters, run against the shipped 2026-07-30
+  it('places every District of the real bundled 1 August bulletin bar Bajali', () => {
+    // The reconciliation that matters, run against the shipped 2026-08-01
     // bulletin — the newest the console holds, and therefore the one the
     // choropleth is actually drawn from — rather than a fixture.
     //
-    // Twelve Districts are named: the eight ASDMA lists as affected (page 1:
-    // "8 Golaghat, Sivasagar, Biswanath, Charaideo, Kamrup (M), Jorhat,
-    // Dhemaji, Nagaon") plus four more that appear in the later tables
-    // reporting explicit zeros. Eleven find a polygon — ten match by name and
-    // `Kamrup (M)` needs the alias table.
+    // Twelve Districts are named. Eleven find a polygon; the twelfth is
+    // `Bajali`, and unlike every name that used to fail here it is not a
+    // parser defect. Bajali is a real District, carved out of Barpeta in 2020,
+    // and the boundary data is Census 2011 — so there is no polygon for it and
+    // there cannot be one until the boundary set is replaced.
     //
-    // The twelfth is `Bongaigao n`, and it is not a District: it is the known
-    // name-wrapping defect described at length below, reaching the newest
-    // bundled bulletin for the first time. It is pinned by name here so that a
-    // *different* unplaceable name — a real District the alias table has never
-    // seen — still fails this test loudly rather than vanishing from the map.
+    // It is deliberately NOT aliased to Barpeta. Bajali sits inside the old
+    // Barpeta polygon, so shading Barpeta would claim a flood across an area
+    // several times the one that reported it, under the name of a District that
+    // reported nothing — and if Barpeta ever reports on the same day, two rows
+    // would land on one polygon. That is the `Kamrup`/`Kamrup (M)` trap in
+    // another costume: a wrong answer where a missing one was available. The
+    // map names it under "the boundary data has no polygon for them" and its
+    // figures stay in every table and ranking.
     const reported = NEWEST_BUNDLED_BULLETIN.districts.map((d) => String(d.district));
     expect(reported).toHaveLength(12);
-    expect(reported).toContain('Kamrup (M)');
 
     const unplaced = reported.filter((name) => boundaryFor(name) === undefined);
-    expect(unplaced).toEqual(['Bongaigao n']);
+    expect(unplaced).toEqual(['Bajali']);
 
-    // And each of the eleven real ones lands on a different polygon — no two
+    // And each of the eleven placed ones lands on a different polygon — no two
     // bulletin rows collapse onto one District.
     const placed = reported
       .filter((name) => boundaryFor(name) !== undefined)
       .map((name) => boundaryFor(name)?.district);
     expect(placed).toHaveLength(11);
     expect(new Set(placed).size).toBe(placed.length);
-    expect(placed).toContain('Kamrup Metropolitan');
   });
 
   it('places every District of the archive that the parser reads as a District', () => {
-    // The archive is ten more days of real bulletins, and 20 July alone names
-    // 23 Districts — nearly twice the newest day's twelve. A name the alias
-    // table cannot place would vanish from the choropleth, so all eleven days
-    // are checked, not just the one the console anchors on.
+    // The archive is twelve more days of real bulletins, and 20 July alone
+    // names 18 Districts. A name the alias table cannot place vanishes from the
+    // choropleth, so all thirteen days are checked, not just the one the
+    // console anchors on.
     //
-    // KNOWN DEFECT, pre-existing and outside this change: on five of the eleven
-    // bulletins the column reader splits a District name that ASDMA wrapped
-    // across two lines in the PDF. "Karbi Anglong" arrives as "Karbi" and
-    // "Anglong"; "Bongaigaon" as "Bongaigao n", or as "Bongaigao" and "n";
-    // "Kamrup (M)" loses its stem and leaves "(M)". Those fragments are not
-    // Districts and no polygon exists for them.
+    // This list used to hold sixteen entries across five days, and every one of
+    // them was half a District. DRIMS wraps a name inside the word when the
+    // column is narrow, and the parser published each half separately: "Karbi
+    // Anglong" as `Karbi` and `Anglong`, "Bongaigaon" as `Bongaigao n` or as
+    // `Bongaigao` and `n`, "Kamrup (M)" as a stemless `(M)`. It was pinned here
+    // for three iterations as cosmetic, on the reasoning that the archived days
+    // only contribute statewide totals. That reasoning expired on 31 July, when
+    // the same defect fragmented nine names at once, produced 47 Districts in a
+    // state that has 35, and the integrity check refused the bulletin whole.
+    // The names are put back together in `src/adapters/pdf/wrapped-district-name.ts`
+    // now, on evidence rather than geometry, so none of the sixteen survives.
     //
-    // 30 July adds exactly one entry to that list — `Bongaigao n` — and it is
-    // the *same* defect, not a new one: ASDMA wrapped "Bongaigaon" across two
-    // printed lines in the Population table just as it did on 20 and 21 July.
-    // The obvious geometric fix demonstrably corrupts other bulletins, so it is
-    // pinned rather than attempted here.
-    //
-    // It is pinned rather than hidden, so it cannot quietly get worse and so the
-    // next person to open `section-assembler` knows what to fix. It does not
-    // reach the screen for the archived days: the choropleth and the District
-    // ranking are drawn from the anchoring bulletin alone, and the archive
-    // contributes only statewide totals to Trend and Cumulative & Peak. On
-    // 30 July it *is* the anchoring bulletin, so `Bongaigao n` is one row the
-    // choropleth cannot shade — a real, visible consequence, and the reason
-    // this pin is worth keeping honest.
-    const WRAPPED_FRAGMENTS = ['Karbi', 'Anglong', 'Bongaigao n', 'Bongaigao', 'n', '(M)'];
-
+    // One entry remains and it is not a fragment: `Bajali`, a District created
+    // in 2020 that the Census-2011 boundary set predates. See above for why it
+    // is not aliased onto Barpeta.
     const unplaced = [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN].flatMap((report) =>
       report.districts
         .map((d) => String(d.district))
@@ -144,57 +137,22 @@ describe('the bundled Assam District boundaries', () => {
         .map((name) => `${String(report.reportDate)}: ${name}`),
     );
 
-    const unexpected = unplaced.filter(
-      (entry) => !WRAPPED_FRAGMENTS.includes(entry.split(': ')[1] as string),
-    );
-    expect(unexpected).toEqual([]);
-
-    // And the pin itself: exactly these fragments, on exactly these days.
-    expect(unplaced).toEqual([
-      '2026-07-20: Karbi',
-      '2026-07-20: Anglong',
-      '2026-07-20: Bongaigao n',
-      '2026-07-20: Bongaigao',
-      '2026-07-20: n',
-      '2026-07-20: (M)',
-      '2026-07-21: Karbi',
-      '2026-07-21: Anglong',
-      '2026-07-21: Bongaigao n',
-      '2026-07-21: (M)',
-      '2026-07-23: Karbi',
-      '2026-07-23: Anglong',
-      '2026-07-23: (M)',
-      '2026-07-24: Karbi',
-      '2026-07-24: Anglong',
-      '2026-07-30: Bongaigao n',
-    ]);
+    expect(unplaced).toEqual(['2026-08-01: Bajali']);
   });
 
-  it('places every District of the six archived bulletins the parser reads cleanly', () => {
-    // 22, 25, 26, 27, 28 and 29 July have no wrapped names at all, so on those
-    // days the map is complete. Asserting it keeps the pin above from being
-    // read as "the archive is unmappable" — most of it is fine. 28 and 29 July
-    // join the list on their own merit, and 28 July especially: it is the
-    // bulletin that once produced eighteen unplaceable prose fragments, and it
-    // now names ten Districts of which every one places.
-    const clean = ARCHIVED_BULLETINS.filter((report) =>
-      [
-        '2026-07-22',
-        '2026-07-25',
-        '2026-07-26',
-        '2026-07-27',
-        '2026-07-28',
-        '2026-07-29',
-      ].includes(String(report.reportDate)),
-    );
-    expect(clean).toHaveLength(6);
+  it('places every District of every archived bulletin but the one with Bajali in it', () => {
+    // The same fact stated as a per-day outcome, because "one unplaced name in
+    // thirteen days" and "twelve days that are completely mappable" are not the
+    // same claim, and it is the second one an officer relies on. 28 July
+    // especially: it is the bulletin that once produced eighteen unplaceable
+    // prose fragments, and every District it names now places.
+    const incomplete = [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN]
+      .filter((report) =>
+        report.districts.some((d) => boundaryFor(String(d.district)) === undefined),
+      )
+      .map((report) => String(report.reportDate));
 
-    const unplaced = clean.flatMap((report) =>
-      report.districts
-        .map((d) => String(d.district))
-        .filter((name) => boundaryFor(name) === undefined),
-    );
-    expect(unplaced).toEqual([]);
+    expect(incomplete).toEqual(['2026-08-01']);
   });
 
   it('has a distinct comparison key for every District', () => {

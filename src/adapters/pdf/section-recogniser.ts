@@ -20,6 +20,18 @@
  * An unrecognised label is `undefined`, never a throw: DRIMS prints
  * `Wildlife affected under protected areas description`, which is not one of
  * the 22 kinds, and one unknown block must not fail the document (FR-1.5).
+ *
+ * It must, however, be *reported*. A block we cannot name is still a block, and
+ * `findBoundaries` therefore returns it — with `kind: undefined` — rather than
+ * passing over it in silence. Silence was expensive. A section's rows run until
+ * the next label, so an unnamed block used to be appended to the section above
+ * it, and its table's geometry was resolved together with that section's. On
+ * 2026-07-31 the Wildlife block prints its District column 7pt wider than the
+ * Infrastructure Damaged - Others table above it; unioned, `Charaideo` reached
+ * across the channel into the Revenue Circle column, the two columns resolved
+ * as one band, and every Circle in the bulletin was published as a District
+ * (`Cachar Sonai`, `GolaghaKhumtai`, `Kamrup Dispur`). An unknown block now
+ * ends the section before it and contributes nothing of its own.
  */
 
 import type { SectionKind } from '../../domain/shared/flood-situation-report';
@@ -123,11 +135,31 @@ export type SectionBoundary = {
   readonly rowIndex: number;
 };
 
+/**
+ * A labelled block whose label is not in the catalogue.
+ *
+ * It yields no table. It exists so the block's rows stop belonging to the
+ * section printed above it — theirs is a different table, with a different
+ * column layout, and measuring the two together is how 31 July lost its
+ * District column.
+ */
+export type UnknownBlock = {
+  readonly kind: undefined;
+  readonly label: string;
+  readonly rowIndex: number;
+};
+
+/** Anything DRIMS announced with a gutter label, named or not. */
+export type LabelledBlock = SectionBoundary | UnknownBlock;
+
 export interface SectionRecogniser {
   /** The kind a run of fragments denotes, if any. */
   recognise(fragments: readonly string[]): SectionBoundary | undefined;
-  /** Every section boundary in the document's gutter-fragment stream. */
-  findBoundaries(fragments: readonly LabelFragment[]): readonly SectionBoundary[];
+  /**
+   * Every labelled block in the document's gutter-fragment stream, in printed
+   * order — the sections we know, and the blocks we do not.
+   */
+  findBoundaries(fragments: readonly LabelFragment[]): readonly LabelledBlock[];
 }
 
 export const createSectionRecogniser = (): SectionRecogniser => {
@@ -140,7 +172,20 @@ export const createSectionRecogniser = (): SectionRecogniser => {
     recognise: (fragments) => recognise(fragments),
 
     findBoundaries(fragments) {
-      const boundaries: SectionBoundary[] = [];
+      const blocks: LabelledBlock[] = [];
+      /** Fragments of the unknown block currently being accumulated. */
+      let unknown: LabelFragment[] = [];
+
+      const closeUnknown = (): void => {
+        if (unknown.length === 0) return;
+        blocks.push({
+          kind: undefined,
+          label: unknown.map((f) => f.text).join(' ').replace(/\s+/g, ' ').trim(),
+          rowIndex: unknown[0]!.rowIndex,
+        });
+        unknown = [];
+      };
+
       let i = 0;
       while (i < fragments.length) {
         let matched = false;
@@ -154,17 +199,24 @@ export const createSectionRecogniser = (): SectionRecogniser => {
             slice[0]!.rowIndex,
           );
           if (found !== undefined) {
-            boundaries.push(found);
+            closeUnknown();
+            blocks.push(found);
             i += k;
             matched = true;
             break;
           }
         }
-        // An unrecognised fragment is skipped, not fatal. `Particulars` and
-        // the Wildlife block both land here.
-        if (!matched) i++;
+        // An unrecognised fragment is not fatal, and no longer silent: it joins
+        // the unknown block being accumulated, which is reported whole. A run
+        // of them is ONE block — `Wildlife` `affected` `under` `p` `rotected`
+        // is a single label DRIMS broke across six runs, not six blocks.
+        if (!matched) {
+          unknown.push(fragments[i]!);
+          i++;
+        }
       }
-      return boundaries;
+      closeUnknown();
+      return blocks;
     },
   };
 };

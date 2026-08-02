@@ -430,3 +430,95 @@ describe('row helpers', () => {
     expect(cellAt(undefined, 0)).toBe('');
   });
 });
+
+describe('SectionAssembler and a block DRIMS labelled but we cannot name', () => {
+  // DRIMS prints `Wildlife affected under protected areas description` between
+  // the last infrastructure table and Remarks. It is not one of the 23 kinds.
+  // Its rows are a table of its own, with its own column widths, and until
+  // 2026-08-02 they were appended to whichever section was printed above it.
+
+  const rows: VisualRow[] = [
+    { page: 1, y: 100, runs: [run('Animals', 36, 100), run('District', 76, 100), run('Total', 120, 100)] },
+    { page: 1, y: 90, runs: [run('Charaideo', 76, 90, 30), run('8492', 120, 90)] },
+    // The unnamed block. Its District column is wider, so `Sivasagar` reaches
+    // across the channel the section above keeps clear at x=120.
+    { page: 2, y: 80, runs: [run('Wildlife', 36, 80, 20, 2), run('Sivasagar', 76, 80, 46, 2)] },
+    { page: 2, y: 70, runs: [run('Sonai', 76, 70, 20, 2), run('a note', 122, 70, 20, 2)] },
+  ];
+
+  const recogniser: SectionRecogniser = {
+    recognise: vi.fn(),
+    findBoundaries: vi.fn(() => [
+      { kind: 'animals-affected' as const, label: 'Animals Affected', rowIndex: 0 },
+      { kind: undefined, label: 'Wildlife', rowIndex: 2 },
+    ]),
+  };
+
+  const assembled = () =>
+    createSectionAssembler({
+      clusterer: clustererReturning(rows),
+      recogniser,
+      bodyStart: 74,
+    }).assemble(rows.flatMap((r) => r.runs));
+
+  it('yields no table for it — we cannot say what its rows mean', () => {
+    expect(assembled().tables.map((t) => t.kind)).toEqual(['animals-affected']);
+  });
+
+  it('keeps its rows out of the section above, rather than appending them', () => {
+    expect(assembled().tables[0]!.rows.map((r) => r.cells)).toEqual([['Charaideo', '8492']]);
+  });
+
+  it('keeps its INK out of the section above, which is the part that bit', () => {
+    // `Sivasagar` at x=76 is 46pt wide and ends at 122, right across the
+    // boundary the section above keeps at 120. Left in, it merges the District
+    // and Total columns into one band — and on the real 31 July bulletin that
+    // is how every Revenue Circle in the document became a District.
+    expect(assembled().tables[0]!.columns).toHaveLength(2);
+  });
+
+  it('does not claim its pages as the section’s provenance', () => {
+    expect(assembled().tables[0]!.sourcePages).toEqual([1]);
+  });
+});
+
+describe('SectionAssembler and a District name DRIMS wrapped', () => {
+  const wrapped: VisualRow[] = [
+    { page: 1, y: 100, runs: [run('Animals', 36, 100), run('District', 76, 100), run('Total', 120, 100)] },
+    { page: 1, y: 90, runs: [run('Bongaigao', 76, 90, 34), run('0', 120, 90)] },
+    { page: 1, y: 80, runs: [run('n', 76, 80, 4)] },
+  ];
+
+  const recogniser: SectionRecogniser = {
+    recognise: vi.fn(),
+    findBoundaries: vi.fn(() => [
+      { kind: 'animals-affected' as const, label: 'Animals Affected', rowIndex: 0 },
+    ]),
+  };
+
+  const namesOf = (vocabulary?: (name: string) => boolean): readonly string[] =>
+    createSectionAssembler({
+      clusterer: clustererReturning(wrapped),
+      recogniser,
+      bodyStart: 74,
+      districtVocabulary: vocabulary,
+    })
+      .assemble(wrapped.flatMap((r) => r.runs))
+      .tables[0]!.rows.map((r) => r.cells[0]!);
+
+  it('closes the break when a vocabulary vouches for the closed name', () => {
+    expect(namesOf((name) => name === 'Bongaigaon')).toEqual(['Bongaigaon']);
+  });
+
+  it('prints exactly what DRIMS printed when nothing vouches for it', () => {
+    // Unrepaired, never invented. This is also what an as-yet-unknown District
+    // gets, which is why an incomplete vocabulary is safe.
+    expect(namesOf(() => false)).toEqual(['Bongaigao n']);
+  });
+
+  it('consults the vocabulary it was given, not a roster of its own', () => {
+    const vocabulary = vi.fn(() => false);
+    namesOf(vocabulary as unknown as (name: string) => boolean);
+    expect(vocabulary).toHaveBeenCalled();
+  });
+});

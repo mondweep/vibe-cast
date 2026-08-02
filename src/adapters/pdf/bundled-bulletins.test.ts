@@ -2,14 +2,14 @@
  * The guarantee that makes shipping generated data safe.
  *
  * `src/generated/newest-bulletin.ts` and `src/generated/bulletin-archive.ts`
- * are committed source: between them they are the eleven-bulletin archive the
+ * are committed source: between them they are the thirteen-bulletin archive the
  * console opens on, and nothing at build time or run time reparses the PDFs to
  * check them. That is the whole point — the default path costs no pdf.js
  * (NFR-3) — but it means the artefacts could drift from the bulletins they
  * claim to be, and drift in a flood console is figures on a screen that no
  * document supports.
  *
- * So the check moves here. This test parses all eleven real fixture PDFs,
+ * So the check moves here. This test parses all thirteen real fixture PDFs,
  * fresh, on every run, and asserts the results are the committed constants. It
  * fails if anyone hand-edits a generated file, and it fails if the parser
  * changes without the artefacts being regenerated. Either way the fix is the
@@ -18,8 +18,8 @@
  *     npm run generate:bundled-bulletins
  *
  * It covers **every bundled bulletin**, not just the eager one. An archive
- * verified only at its newest day would be ten-elevenths unchecked, and the ten
- * unchecked days are precisely the ones the Trend view draws.
+ * verified only at its newest day would be twelve-thirteenths unchecked, and the
+ * twelve unchecked days are precisely the ones the Trend view draws.
  *
  * Where `golden.test.ts` asserts the parser reads Appendix B correctly, this
  * asserts that what we *ship* is what the parser reads.
@@ -53,7 +53,7 @@ import { createPdfJsLoader, type PdfJsModule } from './pdfjs-loader';
  * Oldest first — the order the generator emits, and the order the archive
  * holds.
  *
- * Eleven now, not eight. The generator used to hold a hard-coded list of dates
+ * Thirteen now, not eight. The generator used to hold a hard-coded list of dates
  * and therefore silently ignored any fixture the Drive sync added; it now
  * discovers `fixtures/Daily_Flood_Report_YYYYMMDD.pdf` from disk, so this list
  * is the one remaining place where "what is on disk" is restated by hand. It is
@@ -72,6 +72,8 @@ const STAMPS = [
   '20260728',
   '20260729',
   '20260730',
+  '20260731',
+  '20260801',
 ] as const;
 
 const fixture = (stamp: string): string =>
@@ -97,31 +99,47 @@ describe('the bundled bulletin archive', () => {
     expect(freshlyParsed.size).toBe(STAMPS.length);
   });
 
-  it('ships the newest bulletin exactly as the parser reads the 30 July fixture', () => {
-    // If this fails, do not edit the generated file to make it pass — run
-    // `npm run generate:bundled-bulletins` and read the diff, because the
-    // parser changed.
-    expect(NEWEST_BUNDLED_BULLETIN).toEqual(freshlyParsed.get('20260730'));
+  it.each(STAMPS)('ships the %s bulletin exactly as the parser reads its fixture', (stamp) => {
+    const index = STAMPS.indexOf(stamp);
+    const shipped = index === STAMPS.length - 1 ? NEWEST_BUNDLED_BULLETIN : ARCHIVED_BULLETINS[index];
+
+    expect(shipped).toEqual(freshlyParsed.get(stamp));
   });
 
-  it.each(STAMPS.slice(0, -1))(
-    'ships the archived %s bulletin exactly as the parser reads its fixture',
-    (stamp) => {
-      const index = STAMPS.indexOf(stamp);
-      expect(ARCHIVED_BULLETINS[index]).toEqual(freshlyParsed.get(stamp));
-    },
-  );
+  it('carries no half of a wrapped District name', () => {
+    // Ten of these eleven days once shipped at least one: DRIMS wraps a
+    // District name inside the word when the column is narrow, and the parser
+    // published each half as a District of its own. `Karbi Anglong` was two
+    // Districts on four days; `Bongaigao n` was one on two more.
+    //
+    // This is not a restatement of the equality above. That one says the
+    // artefact matches the parser, and it said so just as contentedly when both
+    // were wrong. This says what the answer has to look like, so a regression
+    // that re-broke the names AND regenerated the archive would still fail.
+    const names = [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN].flatMap((r) =>
+      r.districts.map((d) => String(d.district)),
+    );
 
-  it('holds ten archived bulletins and one eager one — eleven in all', () => {
-    // Eleven because `fixtures/` holds eleven Daily Flood Report PDFs, one per
-    // day from 20 to 30 July 2026 inclusive. The eager/archive split is always
-    // "the newest one, and all the rest", so ten archived follows from eleven.
-    expect(ARCHIVED_BULLETINS).toHaveLength(10);
-    expect(BUNDLED_DATES).toHaveLength(11);
-    expect(BUNDLED_RANGE).toEqual({ from: '2026-07-20', to: '2026-07-30', count: 11 });
+    expect(names.filter((n) => ['Karbi', 'Anglong', '(M)', 'Bongaigao', 'n'].includes(n))).toEqual(
+      [],
+    );
+    expect(names.filter((n) => /\b(Bongaigao|Charaide|Dibruga|Golagha|Sivasaga|Dhemaj)\s/.test(n))).toEqual(
+      [],
+    );
+    // And every name is a name, not a fragment or a sentence.
+    for (const name of names) expect(name).toMatch(/^[A-Z][A-Za-z]+(?:[ ()][A-Za-z()]+)*$/);
   });
 
-  it('covers eleven consecutive days, so the console opens on a trend with no gaps', () => {
+  it('holds twelve archived bulletins and one eager one — thirteen in all', () => {
+    // Thirteen because `fixtures/` holds thirteen Daily Flood Report PDFs, one
+    // per day from 20 July to 1 August 2026 inclusive. The eager/archive split
+    // is always "the newest one, and all the rest", so twelve archived follows.
+    expect(ARCHIVED_BULLETINS).toHaveLength(12);
+    expect(BUNDLED_DATES).toHaveLength(13);
+    expect(BUNDLED_RANGE).toEqual({ from: '2026-07-20', to: '2026-08-01', count: 13 });
+  });
+
+  it('covers thirteen consecutive days, so the console opens on a trend with no gaps', () => {
     // The Trend view draws a break wherever a day is missing, and it is right
     // to. That break must never come from the bundle itself.
     //
@@ -130,6 +148,10 @@ describe('the bundled bulletin archive', () => {
     // it, and for a while the bundle genuinely did have a one-day hole here.
     // The real bulletin has since been uploaded, so the range is contiguous
     // again — and this assertion is what stops anyone assuming otherwise.
+    //
+    // The range now crosses a month boundary, which is the other way a
+    // contiguous run can appear broken: 31 July to 1 August is one day, and a
+    // date arithmetic that works in day-of-month would call it a gap.
     expect(BUNDLED_DATES.map(String)).toEqual([
       '2026-07-20',
       '2026-07-21',
@@ -142,6 +164,8 @@ describe('the bundled bulletin archive', () => {
       '2026-07-28',
       '2026-07-29',
       '2026-07-30',
+      '2026-07-31',
+      '2026-08-01',
     ]);
   });
 
@@ -175,11 +199,11 @@ describe('the bundled bulletin archive', () => {
     expect(bundled.map((r) => r.bulletinId)).toEqual(
       STAMPS.map((stamp) => freshlyParsed.get(stamp)?.bulletinId),
     );
-    expect(new Set(bundled.map((r) => r.bulletinId)).size).toBe(11);
+    expect(new Set(bundled.map((r) => r.bulletinId)).size).toBe(13);
   });
 
   it('is dated and reconciled throughout, so the console never opens on a broken archive', () => {
-    // 23 sections read cleanly on every one of the eleven. A degraded section
+    // 23 sections read cleanly on every one of the thirteen. A degraded section
     // in bundled history would be a permanent asterisk on the first screen an
     // officer ever sees.
     //
@@ -190,15 +214,22 @@ describe('the bundled bulletin archive', () => {
     // "districts" carved out of Remarks prose. This test is what refused to let
     // that ship. The fix belongs in the parser and was made there; do NOT
     // weaken this check to accommodate a future one.
+    //
+    // 31 July is the second reason. It arrived yielding 47 Districts in a state
+    // that has 35 — every Revenue Circle in the bulletin promoted to a District
+    // because an unnamed Wildlife block was measured together with the table
+    // above it and collapsed two columns into one. `checkDocumentIntegrity`
+    // refused it, and this is where that refusal would have been felt.
     for (const report of [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN]) {
       expect(report.reconciliationFailures).toEqual([]);
       expect(report.provenance.every((p) => p.confidence === 'high')).toBe(true);
       expect(report.provenance).toHaveLength(23);
     }
-    expect(NEWEST_BUNDLED_BULLETIN.generatedAt).toBe('30-07-2026 08:38 PM');
+    // Printed in the page footer: "Report Generated On: 01-08-2026 09:31 PM".
+    expect(NEWEST_BUNDLED_BULLETIN.generatedAt).toBe('01-08-2026 09:31 PM');
   });
 
-  it('reports the verified statewide affected population for each of the eleven days', () => {
+  it('reports the verified statewide affected population for each of the thirteen days', () => {
     // Independently verified against the printed bulletins — each figure is the
     // `Total Population` cell of the PDF's own `Total` row in the Population
     // And Crop Area Submerged section, read through the text layer without this
@@ -222,10 +253,17 @@ describe('the bundled bulletin archive', () => {
       ['2026-07-28', { kind: 'known', unit: 'count', value: 332639 }],
       ['2026-07-29', { kind: 'known', unit: 'count', value: 300031 }],
       ['2026-07-30', { kind: 'known', unit: 'count', value: 212441 }],
+      // "Total 80686 82409 29704 192799 15430", page 1. The bulletin that
+      // yielded 47 Districts before the wrapped names were put back together;
+      // its statewide row was always legible, which is exactly why a statewide
+      // figure alone is not evidence that a bulletin was read.
+      ['2026-07-31', { kind: 'known', unit: 'count', value: 192799 }],
+      // "Total 75388 76104 27345 178837 15060", page 1.
+      ['2026-08-01', { kind: 'known', unit: 'count', value: 178837 }],
     ]);
   });
 
-  it('reports the verified relief posture for each of the eleven days', () => {
+  it('reports the verified relief posture for each of the thirteen days', () => {
     // The three figures the response views are built on, pinned for the same
     // reason and read the same way. Relief Camps and Relief Distribution
     // Centres share one `Total` row in the Relief Camps / Centres Opened
@@ -256,6 +294,13 @@ describe('the bundled bulletin archive', () => {
       { date: '2026-07-28', camps: known(81), inmates: known(32477), nonCamp: known(16314) },
       { date: '2026-07-29', camps: known(71), inmates: known(16567), nonCamp: known(72210) },
       { date: '2026-07-30', camps: known(62), inmates: known(13294), nonCamp: known(62289) },
+      // "Total 80 54 26" / "Total 12994 5710 5628 1620 27 9" /
+      // "Total 5384 2644 2350 390 10773 10410 0", pages 2 and 3. 54 camps and
+      // 26 centres, never 80 of either.
+      { date: '2026-07-31', camps: known(54), inmates: known(12994), nonCamp: known(5384) },
+      // "Total 61 44 17" / "Total 11489 5053 4915 1485 27 9" /
+      // "Total 5569 2581 1743 1245 682 1054 5200", page 2.
+      { date: '2026-08-01', camps: known(44), inmates: known(11489), nonCamp: known(5569) },
     ]);
   });
 

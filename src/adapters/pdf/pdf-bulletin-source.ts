@@ -71,7 +71,15 @@ import {
   bodyRowsOf,
   cellAt,
   createSectionAssembler,
+  itemColumn,
   totalRowOf,
+  ITEM_DEPARTMENT,
+  ITEM_LATITUDE,
+  ITEM_LOCATION,
+  ITEM_LONGITUDE,
+  ITEM_NAME,
+  ITEM_REMARKS,
+  ITEM_VILLAGE,
   type BodyStartDerivation,
   type LogicalRow,
   type SectionAssembler,
@@ -727,14 +735,28 @@ const interpretInfrastructure = (table: SectionTable, draft: Draft): void => {
   const damageClass = DAMAGE_CLASSES[table.kind];
   if (damageClass === undefined) return;
 
+  // Counted from the right-hand edge of the table, because that is the end the
+  // five infrastructure tables agree about — see `itemColumn`. The width comes
+  // from the rows rather than from `columns`, so it is the shape of the data
+  // and not a second reading of the geometry.
+  const width = Math.max(0, ...table.rows.map((row) => row.cells.length));
+  const at = (row: LogicalRow, offset: number): string => {
+    const column = itemColumn(width, offset);
+    return column === undefined ? '' : cellAt(row, column);
+  };
+
   let current: DistrictDraft | undefined;
   for (const row of table.rows) {
     const district = cellAt(row, 0);
     if (district !== '' && isDistrictRow(row)) current = districtOf(draft, district);
     if (current === undefined) continue;
 
-    const name = flatten(cellAt(row, 3));
-    if (name === '' || name.toLowerCase() === 'nil') continue;
+    const name = flatten(at(row, ITEM_NAME));
+    // `Nil` in a name column means "no such item" (PRD §5.4 invariant 3), and a
+    // column of nothing but `Nil`s is still nothing but Nil: when two printed
+    // lines of `Nil` end up in one cell, `Nil Nil` must not become a damaged
+    // asset with a name.
+    if (name === '' || /^(nil\b[\s,]*)+$/i.test(name)) continue;
 
     const circles = [...simpleBreakdown(cellAt(row, 2)).keys()];
     draft.infrastructure.push({
@@ -742,11 +764,11 @@ const interpretInfrastructure = (table: SectionTable, draft: Draft): void => {
       district: districtName(current.name),
       circle: revenueCircleName(resolveCircleName(current, circles[0] ?? '')),
       name,
-      department: flatten(cellAt(row, 4)),
-      village: flatten(cellAt(row, 5)),
-      location: flatten(cellAt(row, 6)),
-      coordinate: coordinateFrom(cellAt(row, 7), cellAt(row, 8)),
-      remarks: flatten(cellAt(row, 9)),
+      department: flatten(at(row, ITEM_DEPARTMENT)),
+      village: flatten(at(row, ITEM_VILLAGE)),
+      location: flatten(at(row, ITEM_LOCATION)),
+      coordinate: coordinateFrom(at(row, ITEM_LATITUDE), at(row, ITEM_LONGITUDE)),
+      remarks: flatten(at(row, ITEM_REMARKS)),
     });
   }
 };

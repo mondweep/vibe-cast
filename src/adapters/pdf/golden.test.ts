@@ -22,6 +22,7 @@ import {
   describeIntegrity,
   DRIMS_SECTION_CATALOGUE,
   MAX_DISTRICT_NAME_LENGTH,
+  minimumRecognisedSections,
 } from './document-integrity';
 import { createPdfBulletinSource, type PageTextContent } from './pdf-bulletin-source';
 import {
@@ -30,6 +31,7 @@ import {
   FALLBACK_BODY_START,
 } from './section-assembler';
 import { createPdfJsLoader, type PdfJsModule } from './pdfjs-loader';
+import { knownDistrictName } from './assam-districts';
 
 const fixturePath = (stamp: string): string =>
   path.resolve(import.meta.dirname, `../../../fixtures/Daily_Flood_Report_${stamp}.pdf`);
@@ -456,11 +458,12 @@ const BULLETINS: readonly ExpectedBulletin[] = [
     campInmates: 9697,
     nonCampInmates: 34905,
     floodDeaths: 5,
-    // 16 affected + Sribhumi and Bongaigaon reporting zeros, + 5 fragments of
-    // two district names that wrap in the narrow District column. See
-    // "the wrapped district name" below: a KNOWN and pre-existing defect,
-    // pinned here rather than hidden.
-    districtsNamed: 23,
+    // 16 affected + Sribhumi and Bongaigaon reporting zeros. It was 23 while
+    // the wrapped-name defect stood: `Karbi Anglong` arrived as `Karbi` and
+    // `Anglong`, `Bongaigaon` as `Bongaigao n`, `Bongaigao` and `n`, and
+    // `Kamrup (M)` shed a `(M)` — five phantom Districts and one real one
+    // (Bongaigaon) that no row named correctly.
+    districtsNamed: 18,
   },
   {
     stamp: '20260721',
@@ -476,7 +479,9 @@ const BULLETINS: readonly ExpectedBulletin[] = [
     campInmates: 12375,
     nonCampInmates: 100318,
     floodDeaths: 21,
-    districtsNamed: 20,
+    // Was 20: `Karbi`, `Anglong`, `Bongaigao n` and `(M)` were four of them,
+    // and Bongaigaon was named by none of them.
+    districtsNamed: 17,
   },
   {
     stamp: '20260722',
@@ -508,10 +513,9 @@ const BULLETINS: readonly ExpectedBulletin[] = [
     campInmates: 24124,
     nonCampInmates: 239864,
     floodDeaths: 6,
-    // 11 affected + Darrang and Udalguri reporting zeros, + 3 fragments of
-    // `Karbi Anglong` and `Kamrup (M)` wrapping in the narrow District column
-    // — the same known defect pinned on 20 July below.
-    districtsNamed: 16,
+    // 11 affected + Darrang and Udalguri reporting zeros. Was 16, the extra
+    // three being `Karbi`, `Anglong` and `(M)`.
+    districtsNamed: 13,
   },
   {
     stamp: '20260724',
@@ -527,7 +531,8 @@ const BULLETINS: readonly ExpectedBulletin[] = [
     campInmates: 25205,
     nonCampInmates: 200056,
     floodDeaths: 14,
-    districtsNamed: 19,
+    // Was 19: `Karbi` and `Anglong` instead of `Karbi Anglong`.
+    districtsNamed: 18,
   },
   {
     stamp: '20260725',
@@ -628,6 +633,70 @@ const BULLETINS: readonly ExpectedBulletin[] = [
     campInmates: 13294,
     nonCampInmates: 62289,
     floodDeaths: 2,
+    // Was 12 with `Bongaigao n` among them; still 12, now with Bongaigaon.
+    districtsNamed: 12,
+  },
+  {
+    // The bulletin that made the wrapped name stop being cosmetic. Its
+    // Particulars gutter is wide enough that the District column is ~27pt, so
+    // nine names wrap at once; read without the repair it yields 47 Districts
+    // in a state that has 35, and `checkDocumentIntegrity` refuses the whole
+    // document — correctly. Figures read from the PDF's own `Total` rows
+    // through the text layer, without this parser:
+    //
+    //   p1 "5 Sivasagar, Golaghat, Jorhat, Nagaon, Charaideo"
+    //   p1 "Total 17"                                   -> revenue circles
+    //   p1 "Total 379"                                  -> villages
+    //   p1 "Total 80686 82409 29704 192799 15430"       -> male female children
+    //                                                      POPULATION crop area
+    //   p2 "Total 80 54 26"                             -> both CAMPS centres
+    //   p2 "Total 12994 5710 5628 1620 27 9"            -> CAMP INMATES ...
+    //   p2 "Total 5384 2644 2350 390 10773 10410 0"     -> NON-CAMP INMATES ...
+    //   p3 "Total 2 2 0 2 0 0 0 0"                      -> both FLOOD DEATHS
+    //   p20 "Report Generated On: 31-07-2026 09:56 PM"
+    stamp: '20260731',
+    reportDate: '2026-07-31',
+    generatedAt: '31-07-2026 09:56 PM',
+    districtsAffected: 5,
+    revenueCirclesAffected: 17,
+    villagesAffected: 379,
+    populationAffected: 192799,
+    cropAreaSubmerged: 15430,
+    reliefCamps: 54,
+    reliefDistributionCentres: 26,
+    campInmates: 12994,
+    nonCampInmates: 5384,
+    floodDeaths: 2,
+    // The five affected, plus Cachar, Dhemaji, Dibrugarh and Kamrup (M)
+    // reporting explicit zeros. Nine, not forty-seven.
+    districtsNamed: 9,
+  },
+  {
+    // 1 August names Bajali — a District created in 2020, which no Census-2011
+    // dataset this project ships knows about. It parses, unwrapped and
+    // untouched, which is the property that keeps an incomplete vocabulary
+    // safe. Read the same way:
+    //
+    //   p1 "7 Golaghat, Sivasagar, Charaideo, Bajali, Dhemaji, Sonitpur, Jorhat"
+    //   p1 "Total 20" / p1 "Total 349"
+    //   p1 "Total 75388 76104 27345 178837 15060"
+    //   p2 "Total 61 44 17" / p2 "Total 11489 5053 4915 1485 27 9"
+    //   p2 "Total 5569 2581 1743 1245 682 10545 200"
+    //   p2 "Total 0 0 0 0 0 0 0 0"
+    //   p15 "Report Generated On: 01-08-2026 09:31 PM"
+    stamp: '20260801',
+    reportDate: '2026-08-01',
+    generatedAt: '01-08-2026 09:31 PM',
+    districtsAffected: 7,
+    revenueCirclesAffected: 20,
+    villagesAffected: 349,
+    populationAffected: 178837,
+    cropAreaSubmerged: 15060,
+    reliefCamps: 44,
+    reliefDistributionCentres: 17,
+    campInmates: 11489,
+    nonCampInmates: 5569,
+    floodDeaths: 0,
     districtsNamed: 12,
   },
 ];
@@ -699,6 +768,152 @@ describe.each(BULLETINS)('bulletin $reportDate', (expected) => {
 });
 
 /**
+ * The wrapped District name, end to end on the real bulletins.
+ *
+ * `wrapped-district-name.test.ts` states the rule against an injected
+ * vocabulary; this states the *outcome* against thirteen real PDFs, because a
+ * rule that is right in the abstract and wrong on DRIMS is worth nothing.
+ *
+ * Every name below is one DRIMS split across two printed lines in a District
+ * column too narrow to hold it. Before the repair each fragment was published
+ * as a District of Assam.
+ */
+describe('district names DRIMS wrapped across two printed lines', () => {
+  const reports = new Map<string, FloodSituationReport>();
+
+  beforeAll(async () => {
+    for (const { stamp } of BULLETINS) reports.set(stamp, await parseFixture(stamp));
+  }, 300_000);
+
+  const namesOn = (stamp: string): readonly string[] =>
+    (reports.get(stamp)?.districts ?? []).map((d) => String(d.district));
+
+  it('publishes no fragment of a name as if it were a District', () => {
+    // The exact strings `src/adapters/ui/assam-districts.test.ts` has been
+    // pinning as unmappable, plus the nine 31 July added.
+    const FRAGMENTS = [
+      'Karbi',
+      'Anglong',
+      '(M)',
+      'Bongaigao',
+      'n',
+      'Bongaigao n',
+      'Charaide o',
+      'Charaid eo',
+      'Charaid',
+      'eo',
+      'Dibruga rh',
+      'Dibrugar h',
+      'Golagha t',
+      't',
+      'Sivasaga r',
+      'Sivasag ar',
+      'Sivasag',
+      'ar',
+      'Dhemaj i',
+    ];
+    const found = [...reports].flatMap(([stamp, report]) =>
+      report.districts
+        .map((d) => String(d.district))
+        .filter((name) => FRAGMENTS.includes(name))
+        .map((name) => `${stamp}: ${name}`),
+    );
+    expect(found).toEqual([]);
+  });
+
+  it('publishes the whole name instead, on the days it was in pieces', () => {
+    expect(namesOn('20260720')).toContain('Karbi Anglong');
+    expect(namesOn('20260720')).toContain('Bongaigaon');
+    expect(namesOn('20260720')).toContain('Kamrup (M)');
+    expect(namesOn('20260721')).toContain('Karbi Anglong');
+    expect(namesOn('20260721')).toContain('Bongaigaon');
+    expect(namesOn('20260723')).toContain('Karbi Anglong');
+    expect(namesOn('20260724')).toContain('Karbi Anglong');
+    expect(namesOn('20260730')).toContain('Bongaigaon');
+    expect(namesOn('20260731')).toContain('Charaideo');
+    expect(namesOn('20260731')).toContain('Sivasagar');
+    expect(namesOn('20260731')).toContain('Dibrugarh');
+  });
+
+  it('names each District exactly once — no name is both whole and in pieces', () => {
+    for (const [stamp, report] of reports) {
+      const names = report.districts.map((d) => String(d.district));
+      expect(`${stamp}: ${new Set(names).size}`).toBe(`${stamp}: ${names.length}`);
+    }
+  });
+
+  it('keeps Kamrup and Kamrup (M) apart on every day that names both', () => {
+    // The merge that would be a wrong answer rather than a missing one. Three
+    // bulletins name both Districts, and on 20 July `Kamrup (M)` is one of the
+    // names that wrapped.
+    for (const stamp of ['20260720', '20260721', '20260722', '20260723', '20260724']) {
+      const names = namesOn(stamp);
+      expect(names).toContain('Kamrup');
+      expect(names).toContain('Kamrup (M)');
+    }
+  });
+
+  it('leaves Bajali alone, though no dataset here has heard of it', () => {
+    // Created in 2020, after the Census-2011 lineage of every boundary file
+    // this project ships. An unknown name is not an invalid one: 1 August
+    // names it, and it is published exactly as DRIMS printed it.
+    expect(namesOn('20260801')).toContain('Bajali');
+  });
+
+  it('publishes no Revenue Circle as a District', () => {
+    // 31 July's other half. `Cachar Sonai`, `GolaghaKhumtai` and `Kamrup
+    // Dispur` were a District glued to the Circle beside it, because an
+    // unnamed block's wider District column merged two column bands into one;
+    // `Mahmora`, `Bokakhat`, `Nazira` and the rest arrived as Districts in
+    // their own right.
+    const CIRCLES = [
+      'Sonai',
+      'Sonari',
+      'Mahmora',
+      'Sapekhati',
+      'Chabua',
+      'Moran',
+      'Khumtai',
+      'Bokakhat',
+      'Sarupathar',
+      'Dergaon',
+      'Titabor',
+      'Teok',
+      'Mariani',
+      'Dispur',
+      'Nazira',
+      'Sivsagar',
+      'Demow',
+      'Amguri',
+      'West',
+      'District Details',
+    ];
+    const found = [...reports].flatMap(([stamp, report]) =>
+      report.districts
+        .map((d) => String(d.district))
+        .filter((name) => CIRCLES.includes(name) || / (Sonai|Sonari|Dispur|Nazira|Khumtai)$/.test(name))
+        .map((name) => `${stamp}: ${name}`),
+    );
+    expect(found).toEqual([]);
+  });
+
+  it('gives every published District a name the alias table can place', () => {
+    // The consequence that actually reaches a screen: a name no boundary
+    // exists for is a District the choropleth cannot shade. This is the same
+    // reconciliation `src/adapters/ui/assam-districts.test.ts` performs, made
+    // here without importing the UI adapter — the parser owns the names, so
+    // the parser proves they are names.
+    const unplaceable = [...reports].flatMap(([stamp, report]) =>
+      report.districts
+        .map((d) => String(d.district))
+        .filter((name) => !knownDistrictName(name))
+        .map((name) => `${stamp}: ${name}`),
+    );
+    expect(unplaceable).toEqual([]);
+  });
+});
+
+/**
  * The regression test for the failure itself, and the one that must survive the
  * fix.
  *
@@ -725,9 +940,16 @@ describe('a bulletin read with a mislocated Particulars gutter', () => {
       );
     }, 60_000);
 
-    it('still finds only 2 of the 23 sections — the fault is genuinely reproduced', () => {
+    it('still finds almost none of the 23 sections — the fault is genuinely reproduced', () => {
+      // One, now, where it used to be two. The second was `remarks`, and it was
+      // only ever "found" because an unnamed block's rows used to be attributed
+      // to whatever section was printed above them. The parser no longer does
+      // that (see `section-recogniser.ts`), so the wreckage is smaller. The
+      // fault being reproduced is unchanged: a bulletin read on the wrong
+      // geometry yields a handful of sections out of twenty-three.
       const read = husk.provenance.filter((p) => p.sourcePages.length > 0);
-      expect(read.map((p) => p.kind).sort()).toEqual(['districts-affected', 'remarks']);
+      expect(read.map((p) => p.kind)).toEqual(['districts-affected']);
+      expect(read.length).toBeLessThan(minimumRecognisedSections());
     });
 
     it('reconciliation is STILL silent about it — this is the design gap', () => {
@@ -750,12 +972,27 @@ describe('a bulletin read with a mislocated Particulars gutter', () => {
       );
     });
 
-    it('keeps the garbage rather than deleting it — unknown is never zero (ADR-0005)', () => {
-      // The husk is not repaired and not emptied. It is published, marked
-      // untrustworthy, so an operator can see exactly what went wrong.
-      expect(husk.districts.length).toBeGreaterThan(0);
+    it('leaves unknown unknown rather than filling it in — ADR-0005', () => {
+      // The husk is published, marked untrustworthy, and NOT patched up. The
+      // headline figure every DRIMS bulletin states is absent from this read,
+      // and absent is what it says — not nought, and not a guess.
       expect(husk.statewideTotals.populationAffected).toEqual({ kind: 'unknown', unit: 'count' });
-      expect(husk.districts.some((d) => d.district.length > MAX_DISTRICT_NAME_LENGTH)).toBe(true);
+      expect(husk.reportDate).toBe(stamp === '20260725' ? '2026-07-25' : '2026-07-26');
+    });
+
+    it('no longer manufactures districts out of prose it cannot place', () => {
+      // This assertion USED to be its opposite: the husk carried 46 "districts"
+      // of Remarks prose, hundreds of characters each, and the test pinned
+      // their presence to prove nothing had been deleted. They were never in
+      // the document — they were rows of an unnamed block, attributed to a
+      // named section because a section used to run until the next label it
+      // recognised. It does not any more, so there is no prose to keep.
+      //
+      // Nothing is deleted by this: every figure the parse did not read is
+      // `unknown`, every section is `failed`, and the refusal above is
+      // unchanged. What is gone is the invention.
+      expect(husk.districts).toEqual([]);
+      expect(husk.districts.every((d) => d.district.length <= MAX_DISTRICT_NAME_LENGTH)).toBe(true);
     });
   });
 });

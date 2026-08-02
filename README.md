@@ -4,7 +4,7 @@ A decision console for the **ASDMA Daily Flood Report** — the bulletin publish
 
 Load the bulletin PDF; get a ranked, related, projected, comparable and mapped situation picture aimed at scenario planning and operational decisions.
 
-**It opens on real history.** Eleven consecutive real ASDMA bulletins — 20 to 30 July 2026 — ship with the console, already parsed, so a link you send someone lands on a working ten-day trend and a real cumulative picture rather than an empty screen they have to populate first.
+**It opens on real history.** Thirteen consecutive real ASDMA bulletins — 20 July to 1 August 2026 — ship with the console, already parsed, so a link you send someone lands on a working twelve-day trend and a real cumulative picture rather than an empty screen they have to populate first.
 
 ---
 
@@ -80,10 +80,10 @@ working. To try the parser itself, load any PDF from `fixtures/`.
 
 ## The bundled bulletin archive
 
-The console ships with the eleven consecutive ASDMA Daily Flood Reports for
-**20–30 July 2026**, parsed at build time into `src/generated/`. They are real
-bulletins, read by the same parser that reads yours — not a demonstration
-dataset — so the Trend view draws a genuine ten-day line with no gaps and
+The console ships with the thirteen consecutive ASDMA Daily Flood Reports for
+**20 July – 1 August 2026**, parsed at build time into `src/generated/`. They are
+real bulletins, read by the same parser that reads yours — not a demonstration
+dataset — so the Trend view draws a genuine twelve-day line with no gaps and
 Cumulative & Peak reports a genuine period on first open.
 
 The set is not a list anyone maintains: `scripts/generate-bundled-bulletins.ts`
@@ -93,18 +93,25 @@ bulletin, the generator would ignore it, the tests and the build would pass, and
 CI would commit a change that altered nothing.
 
 Shipping the *parsed* reports rather than the PDFs is what makes this affordable:
-12.9 MB of PDF becomes 95 kB gzipped of data, and the default path loads no
+15 MB of PDF becomes 166 kB gzipped of data, and the default path loads no
 pdf.js at all.
 
 | | |
 |---|---|
-| **Eager** | The newest bulletin (30 July), in the entry chunk. First paint renders with real figures and no waiting. |
-| **Lazy** | The ten older ones, behind a dynamic `import()`, ~95 kB gzipped in their own chunk. They arrive just after first paint, and the console *says* it is waiting rather than reporting a bulletin count it is about to change. |
+| **Eager** | The newest bulletin (1 August), in the entry chunk. First paint renders with real figures and no waiting. |
+| **Lazy** | The twelve older ones, behind a dynamic `import()`, ~166 kB gzipped in their own chunk. They arrive just after first paint, and the console *says* it is waiting rather than reporting a bulletin count it is about to change. |
 
 `npm run verify:lazy-archive` asserts against the built `dist/` that the archive
 is a separate chunk, is dynamically imported, and is not reachable statically
-from anything loaded eagerly. First paint is **242.8 kB gzipped**, against the
+from anything loaded eagerly. First paint is **238.3 kB gzipped**, against the
 300 kB NFR-4 budget.
+
+The archive chunk grew from 95 kB to 166 kB when it went from eleven bulletins
+to thirteen, and most of that is not the two extra days. `Infrastructure Damaged
+- Others` was being read one column left of itself and dropped all but a handful
+of its rows; reading it correctly took 27 July alone from 29 damaged items to
+490. The chunk is lazy, so none of it lands in first paint — which went *down*,
+because the newest bulletin is now a smaller one.
 
 Four rules govern the archive once it is on screen:
 
@@ -195,7 +202,7 @@ Static deploy to Netlify — no backend, no database, no secrets, no functions.
   and labelled as absent rather than approximated (ADR-0009).
 - **Scanned PDFs are not supported.** OCR is out of scope for v1; a PDF without a
   text layer is rejected with a clear message rather than parsed into garbage.
-- **Bundled history stops at 30 July 2026.** The archive is fixed at build time, so
+- **Bundled history stops at 1 August 2026.** The archive is fixed at build time, so
   it ages. The staleness banner states its age in words on every screen, and the
   figures are marked unsafe for current decisions once they are old enough — but
   the console cannot fetch a newer bulletin for you (see above).

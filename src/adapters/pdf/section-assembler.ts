@@ -39,6 +39,8 @@ import {
   type TextRun,
   type VisualRow,
 } from './text-run';
+import { knownDistrictName } from './assam-districts';
+import { repairWrappedDistrictNames, type DistrictVocabulary } from './wrapped-district-name';
 
 /** One table row as a human reads it, however many printed lines it occupies. */
 export type LogicalRow = {
@@ -122,6 +124,12 @@ export type SectionAssemblerDependencies = {
   readonly headerPolicy?: HeaderPolicy;
   /** Runs starting left of this are section-label gutter, not table body. */
   readonly bodyStart?: number;
+  /**
+   * The evidence a wrapped District name is joined on (see
+   * `wrapped-district-name.ts`). Injected so the rule can be asserted without
+   * the roster of Assam, and so a test can prove an unknown name is untouched.
+   */
+  readonly districtVocabulary?: DistrictVocabulary;
 };
 
 const HEADERLESS_SECTIONS: ReadonlySet<SectionKind> = new Set<SectionKind>([
@@ -138,9 +146,44 @@ const ITEMISED_SECTIONS: ReadonlySet<SectionKind> = new Set<SectionKind>([
   'infrastructure-others',
 ]);
 
-/** Columns of the infrastructure tables that signal the start of a new item. */
+/**
+ * Where an infrastructure table's item columns are, counted from the RIGHT.
+ *
+ * The five infrastructure tables agree about their right-hand columns and
+ * disagree about their left-hand ones. All of them end
+ *
+ *     … | Item name | Department | Village | Location | Latitude | Longitude | Remarks
+ *
+ * but `Infrastructure Damaged - Others` carries an extra `Damages` column on
+ * the left that the other four do not, and its right-aligned count column
+ * resolves as one band or two depending on whether DRIMS printed `Nil` in it.
+ * Counting from the left therefore reads a different column on different days
+ * — it is how the Others table came to publish `3.37` as the name of a damaged
+ * asset and `PRAMUD` as the department that reported it. Counting from the
+ * right is stable across every layout in `fixtures/`.
+ */
+const ITEM_TRAILING_COLUMNS = 7;
+
+/** Fewest bands a table must have before the offsets above mean anything. */
+const MIN_ITEM_COLUMNS = ITEM_TRAILING_COLUMNS + 1;
+
+/**
+ * Index of an infrastructure item's Nth trailing column — 0 is the item name,
+ * 6 the remarks — or `undefined` if this table is too narrow to have one.
+ */
+export const itemColumn = (columnCount: number, offset: number): number | undefined =>
+  columnCount < MIN_ITEM_COLUMNS ? undefined : columnCount - ITEM_TRAILING_COLUMNS + offset;
+
+export const ITEM_NAME = 0;
+export const ITEM_DEPARTMENT = 1;
+export const ITEM_VILLAGE = 2;
+export const ITEM_LOCATION = 3;
+export const ITEM_LATITUDE = 4;
+export const ITEM_LONGITUDE = 5;
+export const ITEM_REMARKS = 6;
+
+/** The Revenue Circle column of the four tables that print `(Sonari | 1)`. */
 const ITEM_CIRCLE_COLUMN = 2;
-const ITEM_DEPARTMENT_COLUMN = 4;
 
 /**
  * The gutter width assumed when the document cannot be measured at all.
@@ -285,9 +328,10 @@ export const defaultRowStartPolicy: RowStartPolicy = (cells, kind) => {
   //   - a fresh Department, which every item states exactly once on its first
   //     printed line. `PWD` opens an item; the `(Roads)` beneath it does not,
   //     because a continuation never begins with a bracket or lower case.
+  const department = itemColumn(cells.length, ITEM_DEPARTMENT);
   return (
     (cells[ITEM_CIRCLE_COLUMN] ?? '').trimStart().startsWith('(') ||
-    namesSomething(cells[ITEM_DEPARTMENT_COLUMN] ?? '')
+    (department !== undefined && namesSomething(cells[department] ?? ''))
   );
 };
 
@@ -316,6 +360,7 @@ export const createSectionAssembler = (
   const recogniser = dependencies.recogniser ?? createSectionRecogniser();
   const startsRow = dependencies.rowStartPolicy ?? defaultRowStartPolicy;
   const hasHeader = dependencies.headerPolicy ?? defaultHeaderPolicy;
+  const knows = dependencies.districtVocabulary ?? knownDistrictName;
 
   return {
     assemble(runs) {
@@ -341,34 +386,48 @@ export const createSectionAssembler = (
         }
       });
 
-      const boundaries = recogniser.findBoundaries(fragments);
-      if (boundaries.length === 0) return { bodyStart: derivation, tables: [] };
+      const blocks = recogniser.findBoundaries(fragments);
+      if (blocks.length === 0) return { bodyStart: derivation, tables: [] };
+
+      // Each block owns the rows between its label and the next label.
+      const ranges = blocks.map((block, i) => ({
+        kind: block.kind,
+        label: block.label,
+        from: block.rowIndex,
+        to: i + 1 < blocks.length ? blocks[i + 1]!.rowIndex : rows.length,
+      }));
+
+      // A block we cannot name is dropped ROWS AND ALL, before any table is
+      // cut. Its rows are a table of ours no more than they are a section of
+      // ours, and letting them into the section above corrupts that section's
+      // column bands (see `section-recogniser.ts`, and 2026-07-31).
+      const named = ranges.filter(
+        (range): range is typeof range & { kind: SectionKind } => range.kind !== undefined,
+      );
 
       // A kind printed as two labelled blocks (the revenue-circle count and
-      // the revenue-circle table) is one section to us.
-      const spans = boundaries
-        .map((boundary, i) => ({
-          boundary,
-          from: boundary.rowIndex,
-          to: i + 1 < boundaries.length ? boundaries[i + 1]!.rowIndex : rows.length,
-        }))
-        .reduce<{ kind: SectionKind; label: string; from: number; to: number }[]>((acc, span) => {
-          const previous = acc[acc.length - 1];
-          if (previous !== undefined && previous.kind === span.boundary.kind) {
-            previous.to = span.to;
-            return acc;
-          }
-          acc.push({
-            kind: span.boundary.kind,
-            label: span.boundary.label,
-            from: span.from,
-            to: span.to,
-          });
+      // the revenue-circle table) is one section to us. Note the span keeps its
+      // pieces rather than spanning from the first to the last: an unknown
+      // block between two blocks of one kind must not be swallowed by joining
+      // them up.
+      const spans = named.reduce<
+        { kind: SectionKind; label: string; ranges: { from: number; to: number }[] }[]
+      >((acc, range) => {
+        const previous = acc[acc.length - 1];
+        if (previous !== undefined && previous.kind === range.kind) {
+          previous.ranges.push({ from: range.from, to: range.to });
           return acc;
-        }, []);
+        }
+        acc.push({
+          kind: range.kind,
+          label: range.label,
+          ranges: [{ from: range.from, to: range.to }],
+        });
+        return acc;
+      }, []);
 
-      const tables = spans.map(({ kind, label, from, to }) => {
-        const sectionRows = rows.slice(from, to);
+      const tables = spans.map(({ kind, label, ranges: pieces }) => {
+        const sectionRows = pieces.flatMap(({ from, to }) => rows.slice(from, to));
         const dataRows = hasHeader(kind)
           ? selectDataRows(sectionRows, bodyStart)
           : sectionRows.filter((r) => r.runs.some((x) => x.x >= bodyStart && x.str.trim() !== ''));
@@ -390,16 +449,24 @@ export const createSectionAssembler = (
           }
         }
 
+        // A wrapped District name is put back together here, on evidence, and
+        // only here: `wrapped-district-name.ts` explains why geometry cannot do
+        // it and why a name it cannot vouch for is left exactly as printed.
+        const repaired = repairWrappedDistrictNames(
+          logical.map((r) => ({ cells: r.cells, pages: [...r.pages].sort((a, b) => a - b) })),
+          { itemised: ITEMISED_SECTIONS.has(kind), knows },
+        );
+
         return {
           kind,
           label,
           sourcePages: [...new Set(sectionRows.map((r) => r.page))].sort((a, b) => a - b),
           columns,
-          rows: logical.map((r) => ({
-            // A wrapped district name reassembles as `Kamrup\n(M)`; the
-            // District cell is a name, so its newline is a space.
+          rows: repaired.map((r) => ({
+            // Whatever the repair declined to vouch for keeps the shape DRIMS
+            // printed: the District cell is a name, so its newline is a space.
             cells: r.cells.map((c, i) => (i === 0 ? c.replace(/\s*\n\s*/g, ' ').trim() : c)),
-            pages: [...r.pages].sort((a, b) => a - b),
+            pages: r.pages,
           })),
         };
       });

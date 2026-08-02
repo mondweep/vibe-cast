@@ -209,9 +209,14 @@ describe('six real bulletins — cumulative flows', () => {
     expect(deaths.caveat).toContain('2026-07-20 to 2026-07-27');
     expect(deaths.caveat).toContain('2 days missing (2026-07-23, 2026-07-24)');
     expect(deaths.caveat).toMatch(/not in this total/);
-    // 20 and 21 July carry District rows DRIMS left blank, so 41 is a floor.
-    expect(deaths.caveat).toMatch(/District rows carried no figure for it/);
     expect(deaths.caveat).toMatch(/Derived here, not reported by ASDMA/);
+    // The caveat used to also say "District rows carried no figure for it",
+    // and 41 was a floor rather than a total. That was not DRIMS being silent:
+    // every District it counted as unreported on 20 and 21 July was half of a
+    // wrapped name — `Karbi`, `Anglong`, `Bongaigao`, `n`, `(M)` — a row the
+    // parser had invented and which therefore reported nothing. With the names
+    // put back together there are no such rows, so the qualifier must be gone.
+    expect(deaths.caveat).not.toMatch(/District rows carried no figure for it/);
   });
 
   it('keeps general drownings out of the flood-death total (PRD §4.2)', () => {
@@ -348,22 +353,26 @@ describe('six real bulletins — dropped into the console one after another', ()
 
     await waitFor(() => expect(screen.getByTestId('period-coverage')).toBeTruthy());
     const coverage = screen.getByTestId('period-coverage');
-    // Their six, plus the eager bundled 30 July that no test double can
+    // Their six, plus the eager bundled 1 August that no test double can
     // withhold. Their own 27 July superseded the bundled one, so the seventh
-    // bulletin is the 30th and the period runs to it.
+    // bulletin is 1 August and the period runs to it.
     expect(coverage.textContent).toContain('7 bulletins');
-    expect(coverage.textContent).toContain('20 July 2026 to 30 July 2026');
-    // 23, 24, 28 and 29 July: the two they withheld on purpose, and the two
-    // between their newest and the bundled 30th.
-    expect(coverage.textContent).toContain('4 days missing');
-    expect(coverage.textContent).toContain('2026-07-23, 2026-07-24, 2026-07-28, 2026-07-29');
+    expect(coverage.textContent).toContain('20 July 2026 to 1 August 2026');
+    // 23, 24, 28, 29, 30 and 31 July: the two they withheld on purpose, and the
+    // four between their newest and the bundled 1 August.
+    expect(coverage.textContent).toContain('6 days missing');
+    expect(coverage.textContent).toContain(
+      '2026-07-23, 2026-07-24, 2026-07-28, 2026-07-29, 2026-07-30, 2026-07-31',
+    );
 
-    // 41 across their six, plus 2 on the bundled 30 July — the second cell of
-    // that bulletin's printed "Total 2 2 0 0 1 1 0 0" row, read from the PDF
-    // rather than from the parser.
-    expect(document.querySelector('[data-total="flood-deaths"]')?.textContent).toBe('43');
-    // The peaks are unmoved: 30 July is the mildest day in this set on every
-    // one of them (212,441 affected, 13,294 inmates, 17,198.09 Hect.).
+    // 41 across their six, plus 0 on the bundled 1 August — the second cell of
+    // that bulletin's printed "Total 0 0 0 0 0 0 0 0" row, read from the PDF
+    // rather than from the parser. The first day in this archive with no flood
+    // death at all, so the total is unchanged by adding it and that is a fact
+    // about the flood rather than a dropped term.
+    expect(document.querySelector('[data-total="flood-deaths"]')?.textContent).toBe('41');
+    // The peaks are unmoved: 1 August is the mildest day in this set on every
+    // one of them (178,837 affected, 11,489 inmates, 15,060 Hect.).
     expect(
       document.querySelector('[data-peak-value="population-affected"]')?.textContent,
     ).toBe('654,838');
@@ -381,17 +390,18 @@ describe('six real bulletins — dropped into the console one after another', ()
     );
 
     // Exactly one bundled bulletin is left in the count. Their own 27 July
-    // superseded the bundled one for that day; the eager 30 July is the only
+    // superseded the bundled one for that day; the eager 1 August is the only
     // point on this view they did not choose, and the console says so rather
     // than letting it pass as theirs.
     expect(screen.getByTestId('period-archive-note').textContent).toMatch(/1 of these 7/);
   }, 60_000);
 
-  it('gives a trend on the very first upload, with 21–29 July shown as a gap', async () => {
+  it('gives a trend on the very first upload, with 21–31 July shown as a gap', async () => {
     // The user's actual report: one bulletin loaded, no trend visible. The
-    // bundled 30 July bulletin is real ASDMA data and stands as the second
-    // point. With the rest of the archive withheld here, the nine days between
-    // are a genuine hole in what the console holds — and are drawn as one.
+    // bundled 1 August bulletin is real ASDMA data and stands as the second
+    // point. With the rest of the archive withheld here, the eleven days
+    // between are a genuine hole in what the console holds — and are drawn as
+    // one.
     const twentieth = reports.find((report) => String(report.reportDate) === '2026-07-20');
     const load = vi.fn().mockResolvedValue(twentieth);
     render(<App container={aContainer(load)} loadArchive={noArchive} />);
@@ -404,8 +414,8 @@ describe('six real bulletins — dropped into the console one after another', ()
     await waitFor(() => expect(screen.getByText(/No bulletin for/)).toBeTruthy());
     const gap = screen.getByText(/No bulletin for/).closest('li');
     expect(gap?.textContent).toContain('2026-07-21, 2026-07-22, 2026-07-23');
-    expect(gap?.textContent).toContain('2026-07-29');
-    expect(gap?.textContent).toContain('between 2026-07-20 and 2026-07-30');
+    expect(gap?.textContent).toContain('2026-07-31');
+    expect(gap?.textContent).toContain('between 2026-07-20 and 2026-08-01');
     expect(screen.queryByText(/1 bulletin held/)).toBeNull();
     // And the console says how many of the points they did not choose.
     expect(screen.getByTestId('trend-archive-note').textContent).toMatch(/1 of the/);

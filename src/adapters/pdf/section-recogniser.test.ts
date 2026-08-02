@@ -174,6 +174,9 @@ describe('SectionRecogniser.findBoundaries', () => {
       ),
     );
     expect(found.map((b) => [b.kind, b.rowIndex])).toEqual([
+      // `Particulars` is the table's own column header, not a section. It is
+      // reported as an unknown block rather than skipped, and it names nothing.
+      [undefined, 0],
       ['rivers-above-danger-level', 1],
       ['districts-affected', 10],
       ['revenue-circles-affected', 12],
@@ -196,7 +199,12 @@ describe('SectionRecogniser.findBoundaries', () => {
     expect(found.map((b) => b.kind)).toEqual(['houses-damaged', 'rescue-operation']);
   });
 
-  it('skips fragments it cannot place and keeps going — one bad block is not fatal', () => {
+  it('reports a block it cannot place and keeps going — one bad block is not fatal', () => {
+    // DRIMS prints `Wildlife affected under protected areas description`, which
+    // is not one of the 23 kinds. It must not fail the document (FR-1.5), and
+    // it must not be silent either: its rows are a table of their own, and
+    // measuring them together with the section above is what cost 31 July its
+    // District column. Note the run of six broken fragments is ONE block.
     const found = recogniser.findBoundaries(
       fragments(
         ['Wildlife', 0],
@@ -209,7 +217,24 @@ describe('SectionRecogniser.findBoundaries', () => {
         ['Remarks', 6],
       ),
     );
-    expect(found).toEqual([{ kind: 'remarks', label: 'Remarks', rowIndex: 6 }]);
+    expect(found).toEqual([
+      {
+        kind: undefined,
+        label: 'Wildlife affected under p rotected areas description',
+        rowIndex: 0,
+      },
+      { kind: 'remarks', label: 'Remarks', rowIndex: 6 },
+    ]);
+  });
+
+  it('reports an unknown block that trails the last section it can name', () => {
+    // The real shape: the Wildlife block sits between the last infrastructure
+    // table and Remarks in every bulletin in `fixtures/`.
+    const found = recogniser.findBoundaries(
+      fragments(['Rescue', 0], ['Operation', 1], ['Wildlife', 2], ['affected', 3]),
+    );
+    expect(found.map((b) => b.kind)).toEqual(['rescue-operation', undefined]);
+    expect(found[1]).toMatchObject({ label: 'Wildlife affected', rowIndex: 2 });
   });
 
   it('finds nothing in an empty stream', () => {

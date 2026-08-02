@@ -132,6 +132,86 @@ PDF → [1] TextRunExtractor    → positioned runs {str, x, y, width, height, p
 > witnesses and taking the consensus is not a heuristic bolted on top; it is the
 > honest reading of a document whose renderer does not respect its own cells.
 
+> ⚠ **Amended again, 2026-08-02. The 31 July bulletin was refused, correctly,
+> for a reason that had been dismissed as cosmetic for eleven days: a District
+> name that DRIMS wraps across two printed lines.**
+>
+> Stage 4 joins a wrapped *cell* with a space, and decides that a printed line
+> starts a new row if its first cell "names something" — anything not beginning
+> with a bracket or a lower-case letter. Both rules are right about cells and
+> wrong about names. DRIMS sizes the District column to whatever the Particulars
+> gutter leaves, and when a name does not fit it breaks it **wherever it runs
+> out of room**, which is usually inside a word. So `Bongaigaon` printed over
+> two lines rejoined as `Bongaigao n`, and `Karbi Anglong` — whose second line
+> is capitalised — opened a row of its own and was published as two Districts.
+> On 31 July the column is ~27pt wide, nine names wrap at once, and the parse
+> yields 47 Districts in a state that has 35: `district-count-within-assam`
+> refuses the document. The refusal is right. The input to it was not.
+>
+> **The geometric rule is not available, and this is the interesting part.** The
+> obvious repair — "District cell filled, every other cell empty, therefore a
+> name tail, join it upward" — is false on this corpus. On 27 July `Dhemaji`,
+> `Nagaon` and `Kamrup (M)` each occupy a row whose every other cell is empty:
+> they are quiet Districts reporting nothing, and that is the identical shape.
+> A geometric rule folds three real Districts into one, and folding Kamrup into
+> Kamrup (M) shades rural Kamrup with Guwahati's flood. **A missing repair is a
+> gap; a wrong merge is a lie.** The two are not symmetric and the rule must not
+> treat them as if they were.
+>
+> **First correction — the join must be evidenced.** Two candidate joins are
+> tried, closed (`Charaid` + `eo`) and spaced (`Karbi` + `Anglong`), and one is
+> taken only if it yields a name in a District vocabulary AND the fragment is
+> not itself a District. Nothing else counts. A name the vocabulary has never
+> heard of is left exactly as DRIMS printed it, which is what makes an
+> incomplete vocabulary safe: 1 August names **Bajali**, created in 2020 and
+> absent from every open dataset this project ships, and it passes through
+> untouched. The failure mode is a name we decline to repair — visible, and
+> refused by the integrity check if it matters — never a name we invent.
+>
+> The vocabulary lives in `src/adapters/pdf/assam-districts.ts` and deliberately
+> **not** in the shared kernel. The domain treats `DistrictName` as an opaque
+> validated string on purpose (ADR-0005); a closed roster in `domain/shared`
+> would invite something to validate against it, and the moment anything does,
+> Bajali and Tamulpur stop being Districts. Down in the adapter it can only ever
+> be a hint about how a PDF was typeset.
+>
+> **Second correction — a block we cannot name is not part of the block above
+> it.** A section's rows used to run until the next label the recogniser
+> recognised, so DRIMS's unlabelled-to-us `Wildlife affected under protected
+> areas description` block was appended to `Infrastructure Damaged - Others` —
+> rows, and, fatally, geometry. Its District column is 7pt wider. On 31 July
+> `Charaideo` in that block reached across the channel into the Revenue Circle
+> column, the two resolved as **one band**, and every Revenue Circle in the
+> bulletin was published as a District (`Cachar Sonai`, `GolaghaKhumtai`,
+> `Kamrup Dispur`, `Mahmora`, `Bokakhat`, …). The glued names were never a row
+> problem; they were this. An unrecognised block now ends the section before it
+> and yields no table of its own.
+>
+> **Third correction — the infrastructure item columns are counted from the
+> right.** Removing the Wildlife block exposed what it had been hiding. The five
+> infrastructure tables were all read with `Infrastructure Damaged - Road`'s
+> ten-column layout, but `- Others` has eleven: it carries an extra `Damages`
+> column on the left, and its right-aligned count column resolves as one band or
+> two depending on whether DRIMS printed `Nil` in it. It only ever appeared to
+> work because *one hyphen* in the Wildlife block, at x=143.78 on page 30 of the
+> 27 July bulletin, bridged two bands and collapsed eleven columns to ten. With
+> that hyphen gone the indices pointed one column left, and the table read the
+> count as the item name. The tables disagree about their left-hand columns and
+> agree about their right-hand ones — item name, department, village, location,
+> latitude, longitude, remarks — so the offsets are now taken from the right
+> edge. That also *fixes* a longstanding misread: the shipped 27 July archive
+> records a damaged asset named `3.37`, reported by a department called
+> `PRAMUD`, in a village called `Fishery`. Those were the count, the owner's
+> name and the department, each read one column to the left of itself.
+>
+> **The general lesson:** the last two corrections are the same mistake as the
+> 28 July one, at a different scale. A geometric feature taken over a whole
+> section is only as robust as the single widest run in it, and a run that got
+> in because we could not name the block it belongs to is not evidence about
+> anything. Exclude what you cannot account for *before* you measure, and do not
+> let a table's column indices be calibrated, silently, by the accident that was
+> hiding the bug.
+
 ## Consequences
 
 **Positive**
