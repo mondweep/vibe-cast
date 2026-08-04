@@ -2,14 +2,14 @@
  * The guarantee that makes shipping generated data safe.
  *
  * `src/generated/newest-bulletin.ts` and `src/generated/bulletin-archive.ts`
- * are committed source: between them they are the thirteen-bulletin archive the
+ * are committed source: between them they are the sixteen-bulletin archive the
  * console opens on, and nothing at build time or run time reparses the PDFs to
  * check them. That is the whole point — the default path costs no pdf.js
  * (NFR-3) — but it means the artefacts could drift from the bulletins they
  * claim to be, and drift in a flood console is figures on a screen that no
  * document supports.
  *
- * So the check moves here. This test parses all thirteen real fixture PDFs,
+ * So the check moves here. This test parses all sixteen real fixture PDFs,
  * fresh, on every run, and asserts the results are the committed constants. It
  * fails if anyone hand-edits a generated file, and it fails if the parser
  * changes without the artefacts being regenerated. Either way the fix is the
@@ -18,8 +18,8 @@
  *     npm run generate:bundled-bulletins
  *
  * It covers **every bundled bulletin**, not just the eager one. An archive
- * verified only at its newest day would be twelve-thirteenths unchecked, and the
- * twelve unchecked days are precisely the ones the Trend view draws.
+ * verified only at its newest day would be fifteen-sixteenths unchecked, and the
+ * fifteen unchecked days are precisely the ones the Trend view draws.
  *
  * Where `golden.test.ts` asserts the parser reads Appendix B correctly, this
  * asserts that what we *ship* is what the parser reads.
@@ -53,7 +53,7 @@ import { createPdfJsLoader, type PdfJsModule } from './pdfjs-loader';
  * Oldest first — the order the generator emits, and the order the archive
  * holds.
  *
- * Thirteen now, not eight. The generator used to hold a hard-coded list of dates
+ * Sixteen now, not eight. The generator used to hold a hard-coded list of dates
  * and therefore silently ignored any fixture the Drive sync added; it now
  * discovers `fixtures/Daily_Flood_Report_YYYYMMDD.pdf` from disk, so this list
  * is the one remaining place where "what is on disk" is restated by hand. It is
@@ -74,6 +74,9 @@ const STAMPS = [
   '20260730',
   '20260731',
   '20260801',
+  '20260802',
+  '20260803',
+  '20260804',
 ] as const;
 
 const fixture = (stamp: string): string =>
@@ -107,7 +110,7 @@ describe('the bundled bulletin archive', () => {
   });
 
   it('carries no half of a wrapped District name', () => {
-    // Ten of these eleven days once shipped at least one: DRIMS wraps a
+    // Ten of the first eleven days once shipped at least one: DRIMS wraps a
     // District name inside the word when the column is narrow, and the parser
     // published each half as a District of its own. `Karbi Anglong` was two
     // Districts on four days; `Bongaigao n` was one on two more.
@@ -130,16 +133,16 @@ describe('the bundled bulletin archive', () => {
     for (const name of names) expect(name).toMatch(/^[A-Z][A-Za-z]+(?:[ ()][A-Za-z()]+)*$/);
   });
 
-  it('holds twelve archived bulletins and one eager one — thirteen in all', () => {
-    // Thirteen because `fixtures/` holds thirteen Daily Flood Report PDFs, one
-    // per day from 20 July to 1 August 2026 inclusive. The eager/archive split
-    // is always "the newest one, and all the rest", so twelve archived follows.
-    expect(ARCHIVED_BULLETINS).toHaveLength(12);
-    expect(BUNDLED_DATES).toHaveLength(13);
-    expect(BUNDLED_RANGE).toEqual({ from: '2026-07-20', to: '2026-08-01', count: 13 });
+  it('holds fifteen archived bulletins and one eager one — sixteen in all', () => {
+    // Sixteen because `fixtures/` holds sixteen Daily Flood Report PDFs, one
+    // per day from 20 July to 4 August 2026 inclusive. The eager/archive split
+    // is always "the newest one, and all the rest", so fifteen archived follows.
+    expect(ARCHIVED_BULLETINS).toHaveLength(15);
+    expect(BUNDLED_DATES).toHaveLength(16);
+    expect(BUNDLED_RANGE).toEqual({ from: '2026-07-20', to: '2026-08-04', count: 16 });
   });
 
-  it('covers thirteen consecutive days, so the console opens on a trend with no gaps', () => {
+  it('covers sixteen consecutive days, so the console opens on a trend with no gaps', () => {
     // The Trend view draws a break wherever a day is missing, and it is right
     // to. That break must never come from the bundle itself.
     //
@@ -166,6 +169,9 @@ describe('the bundled bulletin archive', () => {
       '2026-07-30',
       '2026-07-31',
       '2026-08-01',
+      '2026-08-02',
+      '2026-08-03',
+      '2026-08-04',
     ]);
   });
 
@@ -199,11 +205,11 @@ describe('the bundled bulletin archive', () => {
     expect(bundled.map((r) => r.bulletinId)).toEqual(
       STAMPS.map((stamp) => freshlyParsed.get(stamp)?.bulletinId),
     );
-    expect(new Set(bundled.map((r) => r.bulletinId)).size).toBe(13);
+    expect(new Set(bundled.map((r) => r.bulletinId)).size).toBe(16);
   });
 
   it('is dated and reconciled throughout, so the console never opens on a broken archive', () => {
-    // 23 sections read cleanly on every one of the thirteen. A degraded section
+    // 23 sections read cleanly on every one of the sixteen. A degraded section
     // in bundled history would be a permanent asterisk on the first screen an
     // officer ever sees.
     //
@@ -225,11 +231,11 @@ describe('the bundled bulletin archive', () => {
       expect(report.provenance.every((p) => p.confidence === 'high')).toBe(true);
       expect(report.provenance).toHaveLength(23);
     }
-    // Printed in the page footer: "Report Generated On: 01-08-2026 09:31 PM".
-    expect(NEWEST_BUNDLED_BULLETIN.generatedAt).toBe('01-08-2026 09:31 PM');
+    // Printed in the page footer: "Report Generated On: 04-08-2026 08:07 PM".
+    expect(NEWEST_BUNDLED_BULLETIN.generatedAt).toBe('04-08-2026 08:07 PM');
   });
 
-  it('reports the verified statewide affected population for each of the thirteen days', () => {
+  it('reports the verified statewide affected population for each of the sixteen days', () => {
     // Independently verified against the printed bulletins — each figure is the
     // `Total Population` cell of the PDF's own `Total` row in the Population
     // And Crop Area Submerged section, read through the text layer without this
@@ -260,10 +266,16 @@ describe('the bundled bulletin archive', () => {
       ['2026-07-31', { kind: 'known', unit: 'count', value: 192799 }],
       // "Total 75388 76104 27345 178837 15060", page 1.
       ['2026-08-01', { kind: 'known', unit: 'count', value: 178837 }],
+      // "Total 60387 56605 19211 136203 15422", page 1.
+      ['2026-08-02', { kind: 'known', unit: 'count', value: 136203 }],
+      // "Total 56261 53224 18587 128072 14230.148", page 2.
+      ['2026-08-03', { kind: 'known', unit: 'count', value: 128072 }],
+      // "Total 53770 51434 16933 122137 15342.92", page 2.
+      ['2026-08-04', { kind: 'known', unit: 'count', value: 122137 }],
     ]);
   });
 
-  it('reports the verified relief posture for each of the thirteen days', () => {
+  it('reports the verified relief posture for each of the sixteen days', () => {
     // The three figures the response views are built on, pinned for the same
     // reason and read the same way. Relief Camps and Relief Distribution
     // Centres share one `Total` row in the Relief Camps / Centres Opened
@@ -301,6 +313,18 @@ describe('the bundled bulletin archive', () => {
       // "Total 61 44 17" / "Total 11489 5053 4915 1485 27 9" /
       // "Total 5569 2581 1743 1245 682 1054 5200", page 2.
       { date: '2026-08-01', camps: known(44), inmates: known(11489), nonCamp: known(5569) },
+      // "Total 54 39 15" / "Total 10844 4780 4634 1399 24 7" /
+      // "Total 2927 1294 1094 539 7553 6984 8800", pages 1 and 2.
+      { date: '2026-08-02', camps: known(39), inmates: known(10844), nonCamp: known(2927) },
+      // "Total 55 38 17" / "Total 11066 4835 4738 1462 24 7" /
+      // "Total 184 81 70 33 11674 6506 939", page 2. Non-camp inmates really
+      // does fall from 2,927 to 184 in a day while camp inmates rise — the
+      // three components sum to their leading cell in both, so it is what the
+      // bulletin says rather than a column read one place over.
+      { date: '2026-08-03', camps: known(38), inmates: known(11066), nonCamp: known(184) },
+      // "Total 55 39 16" / "Total 12382 5018 4926 2402 29 7" /
+      // "Total 5475 2127 2006 1342 4959 3607 0", pages 2 and 3.
+      { date: '2026-08-04', camps: known(39), inmates: known(12382), nonCamp: known(5475) },
     ]);
   });
 
@@ -442,20 +466,41 @@ describe('the bundled bulletin archive', () => {
   });
 
   it('preserves unknown as unknown, not as zero (ADR-0005)', () => {
-    // Dibrugarh is the sharpest case in the 30 July bulletin, and it is the
-    // same shape Dhemaji had on 27 July: the Population And Crop Area Submerged
-    // table gives it an explicit reported zero, and the Villages Affected table
-    // does not list it at all — that table names only the eight affected
-    // districts (Golaghat 69, Sivasagar 216, Biswanath 4, Charaideo 66, Kamrup
-    // (M) 8, Jorhat 66, Dhemaji 1, Nagaon 7, Total 437). Serialising through
-    // TypeScript source must not flatten the absent row into the reported zero.
+    // The shape that matters: a District the Population And Crop Area Submerged
+    // table gives an explicit reported zero, and the Villages Affected table
+    // does not list at all. Those two are different facts — "reported nothing
+    // happened" and "did not report" — and serialising through TypeScript
+    // source must not flatten the second into the first.
     //
-    // Dhemaji itself is no longer the example: on 30 July it *is* affected, with
-    // one village, so it no longer demonstrates the distinction.
-    const dibrugarh = NEWEST_BUNDLED_BULLETIN.districts.find(
-      (d) => String(d.district) === 'Dibrugarh',
+    // ANCHORED ON AN ARCHIVED DAY, ON PURPOSE. This test used to read
+    // `NEWEST_BUNDLED_BULLETIN`, which meant its subject changed every time a
+    // bulletin was uploaded: the example was Dhemaji, then Dibrugarh, and on
+    // 4 August it was nobody at all — every District that day reports both
+    // figures, so the newest bulletin cannot demonstrate the distinction and
+    // the test failed for a reason that said nothing about ADR-0005. 27 July is
+    // a fixed day in the archive and stays a fixed day.
+    //
+    // Dhemaji on 27 July: the Population table reports 0, and the Villages
+    // Affected table names only the affected districts, of which it is not one.
+    const dhemaji = ARCHIVED_BULLETINS.find((r) => String(r.reportDate) === '2026-07-27')
+      ?.districts.find((d) => String(d.district) === 'Dhemaji');
+
+    expect(dhemaji).toBeDefined();
+    expect(dhemaji?.population.total).toEqual({ kind: 'known', unit: 'count', value: 0 });
+    expect(dhemaji?.villagesAffected).toEqual({ kind: 'unknown', unit: 'count' });
+
+    // And the distinction is not a curiosity of one row: it must survive across
+    // the archive. Without this, a change that coerced every unknown to zero
+    // would leave the pin above as the only thing standing, and a single pin is
+    // one careless "fix" away from being deleted as an outlier.
+    const preserved = [...ARCHIVED_BULLETINS, NEWEST_BUNDLED_BULLETIN].flatMap((report) =>
+      report.districts.filter(
+        (d) =>
+          d.population.total.kind === 'known' &&
+          d.population.total.value === 0 &&
+          d.villagesAffected.kind === 'unknown',
+      ),
     );
-    expect(dibrugarh?.population.total).toEqual({ kind: 'known', unit: 'count', value: 0 });
-    expect(dibrugarh?.villagesAffected).toEqual({ kind: 'unknown', unit: 'count' });
+    expect(preserved.length).toBeGreaterThan(20);
   });
 });

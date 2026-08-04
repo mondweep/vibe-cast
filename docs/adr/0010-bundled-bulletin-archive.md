@@ -7,8 +7,12 @@
   the foot of this record.
 - **Amended:** 2026-08-02 — the archive grew to thirteen (20 July to 1 August)
   once the wrapped-District-name defect below was fixed and 31 July could be
-  read at all. Figures throughout have been restated for the thirteen-bulletin
-  archive; the decision itself is unchanged.
+  read at all.
+- **Amended:** 2026-08-04 — the archive grew to sixteen (20 July to 4 August).
+  Three bulletins added with no code change of any kind: the first growth since
+  this record was opened that cost nothing but a regeneration. Figures
+  throughout have been restated for the sixteen-bulletin archive; the decision
+  itself is unchanged.
 - **Deciders:** Composition swarm
 
 ## Context
@@ -31,7 +35,7 @@ across time were all answered with an instruction to go and do some work. The
 recipient saw the shape of a product, not the product.
 
 **Consecutive real bulletins now exist in `fixtures/`.** Eight when this was
-decided (20 to 27 July 2026), thirteen today (20 July to 1 August), no gaps —
+decided (20 to 27 July 2026), sixteen today (20 July to 4 August), no gaps —
 the run crosses a month boundary and is still unbroken — every one parsing at
 23/23 sections with zero degraded. They are not a demonstration
 dataset. They are the PDFs DRIMS published, read by the same parser that reads
@@ -40,9 +44,9 @@ example understates it.
 
 The cost is the thing that had to be looked at rather than assumed. First paint
 was 232.0 kB gzipped against the NFR-4 budget of 300 kB. The parsed reports are
-~3.4 MB of TypeScript; built and minified, the twelve historical ones come to
-**166 kB gzipped**. Adding them eagerly would put first paint over budget, and
-would make every visitor download twelve bulletins before seeing anything, most
+~3.8 MB of TypeScript; built and minified, the fifteen historical ones come to
+**192 kB gzipped**. Adding them eagerly would put first paint over budget, and
+would make every visitor download fifteen bulletins before seeing anything, most
 of whom will look at one screen and leave.
 
 ## Decision
@@ -57,8 +61,8 @@ for one.**
 
 | Module | Contents | Loading |
 |---|---|---|
-| `src/generated/newest-bulletin.ts` | the newest report (1 August) | eager, in the entry chunk |
-| `src/generated/bulletin-archive.ts` | the twelve older reports | dynamic import only |
+| `src/generated/newest-bulletin.ts` | the newest report (4 August) | eager, in the entry chunk |
+| `src/generated/bulletin-archive.ts` | the fifteen older reports | dynamic import only |
 | `src/generated/bundled-bulletins.ts` | dates, range, and the `import()` | eager, ~0.7 kB |
 
 Discovery, rather than a list, is deliberate and was learned the hard way — see
@@ -70,7 +74,7 @@ never have to run pdf.js in Node — ADR-0007), the PDFs never reach the bundle,
 and the shape stays under the type checker.
 
 Shipping the parsed reports rather than the PDFs is what makes any of this
-affordable: 15 MB of PDF becomes 166 kB gzipped of data, and the default path
+affordable: 18 MB of PDF becomes 192 kB gzipped of data, and the default path
 loads no pdf.js at all (NFR-3).
 
 ### 2. The split is enforced mechanically, not asserted
@@ -94,7 +98,7 @@ It then prints measured gzipped first paint and fails if it exceeds 300 kB.
 `src/adapters/pdf/bundled-bulletins.test.ts` reparses every fixture on every test
 run and asserts the committed artefacts deep-equal the result. It covers
 **every** bundled bulletin, not just the eager one: an archive verified only at
-its newest day would be twelve-thirteenths unchecked, and the twelve unchecked
+its newest day would be fifteen-sixteenths unchecked, and the fifteen unchecked
 days are precisely the ones the Trend view draws. It also pins the verified statewide
 affected population, relief camps, camp inmates and non-camp inmates for each
 day — each read from the PDF's own printed `Total` row through the text layer,
@@ -126,8 +130,8 @@ something the officer loaded. Four rules follow:
 ### 5. The interim state is stated, not smoothed over
 
 Between first paint and the archive arriving, the console genuinely holds one
-bulletin and is about to hold thirteen. It says so. The Trend and Cumulative &
-Peak views render "Loading the bundled history — 12 more real ASDMA bulletins are
+bulletin and is about to hold sixteen. It says so. The Trend and Cumulative &
+Peak views render "Loading the bundled history — 15 more real ASDMA bulletins are
 on their way", and the copy that would otherwise appear ("1 bulletin held — load an
 earlier DRIMS PDF to compare", "load earlier DRIMS PDFs to accumulate across
 days") is suppressed while that is true.
@@ -143,14 +147,17 @@ loaded", rather than a one-bulletin console that looks like a design choice.
 
 ## Consequences
 
-**First paint: 232.0 kB → 238.3 kB gzipped** (79% of the NFR-4 budget, measured
-by `verify:lazy-archive` against the built `dist/`). It went *down* when the
-archive grew to thirteen, which is worth stating because it sounds wrong: first
-paint carries only the newest bulletin, and 1 August is a smaller bulletin than
-30 July. The 166 kB archive chunk arrives after paint, on its own.
+**First paint: 232.0 kB → 235.7 kB gzipped** (79% of the NFR-4 budget, measured
+by `verify:lazy-archive` against the built `dist/`). It has gone *down* with each
+of the last two additions, which is worth stating because it sounds wrong: first
+paint carries only the newest bulletin, and the flood has been receding, so each
+new newest bulletin is smaller than the one it replaced. The 192 kB archive chunk
+arrives after paint, on its own. The relationship to watch is therefore not
+"archive size vs budget" but "how bad is the newest day" — a severe bulletin
+arriving is what would move first paint, not a long history.
 
-**The Trend view shows a twelve-day series out of the box, with no gaps.** 20
-July to 1 August is consecutive, so the no-interpolation guarantee is not
+**The Trend view shows a fifteen-day series out of the box, with no gaps.** 20
+July to 4 August is consecutive, so the no-interpolation guarantee is not
 exercised by the default state — it is still exercised by tests that deliberately
 withhold days. That contiguity is a property of the fixtures and not a safe
 assumption: it was briefly broken (see the *Amendment*), and
@@ -160,7 +167,7 @@ boundary, which is the other way an unbroken run can be made to look broken;
 31 July to 1 August is asserted to be one step.
 
 **Cumulative & Peak is meaningful on first load**, and the flow/stock rule holds
-across a period thirteen days long: flood deaths accumulate to 75, Population
+across a period sixteen days long: flood deaths accumulate to 83, Population
 Affected peaks at 721,024 on 23 July with no total anywhere, Inmates in Relief
 Camps peaks three days later on the 26th at 37,724, and Crop Area Submerged peaks
 on a third day again, 24 July at 56,606.777 Hect. Those lags — water, then camps,
@@ -171,9 +178,15 @@ The death toll no longer carries the "this is a floor" qualifier it had at
 eleven bulletins, and that is a repair rather than a loss of caution. The
 qualifier fired because twelve District rows reported no flood-death figure —
 and every one of those twelve was half of a wrapped District name, a row the
-parser had invented, which of course reported nothing. 75 is the toll.
+parser had invented, which of course reported nothing. 83 is the toll.
 
-**The archive ages.** It is fixed at build time and 1 August 2026 will not get any
+The sixteen-day series is long enough to show something a shorter one could not:
+camp inmates bottom out on 2 August at 10,844 and rise for the next two days
+while the affected population keeps falling. People move into camps as the water
+recedes. That is the lag this view exists to make visible, and it is invisible
+in any window shorter than about a fortnight.
+
+**The archive ages.** It is fixed at build time and 4 August 2026 will not get any
 newer. The staleness banner is what carries this, and it now measures against the
 newest bulletin *held* rather than against a designated sample — which is both
 more correct and simpler than the four-condition retention rule it replaces.
@@ -210,7 +223,7 @@ is a lie.
 ## Alternatives considered
 
 **Ship them all eagerly.** Over the NFR-4 budget, and every visitor pays for
-twelve bulletins they may never look at. Rejected on the budget alone; the waste would
+fifteen bulletins they may never look at. Rejected on the budget alone; the waste would
 have been reason enough. The margin only gets thinner as the archive grows,
 which is the point of measuring it in CI rather than reasoning about it.
 
@@ -226,7 +239,7 @@ anything.
 
 **Show nothing until the archive lands.** Removes the interim state by making
 first paint useless. The eager bulletin exists precisely so the console renders
-with real figures immediately; waiting on 166 kB to show anything would trade the
+with real figures immediately; waiting on 192 kB to show anything would trade the
 NFR-3 guarantee for a cosmetic one.
 
 ## Amendment — 2026-07-31
@@ -299,3 +312,41 @@ changed the table's width and forced someone to look at the columns.
 **The archive chunk went 95 kB → 166 kB gzipped**, almost none of it the two new
 days. That is the 490 items. It is lazy, so first paint was unaffected — and in
 fact fell to 238.3 kB, because the eager bulletin is now a smaller one.
+
+## Amendment — 2026-08-04
+
+Three more bulletins (2, 3 and 4 August), the archive at sixteen, and **no code
+change of any kind** — the first growth since this record was opened that cost
+nothing but `npm run generate:bundled-bulletins`. All three parsed at 23/23
+sections with zero reconciliation failures on the first attempt, and their
+District names came through whole, which is the wrapped-name repair holding on
+bulletins it was not written against.
+
+What did have to change was tests, and the pattern in *which* tests is the thing
+worth recording. Twenty-seven failed, and all but one were a count or a date that
+had been correct when it was written:
+
+- Anything phrased "thirteen bulletins" or "20 July to 1 August".
+- Every staleness clock, because ages are measured against the newest bundled
+  bulletin and it moved two days.
+- `theirOwnBulletin` in `app.test.tsx`, dated 2 August so as to outrank the
+  bundle — and now *inside* it. This is the second time that fixture has been
+  overtaken. It is the failure its own comment warns about, and it is caught only
+  because the tests assert what the officer's own load puts on screen rather than
+  merely that something is on screen.
+
+The exception is `preserves unknown as unknown, not as zero`, which failed for a
+reason worth more than its fix. It read `NEWEST_BUNDLED_BULLETIN` and looked for
+a District with a reported zero population and no row in the Villages Affected
+table. Its subject therefore changed every time a bulletin was uploaded —
+Dhemaji, then Dibrugarh — and on 4 August it was nobody at all: every District
+that day reports both figures. The ADR-0005 guarantee was intact; the test could
+simply no longer see it, and it failed in a way that said nothing about what it
+was guarding.
+
+It now anchors on 27 July, a day in the archive that does not move, and adds a
+count across the whole archive so it cannot pass vacuously either. The general
+rule this suggests: **a test whose subject is "the newest bulletin" is a test
+whose subject changes without anyone deciding to change it.** That is right for
+assertions about what the console anchors on, and wrong for assertions about a
+data property that merely happens to be demonstrable there.

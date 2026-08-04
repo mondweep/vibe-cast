@@ -75,44 +75,44 @@ describe('the bundled Assam District boundaries', () => {
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
   });
 
-  it('places every District of the real bundled 1 August bulletin bar Bajali', () => {
-    // The reconciliation that matters, run against the shipped 2026-08-01
+  it('places every District of the real bundled 4 August bulletin', () => {
+    // The reconciliation that matters, run against the shipped 2026-08-04
     // bulletin — the newest the console holds, and therefore the one the
     // choropleth is actually drawn from — rather than a fixture.
     //
-    // Twelve Districts are named. Eleven find a polygon; the twelfth is
-    // `Bajali`, and unlike every name that used to fail here it is not a
-    // parser defect. Bajali is a real District, carved out of Barpeta in 2020,
-    // and the boundary data is Census 2011 — so there is no polygon for it and
-    // there cannot be one until the boundary set is replaced.
+    // Ten Districts are named and all ten find a polygon, so on this day the
+    // map is complete. That is a weaker statement than it looks and is why the
+    // archive-wide test below exists: which Districts a bulletin happens to
+    // name changes daily, so a green result here is a fact about 4 August and
+    // not a guarantee about the alias table.
     //
-    // It is deliberately NOT aliased to Barpeta. Bajali sits inside the old
-    // Barpeta polygon, so shading Barpeta would claim a flood across an area
-    // several times the one that reported it, under the name of a District that
-    // reported nothing — and if Barpeta ever reports on the same day, two rows
-    // would land on one polygon. That is the `Kamrup`/`Kamrup (M)` trap in
-    // another costume: a wrong answer where a missing one was available. The
-    // map names it under "the boundary data has no polygon for them" and its
-    // figures stay in every table and ranking.
+    // `Bajali` is the standing counterexample and it has simply moved: it is
+    // reported on 1 August, which is now archived rather than newest. It is a
+    // real District created in 2020 that the Census-2011 boundary set predates,
+    // and it is deliberately NOT aliased onto Barpeta — Bajali sits inside the
+    // old Barpeta polygon, so shading Barpeta would claim a flood across an
+    // area several times the one that reported it, under the name of a District
+    // that reported nothing, and two rows would collide on one polygon if
+    // Barpeta ever reports the same day. That is the `Kamrup`/`Kamrup (M)` trap
+    // in another costume: a wrong answer where a missing one was available.
     const reported = NEWEST_BUNDLED_BULLETIN.districts.map((d) => String(d.district));
-    expect(reported).toHaveLength(12);
+    expect(reported).toHaveLength(10);
 
     const unplaced = reported.filter((name) => boundaryFor(name) === undefined);
-    expect(unplaced).toEqual(['Bajali']);
+    expect(unplaced).toEqual([]);
 
-    // And each of the eleven placed ones lands on a different polygon — no two
-    // bulletin rows collapse onto one District.
-    const placed = reported
-      .filter((name) => boundaryFor(name) !== undefined)
-      .map((name) => boundaryFor(name)?.district);
-    expect(placed).toHaveLength(11);
+    // And each lands on a different polygon — no two bulletin rows collapse
+    // onto one District. `Kamrup (M)` is the one that needs the alias table,
+    // and rural `Kamrup` must never be what it resolves to.
+    const placed = reported.map((name) => boundaryFor(name)?.district);
     expect(new Set(placed).size).toBe(placed.length);
+    expect(placed).toContain('Kamrup Metropolitan');
   });
 
   it('places every District of the archive that the parser reads as a District', () => {
-    // The archive is twelve more days of real bulletins, and 20 July alone
+    // The archive is fifteen more days of real bulletins, and 20 July alone
     // names 18 Districts. A name the alias table cannot place vanishes from the
-    // choropleth, so all thirteen days are checked, not just the one the
+    // choropleth, so all sixteen days are checked, not just the one the
     // console anchors on.
     //
     // This list used to hold sixteen entries across five days, and every one of
