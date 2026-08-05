@@ -164,7 +164,7 @@ const CompletenessMark = ({ figure }: { readonly figure: PeriodFigureViewModel }
 );
 
 export const PeriodSummary = ({ summary, archive }: PeriodSummaryProps) => {
-  const { coverage, cumulative, peaks } = summary;
+  const { coverage, cumulative, peaks, exposure } = summary;
   // While the bundled archive is in flight the console is about to hold eleven
   // bulletins, so telling the officer to go and find earlier PDFs would be
   // advice it retracts on its own a moment later.
@@ -322,6 +322,63 @@ export const PeriodSummary = ({ summary, archive }: PeriodSummaryProps) => {
           </table>
         </TableScroll>
         <p className="text-small text-muted">{peaks[0]?.caveat}</p>
+      </section>
+
+      <section className="panel" aria-labelledby="exposure-heading">
+        <div className="panel__head">
+          <h2 className="panel__title" id="exposure-heading">
+            Exposure in person-days
+          </h2>
+          <span className="panel__note">
+            Point-in-time levels added up across the days — one person for one day.
+          </span>
+        </div>
+        <p className="text-small text-muted">
+          These are the only figures here that <em>are</em> a running total of a
+          point-in-time level, and they are legitimate because the unit changes:
+          adding daily camp occupancy does not give people, it gives person-days.
+          Relief is costed per person per day, so this is the shape a budget is
+          built from — and it is the one thing a single bulletin cannot produce
+          at all.
+        </p>
+        <TableScroll label="Exposure in person-days table">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Measure</th>
+                <th scope="col" className="numeric">
+                  Person-days
+                </th>
+                <th scope="col" className="numeric">
+                  Days counted
+                </th>
+                <th scope="col">Working</th>
+              </tr>
+            </thead>
+            <tbody>
+              {exposure.map((figure) => (
+                <tr key={figure.key} data-exposure={figure.key}>
+                  <th scope="row">
+                    {figure.label} <span className="figure-tag">derived</span>
+                  </th>
+                  {/*
+                    The unit is printed next to every value, never in the column
+                    heading alone. A figure copied out of this table has to carry
+                    it, because "302,253" read as people is the exact mistake the
+                    person-day type exists to prevent.
+                  */}
+                  <td className="numeric" data-person-days={figure.key}>
+                    {figureOf(figure.personDays, 0)}
+                    <span className="text-small text-muted"> {figure.unit}</span>
+                  </td>
+                  <td className="numeric">{figure.daysCounted}</td>
+                  <td className="text-small figure">{figure.workings}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableScroll>
+        <p className="text-small text-muted">{exposure[0]?.caveat}</p>
       </section>
     </div>
   );

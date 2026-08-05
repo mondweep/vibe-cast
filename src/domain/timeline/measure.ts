@@ -486,6 +486,30 @@ export const CUMULATIVE_MEASURES: readonly FlowMeasure[] = [
   PERSONS_EVACUATED_BY_BOAT,
 ];
 
+/**
+ * The stocks worth integrating into person-days (ADR-0012), in listing order.
+ *
+ * A deliberately short list, and the shortness is the point. Integrating a
+ * stock is only meaningful when the resulting person-days *mean* something, and
+ * they mean something only for stocks counting **people**: relief is costed per
+ * person per day, so camp-inmate-days and non-camp-inmate-days are what a
+ * budget is actually built from, and population-affected-days is the exposure
+ * that drives livelihood interruption.
+ *
+ * `CROP_AREA_SUBMERGED` is a stock and is deliberately absent: hectare-days is
+ * arithmetically computable and answers no question anybody asks — crop loss is
+ * driven by peak submerged area, not by how long the water sat. `RELIEF_CAMPS`
+ * is absent for the same reason; camp-days is a facilities-management figure,
+ * not a relief cost.
+ *
+ * A stock reaching this list should have to justify itself in those terms.
+ */
+export const EXPOSURE_MEASURES: readonly StockMeasure[] = [
+  CAMP_INMATES,
+  NON_CAMP_INMATES,
+  POPULATION_AFFECTED,
+];
+
 /** The stocks a period summary reports as peak and latest, in listing order. */
 export const PEAK_ONLY_MEASURES: readonly StockMeasure[] = [
   POPULATION_AFFECTED,

@@ -21,10 +21,12 @@
 import type { BulletinTimeline } from '../domain/timeline/bulletin-timeline';
 import {
   CUMULATIVE_MEASURES,
+  EXPOSURE_MEASURES,
   PEAK_ONLY_MEASURES,
   type FlowMeasure,
   type StockMeasure,
 } from '../domain/timeline/measure';
+import { integrateOverPeriod } from '../domain/timeline/stock-integral';
 import {
   cumulativeOf,
   peakOf,
@@ -33,6 +35,7 @@ import {
 } from '../domain/timeline/period-totals';
 import type {
   PeriodCoverageViewModel,
+  PeriodExposureViewModel,
   PeriodFigureViewModel,
   PeriodSummaryViewModel,
 } from '../adapters/ui/view-models';
@@ -99,8 +102,39 @@ const peakRow = (timeline: BulletinTimeline, measure: StockMeasure): PeriodFigur
   };
 };
 
+/**
+ * A stock integrated over the period, in person-days.
+ *
+ * Note what this row does NOT have: a `peak`. A peak person-day figure is not a
+ * thing — the integral is the whole period by definition — and offering an
+ * empty column for one would invite somebody to fill it.
+ *
+ * The unit is copied out explicitly rather than left implicit in the number,
+ * because this is the boundary where a typed `PersonDays` becomes a plain
+ * `number` for rendering, and the unit is all that survives to say what the
+ * number is.
+ */
+const exposureRow = (
+  timeline: BulletinTimeline,
+  measure: StockMeasure,
+): PeriodExposureViewModel => {
+  const integral = integrateOverPeriod(timeline, measure);
+
+  return {
+    key: measure.key,
+    label: measure.label,
+    unit: integral.total.unit,
+    personDays: integral.total.kind === 'known' ? integral.total.value : undefined,
+    daysCounted: integral.daysCounted,
+    workings: integral.substitution,
+    completeness: integral.completeness,
+    caveat: integral.caveat,
+  };
+};
+
 export const periodSummaryFrom = (timeline: BulletinTimeline): PeriodSummaryViewModel => ({
   coverage: coverageViewModel(periodCoverage(timeline)),
   cumulative: CUMULATIVE_MEASURES.map((measure) => cumulativeRow(timeline, measure)),
   peaks: PEAK_ONLY_MEASURES.map((measure) => peakRow(timeline, measure)),
+  exposure: EXPOSURE_MEASURES.map((measure) => exposureRow(timeline, measure)),
 });

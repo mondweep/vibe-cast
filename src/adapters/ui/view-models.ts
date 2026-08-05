@@ -492,6 +492,33 @@ export type PeriodSummaryViewModel = {
   readonly cumulative: readonly PeriodFigureViewModel[];
   /** Stocks: peak and latest only. */
   readonly peaks: readonly PeriodFigureViewModel[];
+  /** Stocks integrated over the period, in person-days (ADR-0012). */
+  readonly exposure: readonly PeriodExposureViewModel[];
+};
+
+/**
+ * A stock integrated across the period — camp-inmate-days and the like.
+ *
+ * A separate view-model type from `PeriodFigureViewModel`, on purpose. Person-
+ * days and headcounts must not share a row shape, because sharing one is how a
+ * template ends up rendering 302,253 person-days under a column heading that
+ * says people. `unit` is required and carried through to the markup so the
+ * figure cannot be printed bare.
+ */
+export type PeriodExposureViewModel = {
+  readonly key: string;
+  /** ASDMA's heading for the underlying stock, e.g. "Inmates in Relief Camps". */
+  readonly label: string;
+  /** Always `'person-days'`. Present so a renderer cannot omit it by default. */
+  readonly unit: string;
+  /** `undefined`, never 0, when no loaded bulletin reported the stock. */
+  readonly personDays: number | undefined;
+  /** How many bulletins contributed a level to the integral. */
+  readonly daysCounted: number;
+  /** The sum with real numbers in it: "100 + 150 = 250". */
+  readonly workings: string;
+  readonly completeness: PeriodCompleteness;
+  readonly caveat: string;
 };
 
 export const PERIOD_COMPLETENESS_LABELS: Record<PeriodCompleteness, string> = {

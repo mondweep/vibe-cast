@@ -123,6 +123,7 @@ describe('PeriodSummary — what a total is allowed to claim', () => {
       },
       cumulative: [],
       peaks: [],
+      exposure: [],
     });
 
     expect(screen.getByText(/nothing to accumulate/)).toBeTruthy();
@@ -165,13 +166,41 @@ describe('PeriodSummary — peaks, and the totals that must never appear', () =>
 
   it('offers no cumulative for a point-in-time figure, and says why', () => {
     // 654,838 + 524,733 + … is 3,205,823 — a number that would lead a bulletin
-    // and that counts the same person six times. It must not be computable
-    // from anything on this screen.
+    // and that counts the same person six times. The peaks table must offer no
+    // way to reach it.
     const { container } = renderSummary();
 
     const row = container.querySelector('[data-peak="population-affected"]') as HTMLElement;
     expect(row.textContent).toContain('Not applicable — point-in-time figure');
-    expect(screen.queryByText('3,205,823')).toBeNull();
+    expect(row.textContent).not.toContain('3,205,823');
+  });
+
+  it('prints that same 3,205,823 only as person-days, and never bare', () => {
+    // The sharpest case in the whole view, and the reason ADR-0012 exists.
+    //
+    // This assertion used to be `queryByText('3,205,823')).toBeNull()` — the
+    // number must never appear at all — and that was right while the only way
+    // to produce it was adding a stock as if it were people. It is now also the
+    // correct population-affected exposure in person-days, which is a different
+    // quantity that happens to share its digits.
+    //
+    // So "never appears" is no longer the guarantee worth having. This is:
+    // wherever it appears, the unit appears with it, and it appears nowhere
+    // else on the screen.
+    const { container } = renderSummary();
+
+    const exposureRow = container.querySelector(
+      '[data-exposure="population-affected"]',
+    ) as HTMLElement;
+    expect(exposureRow.textContent).toContain('3,205,823');
+    expect(exposureRow.textContent).toContain('person-days');
+
+    // And nowhere outside that row. If it ever leaks into the cumulative or
+    // peaks tables, it is a headcount again and it is wrong again.
+    const everywhereElse = [
+      ...container.querySelectorAll('[data-peak], [data-cumulative]'),
+    ].map((element) => element.textContent ?? '');
+    expect(everywhereElse.filter((text) => text.includes('3,205,823'))).toEqual([]);
   });
 
   it('explains the flow/stock rule in the officer’s own terms', () => {

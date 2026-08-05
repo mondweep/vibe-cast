@@ -534,6 +534,18 @@ const PERIOD_CAVEAT =
   '2026-07-27, 2 days missing (2026-07-23, 2026-07-24). No bulletin covers the missing ' +
   'days, so anything reported on them is not in this total. Nothing is estimated for them.';
 
+/**
+ * The person-day caveat, which must say in prose what the type says in code.
+ *
+ * 3,205,823 is the number this project's own PRD uses as the cautionary
+ * example of adding a stock — and as person-days it is perfectly correct. That
+ * is exactly why the unit has to travel with it.
+ */
+const EXPOSURE_CAVEAT =
+  'Derived here, not reported by ASDMA: Population Affected integrated over 6 bulletins, ' +
+  '2026-07-20 to 2026-07-27, 2 days missing. This is a count of person-days — one person ' +
+  'for one day — and not a count of people.';
+
 const PEAK_CAVEAT =
   'Derived here, not reported by ASDMA: highest and latest across 6 bulletins, ' +
   '2026-07-20 to 2026-07-27, 2 days missing (2026-07-23, 2026-07-24). This is a ' +
@@ -613,6 +625,28 @@ export const periodSummaryFixture: PeriodSummaryViewModel = {
       latestDate: '2026-07-27',
       completeness: 'partial',
       caveat: PEAK_CAVEAT,
+    },
+  ],
+  exposure: [
+    {
+      key: 'camp-inmates',
+      label: 'Inmates in Relief Camps',
+      unit: 'person-days',
+      personDays: 151_460,
+      daysCounted: 6,
+      workings: '9697 + 12375 + 24418 + 18902 + 37724 + 28695 = 151811',
+      completeness: 'partial',
+      caveat: EXPOSURE_CAVEAT,
+    },
+    {
+      key: 'population-affected',
+      label: 'Population Affected',
+      unit: 'person-days',
+      personDays: 3_205_823,
+      daysCounted: 6,
+      workings: '362933 + 564660 + 653164 + 654838 + 524733 + 445495 = 3205823',
+      completeness: 'partial',
+      caveat: EXPOSURE_CAVEAT,
     },
   ],
 };
