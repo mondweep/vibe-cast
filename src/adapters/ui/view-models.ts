@@ -547,6 +547,55 @@ export type PeriodReplacementViewModel = {
   readonly micro: PeriodTierViewModel;
   /** Public infrastructure. Never added to `micro`. */
   readonly macro: PeriodTierViewModel;
+  /** The whole page in six lines, before any detail. */
+  readonly executive: PeriodExecutiveViewModel;
+  /** Every assumption in the model, in one place, ranked by how much it moves. */
+  readonly assumptionRegister: readonly PeriodAssumptionViewModel[];
+};
+
+/**
+ * The executive summary.
+ *
+ * Built from the same view model as the panels below it rather than written as
+ * copy, so it cannot drift from the figures it summarises. Every number here
+ * appears again lower down with its derivation attached.
+ */
+export type PeriodExecutiveViewModel = {
+  readonly dwellingsDestroyed: number | undefined;
+  readonly householdsAffected: number | undefined;
+  /** Build-back-better reconstruction of destroyed dwellings. */
+  readonly dwellingsLow: number | undefined;
+  readonly dwellingsCentral: number | undefined;
+  readonly dwellingsHigh: number | undefined;
+  readonly microLow: number;
+  readonly microCentral: number;
+  readonly microHigh: number;
+  readonly macroLow: number;
+  readonly macroCentral: number;
+  readonly macroHigh: number;
+  /** How many of the model's inputs are assumptions rather than published rates. */
+  readonly assumptionCount: number;
+  readonly publishedRateCount: number;
+};
+
+/**
+ * One assumption, wherever in the model it lives.
+ *
+ * `movesBy` is the ratio of the high bound to the low bound — a crude but
+ * honest proxy for how much of the answer this one judgement is carrying. The
+ * register is sorted by it, so the reader's eye lands on the assumptions worth
+ * arguing with rather than on the ones that happen to come first.
+ */
+export type PeriodAssumptionViewModel = {
+  readonly label: string;
+  /** Which figure it feeds, e.g. "Dwelling replacement". */
+  readonly affects: string;
+  readonly value: number;
+  readonly unit: string;
+  readonly low: number;
+  readonly high: number;
+  readonly reason: string;
+  readonly movesBy: number;
 };
 
 /**

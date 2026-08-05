@@ -34,7 +34,8 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [`docs/BULLETIN-SYNC.md`](docs/BULLETIN-SYNC.md) | Keeping the bundled archive current from a Drive folder, and what to do when it breaks |
 | [`docs/PRD-REHABILITATION-ECONOMICS.md`](docs/PRD-REHABILITATION-ECONOMICS.md) | *In build:* costing rehabilitation from the bulletins — damage, loss, needs, funding gap |
 | [`docs/FEASIBILITY-REHABILITATION-ECONOMICS.md`](docs/FEASIBILITY-REHABILITATION-ECONOMICS.md) | *In build:* whether that model is buildable on this data, measured against the archive |
-| [`docs/FEASIBILITY-REPLACEMENT-COST.md`](docs/FEASIBILITY-REPLACEMENT-COST.md) | *Proposed:* replacement cost and working-capital loss from documented assumptions |
+| [`docs/FEASIBILITY-REPLACEMENT-COST.md`](docs/FEASIBILITY-REPLACEMENT-COST.md) | Replacement cost and working-capital loss from documented assumptions |
+| [`docs/ASSUMPTIONS.md`](docs/ASSUMPTIONS.md) | Every judgement the cost model makes, why, and how much of the answer it carries |
 
 ### Architecture decisions
 

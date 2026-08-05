@@ -282,3 +282,91 @@ describe('ReconstructionCost — the two recovery tiers', () => {
     expect(row.textContent).toMatch(/\[0\.08–0\.4\]/);
   });
 });
+
+describe('ReconstructionCost — the executive summary', () => {
+  it('comes before every detail panel', () => {
+    // The whole point: a reader who stops after the first screen should still
+    // have the scale, the method and the caveats.
+    const { container } = renderSummary();
+
+    const exec = container.querySelector('[data-executive]');
+    const firstDetail = container.querySelector('section[aria-labelledby="replacement-heading"]');
+    expect(exec).not.toBeNull();
+    expect(
+      exec!.compareDocumentPosition(firstDetail!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('states the method: published rates combined under our assumptions', () => {
+    renderSummary();
+
+    expect(screen.getByText(/9 published rates/)).toBeTruthy();
+    expect(screen.getByText(/15 assumptions of ours/)).toBeTruthy();
+  });
+
+  it('gives the three asks with scale and range, never a bare figure', () => {
+    const { container } = renderSummary();
+
+    for (const row of ['dwellings', 'micro', 'macro']) {
+      const el = container.querySelector(`[data-exec-row="${row}"]`) as HTMLElement;
+      expect(el).not.toBeNull();
+      expect(el.textContent).toMatch(/₹.+–.+₹/);
+    }
+  });
+
+  it('explains why there is no total row, rather than just omitting one', () => {
+    // An absent total that is not explained reads as an oversight, and the
+    // reader supplies the addition themselves.
+    const { container } = renderSummary();
+
+    const note = container.querySelector('[data-exec-no-total]') as HTMLElement;
+    expect(note.textContent).toMatch(/deliberately no total row/i);
+    expect(note.textContent).toMatch(/double-count/);
+  });
+
+  it('carries the three disqualifying caveats above the fold', () => {
+    const { container } = renderSummary();
+
+    const caveats = container.querySelector('[data-exec-caveats]') as HTMLElement;
+    expect(caveats.textContent).toMatch(/states no year anywhere/);
+    expect(caveats.textContent).toMatch(/expired on 31 March 2026/);
+    expect(caveats.textContent).toMatch(/railways and National Highways are absent/i);
+  });
+});
+
+describe('ReconstructionCost — the assumptions register', () => {
+  it('lists every assumption in one place, widest spread first', () => {
+    const { container } = renderSummary();
+
+    const rows = container.querySelectorAll('[data-assumption]');
+    expect(rows.length).toBeGreaterThan(0);
+    // The fixture is ordered 7.5x, 5x, 2.25x — the register must not re-sort
+    // into declaration order or alphabetically.
+    expect(rows[0]?.getAttribute('data-assumption')).toMatch(/damaged length/);
+  });
+
+  it('shows the range and the spread multiple for each', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector(
+      '[data-assumption="Average damaged length per reported road"]',
+    ) as HTMLElement;
+    expect(row.textContent).toMatch(/0\.2–1\.5/);
+    expect(row.textContent).toMatch(/7\.5×/);
+  });
+
+  it('names which figure each assumption feeds', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector(
+      '[data-assumption="Share of submerged land carrying a clearable deposit"]',
+    ) as HTMLElement;
+    expect(row.textContent).toMatch(/Agricultural land de-silting/);
+  });
+
+  it('says the register is walked, not maintained by hand', () => {
+    renderSummary();
+
+    expect(screen.getByText(/an incomplete register is worse than none/)).toBeTruthy();
+  });
+});

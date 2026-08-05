@@ -703,6 +703,53 @@ export const periodSummaryFixture: PeriodSummaryViewModel = {
     notCosted:
       'A Kuccha dwelling is built from bamboo, timber and thatch, so costing it from a ' +
       'civil works schedule would answer a question about a different building.',
+    executive: {
+      dwellingsDestroyed: 3494,
+      householdsAffected: 147_148,
+      dwellingsLow: 354_262_308,
+      dwellingsCentral: 789_297_145,
+      dwellingsHigh: 1_867_045_533,
+      microLow: 142_000_000,
+      microCentral: 485_000_000,
+      microHigh: 1_341_000_000,
+      macroLow: 255_000_000,
+      macroCentral: 518_000_000,
+      macroHigh: 883_000_000,
+      assumptionCount: 15,
+      publishedRateCount: 9,
+    },
+    assumptionRegister: [
+      {
+        label: 'Average damaged length per reported road',
+        affects: 'Roads',
+        value: 0.6,
+        unit: 'km',
+        low: 0.2,
+        high: 1.5,
+        reason: 'THE WEAKEST NUMBER IN THIS TIER. The SDRF pays per kilometre.',
+        movesBy: 7.5,
+      },
+      {
+        label: 'Share of submerged land carrying a clearable deposit',
+        affects: 'Agricultural land de-silting',
+        value: 0.2,
+        unit: 'share',
+        low: 0.08,
+        high: 0.4,
+        reason: 'SUBMERGED IS NOT SILTED. Deposition concentrates near breaches.',
+        movesBy: 5,
+      },
+      {
+        label: 'Floor area of a replaced dwelling',
+        affects: 'Dwelling replacement',
+        value: 30,
+        unit: 'm²',
+        low: 20,
+        high: 45,
+        reason: 'A modest rural dwelling; PMAY-G sets a floor of 25 m².',
+        movesBy: 2.25,
+      },
+    ],
     micro: {
       label: 'Household assets',
       lines: [

@@ -140,8 +140,121 @@ const Tier = ({ tier, kind }: { tier: PeriodTierViewModel; kind: 'micro' | 'macr
 );
 
 export const ReconstructionCost = ({ replacement }: ReconstructionCostProps) => {
+  const x = replacement.executive;
   return (
     <div className="view-stack">
+      {/*
+        The executive summary is FIRST and is built from the same view model as
+        the panels below, not written as copy — so it cannot drift from the
+        figures it summarises. Every number here reappears lower down with its
+        derivation attached.
+      */}
+      <section className="panel" aria-labelledby="exec-heading" data-executive>
+        <div className="panel__head">
+          <h2 className="panel__title" id="exec-heading">
+            In summary{' '}
+            <span className="figure-tag figure-tag--constructed">constructed</span>
+          </h2>
+          <span className="panel__note">Read this before the detail below.</span>
+        </div>
+
+        <p>
+          <strong>What this page is.</strong> The bulletins contain no money at all — every
+          figure is people, houses, hectares or animals. So every rupee here is{' '}
+          <em>a quantity ASDMA reported × a rate we applied</em>. The quantities are auditable
+          back to a printed Total row. The rates are{' '}
+          <strong>{x.publishedRateCount} published rates</strong> (the SDRF norms and the Assam
+          PWD Schedule of Rates, each cited to its clause) combined under{' '}
+          <strong>{x.assumptionCount} assumptions of ours</strong>, every one listed with a
+          range and a reason.
+        </p>
+
+        <TableScroll label="Executive summary table">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">What</th>
+                <th scope="col" className="numeric">
+                  Scale
+                </th>
+                <th scope="col" className="numeric">
+                  Cost range (central)
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-exec-row="dwellings">
+                <th scope="row">
+                  Rebuilding destroyed dwellings — Pukka, on a raised plinth
+                  <span className="text-small text-muted">
+                    {' '}
+                    (build back better; 91% of those destroyed were Kuccha)
+                  </span>
+                </th>
+                <td className="numeric">
+                  {x.dwellingsDestroyed?.toLocaleString('en-IN') ?? '—'} dwellings
+                </td>
+                <td className="numeric">
+                  {money(x.dwellingsLow)} – {money(x.dwellingsHigh)}
+                  <span className="text-small text-muted">
+                    {' '}
+                    ({money(x.dwellingsCentral)})
+                  </span>
+                </td>
+              </tr>
+              <tr data-exec-row="micro">
+                <th scope="row">
+                  Clearing silt and restoring land — household assets
+                  <span className="text-small text-muted">
+                    {' '}
+                    (must happen before rebuilding can start)
+                  </span>
+                </th>
+                <td className="numeric">
+                  {x.householdsAffected === undefined
+                    ? '—'
+                    : `${Math.round(x.householdsAffected).toLocaleString('en-IN')} households`}
+                </td>
+                <td className="numeric">
+                  {money(x.microLow)} – {money(x.microHigh)}
+                  <span className="text-small text-muted"> ({money(x.microCentral)})</span>
+                </td>
+              </tr>
+              <tr data-exec-row="macro">
+                <th scope="row">
+                  Restoring public infrastructure
+                  <span className="text-small text-muted">
+                    {' '}
+                    (roads, embankments, schools — restoration, not reconstruction)
+                  </span>
+                </th>
+                <td className="numeric">State-reported assets</td>
+                <td className="numeric">
+                  {money(x.macroLow)} – {money(x.macroHigh)}
+                  <span className="text-small text-muted"> ({money(x.macroCentral)})</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </TableScroll>
+
+        <p className="text-small text-muted" data-exec-no-total>
+          <strong>There is deliberately no total row.</strong> Household assets and public
+          infrastructure are different claims on different payers, and dwellings sit inside the
+          household tier rather than beside it — so adding these three lines would double-count
+          and would produce a figure in which a road and a family&rsquo;s home are
+          interchangeable. Read them as three separate asks.
+        </p>
+
+        <p className="text-small text-muted" data-exec-caveats>
+          <strong>Three things to know before quoting anything here.</strong> The Assam PWD
+          rate schedule states no year anywhere in its text, so the underlying prices are of
+          unknown vintage. The SDRF norms expired on 31 March 2026 and these bulletins are from
+          August 2026, so they are indicative of scale rather than an entitlement. And railways
+          and National Highways are absent from the public tier because they are absent from
+          the source — ASDMA reports what State departments report to it.
+        </p>
+      </section>
       <section className="panel" aria-labelledby="replacement-heading">
         <div className="panel__head">
           <h2 className="panel__title" id="replacement-heading">
@@ -480,6 +593,60 @@ export const ReconstructionCost = ({ replacement }: ReconstructionCostProps) => 
           rebuilt, so a plan that funds rebuilding without funding clearance has funded work
           that cannot start.
         </p>
+      </section>
+
+      <section className="panel" aria-labelledby="register-heading" data-assumption-register>
+        <div className="panel__head">
+          <h2 className="panel__title" id="register-heading">
+            Every assumption in one place
+          </h2>
+          <span className="panel__note">
+            {replacement.assumptionRegister.length} judgements, widest first.
+          </span>
+        </div>
+        <p className="text-small text-muted">
+          Collected by walking the derivations rather than kept as a list, so an assumption
+          added anywhere appears here automatically — an incomplete register is worse than none,
+          because it implies the ones it omits do not exist. Sorted by how far the bounds
+          spread, which is a rough measure of how much of the answer each judgement is
+          carrying. <strong>The ones at the top are the ones worth arguing with.</strong>
+        </p>
+        <TableScroll label="Assumptions register">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Assumption</th>
+                <th scope="col">Feeds</th>
+                <th scope="col" className="numeric">
+                  Used
+                </th>
+                <th scope="col" className="numeric">
+                  Range
+                </th>
+                <th scope="col">Why this value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {replacement.assumptionRegister.map((a) => (
+                <tr key={`${a.affects}:${a.label}`} data-assumption={a.label}>
+                  <th scope="row">{a.label}</th>
+                  <td className="text-small text-muted">{a.affects}</td>
+                  <td className="numeric">
+                    {a.value} {a.unit}
+                  </td>
+                  <td className="numeric">
+                    {a.low}–{a.high}
+                    <span className="text-small text-muted">
+                      {' '}
+                      ({a.movesBy.toFixed(1)}×)
+                    </span>
+                  </td>
+                  <td className="text-small text-muted">{a.reason}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableScroll>
       </section>
 
     </div>

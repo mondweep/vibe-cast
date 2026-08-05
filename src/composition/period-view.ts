@@ -33,7 +33,7 @@ import {
 } from '../domain/timeline/measure';
 import { integrateOverPeriod } from '../domain/timeline/stock-integral';
 import { impliedRation } from '../domain/economics/relief-adequacy';
-import { relativeWidth } from '../domain/economics/derivation';
+import { relativeWidth, type Derivation } from '../domain/economics/derivation';
 import { KUCCHA_NOT_COSTED, pukkaDwellingReplacement } from '../domain/economics/replacement-cost';
 import {
   costPolicy,
@@ -63,6 +63,7 @@ import {
   type PeriodCoverage,
 } from '../domain/timeline/period-totals';
 import type {
+  PeriodAssumptionViewModel,
   PeriodBackTestViewModel,
   PeriodBenchmarkViewModel,
   PeriodTierViewModel,
@@ -261,6 +262,29 @@ const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel 
 
   // All three, always. A selector showing one policy at a time would let the
   // cheapest be chosen without ever seeing what it costs in future risk.
+  const microLines = microRecoveryLines({
+    submergedHectares: peakOf(timeline, CROP_AREA_SUBMERGED).value ?? 0,
+    householdsAffected:
+      (peakOf(timeline, POPULATION_AFFECTED).value ?? 0) / ASSAM_HOUSEHOLD_SIZE.central,
+  });
+  const macroLines = macroRecoveryLines(infrastructureCounts(timeline));
+  const microTier = tierView('Household assets', microLines, '', '');
+  const macroTier = tierView(
+    'Public infrastructure',
+    macroLines,
+    MACRO_NOT_COVERED,
+    MACRO_IS_RESTORATION_NOT_RECONSTRUCTION,
+  );
+
+  // Every derivation in the model, so the register cannot miss one.
+  const allDerivations = [
+    { affects: 'Dwelling replacement', derivation: cost.derivation },
+    { affects: 'Raised plinth', derivation: plinth.derivation },
+    ...microLines.map((l) => ({ affects: l.label, derivation: l.derivation })),
+    ...macroLines.map((l) => ({ affects: l.label, derivation: l.derivation })),
+  ];
+  const register = assumptionRegister(allDerivations);
+
   const policies: readonly PeriodPolicyViewModel[] = RECONSTRUCTION_POLICIES.map((policy) => {
     const costed = costPolicy(policy, { kuccha, pukka }, cost.interval, plinth.interval);
     return {
@@ -317,22 +341,29 @@ const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel 
       central: cost.interval.central + plinth.interval.central,
       high: cost.interval.high + plinth.interval.high,
     }, houses),
-    micro: tierView(
-      'Household assets',
-      microRecoveryLines({
-        submergedHectares: peakOf(timeline, CROP_AREA_SUBMERGED).value ?? 0,
-        householdsAffected:
-          (peakOf(timeline, POPULATION_AFFECTED).value ?? 0) / ASSAM_HOUSEHOLD_SIZE.central,
-      }),
-      '',
-      '',
-    ),
-    macro: tierView(
-      'Public infrastructure',
-      macroRecoveryLines(infrastructureCounts(timeline)),
-      MACRO_NOT_COVERED,
-      MACRO_IS_RESTORATION_NOT_RECONSTRUCTION,
-    ),
+    executive: {
+      dwellingsDestroyed: houses,
+      householdsAffected:
+        (peakOf(timeline, POPULATION_AFFECTED).value ?? 0) / ASSAM_HOUSEHOLD_SIZE.central ||
+        undefined,
+      dwellingsLow: policies.find((p) => p.key === 'build-back-better')?.totalLow,
+      dwellingsCentral: policies.find((p) => p.key === 'build-back-better')?.totalCentral,
+      dwellingsHigh: policies.find((p) => p.key === 'build-back-better')?.totalHigh,
+      microLow: microTier.subtotalLow,
+      microCentral: microTier.subtotalCentral,
+      microHigh: microTier.subtotalHigh,
+      macroLow: macroTier.subtotalLow,
+      macroCentral: macroTier.subtotalCentral,
+      macroHigh: macroTier.subtotalHigh,
+      assumptionCount: register.length,
+      publishedRateCount: allDerivations.reduce(
+        (n, d) => n + d.derivation.inputs.filter((i) => i.kind === 'published').length,
+        0,
+      ),
+    },
+    assumptionRegister: register,
+    micro: microTier,
+    macro: macroTier,
     kucchaSharePercent:
       kuccha === undefined || pukka === undefined || kuccha + pukka === 0
         ? undefined
@@ -409,6 +440,44 @@ const tierView = (
     rateScope,
   };
 };
+
+/**
+ * Every assumption in the model, collected once and ranked.
+ *
+ * Gathered by walking the derivations rather than maintained as a list, so an
+ * assumption added anywhere appears here automatically. A hand-kept register
+ * would be one refactor away from being incomplete, and an incomplete register
+ * of assumptions is worse than none — it implies the ones it omits do not
+ * exist.
+ *
+ * Sorted by high÷low, a crude proxy for how much of the answer a single
+ * judgement carries, so the reader's attention lands on what is worth arguing
+ * with rather than on whatever happens to be declared first. Inputs whose
+ * bounds are equal are measured quantities held in `assumed` shape and are
+ * excluded — they are not judgements.
+ */
+const assumptionRegister = (
+  sources: readonly { readonly affects: string; readonly derivation: Derivation }[],
+): readonly PeriodAssumptionViewModel[] =>
+  sources
+    .flatMap(({ affects, derivation: d }) =>
+      d.inputs
+        .filter((i) => i.kind === 'assumed' && i.low !== i.high)
+        .map((i) => {
+          const a = i as Extract<typeof i, { kind: 'assumed' }>;
+          return {
+            label: a.label,
+            affects,
+            value: a.value,
+            unit: a.unit,
+            low: a.low,
+            high: a.high,
+            reason: a.reason,
+            movesBy: a.low === 0 ? Number.POSITIVE_INFINITY : a.high / a.low,
+          };
+        }),
+    )
+    .sort((x, y) => y.movesBy - x.movesBy);
 
 export const periodSummaryFrom = (timeline: BulletinTimeline): PeriodSummaryViewModel => ({
   coverage: coverageViewModel(periodCoverage(timeline)),
