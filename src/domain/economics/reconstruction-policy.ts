@@ -88,11 +88,14 @@ const RAISED_PLINTH: Derivation = derivation({
       label: 'Floor area of the dwelling being protected',
       value: 30,
       unit: 'm²',
-      low: 20,
-      high: 45,
+      low: 25,
+      high: 46.6,
       reason:
         'The same reference dwelling the replacement cost uses, so the two figures describe ' +
-        'the same house and can be compared or added for one dwelling.',
+        'the same house and can be compared or added for one dwelling. Bounds are the PMAY-G ' +
+        'statutory minimum unit size (25 m²) and the NSS 76th round (2018) average rural ' +
+        'dwelling floor area (46.6 m²). A test asserts these match the replacement cost — ' +
+        'the two drifted apart once and produced a plinth sized for a different house.',
     },
     {
       kind: 'assumed',

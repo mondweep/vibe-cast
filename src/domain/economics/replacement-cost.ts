@@ -85,12 +85,17 @@ const PUKKA_DWELLING: Derivation = derivation({
       label: 'Floor area of a replaced dwelling',
       value: 30,
       unit: 'm²',
-      low: 20,
-      high: 45,
+      low: 25,
+      high: 46.6,
       reason:
-        'A modest rural dwelling. PMAY-G sets a floor of 25 m² for a sanctioned unit, so ' +
-        'a replacement built to that standard is at least that; 30 m² allows a little ' +
-        'above the minimum. The range spans a single-room unit to a small family house.',
+        'Both bounds are now sourced rather than judged. The LOW bound is the PMAY-G ' +
+        'statutory minimum unit size of 25 m² — a rural house rebuilt with public money is ' +
+        'not built smaller than that, so the previous 20 m² lower bound described a dwelling ' +
+        'nobody would be funded to construct. The HIGH bound is 46.6 m², the average floor ' +
+        'area of a rural dwelling in India measured by NSS 76th round (2018), which is what ' +
+        'replacing what people actually had would mean. 30 m² sits between the two: a little ' +
+        'above the sanctioned minimum, well below the national average, and close to what ' +
+        'PMAY-G units are built to in practice.',
     },
     {
       kind: 'assumed',

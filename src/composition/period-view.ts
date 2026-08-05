@@ -455,11 +455,11 @@ const tierView = (
  * of assumptions is worse than none — it implies the ones it omits do not
  * exist.
  *
- * Sorted by high÷low, a crude proxy for how much of the answer a single
- * judgement carries, so the reader's attention lands on what is worth arguing
- * with rather than on whatever happens to be declared first. Inputs whose
- * bounds are equal are measured quantities held in `assumed` shape and are
- * excluded — they are not judgements.
+ * Sorted by rupee swing — what the answer actually moves by when one assumption
+ * travels its own range — so the reader's attention lands on what is worth
+ * arguing with rather than on whatever happens to be declared first, or on
+ * whatever has the widest range. Inputs whose bounds are equal are measured
+ * quantities held in `assumed` shape and are excluded — they are not judgements.
  */
 const assumptionRegister = (
   sources: readonly {

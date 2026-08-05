@@ -92,14 +92,23 @@ describe('macro — public infrastructure', () => {
     expect(share?.kind === 'assumed' && share.reason).toMatch(/CEILING/);
   });
 
-  it('admits that average road length is the weakest number in the tier', () => {
+  it('prices road length from what the archive states, not from judgement', () => {
     const roads = macro.find((l) => l.label === 'Roads')!;
     const km = roads.derivation.inputs.find((i) => i.label.includes('damaged length'));
 
-    expect(km?.kind === 'assumed' && km.reason).toMatch(/WEAKEST NUMBER/);
-    // A 7.5x spread between the bounds, because a "road" is anything from a
-    // 50 m breach to a 3 km stretch.
-    expect(km?.kind === 'assumed' && km.high / km.low).toBeGreaterThan(5);
+    expect(km?.kind === 'assumed' && km.reason).toMatch(/MEASURED FROM THE ARCHIVE/);
+
+    // The measured median of the 200 road records that state a length is
+    // 1.15 km. The central value must sit below it — the discount for the
+    // stated subset skewing towards serious failures — but inside the bounds,
+    // which are the measured quartiles.
+    const MEASURED_MEDIAN = 1.15;
+    expect(km?.kind === 'assumed' && km.value).toBeLessThan(MEASURED_MEDIAN);
+    expect(km?.kind === 'assumed' && km.low).toBeLessThan(MEASURED_MEDIAN);
+    expect(km?.kind === 'assumed' && km.high).toBeGreaterThan(MEASURED_MEDIAN);
+    // The reason must show its working, or the reader cannot check the discount.
+    expect(km?.kind === 'assumed' && km.reason).toMatch(/median 1\.15 km/);
+    expect(km?.kind === 'assumed' && km.reason).toMatch(/200 of the 645 road records/);
   });
 
   it('declares the railway gap rather than quietly excluding it', () => {

@@ -9,6 +9,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import type { Derivation } from './derivation';
 import {
   costPolicy,
   raisedPlinthResilience,
@@ -130,5 +131,19 @@ describe('the raised plinth', () => {
     const raise = plinthCost.derivation.inputs.find((i) => i.label.includes('raise'));
 
     expect(raise?.kind === 'assumed' && raise.reason).toMatch(/does not report/);
+  });
+
+  it('sizes the plinth for the same dwelling the replacement cost prices', () => {
+    // These two floor areas are the same physical quantity held in two files,
+    // and they drifted once: sourcing the replacement bounds to PMAY-G and NSS
+    // left the plinth sized 20-45 m². A plinth built for a different house than
+    // the one on top of it is not a comparison, it is two answers.
+    const area = (d: Derivation) => {
+      const input = d.inputs.find((i) => i.label.startsWith('Floor area'));
+      if (input?.kind !== 'assumed') throw new Error('no assumed floor-area input');
+      return { value: input.value, low: input.low, high: input.high };
+    };
+
+    expect(area(plinthCost.derivation)).toEqual(area(pukkaDwellingReplacement().derivation));
   });
 });

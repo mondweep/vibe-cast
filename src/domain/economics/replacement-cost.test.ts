@@ -88,7 +88,7 @@ describe('the Pukka dwelling replacement cost', () => {
   const cost = pukkaDwellingReplacement();
 
   it('lands in a plausible range for a modest rural dwelling', () => {
-    // Not a tautology check: these bounds were chosen from what a 20-45 m²
+    // Not a tautology check: these bounds were chosen from what a 25-46.6 m²
     // permanent house plausibly costs, and a derivation that fell outside them
     // would mean an input is wrong by an order of magnitude.
     expect(cost.interval.central).toBeGreaterThan(80_000);

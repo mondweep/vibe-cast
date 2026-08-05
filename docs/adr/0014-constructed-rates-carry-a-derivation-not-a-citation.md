@@ -147,7 +147,7 @@ SOR lines:
 
 | Input | Kind | Value | Range |
 |---|---|---|---|
-| Floor area of a replaced dwelling | assumed | 30 m² | 20–45 |
+| Floor area of a replaced dwelling | assumed | 30 m² | 25–46.6 |
 | Foundation earthwork per m² of floor | assumed | 0.15 m³/m² | 0.10–0.25 |
 | Earthwork in excavation, ordinary soil | published | ₹108.82/m³ | Ch-1, item 1.1(A)(a) |
 | Brick walling volume per m² of floor | assumed | 0.46 m³/m² | 0.35–0.60 |
@@ -158,16 +158,16 @@ SOR lines:
 | Uplift for openings, services and finishes | assumed | ×1.35 | 1.25–1.55 |
 | GST uplift | assumed | ×1.18 | 1.12–1.18 |
 
-**₹85,029 – ₹3,90,430 per dwelling, central ₹1,80,638** (₹6,021/m² at 30 m²).
+**₹1,06,286 – ₹4,04,312 per dwelling, central ₹1,80,638** (₹6,021/m² at 30 m²).
 Across the 3,494 houses the archive records as fully or severely damaged:
-**₹29.7 crore – ₹136.4 crore, central ₹63.1 crore.**
+**₹37.1 crore – ₹141.3 crore, central ₹63.1 crore.**
 
 Two things that vindicate the design rather than embarrass it:
 
-**The interval is 169% of its centre.** That is the width the assumptions
+**The interval is 165% of its centre.** That is the width the assumptions
 actually produce, and it is uncomfortable — which is the point. The largest
-contributor is the finishes uplift, and it is also the input most easily
-replaced by a real take-off. The number tells you where to spend the next hour.
+contributor is the floor area, and it is also the input most easily replaced by
+a real take-off. The number tells you where to spend the next hour.
 
 **It sits above the SDRF figure, in the expected direction.** The same 3,494
 houses attract ₹41.9 crore of SDRF assistance against a central replacement cost
@@ -202,9 +202,9 @@ be chosen without seeing the others.
 
 | Policy | Cost (central) | Uncosted | Effect on future risk |
 |---|---|---|---|
-| Like for like | ₹5.5 cr | 3,187 | Reproduces the exposure; the same flood destroys them again |
-| Protect in place | ₹21.4 cr | 3,187 | Kuccha rebuilt as Kuccha on a raised Pukka plinth |
-| Build back better | ₹78.9 cr | 0 | Removes exposure and vulnerability together |
+| Like for like | ₹5.1 cr | 3,187 | Reproduces the exposure; the same flood destroys them again |
+| Protect in place | ₹20.3 cr | 3,187 | Kuccha rebuilt as Kuccha on a raised Pukka plinth |
+| Build back better | ₹76.1 cr | 0 | Removes exposure and vulnerability together |
 
 A raised plinth with apron protection costs **₹45,263 per dwelling**, about 25%
 of a full Pukka house, priced from three SOR lines (earth filling in plinth,

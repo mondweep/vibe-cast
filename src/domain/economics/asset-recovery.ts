@@ -106,8 +106,16 @@ const agriculturalDesilting = (submergedHectares: number): Derivation =>
           'SUBMERGED IS NOT SILTED. Deposition concentrates near breaches and where the ' +
           'channel has moved, not evenly across the flooded area; most submerged land drains ' +
           'and is sown again without clearance. The SDRF rate applies only where deposit ' +
-          'exceeds 3 inches and is certified. This share is the largest judgement on this ' +
-          'view and there is no figure in the bulletin to check it against.',
+          'exceeds 3 inches and is certified. The published evidence points BOTH WAYS and ' +
+          'neither side of it is decisive: Das (2012), surveying 1,059 households across 15 ' +
+          'villages of Dhemaji, found roughly 83% of paddy land facing sand deposition, and ' +
+          '39% of 346 plots tested in the Jiadhal basin carried over 70% sand — but Dhemaji ' +
+          'is the chronic sand-casting district and "facing deposition" is a weaker test than ' +
+          'the SDRF\'s 3-inch certified threshold. Against that, the 2026 in-season ' +
+          'assessment described only several hundred hectares under siltation assessment in ' +
+          'Dhemaji, against a statewide submerged crop area in the tens of thousands of ' +
+          'hectares. The central value is unchanged at 20% because the search found support ' +
+          'for both a higher and a lower figure and no basis for preferring either.',
       },
       sdrf(
         'De-silting / removal of debris, deposit over 3 inches',
@@ -149,10 +157,14 @@ const landLostToSandCasting = (submergedHectares: number): Derivation =>
         high: 0.08,
         reason:
           'A small fraction of a small fraction: land is lost this way only where the river ' +
-          'has laid deep sand or moved its bank. Assam loses land to Brahmaputra erosion ' +
-          'every year, but attributing a specific area to one flood needs survey data the ' +
-          'bulletin does not carry. Kept deliberately low with a wide multiple between the ' +
-          'bounds, because the honest position is that we do not know.',
+          'has laid deep sand or moved its bank. Checked against Dhemaji, the worst-affected ' +
+          'district: its net sown area fell about 11% (7,689 Ha) between 1992 and 2004-05 ' +
+          'while fallow and uncultivable land rose 35% (8,013 Ha), and KVK records 3,830 Ha ' +
+          'of recent sand deposits against 10,430 Ha of non-cultivable wasteland. Spread ' +
+          'over thirteen years that is under 1% of the district\'s sown area lost per year, ' +
+          'in the district where this happens worst — so 3% of a single flood\'s submerged ' +
+          'area is of the right order and, if anything, generous. Those are cumulative ' +
+          'district figures rather than a per-event share, which is why the bounds stay wide.',
       },
       sdrf(
         'Loss of land by landslide, avalanche, change of course of rivers',
@@ -198,7 +210,11 @@ const homesteadClearance = (householdsAffected: number): Derivation =>
         reason:
           'Being flooded and being left with a clearable deposit are different things. Homes ' +
           'on higher ground drain clean; those near a breach are filled. The bulletin reports ' +
-          'neither, so this is judgement.',
+          'neither, so this is judgement — and it STAYED judgement after searching. No survey ' +
+          'of Assam homesteads separates "flooded" from "silted", and the SDRF has no ' +
+          'homestead de-silting item to have generated a payout record. This is the one ' +
+          'assumption on this view for which the search produced nothing at all, in either ' +
+          'direction. Read the ₹26 cr it moves as unbacked.',
       },
       {
         kind: 'assumed',
@@ -208,8 +224,15 @@ const homesteadClearance = (householdsAffected: number): Derivation =>
         low: 5,
         high: 25,
         reason:
-          'A 30 m² dwelling plus its immediate yard, with roughly 150–250 mm of deposit, is ' +
-          'of the order of 10–15 m³. The upper bound covers deep sand near a breach.',
+          'Area × depth, stated so both halves can be argued with separately. The area ' +
+          'cleared is the dwelling footprint plus the working yard around it — call it ' +
+          '70–80 m², not the 30 m² of the house alone, because a homestead with silt only ' +
+          'inside the walls is not habitable either. At 150 mm of deposit that is about ' +
+          '12 m³. The bounds correspond to roughly 50 m² at 100 mm and 100 m² at 250 mm. ' +
+          'The area × depth form is the one FEMA and USACE use for post-flood debris ' +
+          'estimation, but their generation rates are for structural debris — drywall, ' +
+          'insulation, contents — and do not transfer to river silt, so the rate is not ' +
+          'borrowed, only the shape of the calculation.',
       },
       {
         kind: 'published',
@@ -249,8 +272,14 @@ const homesteadClearance = (householdsAffected: number): Derivation =>
  * The SDRF prices most of this per *asset* — a ceiling per school, per water
  * scheme, per transformer — which suits a bulletin that counts items and
  * dimensions almost none of them. Roads are the exception: the SDRF rate is per
- * kilometre and the bulletin gives a count, so an average damaged length has to
- * be assumed, and it is the weakest number in this tier.
+ * kilometre and the bulletin has no length column, so an average damaged length
+ * has to be applied to the count.
+ *
+ * That average used to be the weakest number in this tier, until somebody read
+ * the remarks: **200 of the 645 road records state a damaged length**, either
+ * outright or as a chainage range. The assumption is now their measured
+ * distribution rather than a guess, and the weakest number here is instead the
+ * share of the SDRF ceiling actually needed, which nothing published can check.
  */
 export type InfrastructureCounts = {
   readonly roads: number | undefined;
@@ -277,16 +306,23 @@ const roadRestoration = (count: number): Derivation =>
       {
         kind: 'assumed',
         label: 'Average damaged length per reported road',
-        value: 0.6,
+        value: 1.0,
         unit: 'km',
-        low: 0.2,
-        high: 1.5,
+        low: 0.4,
+        high: 2.5,
         reason:
-          'THE WEAKEST NUMBER IN THIS TIER. The SDRF pays per kilometre and the bulletin ' +
-          'reports a road by name with no length. Where a length does appear in the remarks ' +
-          'it ranges from a 50 m breach to a 3 km stretch. About 10% of items carry a ' +
-          'dimension in prose and extracting those would replace this assumption with ' +
-          'measurement for a tenth of the tier.',
+          'MEASURED FROM THE ARCHIVE, not judged. The SDRF pays per kilometre and the ' +
+          'bulletin names a road without a length column — but 200 of the 645 road records ' +
+          '(31%) state a damaged length in their remarks, either outright ("Approx. 0.5 KM") ' +
+          'or as a chainage range ("Ch. 600 m to Ch. 900 m"). Those 200 run from 0.57 m to ' +
+          '9.9 km, median 1.15 km, mean 1.75 km, quartiles 0.40 and 2.50 km. The bounds here ' +
+          'are those quartiles. The central 1.0 km sits just below the measured median, a ' +
+          'small discount because an engineer is likelier to record a length for a serious ' +
+          'failure than for a road merely overtopped — that discount is itself a judgement, ' +
+          'and a weak one now that a third of records are measured rather than a tenth. Six ' +
+          'records were excluded as road totals or chainage typos rather than damage lengths ' +
+          '(one reads "Ch.0.550 KM to CH.0560 km"). The previous central of 0.6 km sat below ' +
+          'the measured 25th percentile.',
       },
       sdrf(
         'Repair of rural/village roads with culverts, normal areas',
@@ -328,7 +364,13 @@ const perAsset = (
           'The SDRF figure is a CEILING per damaged unit, not a flat payment — "as per ' +
           'actual, subject to a ceiling of Rs 2.00 lakh". Most damaged assets need less than ' +
           'the ceiling; a few need all of it. Applying the ceiling to every item would ' +
-          'overstate the tier, which is why this share exists rather than being assumed away.',
+          'overstate the tier, which is why this share exists rather than being assumed away. ' +
+          'THIS IS THE LARGEST LEVER IN THE WHOLE MODEL and it has no external check. What ' +
+          'would settle it is the ratio of SDRF assistance actually disbursed to the ceiling ' +
+          'that could have been claimed, per damaged asset. States report SDRF expenditure in ' +
+          'aggregate and CAG audits it in aggregate; neither publishes it per unit against ' +
+          'the ceiling. So 60% is a guess about how far below a cap real repairs land, and ' +
+          'the ₹55 crore it moves rests on nothing published.',
       },
       sdrf(rateLabel, rate, '₹/unit', clause),
     ],

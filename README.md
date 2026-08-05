@@ -210,7 +210,7 @@ auditable and one half arguable. Three controls keep the halves apart:
   reason. No bare numbers. An assumption without a reason will not construct.
 - **Constructed figures are always intervals**, computed by evaluating the
   derivation at its assumption bounds. The width is a measurement of how much of
-  the answer is judgement — currently 169% of its centre — not a hedge chosen for
+  the answer is judgement — currently 165% of its centre — not a hedge chosen for
   presentation. Narrowing it requires a better input, not tighter bounds.
 
 **Reconstruction is a policy choice and the console refuses to make it.** 91.2%

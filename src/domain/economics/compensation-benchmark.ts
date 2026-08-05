@@ -191,5 +191,11 @@ export const TEN_LAKH_DEMAND: CompensationBenchmark = {
  * Assam average from Census 2011; the range spans urban households (smaller)
  * and rural ones (larger), and the flood-affected population is predominantly
  * rural, which argues for the upper half of the range.
+ *
+ * **Checked and confirmed.** Census 2011 records 6,406,471 households in Assam
+ * against a population of 31,205,576 — an average of 4.87, which is what 4.9
+ * rounds from. Of those households 5,420,877 are rural. This is the only
+ * assumption in the model that a public source settles outright, and it is the
+ * reason the household-size range is narrow where the others are wide.
  */
 export const ASSAM_HOUSEHOLD_SIZE = { central: 4.9, low: 4.4, high: 5.4 } as const;
