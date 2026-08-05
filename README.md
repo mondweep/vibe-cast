@@ -53,7 +53,7 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [0011](docs/adr/0011-cost-norms-are-cited-versioned-and-never-invented.md) | Cost norms are cited, versioned, and never invented |
 | [0012](docs/adr/0012-integrating-a-stock-changes-its-unit.md) | Integrating a stock changes its unit — person-days are not people |
 | [0013](docs/adr/0013-no-backend-for-the-economic-model.md) | No backend for the economic model; it needs none, so none was adopted |
-| [0014](docs/adr/0014-constructed-rates-carry-a-derivation-not-a-citation.md) | *Proposed:* a constructed rate carries a derivation, not a citation |
+| [0014](docs/adr/0014-constructed-rates-carry-a-derivation-not-a-citation.md) | A constructed rate carries a derivation, not a citation |
 
 ## Design principles
 

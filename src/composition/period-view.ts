@@ -32,6 +32,9 @@ import {
 } from '../domain/timeline/measure';
 import { integrateOverPeriod } from '../domain/timeline/stock-integral';
 import { impliedRation } from '../domain/economics/relief-adequacy';
+import { relativeWidth } from '../domain/economics/derivation';
+import { KUCCHA_NOT_COSTED, pukkaDwellingReplacement } from '../domain/economics/replacement-cost';
+import { HOUSES_FULLY_SEVERELY_DAMAGED } from '../domain/timeline/measure';
 import { personDays, quintals, unknownPersonDays, unknownQuintals } from '../domain/shared/quantity';
 import {
   cumulativeOf,
@@ -41,6 +44,8 @@ import {
 } from '../domain/timeline/period-totals';
 import type {
   PeriodBackTestViewModel,
+  PeriodDerivationInputViewModel,
+  PeriodReplacementViewModel,
   PeriodCoverageViewModel,
   PeriodExposureViewModel,
   PeriodFigureViewModel,
@@ -175,10 +180,61 @@ const backTestRows = (timeline: BulletinTimeline): readonly PeriodBackTestViewMo
   ]);
 };
 
+/**
+ * The constructed replacement cost, applied to the houses actually destroyed.
+ *
+ * Note what is NOT done here: the interval is not collapsed to its centre for
+ * convenience, and the inputs are not summarised. Both are carried whole,
+ * because a constructed figure that renders as compactly as a published one is
+ * exactly the failure ADR-0014 exists to prevent.
+ */
+const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel => {
+  const cost = pukkaDwellingReplacement();
+  const houses = cumulativeOf(timeline, HOUSES_FULLY_SEVERELY_DAMAGED).total;
+
+  const inputs: readonly PeriodDerivationInputViewModel[] = cost.derivation.inputs.map((input) =>
+    input.kind === 'assumed'
+      ? {
+          kind: 'assumed',
+          label: input.label,
+          value: input.value,
+          unit: input.unit,
+          low: input.low,
+          high: input.high,
+          reason: input.reason,
+        }
+      : {
+          kind: 'published',
+          label: input.label,
+          value: input.value,
+          unit: input.unit,
+          citation: `${input.citation.document} — ${input.citation.clause}`,
+        },
+  );
+
+  return {
+    label: cost.label,
+    quantity: houses,
+    quantityLabel: 'houses fully or severely damaged',
+    unitLow: cost.interval.low,
+    unitCentral: cost.interval.central,
+    unitHigh: cost.interval.high,
+    totalLow: houses === undefined ? undefined : houses * cost.interval.low,
+    totalCentral: houses === undefined ? undefined : houses * cost.interval.central,
+    totalHigh: houses === undefined ? undefined : houses * cost.interval.high,
+    formula: cost.derivation.formula,
+    inputs,
+    judgementSharePercent: Math.round(relativeWidth(cost.interval) * 100),
+    caveat: cost.caveat,
+    notCosted: KUCCHA_NOT_COSTED,
+  };
+};
+
 export const periodSummaryFrom = (timeline: BulletinTimeline): PeriodSummaryViewModel => ({
   coverage: coverageViewModel(periodCoverage(timeline)),
   cumulative: CUMULATIVE_MEASURES.map((measure) => cumulativeRow(timeline, measure)),
   peaks: PEAK_ONLY_MEASURES.map((measure) => peakRow(timeline, measure)),
   exposure: EXPOSURE_MEASURES.map((measure) => exposureRow(timeline, measure)),
   backTest: backTestRows(timeline),
+  replacement: replacementRow(timeline),
 });

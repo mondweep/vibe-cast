@@ -667,6 +667,43 @@ export const periodSummaryFixture: PeriodSummaryViewModel = {
       caveat: BACK_TEST_CAVEAT,
     },
   ],
+  replacement: {
+    label: 'Pukka dwelling, fully replaced',
+    quantity: 3494,
+    quantityLabel: 'houses fully or severely damaged',
+    unitLow: 85_029,
+    unitCentral: 180_638,
+    unitHigh: 390_430,
+    totalLow: 297_091_326,
+    totalCentral: 631_149_172,
+    totalHigh: 1_364_162_420,
+    formula: 'floor area × ( earthwork + brick walling + RCC roof slab + floor finish ) × uplift',
+    inputs: [
+      {
+        kind: 'assumed',
+        label: 'Floor area of a replaced dwelling',
+        value: 30,
+        unit: 'm²',
+        low: 20,
+        high: 45,
+        reason: 'A modest rural dwelling; PMAY-G sets a floor of 25 m² for a sanctioned unit.',
+      },
+      {
+        kind: 'published',
+        label: 'Brick work in cement mortar 1:5',
+        value: 6138.4,
+        unit: '₹/m³',
+        citation: 'Assam PWD Building Schedule of Rates for Civil Works — Ch-33',
+      },
+    ],
+    judgementSharePercent: 169,
+    caveat:
+      'Constructed here, not published. No schedule anywhere states a cost per house. ' +
+      'Treat this as an argument to be checked, and never as an entitlement.',
+    notCosted:
+      'A Kuccha dwelling is built from bamboo, timber and thatch, so costing it from a ' +
+      'civil works schedule would answer a question about a different building.',
+  },
 };
 
 export const trendDeltas: readonly DeltaViewModel[] = [

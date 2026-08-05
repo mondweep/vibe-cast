@@ -1,6 +1,8 @@
 # ADR-0014: A constructed rate carries a derivation, not a citation
 
-- **Status:** Proposed
+- **Status:** Accepted and implemented 2026-08-06 —
+  `src/domain/economics/derivation.ts`, `replacement-cost.ts`, and the
+  Replacement cost panel on Cumulative & Peak
 - **Date:** 2026-08-06
 - **Context:** [`FEASIBILITY-REPLACEMENT-COST.md`](../FEASIBILITY-REPLACEMENT-COST.md)
 - **Relates to:** ADR-0011 (cost norms are cited), ADR-0005 (unknown is not zero),
@@ -136,6 +138,52 @@ the input-subsidy norm; a constructed line will cost the same hectares as workin
 capital lost. Both are legitimate, they answer different questions, and §4 stops
 them being added. The UI must make the distinction obvious or this becomes the
 feature's most likely misreading.
+
+## As built
+
+The first constructed schedule is the Pukka dwelling replacement cost, priced
+from the Assam PWD Building Schedule of Rates. Five assumptions, five published
+SOR lines:
+
+| Input | Kind | Value | Range |
+|---|---|---|---|
+| Floor area of a replaced dwelling | assumed | 30 m² | 20–45 |
+| Foundation earthwork per m² of floor | assumed | 0.15 m³/m² | 0.10–0.25 |
+| Earthwork in excavation, ordinary soil | published | ₹108.82/m³ | Ch-1, item 1.1(A)(a) |
+| Brick walling volume per m² of floor | assumed | 0.46 m³/m² | 0.35–0.60 |
+| Brick work 1:5 incl. 20 mm plaster both faces | published | ₹6,138.40/m³ | Ch-33 composite |
+| RCC roof slab volume per m² of floor | assumed | 0.11 m³/m² | 0.10–0.125 |
+| RCC M20 superstructure to first floor | published | ₹6,241.39/m³ | Ch-2, item 2.2.1(I)(B) |
+| Cement concrete flooring, 50 mm | published | ₹253.28/m² | Ch-2, item 2.1.2(b) |
+| Uplift for openings, services and finishes | assumed | ×1.35 | 1.25–1.55 |
+| GST uplift | assumed | ×1.18 | 1.12–1.18 |
+
+**₹85,029 – ₹3,90,430 per dwelling, central ₹1,80,638** (₹6,021/m² at 30 m²).
+Across the 3,494 houses the archive records as fully or severely damaged:
+**₹29.7 crore – ₹136.4 crore, central ₹63.1 crore.**
+
+Two things that vindicate the design rather than embarrass it:
+
+**The interval is 169% of its centre.** That is the width the assumptions
+actually produce, and it is uncomfortable — which is the point. The largest
+contributor is the finishes uplift, and it is also the input most easily
+replaced by a real take-off. The number tells you where to spend the next hour.
+
+**It sits above the SDRF figure, in the expected direction.** The same 3,494
+houses attract ₹41.9 crore of SDRF assistance against a central replacement cost
+of ₹63.1 crore — roughly 1.5×. Relief norms being well below replacement cost is
+exactly what the literature says, so the two bases disagreeing by that margin is
+a sanity check passing, not a contradiction. They are never summed.
+
+Three refusals worth recording, because each was the tempting shortcut:
+
+- **Kuccha dwellings are not costed.** A civil works schedule prices brick,
+  cement and RCC; a Kuccha house is bamboo, timber and thatch. `KUCCHA_NOT_COSTED`
+  is rendered where the figure would be, so the absence is an answer.
+- **The SOR edition is cited as undated**, because no year appears anywhere in
+  its text. Guessing one would have made the citation worse than useless.
+- **GST is an input, not an afterthought.** The SOR states plainly that it
+  excludes GST, so leaving it out would have understated by 18%.
 
 ## Alternatives considered
 

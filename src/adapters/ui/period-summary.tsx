@@ -44,6 +44,16 @@ export type PeriodSummaryProps = {
   readonly archive?: BundledArchiveViewModel;
 };
 
+/**
+ * Rupees, in Indian grouping, rounded to whole rupees.
+ *
+ * Never abbreviated to "1.8 L" or "63 Cr". A constructed figure is already
+ * carrying enough imprecision from its assumptions; adding presentational
+ * rounding on top would make two figures that differ materially look identical.
+ */
+const money = (value: number | undefined): string =>
+  value === undefined ? '—' : `₹${Math.round(value).toLocaleString('en-IN')}`;
+
 const figureOf = (value: number | undefined, precision: number): string =>
   value === undefined ? NOT_REPORTED : formatNumber(value, precision);
 
@@ -164,7 +174,7 @@ const CompletenessMark = ({ figure }: { readonly figure: PeriodFigureViewModel }
 );
 
 export const PeriodSummary = ({ summary, archive }: PeriodSummaryProps) => {
-  const { coverage, cumulative, peaks, exposure, backTest } = summary;
+  const { coverage, cumulative, peaks, exposure, backTest, replacement } = summary;
   // While the bundled archive is in flight the console is about to hold eleven
   // bulletins, so telling the officer to go and find earlier PDFs would be
   // advice it retracts on its own a moment later.
@@ -432,6 +442,110 @@ export const PeriodSummary = ({ summary, archive }: PeriodSummaryProps) => {
           make.
         */}
         <p className="text-small text-muted">{backTest[0]?.caveat}</p>
+      </section>
+
+      <section className="panel" aria-labelledby="replacement-heading">
+        <div className="panel__head">
+          <h2 className="panel__title" id="replacement-heading">
+            Replacement cost <span className="figure-tag figure-tag--constructed">constructed</span>
+          </h2>
+          <span className="panel__note">
+            What rebuilding would cost — not what is payable.
+          </span>
+        </div>
+
+        {/*
+          The warning sits ABOVE the number, not below it. A reader who takes
+          only the figure should have had to scroll past this to reach it.
+        */}
+        <div className="callout callout--assumption" data-constructed-warning>
+          <p>
+            <strong>These figures are constructed, not published.</strong> No schedule
+            anywhere states a cost per house. The Assam PWD Schedule of Rates prices
+            components — a cubic metre of brickwork, a square metre of roofing — so
+            getting to a cost per dwelling meant deciding how big a house is and what
+            it is made of. Those decisions are ours and every one of them is listed
+            below, with a range and a reason.
+          </p>
+          <p>
+            <strong>{replacement.judgementSharePercent}% of this answer is our judgement</strong>,
+            measured as the width of the range over its centre. That is why a range is
+            shown and a single number is not.
+          </p>
+        </div>
+
+        <p className="figure-headline" data-replacement-total>
+          {replacement.totalLow === undefined ? (
+            '—'
+          ) : (
+            <>
+              {money(replacement.totalLow)} – {money(replacement.totalHigh)}
+              <span className="text-small text-muted">
+                {' '}
+                (central {money(replacement.totalCentral)})
+              </span>
+            </>
+          )}
+        </p>
+        <p className="text-small text-muted">
+          {replacement.quantity === undefined
+            ? 'No figure: the quantity was not reported.'
+            : `${replacement.quantity.toLocaleString('en-IN')} ${replacement.quantityLabel}, ` +
+              `at ${money(replacement.unitLow)} – ${money(replacement.unitHigh)} each.`}
+        </p>
+
+        <h3 className="text-small">How it is built: {replacement.formula}</h3>
+        <TableScroll label="Replacement cost derivation table">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Input</th>
+                <th scope="col">Where it comes from</th>
+                <th scope="col" className="numeric">
+                  Value
+                </th>
+                <th scope="col">Range, and why</th>
+              </tr>
+            </thead>
+            <tbody>
+              {replacement.inputs.map((input) => (
+                <tr key={input.label} data-derivation-input={input.label}>
+                  <th scope="row">{input.label}</th>
+                  <td className="text-small">
+                    {input.kind === 'published' ? (
+                      <span data-input-kind="published">Published — {input.citation}</span>
+                    ) : (
+                      <span data-input-kind="assumed">
+                        <strong>Assumed by this console</strong>
+                      </span>
+                    )}
+                  </td>
+                  <td className="numeric">
+                    {input.value.toLocaleString('en-IN')} {input.unit}
+                  </td>
+                  <td className="text-small text-muted">
+                    {input.kind === 'assumed' ? (
+                      <>
+                        <strong>
+                          {input.low?.toLocaleString('en-IN')}–{input.high?.toLocaleString('en-IN')}{' '}
+                          {input.unit}
+                        </strong>{' '}
+                        — {input.reason}
+                      </>
+                    ) : (
+                      'Fixed — a published rate is not ours to vary.'
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableScroll>
+
+        <p className="text-small text-muted" data-not-costed>
+          <strong>Kuccha dwellings are not costed here.</strong> {replacement.notCosted}
+        </p>
+        <p className="text-small text-muted">{replacement.caveat}</p>
       </section>
     </div>
   );

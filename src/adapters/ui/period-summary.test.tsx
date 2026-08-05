@@ -125,6 +125,7 @@ describe('PeriodSummary — what a total is allowed to claim', () => {
       peaks: [],
       exposure: [],
       backTest: [],
+      replacement: periodSummaryFixture.replacement,
     });
 
     expect(screen.getByText(/nothing to accumulate/)).toBeTruthy();
@@ -287,5 +288,68 @@ describe('PeriodSummary — the bundled archive', () => {
     expect(screen.getByTestId('period-archive-unavailable').textContent).toMatch(
       /could not be loaded/,
     );
+  });
+});
+
+describe('PeriodSummary — a constructed figure must not read as a published one', () => {
+  it('warns before the number, not after it', () => {
+    // A reader who takes only the headline should have had to pass the warning
+    // to reach it. Ordering is the control here, not wording.
+    const { container } = renderSummary();
+
+    const warning = container.querySelector('[data-constructed-warning]');
+    const total = container.querySelector('[data-replacement-total]');
+    expect(warning).not.toBeNull();
+    expect(total).not.toBeNull();
+    expect(warning!.compareDocumentPosition(total!) & Node.DOCUMENT_POSITION_FOLLOWING).
+      toBeTruthy();
+  });
+
+  it('shows a range and never a bare central figure', () => {
+    // ADR-0014 bans point estimates for constructed figures. The central value
+    // may appear, but only alongside the bounds it sits between.
+    const { container } = renderSummary();
+
+    const total = container.querySelector('[data-replacement-total]') as HTMLElement;
+    expect(total.textContent).toContain('₹29,70,91,326');
+    expect(total.textContent).toContain('₹1,36,41,62,420');
+    expect(total.textContent).toMatch(/central/);
+  });
+
+  it('says what share of the answer is judgement', () => {
+    renderSummary();
+
+    expect(screen.getByText(/169% of this answer is our judgement/)).toBeTruthy();
+  });
+
+  it('marks each input as published or assumed, and never leaves it ambiguous', () => {
+    const { container } = renderSummary();
+
+    const rows = container.querySelectorAll('[data-derivation-input]');
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const published = row.querySelector('[data-input-kind="published"]');
+      const assumed = row.querySelector('[data-input-kind="assumed"]');
+      // Exactly one. An input that is neither has escaped ADR-0014 entirely.
+      expect(Boolean(published) !== Boolean(assumed)).toBe(true);
+    }
+  });
+
+  it('prints the range and the reason for every assumption', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector(
+      '[data-derivation-input="Floor area of a replaced dwelling"]',
+    ) as HTMLElement;
+    expect(row.textContent).toContain('20–45');
+    expect(row.textContent).toMatch(/PMAY-G/);
+  });
+
+  it('renders the Kuccha refusal rather than leaving a blank', () => {
+    const { container } = renderSummary();
+
+    const notCosted = container.querySelector('[data-not-costed]') as HTMLElement;
+    expect(notCosted.textContent).toMatch(/not costed/i);
+    expect(notCosted.textContent).toMatch(/bamboo, timber and thatch/);
   });
 });

@@ -496,6 +496,52 @@ export type PeriodSummaryViewModel = {
   readonly exposure: readonly PeriodExposureViewModel[];
   /** Distributed relief against that exposure — the model's one real check. */
   readonly backTest: readonly PeriodBackTestViewModel[];
+  /** Constructed replacement cost (ADR-0014). Never a point estimate. */
+  readonly replacement: PeriodReplacementViewModel;
+};
+
+/**
+ * A constructed cost, with the whole argument attached.
+ *
+ * Structurally different from every other figure view model here, and
+ * deliberately so. It has `low`/`central`/`high` instead of a single value,
+ * because ADR-0014 bans point estimates for constructed figures — a template
+ * cannot render this compactly by accident. It also carries its inputs, so the
+ * derivation cannot be dropped on the way to the screen.
+ */
+export type PeriodReplacementViewModel = {
+  readonly label: string;
+  /** How many units the cost is applied to, e.g. houses fully damaged. */
+  readonly quantity: number | undefined;
+  readonly quantityLabel: string;
+  /** Per unit. */
+  readonly unitLow: number;
+  readonly unitCentral: number;
+  readonly unitHigh: number;
+  /** Quantity × the above. `undefined` when the quantity is unknown. */
+  readonly totalLow: number | undefined;
+  readonly totalCentral: number | undefined;
+  readonly totalHigh: number | undefined;
+  readonly formula: string;
+  readonly inputs: readonly PeriodDerivationInputViewModel[];
+  /** Interval width over centre, as a percentage — how much is judgement. */
+  readonly judgementSharePercent: number;
+  readonly caveat: string;
+  /** Why a Kuccha dwelling has no figure. Rendered, not hidden. */
+  readonly notCosted: string;
+};
+
+export type PeriodDerivationInputViewModel = {
+  readonly kind: 'published' | 'assumed';
+  readonly label: string;
+  readonly value: number;
+  readonly unit: string;
+  /** Assumed inputs only. */
+  readonly low?: number;
+  readonly high?: number;
+  readonly reason?: string;
+  /** Published inputs only — the SOR item it came from. */
+  readonly citation?: string;
 };
 
 /**
