@@ -43,39 +43,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "demo-01-witnessed-hello"
+name = "demo-04-uart-hello"
 version = "0.1.0"
 dependencies = [
- "rvm-types",
- "rvm-witness",
-]
-
-[[package]]
-name = "demo-02-hello-denied"
-version = "0.1.0"
-dependencies = [
- "rvm-cap",
- "rvm-security",
- "rvm-types",
- "rvm-witness",
-]
-
-[[package]]
-name = "demo-03-prove-hello"
-version = "0.1.0"
-dependencies = [
- "rvm-cap",
- "rvm-security",
- "rvm-types",
- "rvm-witness",
-]
-
-[[package]]
-name = "demo-05-partition-pingpong"
-version = "0.1.0"
-dependencies = [
- "rvm-partition",
- "rvm-sched",
+ "rvm-boot",
+ "rvm-hal",
  "rvm-types",
  "rvm-witness",
 ]
@@ -117,11 +89,39 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
 
 [[package]]
+name = "rvm-boot"
+version = "0.1.1"
+dependencies = [
+ "rvm-hal",
+ "rvm-memory",
+ "rvm-partition",
+ "rvm-sched",
+ "rvm-types",
+ "rvm-witness",
+ "sha2",
+ "subtle",
+]
+
+[[package]]
 name = "rvm-cap"
 version = "0.1.1"
 dependencies = [
  "rvm-types",
  "spin",
+]
+
+[[package]]
+name = "rvm-hal"
+version = "0.1.1"
+dependencies = [
+ "rvm-types",
+]
+
+[[package]]
+name = "rvm-memory"
+version = "0.1.1"
+dependencies = [
+ "rvm-types",
 ]
 
 [[package]]
@@ -142,16 +142,6 @@ dependencies = [
  "rvm-types",
  "rvm-witness",
  "spin",
-]
-
-[[package]]
-name = "rvm-security"
-version = "0.1.1"
-dependencies = [
- "rvm-types",
- "rvm-witness",
- "sha2",
- "subtle",
 ]
 
 [[package]]

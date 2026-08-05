@@ -1,5 +1,7 @@
 [workspace]
 members = ["demos/*"]
+# Bare-metal AArch64 crate; cannot be built for the host.
+exclude = ["demos/04-uart-hello"]
 resolver = "2"
 
 [workspace.package]

@@ -1,0 +1,27 @@
+# Standalone: NOT a member of the root workspace. This crate targets
+# aarch64-unknown-none and is `no_std` / `no_main`, so it cannot be built
+# for the host alongside the other demos.
+[package]
+name = "demo-04-uart-hello"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "demo-04-uart-hello"
+path = "src/main.rs"
+
+[dependencies]
+rvm-types = { path = "../../../rvm/crates/rvm-types" }
+rvm-hal = { path = "../../../rvm/crates/rvm-hal" }
+rvm-witness = { path = "../../../rvm/crates/rvm-witness" }
+rvm-boot = { path = "../../../rvm/crates/rvm-boot" }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+# Deliberately NOT stripped: keeps __stack_top et al. visible to readelf,
+# which matters when diagnosing boot faults.
+strip = false

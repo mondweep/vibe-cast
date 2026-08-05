@@ -1,0 +1,50 @@
+diff --git a/crates/rvm-kernel/src/main.rs b/crates/rvm-kernel/src/main.rs
+index 23d737a..dab690f 100644
+--- a/crates/rvm-kernel/src/main.rs
++++ b/crates/rvm-kernel/src/main.rs
+@@ -93,6 +93,18 @@ core::arch::global_asm!(
+ #[cfg(not(test))]
+ #[no_mangle]
+ pub extern "C" fn rvm_main(_dtb_ptr: u64) -> ! {
++    // EXPERIMENT: enable FP/SIMD at EL1 before anything else.
++    #[cfg(target_arch = "aarch64")]
++    unsafe {
++        core::arch::asm!(
++            "mrs x0, cpacr_el1",
++            "orr x0, x0, #(3 << 20)",
++            "msr cpacr_el1, x0",
++            "isb",
++            out("x0") _, options(nostack)
++        );
++    }
++
+     // Phase 1: UART init -- first visible output
+     #[cfg(target_arch = "aarch64")]
+     unsafe {
+diff --git a/cuda-wasm b/cuda-wasm
+index 46f6f8a..1d93b35 160000
+--- a/cuda-wasm
++++ b/cuda-wasm
+@@ -1 +1 @@
+-Subproject commit 46f6f8a19f73fa7321926e0e5b0b7999c375c22c
++Subproject commit 1d93b35a1f49ad4ee6c7ac9223f74f6a6255b25d-dirty
+diff --git a/rudevolution b/rudevolution
+index 53af4c0..c6ca630 160000
+--- a/rudevolution
++++ b/rudevolution
+@@ -1 +1 @@
+-Subproject commit 53af4c03d3d6a88908a597eba78bd6c5c0bf8c41
++Subproject commit c6ca63020687487bf0c07dc43714f10d1996d0b4-dirty
+diff --git a/rvm.ld b/rvm.ld
+index fc29b88..b16d604 100644
+--- a/rvm.ld
++++ b/rvm.ld
+@@ -47,7 +47,7 @@ SECTIONS {
+     /* 64KB hypervisor stack, growing downward. */
+     . = ALIGN(4096);
+     __stack_bottom = .;
+-    . = . + 0x10000;
++    . = . + 0x80000;
+     __stack_top = .;
+ 
+     /* Page table region: 4KB-aligned, room for L1 + 4 L2 tables. */
