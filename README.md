@@ -1,173 +1,417 @@
-# RVM "Hello World" — Seven Demos
+# RVM "Hello World" — Seven Demos, and What They Found
 
 Seven runnable first-programs built against [ruvnet/rvm](https://github.com/ruvnet/rvm),
 a bare-metal Rust hypervisor (`no_std`, AArch64) built around *coherence
-domains*: partitions that reshape themselves based on how agents communicate.
+domains*: partitions whose isolation and scheduling are meant to adapt to how
+agents actually communicate.
 
-All seven run. Everything below was measured on this machine against rvm at
-rev `78acb36`, not taken from the docs — and where the code and the docs
-disagree, the demos say so.
+**All seven run.** Every number and outcome below was measured on this machine
+against rvm at rev `78acb36` — nothing is quoted from the documentation. Where
+the code and the docs disagree, the demos say so and show the evidence.
 
 This is an **orphan branch**: it shares no history with `main`.
+
+---
+
+## What we did
+
+The original ask was for ideas for a "hello world" app. RVM isn't a framework
+you build an app *on* — it's a hypervisor — so "hello world" means picking
+which layer to say hello from. We tiered seven candidates by setup cost, then
+built all of them.
+
+The method for each demo was the same:
+
+1. **Read the actual source**, not the README — dump each crate's public items,
+   read the function bodies that matter.
+2. **Write the demo against the real API**, fixing compile errors against
+   ground truth rather than guessing signatures.
+3. **Run it, and believe the output over the prose.** Several demos changed
+   shape once the output contradicted the documented behaviour — demo 3's
+   central example was wrong on the first pass and got rewritten; demo 6 was
+   rebuilt entirely around the opposite of its expected result.
+4. **Verify each surprise before reporting it.** The boot failure was
+   confirmed by patching rvm and watching it boot. The coherence finding was
+   confirmed by an exhaustive sweep, not a single failing case.
+
+Total: ~1,800 lines of demo code across seven crates, and 9 findings.
+
+### Environment
+
+| | |
+|---|---|
+| rvm revision | `78acb36d3d906b098b2074b8aecf9ff88c2af4e0` |
+| rustc | 1.94.1 |
+| Host | x86-64 Linux |
+| Bare-metal target | `aarch64-unknown-none` |
+| Emulator | `qemu-system-aarch64` (machine `virt`, cpu `cortex-a72`) |
+
+All timings are x86-64 host numbers with each crate's **default** features.
+That matters — see finding 8.
+
+---
 
 ## Quick start
 
 ```bash
-./scripts/bootstrap.sh          # clones rvm as a sibling checkout
-./scripts/run-all.sh            # runs demos 1-3 and 5-7
-cd demos/04-uart-hello && ./run.sh    # boots demo 4 under QEMU
+./scripts/bootstrap.sh                 # clones rvm as a sibling checkout
+./scripts/run-all.sh                   # runs demos 1-3 and 5-7
+cd demos/04-uart-hello && ./run.sh      # boots demo 4 under QEMU
 ```
 
-Demo 4 additionally needs `qemu-system-aarch64` and the `aarch64-unknown-none`
-target:
+Demo 4 additionally needs:
 
 ```bash
 sudo apt-get install -y qemu-system-arm
 rustup target add aarch64-unknown-none
 ```
 
-## The demos
+---
 
-| # | Demo | Crates | What it shows |
-|---|------|--------|---------------|
-| 1 | [Witnessed Hello](demos/01-witnessed-hello) | `rvm-witness` | Hash-chained 64-byte audit records; what tampering the chain catches vs. what only the HMAC catches; emission throughput |
-| 2 | [Hello, Denied](demos/02-hello-denied) | `rvm-cap`, `rvm-security` | Capability minting, monotonic attenuation, `GRANT_ONCE` consumed after one delegation, denials witnessed alongside grants |
-| 3 | [Three Ways to Prove Hello](demos/03-prove-hello) | `rvm-cap`, `rvm-security` | P1/P2/P3 proof tiers, what each catches, and their cost |
-| 4 | [UART Hello](demos/04-uart-hello) | `rvm-hal`, `rvm-boot` | A `no_std` AArch64 kernel booting under QEMU, emitting a witness per boot phase |
-| 5 | [Partition Ping-Pong](demos/05-partition-pingpong) | `rvm-partition`, `rvm-sched` | Directional comm edges, scheduler picks, edge weight climbing per send |
-| 6 | [Two Agents That Get Closer](demos/06-agents-get-closer) | `rvm-coherence`, `rvm-wasm` | The coherence graph reshaping under traffic — and why the merge half never fires |
-| 7 | [Signed Hello Package](demos/07-signed-hello) | `rvm-rvf` | Building a signed RVForge container, then six ways of breaking it, each refused with a distinct detail code |
+## Results
 
-## What we found
+### Demo 1 — Witnessed Hello (`rvm-witness`)
 
-Building these surfaced nine things worth reporting upstream. Each is
-reproduced by the demo listed, and each was verified against the source rather
-than inferred.
+Says hello as a sequence of witnessed privileged actions, then attacks the log.
 
-### Correctness
+```
+seq  action           actor target  payload     prev_hash   rec_hash  signature
+  0  PartitionCreate      0      1  "hello..."        0x0 0xabd4170c  valid
+  1  CapabilityGrant      1      2  "world..." 0xabd4170c 0xf0a60690  valid
+  2  PartitionDestroy     1      1  "!......." 0xf0a60690 0x7cb17d7b  valid
 
-**1. `record_hash` does not cover record contents.** (demo 1)
+3. Tamper with a payload: rewrite history's content
+Rewriting record 1's payload from "world" to "pwned"...
+verify_chain  -> OK, 3 records link cleanly   <-- tamper NOT caught
+signatures    -> INVALID at index 1           <-- tamper caught here
+
+4. Tamper with ordering: renumber a record
+verify_chain  -> FAILED: corrupted record at seq 7   <-- caught
+```
+
+Throughput, 1,000,000 iterations:
+
+| operation | ns/op |
+|---|---|
+| `append` (chain only, crypto-sha256 **on** — the default) | ~318 |
+| `signed_append` (chain + HMAC-SHA256) | ~1624 |
+| `append` with crypto-sha256 **off** (FNV-1a path) | ~22 |
+
+→ **Findings 1 and 8.**
+
+### Demo 2 — Hello, Denied (`rvm-cap`, `rvm-security`)
+
+```
+1. The hypervisor mints a root capability
+  root cap  index=0 gen=1  rights=READ|WRITE|GRANT
+  agent tries the same          -> denied (GrantNotPermitted)
+
+2. Delegate READ-only to the agent, then try to write
+  agent reads the region             ALLOWED  (tier P1, witness seq 0)
+  agent writes the region            DENIED   InsufficientRights: token holds READ
+
+4. GRANT_ONCE: authority that evaporates after one use
+  1st delegation to partition 3 -> ok (index=3 gen=1)
+  source rights are now READ   <-- GRANT_ONCE consumed
+  2nd delegation to partition 3 -> denied (GrantNotPermitted)
+
+5. The audit trail: denials are witnessed too
+seq  action            tier    cap_hash
+  0  RegionShare        P1   0x1000002
+  1  ProofRejected       -   0x1000002
+```
+
+Everything behaves as documented. The denied write lands in the log as
+`ProofRejected` carrying the *same* `cap_hash` as the successful read, so an
+auditor can see which token was presented for a refused operation.
+
+### Demo 3 — Three Ways to Prove Hello (`rvm-cap`, `rvm-security`)
+
+The interesting result is which tier catches what:
+
+| case | P1 | P3 |
+|---|---|---|
+| token lacks `EXECUTE` | **FAIL** | PASS — P3 never looks at rights |
+| ancestor mid-chain revoked | **FAIL** | **FAIL** — revocation cascades by design |
+| chain longer than `max_depth` allows | PASS | **FAIL** — the genuine P3-only check |
+
+The middle row corrects the intuitive guess (and our first draft): revoking an
+intermediate *does* force-invalidate every descendant's table slot, so the cheap
+P1 check already rejects it. `revoke.rs` says so explicitly — *"Without this, a
+revoked child capability's table slot remains `is_valid: true` and would pass P1
+verification."* Delegation depth is what actually requires walking to the root.
+
+Cost:
+
+| path | ns/op | ADR target |
+|---|---|---|
+| `verify_p1` | ~1.5 | < 1 µs |
+| `verify_p3` | ~4.2 | "deep" |
+| security gate (P2 + witness emit) | ~331 | — |
+
+Both proof tiers land ~3 orders of magnitude inside budget. The gate row is
+dominated by witness emission, not proof checking.
+
+→ **Finding 4.**
+
+### Demo 4 — UART Hello (`rvm-hal`, `rvm-boot`) — bare metal
+
+A `no_std` AArch64 kernel booting under QEMU:
+
+```
+========================================
+  RVM Demo 4 - UART Hello
+  hello world, from a bare partition
+========================================
+
+Exception level : EL1
+Witness ring    : 32 records (2048 bytes)
+
+Boot sequence
+-------------
+  phase 0  HalInit         witnessed at seq 0
+  phase 1  MemoryInit      witnessed at seq 1
+  phase 2  CapabilityInit  witnessed at seq 2
+  phase 3  WitnessInit     witnessed at seq 3
+  phase 4  SchedulerInit   witnessed at seq 4
+  phase 5  RootPartition   witnessed at seq 5
+  phase 6  Handoff         witnessed at seq 6
+
+  chain verification: OK, 7 records link cleanly
+```
+
+Getting here required diagnosing why rvm's own `make run` prints nothing.
+
+→ **Finding 3.**
+
+### Demo 5 — Partition Ping-Pong (`rvm-partition`, `rvm-sched`)
+
+```
+2. Open comm edges
+  edge 1 : ping -> pong
+  edge 2 : pong -> ping
+  pong sending on ping's edge -> refused (InsufficientCapability)
+
+4. The conversation
+  turn  scheduler picks          message            edge weight  witness
+     0  PartitionId(1) (speaker) p1 -> p2: "hello"  1            seq 0
+     1  PartitionId(2) (speaker) p2 -> p1: "world"  1            seq 1
+     2  PartitionId(1) (speaker) p1 -> p2: "how"    2            seq 2
+     ...
+  chain verification: OK, 6 records
+  signatures        : 6/6 valid
+```
+
+Channels are directional and the sender must be the channel's source — a forged
+send is refused. Edge weight climbs one per send; that counter is exactly what
+the coherence engine consumes in demo 6.
+
+→ **Finding 9.**
+
+### Demo 6 — Two Agents That Get Closer (`rvm-coherence`, `rvm-wasm`)
+
+This demo was built to show RVM's headline behaviour. It shows the opposite.
+
+```
+5. Loud: the two agents start talking constantly
+  epoch 4: SplitRecommended p1 (pressure 8544 bp)
+  epoch 5: SplitRecommended p1 (pressure 8878 bp)
+  epoch 6: SplitRecommended p1 (pressure 9070 bp)
+  epoch 7: SplitRecommended p1 (pressure 9194 bp)
+
+6. The merge signal fires -- and is then discarded
+  evaluate_merge(p1, p2) -> mutual 4194 bp, should_merge = true
+  engine.recommend()     -> SplitRecommended p1 (pressure 9194 bp)
+
+7. Is a merge reachable at all? Search the space
+  searched 4032 weight combinations
+    MergeRecommended actually returned : 0
+    merge signal set, split returned instead : 1244
+    lowest-pressure shadowed case: self(100,0) cross(0,400)
+      -> pressure p1=8333 p2=10000, mutual=4000 bp, split threshold 8000
+```
+
+→ **Finding 2** — the most significant result here.
+
+### Demo 7 — Signed Hello Package (`rvm-rvf`)
+
+Builds a signed RVForge container, verifies it, then breaks it six ways:
+
+```
+1. Pack the agent
+  container: 448 bytes
+    seg 1 type 0x07 META      payload  30 B  signed=false executable=false
+    seg 2 type 0x05 MANIFEST  payload   4 B  signed=false executable=false
+    seg 3 type 0x10 WASM      payload   8 B  signed=true  executable=true
+
+5. Corrupt one byte at a time
+  flip a byte of agent bytecode   refused  ContentHash/ContentHashMismatch,
+                                           Signature/SignatureRejected
+  flip a byte of the signature    refused  Signature/SignatureRejected
+  flip the container magic        refused  parse: BadMagic
+  rewrite the capability string   refused  ContentHash/ContentHashMismatch
+  signed by an untrusted key      refused  Signature/SignatureRejected
+  truncate the last segment       refused  parse: Truncated
+```
+
+Six tampering modes, six distinct detail codes. This is the strongest
+subsystem in the tree.
+
+→ **Findings 5, 6, 7.**
+
+---
+
+## Findings
+
+Nine things worth reporting upstream. Each is reproduced by the demo listed and
+was verified against source, not inferred.
+
+| # | Finding | Severity | Demo |
+|---|---|---|---|
+| 1 | `record_hash` doesn't cover record contents | Correctness | 1 |
+| 2 | Coherence engine's merge path is unreachable | Correctness | 6 |
+| 3 | `make run` cannot work as shipped (3 causes) | Correctness | 4 |
+| 4 | `verify_p2` is public but uncallable | API | 3 |
+| 5 | rvm-rvf can read containers but nothing writes one | API | 7 |
+| 6 | `report.ok == true` doesn't mean the signature was checked | Caller trap | 7 |
+| 7 | `report.capabilities` stays populated on a failed report | Caller trap | 7 |
+| 8 | The ~17ns witness figure is the FNV-1a path | Docs | 1 |
+| 9 | Two capability claims are narrower than they sound | Docs | 5, 6 |
+
+### 1. `record_hash` does not cover record contents
+
 `WitnessLog::append` sets `record_hash = compute_chain_hash(prev_hash, sequence)`
-— derived purely from position in the chain. The field's own docs describe it
-as "FNV-1a hash of bytes [0..44] of this record (self-integrity)", and
-`hash.rs` exports an unused `compute_record_hash(data)` that would do exactly
-that. Consequence: `verify_chain` proves *ordering*, not *content*. Editing a
+— derived purely from position in the chain. The field's own docs describe it as
+*"FNV-1a hash of bytes [0..44] of this record (self-integrity)"*, and `hash.rs`
+exports an unused `compute_record_hash(data)` that would do exactly that.
+
+Consequence: `verify_chain` proves **ordering**, not **content**. Editing a
 record's payload is invisible to it. Only the HMAC signature written by
 `signed_append` covers contents — so a deployment using plain `append` has no
 tamper evidence on payloads at all.
 
-**2. The merge half of the coherence engine is unreachable.** (demo 6)
+### 2. The merge half of the coherence engine is unreachable
+
 This is the behaviour the project leads with: *"When two agents start talking
 more, RVM moves them closer."* It does the opposite. Cross-partition traffic is
 external weight, cut pressure is `external/total`, so talking more drives
-pressure *up* and triggers `SplitRecommended`.
+pressure **up** and triggers `SplitRecommended`.
 
 Worse, `recommend()` scans for a split candidate first and returns on the first
-hit. Across a 4,032-point sweep of the two-partition weight space, it returned
+hit. Across a 4,032-point sweep of the two-partition weight space it returned
 `MergeRecommended` **zero times**, while the underlying `evaluate_merge` signal
-was set and then discarded in **1,244** of them. The arithmetic is why:
-mutual coherence tracks roughly `pressure − 5000`, so `should_merge` (≥4000 bp)
-implies pressure ≈9000 bp, always over the 8000 bp split threshold.
+was set and then discarded in **1,244** of them.
+
+The arithmetic is why: mutual coherence tracks roughly `pressure − 5000`, so
+`should_merge` (≥ 4000 bp) implies pressure ≈ 9000 bp — always over the 8000 bp
+split threshold.
 
 `pressure.rs` already carries a comment about lowering the merge threshold from
-7000 to 4000 because "a threshold of 7000 (70%) was unreachable, preventing
-merge signals from ever firing". That fixed `evaluate_merge`; the shadowing in
+7000 to 4000 because *"a threshold of 7000 (70%) was unreachable, preventing
+merge signals from ever firing"*. That fixed `evaluate_merge`; the shadowing in
 `recommend()` is the half still open. A fix means ranking split and merge
 candidates against each other instead of returning on the first split found.
 
-**3. `make run` cannot work as shipped.** (demo 4)
+### 3. `make run` cannot work as shipped
+
 Three independent faults, all confirmed:
 
 - `KERNEL_ELF` is `target/$(TARGET)/release/rvm-kernel`, but rvm-kernel's
-  `[[bin]]` is named `rvm`. QEMU exits with "could not load kernel".
+  `[[bin]]` is named `rvm`. QEMU exits with *"could not load kernel"*.
 - `rvm_main` builds a `rvm_kernel::Kernel` as a stack local. That value is
   **232,768 bytes**; `rvm.ld` reserves **65,536**. The compiler's stack probe
   walks off the bottom of the stack and faults.
 - FP/SIMD is trapped at EL1 (`CPACR_EL1.FPEN` unset) and LLVM emits
-  `movi v0.2d, #0` to zero large structs, so the first big initialisation
-  traps. `VBAR_EL1` is also unset, so it vectors to address `0x200` — zeroes.
+  `movi v0.2d, #0` to zero large structs, so the first big initialisation traps.
+  `VBAR_EL1` is also unset, so it vectors to address `0x200` — zeroes.
 
-Fixing the last two makes rvm's own kernel print its full boot banner;
-verified, and saved as [`rvm-boot-fixes.patch`](demos/04-uart-hello/rvm-boot-fixes.patch).
-Note that cargo does not track `rvm.ld`, so editing it alone will not trigger
-a rebuild.
+Fixing the last two makes rvm's own kernel print its full boot banner. Verified,
+and saved as [`rvm-boot-fixes.patch`](demos/04-uart-hello/rvm-boot-fixes.patch).
+Note that cargo does not track `rvm.ld`, so editing it alone won't trigger a
+rebuild.
 
-### API reachability
+### 4. P2 verification is public but uncallable
 
-**4. P2 verification is public but uncallable.** (demo 3)
 `CapabilityManager::verify_p2` and `ProofVerifier::verify_p2` both take
-`ctx: &PolicyContext`. `rvm-cap/src/lib.rs` declares `mod verify;` privately
-and re-exports only `ProofVerifier` — never `PolicyContext`. No external caller
-can name the type, so neither function can be called. Nothing else in the
-workspace re-exports it. One-line fix:
-`pub use verify::{ProofVerifier, PolicyContext};`
+`ctx: &PolicyContext`. `rvm-cap/src/lib.rs` declares `mod verify;` privately and
+re-exports only `ProofVerifier` — never `PolicyContext`. No external caller can
+name the type, so neither function can be called. Nothing else in the workspace
+re-exports it. One-line fix:
 
-**5. rvm-rvf can read containers but nothing can write one.** (demo 7)
-The crate is read-only by design, and its `testkit` — the only container
-builder in the tree — is a private `mod`. Demo 7 reimplements the segment
-layout against the public `format` API to have anything to verify. Making
-`testkit` public, or shipping a writer, would save every downstream user this
-work.
+```rust
+pub use verify::{ProofVerifier, PolicyContext};
+```
 
-### Caller traps
+### 5. rvm-rvf can read containers but nothing can write one
 
-**6. `report.ok == true` does not mean the signature was checked.** (demo 7)
+The crate is read-only by design, and its `testkit` — the only container builder
+in the tree — is a private `mod`. Demo 7 reimplements the segment layout against
+the public `format` API to have anything to verify. Making `testkit` public, or
+shipping a writer, would save every downstream user this work.
+
+### 6. `report.ok == true` does not mean the signature was checked
+
 With no trusted key supplied, the signature check is recorded `Skip` and the
-report is still `ok = true`. `ok` means "nothing failed", and a skip is
-correctly not a pass — but a caller reading only `ok` accepts an artifact whose
-signature was never verified. Requiring a verified signature means supplying a
-trusted key *and* confirming the `Signature` record is `Pass`.
+report is still `ok = true`. `ok` means "nothing failed", and a skip is correctly
+not a pass — but a caller reading only `ok` accepts an artifact whose signature
+was never verified. Requiring a verified signature means supplying a trusted key
+**and** confirming the `Signature` record is `Pass`.
 
-**7. `report.capabilities` stays populated on a failed report.** (demo 7)
+### 7. `report.capabilities` stays populated on a failed report
+
 The rustdoc says a failed capability check yields the deny-everything mapping,
 which is true but narrower than it reads: *only* a `CapabilityMapping` failure
 zeroes it. A package failing `ContentHash` and `Signature` still reports
 `granted: [Network, Clock]`. Callers must gate on `report.ok` first.
 
-### Documentation
+### 8. The ~17ns witness figure is the FNV-1a path
 
-**8. The ~17ns witness figure is the FNV-1a path.** (demo 1)
 `rvm-witness`'s default features include `crypto-sha256`, which is what you get
 unless you opt out. Measured here:
 
 | build | ns/op |
 |---|---|
 | `append`, crypto-sha256 off (FNV-1a) | ~22 |
-| `append`, crypto-sha256 on (**default**) | ~295 |
-| `signed_append` (chain + HMAC-SHA256) | ~1665 |
+| `append`, crypto-sha256 on (**default**) | ~295–318 |
+| `signed_append` (chain + HMAC-SHA256) | ~1624 |
 
-rvm's own benchmark agrees on this machine (`witness_log_append_256` ≈ 295ns).
+rvm's own benchmark agrees on this machine (`witness_log_append_256` ≈ 295 ns).
 Both figures are honest for their build; the README just doesn't say which one
-it is quoting. The ADR targets are still met by orders of magnitude either way.
+it quotes. The ADR targets are still met by orders of magnitude either way.
 
-**9. Two capability claims are narrower than they sound.** (demos 5, 6)
+### 9. Two capability claims are narrower than they sound
 
 - `rvm-wasm` validates modules and manages a 7-state agent lifecycle. It does
-  not execute WebAssembly — there is no interpreter or JIT. "Running" is a
+  **not** execute WebAssembly — there is no interpreter or JIT. "Running" is a
   state label.
-- `IpcMessage` carries no payload bytes, only `payload_len` and `msg_type`.
-  RVM moves message *headers*; the payload is expected to live in a shared
-  region the receiver already holds a capability for.
+- `IpcMessage` carries no payload bytes, only `payload_len` and `msg_type`. RVM
+  moves message *headers*; the payload is expected to live in a shared region
+  the receiver already holds a capability for.
 
-Neither is a defect — both are reasonable designs — but "WASM agent runtime"
-and "inter-partition messaging" both read as more than they are.
+Neither is a defect — both are reasonable designs — but "WASM agent runtime" and
+"inter-partition messaging" read as more than they are.
+
+---
 
 ## What works well
 
-Worth saying plainly, because the list above is all problems:
+The list above is all problems, so this is worth stating plainly:
 
 - **The capability system is solid.** Monotonic attenuation, `GRANT_ONCE`
   consumption, cascading revocation through the derivation subtree, and
   hypervisor-only root minting all behave exactly as documented (demo 2).
-  Revocation deliberately force-invalidates every descendant's table slot so
-  the cheap P1 check catches it — with a source comment explaining why.
-- **RVF verification is genuinely good** (demo 7). Six different tampering
-  modes each produce a distinct, specific detail code, the signature covers
-  header fields and not just payload bytes, and reports are deterministic.
-- **P1/P3 are far inside their ADR targets** — ~1.3ns and ~4.7ns against
-  budgets of 1µs and "deep" (demo 3).
-- **Everything compiles clean and the test suite passes.** 17 crates, `no_std`
-  throughout, and the AArch64 cross-build works.
+  Revocation deliberately force-invalidates every descendant's table slot so the
+  cheap P1 check catches it — with a source comment explaining why.
+- **RVF verification is genuinely good** (demo 7). Six tampering modes each
+  produce a distinct, specific detail code; the signature covers header fields
+  and not just payload bytes; reports are deterministic — same bytes, same
+  options, same report.
+- **P1/P3 are far inside their ADR targets** — ~1.5 ns and ~4.2 ns against
+  budgets of 1 µs and "deep" (demo 3).
+- **The engineering baseline is real.** 17 crates, `no_std` throughout, clean
+  compile with no warnings, and the AArch64 cross-build works.
+
+---
 
 ## Layout
 
@@ -175,7 +419,7 @@ Worth saying plainly, because the list above is all problems:
 demos/01-witnessed-hello/       cargo run -p demo-01-witnessed-hello
 demos/02-hello-denied/          cargo run -p demo-02-hello-denied
 demos/03-prove-hello/           cargo run -p demo-03-prove-hello
-demos/04-uart-hello/            ./run.sh    (standalone; excluded from workspace)
+demos/04-uart-hello/            ./run.sh   (standalone; excluded from workspace)
 demos/05-partition-pingpong/    cargo run -p demo-05-partition-pingpong
 demos/06-agents-get-closer/     cargo run -p demo-06-agents-get-closer
 demos/07-signed-hello/          cargo run -p demo-07-signed-hello
@@ -187,3 +431,17 @@ rvm is consumed as a **sibling checkout** at `../rvm`, not a git dependency:
 cargo initialises submodules for git deps, and rvm declares three
 (`rudevolution`, `ruvector`, `cuda-wasm`) that its own workspace `exclude`s and
 that take >10 minutes to fetch. `bootstrap.sh` clones without them.
+
+## Caveats
+
+- All timings are single-run wall-clock on a shared x86-64 VM, not criterion
+  statistics. They're accurate to roughly an order of magnitude, which is all
+  the claims above depend on. rvm's own `cargo bench` corroborates the witness
+  number.
+- Finding 2's sweep covers the **two-partition** case across 8 weight values per
+  edge. It does not prove merge is unreachable for every possible graph — only
+  that it is unreachable across the space a two-agent scenario can occupy, which
+  is the scenario the project's own pitch describes.
+- Demo 6's original design called for dropping a trust signal to force a split.
+  There is no trust input anywhere in `rvm-coherence`; the only split driver is
+  cut pressure. The demo uses traffic redirection instead.
