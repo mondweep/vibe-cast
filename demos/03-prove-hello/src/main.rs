@@ -55,7 +55,7 @@ fn main() {
         (m, (mi, mg), (li, lg))
     };
 
-    let (mut mgr, _, (leaf_i, leaf_g)) = fresh();
+    let (mgr, _, (leaf_i, leaf_g)) = fresh();
     println!(
         "\nDelegation chain:  root(depth 0) -> mid(depth 1) -> leaf(depth 2)\n\
          The mutation is attempted with the leaf capability."

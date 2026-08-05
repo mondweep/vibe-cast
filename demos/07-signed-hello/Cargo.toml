@@ -1,0 +1,13 @@
+[package]
+name = "demo-07-signed-hello"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rvm-types.workspace = true
+rvm-witness.workspace = true
+rvm-rvf.workspace = true
+# rvm-rvf's testkit (which builds containers) is a private `mod`, so this
+# demo writes the container format itself and needs its own signer.
+ed25519-dalek = { version = "2.1", features = ["std"] }

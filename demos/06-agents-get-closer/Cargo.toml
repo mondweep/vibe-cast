@@ -1,0 +1,11 @@
+[package]
+name = "demo-06-agents-get-closer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rvm-types.workspace = true
+rvm-witness.workspace = true
+rvm-coherence.workspace = true
+rvm-wasm.workspace = true
