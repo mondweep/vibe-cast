@@ -178,6 +178,7 @@ discussed rather than told where to click:
 | Scenario Planner | `/scenario-planner` |
 | Trend | `/trend` |
 | Cumulative & Peak | `/cumulative-and-peak` |
+| Reconstruction Cost | `/reconstruction-cost` |
 
 Back and forward work, and an unrecognised path lands on the Situation Summary
 rather than a blank screen. Bulletins live in the browser, not the URL, so a
@@ -185,6 +186,45 @@ link opens on the right view with whatever bulletins that reader has loaded.
 
 Slugs are a published contract: a link somebody sent a colleague should keep
 working, so change one only alongside a redirect for the old path.
+
+## Reconstruction Cost
+
+The one view whose figures the console **constructed** rather than read. It is a
+separate view, and separate on purpose: everything on Cumulative & Peak is a
+quantity ASDMA printed or arithmetic on one, and is auditable back to a Total
+row. Everything here is a quantity multiplied by a rate somebody chose, and the
+choosing was ours.
+
+The bulletin contains no money at all — across 23 sections and 190 district-days
+there is not one monetary value — so every rupee is `quantity × rate`, one half
+auditable and one half arguable. Three controls keep the halves apart:
+
+- **A rate that cannot cite its source cannot be constructed** (ADR-0011). The
+  SDRF schedule carries its MHA circular number on every rate. The effective
+  dates that rule forced us to record are what revealed the schedule *expired on
+  31 March 2026*, before the flood it would be applied to — so the console says
+  so rather than quietly producing a confident number.
+- **A constructed rate carries a derivation instead** (ADR-0014): a formula plus
+  every input, each either published-and-cited or assumed-with-a-range-and-a-
+  reason. No bare numbers. An assumption without a reason will not construct.
+- **Constructed figures are always intervals**, computed by evaluating the
+  derivation at its assumption bounds. The width is a measurement of how much of
+  the answer is judgement — currently 169% of its centre — not a hedge chosen for
+  presentation. Narrowing it requires a better input, not tighter bounds.
+
+**Reconstruction is a policy choice and the console refuses to make it.** 91.2%
+of the dwellings destroyed outright were Kuccha (3,187 of 3,494), so what those
+are rebuilt as moves the bill further than every other assumption combined. All
+three options are shown together — a selector would let the cheapest be chosen
+without seeing what it costs in future risk — and each policy's cost shares a
+table row with its effect on future risk, so neither can be read without the
+other.
+
+Kuccha *superstructures* are not costed at all: a civil-works schedule prices
+brick, cement and RCC, and a Kuccha house is bamboo, timber and thatch. Under
+"protect in place" the raised plinths beneath them **are** priced, which is the
+direct answer to building defences where rebuilding in permanent materials is
+not possible.
 
 ## Deployment
 

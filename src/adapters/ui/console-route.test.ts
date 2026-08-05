@@ -60,3 +60,20 @@ describe('console routes', () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 });
+
+describe('the Reconstruction Cost route', () => {
+  it('has its own shareable URL, so the money argument can be sent on its own', () => {
+    // The point of splitting it off Cumulative & Peak: a finance or donor
+    // reader can be given this view without being given the situation report.
+    expect(pathForView('reconstruction')).toBe('/reconstruction-cost');
+    expect(viewFromPath('/reconstruction-cost')).toBe('reconstruction');
+  });
+
+  it('keeps every existing slug unchanged', () => {
+    // Slugs are a published contract (see this module's header). Splitting a
+    // view must not silently move a link somebody already sent.
+    expect(pathForView('period')).toBe('/cumulative-and-peak');
+    expect(pathForView('trend')).toBe('/trend');
+    expect(pathForView('situation')).toBe('/');
+  });
+});

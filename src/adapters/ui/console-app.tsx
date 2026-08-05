@@ -17,6 +17,7 @@ import { DamageMap } from './damage-map';
 import { DistrictRanking } from './district-ranking';
 import { ResponseCapacity } from './response-capacity';
 import { PeriodSummary } from './period-summary';
+import { ReconstructionCost } from './reconstruction-cost';
 import { ScenarioPlanner } from './scenario-planner';
 import { SeverityWeightsPanel } from './severity-weights';
 import { SituationSummary } from './situation-summary';
@@ -231,6 +232,8 @@ export const ConsoleApp = ({
         );
       case 'period':
         return <PeriodSummary summary={data.period} archive={archive} />;
+      case 'reconstruction':
+        return <ReconstructionCost replacement={data.period.replacement} />;
     }
   };
 

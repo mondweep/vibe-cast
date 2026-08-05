@@ -36,7 +36,8 @@ export type ConsoleViewKey =
   | 'map'
   | 'scenario'
   | 'trend'
-  | 'period';
+  | 'period'
+  | 'reconstruction';
 
 export type ConsoleView = {
   readonly key: ConsoleViewKey;
@@ -80,6 +81,11 @@ export const CONSOLE_VIEWS: readonly ConsoleView[] = [
     key: 'period',
     label: 'Cumulative & Peak',
     question: 'Across every bulletin loaded, what has accumulated and what peaked when?',
+  },
+  {
+    key: 'reconstruction',
+    label: 'Reconstruction Cost',
+    question: 'What would rebuilding cost, and does it remove the risk or repeat it?',
   },
 ];
 

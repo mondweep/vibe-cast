@@ -599,3 +599,36 @@ td.comparison__projected {
   outline: 2px solid var(--c-focus);
   outline-offset: 2px;
 }
+
+/* ---------------------------------------------------------------------------
+   Constructed figures (ADR-0014)
+   ---------------------------------------------------------------------------
+
+   `.figure-tag` marks a figure this console DERIVED from ASDMA's own numbers —
+   arithmetic on published quantities. A constructed figure is a further step
+   away: it rests on rates and assumptions nobody published, so it must not
+   share that styling.
+
+   It uses the warning token rather than the derived one, filled rather than
+   outlined, so the two are distinguishable at a glance and in peripheral
+   vision on a projector. Colour is never the only signal (NFR-8): the tag
+   reads "CONSTRUCTED", and every constructed figure also carries a warning
+   block above it and a range instead of a point.
+
+   --c-warning is 5.4:1 on white, so the text passes AA on the soft fill. */
+.figure-tag--constructed {
+  color: var(--c-warning);
+  border-color: var(--c-warning);
+  background: var(--c-warning-soft);
+}
+
+/* The interval headline. Larger than body text because it is the figure a
+   reader takes away, but deliberately NOT as large as a reported headline —
+   a constructed number should not shout louder than a published one. */
+.figure-headline {
+  font-family: var(--font-figure, var(--font-ui));
+  font-size: var(--fs-lead, 1.25rem);
+  font-weight: 700;
+  color: var(--c-ink);
+  margin: var(--s-2) 0 var(--s-1);
+}
