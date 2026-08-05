@@ -703,6 +703,29 @@ export const periodSummaryFixture: PeriodSummaryViewModel = {
     notCosted:
       'A Kuccha dwelling is built from bamboo, timber and thatch, so costing it from a ' +
       'civil works schedule would answer a question about a different building.',
+    benchmark: {
+      label: '₹10 lakh per affected household',
+      source:
+        'A publicly stated demand, not a published norm and not an entitlement. It is shown ' +
+        'here to be compared against, not because this console has assessed it as correct.',
+      amountPerHousehold: 1_000_000,
+      dwellingsDestroyed: 3494,
+      householdsAffected: 147_148,
+      householdSize: 4.9,
+      notDestroyedSharePercent: 97.6,
+      demandAcrossAffectedLow: 133_523_000_000,
+      demandAcrossAffectedCentral: 147_148_000_000,
+      demandAcrossAffectedHigh: 163_869_000_000,
+      demandAcrossDestroyed: 3_494_000_000,
+      reconstructionLow: 455_000_000,
+      reconstructionCentral: 789_000_000,
+      reconstructionHigh: 1_867_000_000,
+      perHouseholdMultiple: 4.4,
+      caveat:
+        'These two figures answer different questions and must not be netted off against ' +
+        'each other. Almost all of the difference between the totals is the denominator, ' +
+        'not the rate. The bulletin reports people and never households.',
+    },
     kucchaSharePercent: 91,
     plinthCentral: 45_263,
     policies: [

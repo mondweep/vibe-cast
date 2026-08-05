@@ -39,6 +39,11 @@ import {
   raisedPlinthResilience,
   RECONSTRUCTION_POLICIES,
 } from '../domain/economics/reconstruction-policy';
+import {
+  ASSAM_HOUSEHOLD_SIZE,
+  compareWithBenchmark,
+  TEN_LAKH_DEMAND,
+} from '../domain/economics/compensation-benchmark';
 import { HOUSES_FULLY_SEVERELY_KUCCHA, HOUSES_FULLY_SEVERELY_PUKKA } from '../domain/timeline/measure';
 import { HOUSES_FULLY_SEVERELY_DAMAGED } from '../domain/timeline/measure';
 import { personDays, quintals, unknownPersonDays, unknownQuintals } from '../domain/shared/quantity';
@@ -50,6 +55,7 @@ import {
 } from '../domain/timeline/period-totals';
 import type {
   PeriodBackTestViewModel,
+  PeriodBenchmarkViewModel,
   PeriodDerivationInputViewModel,
   PeriodPolicyViewModel,
   PeriodReplacementViewModel,
@@ -195,6 +201,47 @@ const backTestRows = (timeline: BulletinTimeline): readonly PeriodBackTestViewMo
  * because a constructed figure that renders as compactly as a published one is
  * exactly the failure ADR-0014 exists to prevent.
  */
+/**
+ * Reconstruction beside the ₹10 lakh demand.
+ *
+ * Affected population is read as a PEAK, never a cumulative: it is a stock, and
+ * summing it would count the same household on every day it stayed flooded
+ * (ADR-0012). The peak understates distinct households — districts peak on
+ * different days — so the household count here is a floor on that basis too.
+ */
+const benchmarkView = (
+  timeline: BulletinTimeline,
+  reconstructionPerDwelling: { low: number; central: number; high: number },
+  dwellingsDestroyed: number | undefined,
+): PeriodBenchmarkViewModel => {
+  const affectedPeople = peakOf(timeline, POPULATION_AFFECTED).value;
+  const c = compareWithBenchmark(TEN_LAKH_DEMAND, {
+    affectedPeople,
+    dwellingsDestroyed,
+    householdSize: ASSAM_HOUSEHOLD_SIZE,
+    reconstructionPerDwelling,
+  });
+
+  return {
+    label: c.benchmark.label,
+    source: c.benchmark.source,
+    amountPerHousehold: c.benchmark.amountPerHousehold.amount,
+    dwellingsDestroyed: c.dwellingsDestroyed,
+    householdsAffected: c.householdsAffected,
+    householdSize: ASSAM_HOUSEHOLD_SIZE.central,
+    notDestroyedSharePercent: c.notDestroyedSharePercent,
+    demandAcrossAffectedLow: c.demandAcrossAffected?.low,
+    demandAcrossAffectedCentral: c.demandAcrossAffected?.central,
+    demandAcrossAffectedHigh: c.demandAcrossAffected?.high,
+    demandAcrossDestroyed: c.demandAcrossDestroyed,
+    reconstructionLow: c.reconstructionOfDestroyed?.low,
+    reconstructionCentral: c.reconstructionOfDestroyed?.central,
+    reconstructionHigh: c.reconstructionOfDestroyed?.high,
+    perHouseholdMultiple: c.perHouseholdMultiple,
+    caveat: c.caveat,
+  };
+};
+
 const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel => {
   const cost = pukkaDwellingReplacement();
   const plinth = raisedPlinthResilience();
@@ -255,6 +302,11 @@ const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel 
     judgementSharePercent: Math.round(relativeWidth(cost.interval) * 100),
     caveat: cost.caveat,
     notCosted: KUCCHA_NOT_COSTED,
+    benchmark: benchmarkView(timeline, {
+      low: cost.interval.low + plinth.interval.low,
+      central: cost.interval.central + plinth.interval.central,
+      high: cost.interval.high + plinth.interval.high,
+    }, houses),
     kucchaSharePercent:
       kuccha === undefined || pukka === undefined || kuccha + pukka === 0
         ? undefined

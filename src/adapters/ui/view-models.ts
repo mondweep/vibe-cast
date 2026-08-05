@@ -541,6 +541,35 @@ export type PeriodReplacementViewModel = {
   readonly plinthCentral: number;
   /** All three policies, shown together. Never one, never a default that hides the rest. */
   readonly policies: readonly PeriodPolicyViewModel[];
+  /** How reconstruction compares with a publicly demanded compensation figure. */
+  readonly benchmark: PeriodBenchmarkViewModel;
+};
+
+/**
+ * A stated compensation demand, set beside reconstruction.
+ *
+ * Carries both denominators as first-class fields rather than only the totals,
+ * because the denominators are the finding: a reader given two totals and no
+ * household counts will conclude the demand is extravagant, when almost all of
+ * the difference is that it reaches far more households.
+ */
+export type PeriodBenchmarkViewModel = {
+  readonly label: string;
+  readonly source: string;
+  readonly amountPerHousehold: number;
+  readonly dwellingsDestroyed: number | undefined;
+  readonly householdsAffected: number | undefined;
+  readonly householdSize: number;
+  readonly notDestroyedSharePercent: number | undefined;
+  readonly demandAcrossAffectedLow: number | undefined;
+  readonly demandAcrossAffectedCentral: number | undefined;
+  readonly demandAcrossAffectedHigh: number | undefined;
+  readonly demandAcrossDestroyed: number | undefined;
+  readonly reconstructionLow: number | undefined;
+  readonly reconstructionCentral: number | undefined;
+  readonly reconstructionHigh: number | undefined;
+  readonly perHouseholdMultiple: number | undefined;
+  readonly caveat: string;
 };
 
 /**

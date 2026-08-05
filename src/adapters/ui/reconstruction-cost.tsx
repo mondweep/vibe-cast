@@ -22,14 +22,33 @@ import { TableScroll } from './table-scroll';
 import type { PeriodReplacementViewModel } from './view-models';
 
 /**
- * Rupees, in Indian grouping, rounded to whole rupees.
+ * Rupees, scaled to the magnitude being shown.
  *
- * Never abbreviated to "1.8 L" or "63 Cr". A constructed figure is already
- * carrying enough imprecision from its assumptions; presentational rounding on
- * top would make two materially different figures look identical.
+ * Below a crore, exact rupees in Indian grouping: a per-dwelling figure of
+ * ₹1,80,638 is meaningful to the rupee and should read that way.
+ *
+ * At a crore and above, crore with one decimal. This was originally exact at
+ * every scale, on the reasoning that presentational rounding could make two
+ * materially different figures look identical. That reasoning is right for
+ * per-unit figures and wrong for aggregates, because it produced
+ * `₹1,33,52,29,62,963` — thirteen digits nobody can read, carrying implied
+ * precision to the rupee on a number derived from an ASSUMED 4.9 people per
+ * household. Stating it that way is less honest than "₹13,352 cr", not more:
+ * a figure nobody can read is a figure nobody can check, and false precision
+ * is its own kind of overclaim.
+ *
+ * One decimal is kept so ₹29.7 cr and ₹35.4 cr stay distinguishable.
  */
-const money = (value: number | undefined): string =>
-  value === undefined ? '\u2014' : `\u20b9${Math.round(value).toLocaleString('en-IN')}`;
+const money = (value: number | undefined): string => {
+  if (value === undefined) return '\u2014';
+  const rupees = Math.round(value);
+  if (Math.abs(rupees) < 1_00_00_000) return `\u20b9${rupees.toLocaleString('en-IN')}`;
+  const crore = rupees / 1_00_00_000;
+  return `\u20b9${crore.toLocaleString('en-IN', {
+    minimumFractionDigits: crore < 1000 ? 1 : 0,
+    maximumFractionDigits: crore < 1000 ? 1 : 0,
+  })} cr`;
+};
 
 export type ReconstructionCostProps = {
   readonly replacement: PeriodReplacementViewModel;
@@ -227,6 +246,131 @@ export const ReconstructionCost = ({ replacement }: ReconstructionCostProps) => 
         )}
         <p className="text-small text-muted">{replacement.caveat}</p>
       </section>
+      <section className="panel" aria-labelledby="benchmark-heading">
+        <div className="panel__head">
+          <h2 className="panel__title" id="benchmark-heading">
+            Compared with the {replacement.benchmark.label} demand
+          </h2>
+          <span className="panel__note">Two different questions, set side by side.</span>
+        </div>
+
+        {/*
+          The denominators come FIRST and are as prominent as the totals. A
+          reader given two totals and no household counts concludes the demand
+          is extravagant — when almost all of the difference is that it reaches
+          far more households than lost a house.
+        */}
+        <div className="callout callout--assumption" data-benchmark-denominators>
+          <p>
+            <strong>The gap is the denominator, not the rate.</strong> The demand would reach
+            every affected household. Reconstruction prices only the dwellings actually
+            destroyed.
+          </p>
+          <p>
+            {replacement.benchmark.householdsAffected === undefined ? (
+              'The affected household count was not reported.'
+            ) : (
+              <>
+                <strong>
+                  {Math.round(replacement.benchmark.householdsAffected).toLocaleString('en-IN')}{' '}
+                  households affected
+                </strong>{' '}
+                at peak (people affected ÷ {replacement.benchmark.householdSize} per household,
+                an assumption — the bulletin counts people and never households), against{' '}
+                <strong>
+                  {replacement.benchmark.dwellingsDestroyed?.toLocaleString('en-IN')} dwellings
+                  destroyed outright
+                </strong>
+                .{' '}
+                {replacement.benchmark.notDestroyedSharePercent === undefined ? null : (
+                  <>
+                    So <strong>
+                      {replacement.benchmark.notDestroyedSharePercent.toFixed(1)}% of the
+                      households the demand would reach did not lose their dwelling
+                    </strong>{' '}
+                    — they were inundated, displaced, lost a standing crop, lost earnings and
+                    possessions. A reconstruction cost values none of that, because it prices
+                    bricks.
+                  </>
+                )}
+              </>
+            )}
+          </p>
+        </div>
+
+        <TableScroll label="Compensation demand comparison table">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Basis</th>
+                <th scope="col">Households</th>
+                <th scope="col" className="numeric">
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-benchmark-row="demand-affected">
+                <th scope="row">The demand, to every affected household</th>
+                <td>
+                  {replacement.benchmark.householdsAffected === undefined
+                    ? '—'
+                    : Math.round(replacement.benchmark.householdsAffected).toLocaleString('en-IN')}
+                </td>
+                <td className="numeric">
+                  {money(replacement.benchmark.demandAcrossAffectedLow)} –{' '}
+                  {money(replacement.benchmark.demandAcrossAffectedHigh)}
+                  <span className="text-small text-muted">
+                    {' '}
+                    (central {money(replacement.benchmark.demandAcrossAffectedCentral)})
+                  </span>
+                </td>
+              </tr>
+              <tr data-benchmark-row="demand-destroyed">
+                <th scope="row">The demand, only to households that lost a dwelling</th>
+                <td>{replacement.benchmark.dwellingsDestroyed?.toLocaleString('en-IN') ?? '—'}</td>
+                <td className="numeric">{money(replacement.benchmark.demandAcrossDestroyed)}</td>
+              </tr>
+              <tr data-benchmark-row="reconstruction">
+                <th scope="row">
+                  Rebuilding those same dwellings, Pukka on a raised plinth{' '}
+                  <span className="figure-tag figure-tag--constructed">constructed</span>
+                </th>
+                <td>{replacement.benchmark.dwellingsDestroyed?.toLocaleString('en-IN') ?? '—'}</td>
+                <td className="numeric">
+                  {money(replacement.benchmark.reconstructionLow)} –{' '}
+                  {money(replacement.benchmark.reconstructionHigh)}
+                  <span className="text-small text-muted">
+                    {' '}
+                    (central {money(replacement.benchmark.reconstructionCentral)})
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </TableScroll>
+
+        <p className="figure-headline" data-benchmark-multiple>
+          {replacement.benchmark.perHouseholdMultiple === undefined
+            ? '—'
+            : `For one household that lost its home, ${money(
+                replacement.benchmark.amountPerHousehold,
+              )} is about ${replacement.benchmark.perHouseholdMultiple.toFixed(
+                1,
+              )}× what rebuilding it costs.`}
+        </p>
+        <p className="text-small text-muted">
+          That is not a finding that the demand is too high. It is a statement that it covers
+          considerably more than a house — contents, land, livelihood, lost earnings and the
+          months in between — which is what its proponents say it is for. This console prices
+          bricks and cannot settle the rest.
+        </p>
+        <p className="text-small text-muted" data-benchmark-source>
+          <strong>{replacement.benchmark.label}:</strong> {replacement.benchmark.source}
+        </p>
+        <p className="text-small text-muted">{replacement.benchmark.caveat}</p>
+      </section>
+
     </div>
   );
 };

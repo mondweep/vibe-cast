@@ -37,8 +37,10 @@ describe('ReconstructionCost — a constructed figure must not read as a publish
     const { container } = renderSummary();
 
     const total = container.querySelector('[data-replacement-total]') as HTMLElement;
-    expect(total.textContent).toContain('₹29,70,91,326');
-    expect(total.textContent).toContain('₹1,36,41,62,420');
+    // Crore at this magnitude: see `money`. Thirteen digits of implied
+    // precision on a constructed figure is false precision, not rigour.
+    expect(total.textContent).toContain('₹29.7 cr');
+    expect(total.textContent).toContain('₹136.4 cr');
     expect(total.textContent).toMatch(/central/);
   });
 
@@ -135,5 +137,86 @@ describe('ReconstructionCost — what to rebuild', () => {
       '[data-policy-caveat="protect-in-place"]',
     ) as HTMLElement;
     expect(caveat.textContent).toMatch(/raised plinths beneath them ARE priced/);
+  });
+});
+
+describe('ReconstructionCost — compared with the compensation demand', () => {
+  it('leads with the denominators, before either total', () => {
+    // The load-bearing control on this panel. Two totals and no household
+    // counts reads as "the demand is extravagant", when almost all of the
+    // difference is that it reaches far more households than lost a house.
+    const { container } = renderSummary();
+
+    const denominators = container.querySelector('[data-benchmark-denominators]');
+    const firstTotal = container.querySelector('[data-benchmark-row="demand-affected"]');
+    expect(denominators).not.toBeNull();
+    expect(
+      denominators!.compareDocumentPosition(firstTotal!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('says what share of the demand’s households did not lose a dwelling', () => {
+    renderSummary();
+
+    expect(screen.getByText(/did not lose their dwelling/)).toBeTruthy();
+  });
+
+  it('offers the demand at a common denominator, not only the headline total', () => {
+    // Without this row the only available comparison is 147,000 households
+    // against 3,494, which is not a comparison at all.
+    const { container } = renderSummary();
+
+    expect(container.querySelector('[data-benchmark-row="demand-destroyed"]')).not.toBeNull();
+    expect(container.querySelector('[data-benchmark-row="reconstruction"]')).not.toBeNull();
+  });
+
+  it('states the per-household multiple as the fair single number', () => {
+    const { container } = renderSummary();
+
+    const multiple = container.querySelector('[data-benchmark-multiple]') as HTMLElement;
+    expect(multiple.textContent).toMatch(/4\.4×/);
+    expect(multiple.textContent).toMatch(/what rebuilding it costs/);
+  });
+
+  it('does not conclude the demand is too high', () => {
+    // The console prices bricks. It has no standing to rule on what a household
+    // should receive, and must not imply one by arithmetic.
+    renderSummary();
+
+    expect(screen.getByText(/not a finding that the demand is too high/)).toBeTruthy();
+  });
+
+  it('records the demand as a demand, never as a norm', () => {
+    const { container } = renderSummary();
+
+    const source = container.querySelector('[data-benchmark-source]') as HTMLElement;
+    expect(source.textContent).toMatch(/not a published norm and not an entitlement/);
+  });
+});
+
+describe('ReconstructionCost — how money is scaled', () => {
+  it('keeps a per-dwelling figure exact to the rupee', () => {
+    const { container } = renderSummary();
+
+    const perUnit = container.querySelector('section[aria-labelledby="replacement-heading"]');
+    expect(perUnit?.textContent).toContain('₹85,029');
+  });
+
+  it('shows an aggregate in crore rather than thirteen unreadable digits', () => {
+    // ₹1,33,52,29,62,963 implies precision to the rupee on a figure derived
+    // from an assumed household size. Crore is the honest unit at this scale.
+    const { container } = renderSummary();
+
+    const row = container.querySelector('[data-benchmark-row="demand-affected"]') as HTMLElement;
+    expect(row.textContent).toMatch(/₹13,352 cr/);
+    expect(row.textContent).not.toMatch(/₹1,33,52,29,62,963/);
+  });
+
+  it('keeps one decimal, so nearby crore figures stay distinguishable', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector('[data-benchmark-row="reconstruction"]') as HTMLElement;
+    expect(row.textContent).toMatch(/₹45\.5 cr/);
+    expect(row.textContent).toMatch(/₹186\.7 cr/);
   });
 });
