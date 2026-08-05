@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { AppShell } from './app-shell';
 import { useConsoleRoute } from './use-console-route';
 import { BulletinLoader } from './bulletin-loader';
+import { CostExplorer } from './cost-explorer';
 import { DamageMap } from './damage-map';
 import { DistrictRanking } from './district-ranking';
 import { ResponseCapacity } from './response-capacity';
@@ -234,6 +235,8 @@ export const ConsoleApp = ({
         return <PeriodSummary summary={data.period} archive={archive} />;
       case 'reconstruction':
         return <ReconstructionCost replacement={data.period.replacement} />;
+      case 'explorer':
+        return <CostExplorer replacement={data.period.replacement} />;
     }
   };
 

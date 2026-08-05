@@ -1,0 +1,157 @@
+/*
+ * Cost Explorer — scorecard, controls and chart frames.
+ *
+ * NFR-11 puts this on a 1366×768 projector under a washed-out lamp, so every
+ * rule here is written against that: no hairline below 1px, no tint carrying
+ * meaning on its own, and nothing that depends on hover to be legible.
+ */
+
+/* --- The scorecard ------------------------------------------------------- */
+
+/*
+ * `auto-fit` rather than a fixed column count. Nine stats at 1366px land on
+ * three rows of three; on a laptop they reflow rather than shrinking the type,
+ * because a stat too small to read from the back of a room is not a stat.
+ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  gap: var(--s-3);
+  margin: var(--s-4) 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-3);
+  background: var(--c-surface-sunken);
+  border-left: 3px solid var(--c-derived);
+  border-radius: var(--radius);
+}
+
+.stat__label {
+  font-size: var(--fs-small);
+  color: var(--c-ink-muted);
+}
+
+/*
+ * Ranges are long — "₹1,06,286 – ₹4,04,312" does not fit a headline size at
+ * this column width. Sized to hold a range on one line rather than to make a
+ * single number look impressive, which is the honest trade for a page whose
+ * whole argument is that there are no single numbers.
+ */
+.stat__value {
+  font-family: var(--font-figure);
+  font-size: var(--fs-figure);
+  font-weight: 700;
+  color: var(--c-ink);
+  line-height: 1.25;
+}
+
+.stat__detail {
+  line-height: 1.35;
+}
+
+/* --- Controls ------------------------------------------------------------ */
+
+.control-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  align-items: flex-start;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 12rem;
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+.control > legend,
+.control > label {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--c-ink-muted);
+  padding: 0;
+  margin-bottom: var(--s-1);
+}
+
+.control__option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-body);
+  padding: 2px 0;
+  cursor: pointer;
+}
+
+.control__option input {
+  /* Large enough to hit with a trackpad in a hurry, per NFR-11's context. */
+  width: 0.95rem;
+  height: 0.95rem;
+  accent-color: var(--c-derived);
+}
+
+.control select {
+  font: inherit;
+  font-size: var(--fs-body);
+  padding: var(--s-1) var(--s-2);
+  border: 1px solid var(--c-rule-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  max-width: 20rem;
+}
+
+.control select:focus-visible,
+.control__option input:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* --- Chart frames -------------------------------------------------------- */
+
+/*
+ * The chart scrolls horizontally rather than compressing. A band chart squeezed
+ * below its natural width stops being readable long before it stops fitting,
+ * and a squeezed interval reads as a shorter one — which would be the chart
+ * misreporting the data rather than merely looking bad.
+ */
+.chart {
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin: var(--s-3) 0;
+  padding-bottom: var(--s-1);
+}
+
+.chart svg {
+  display: block;
+}
+
+/* Axis and tick text: the projector floor, not the browser default. */
+.chart .recharts-cartesian-axis-tick text {
+  fill: var(--c-ink-muted);
+}
+
+.chart .recharts-tooltip-wrapper .recharts-default-tooltip {
+  font-size: var(--fs-small) !important;
+  border: 1px solid var(--c-rule-strong) !important;
+  border-radius: var(--radius);
+}
+
+/* --- Narrow viewports ---------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  }
+
+  .control-row {
+    gap: var(--s-3);
+  }
+}

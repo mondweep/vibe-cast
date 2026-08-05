@@ -29,6 +29,7 @@ export const ROUTE_SLUGS: Readonly<Record<ConsoleViewKey, string>> = {
   trend: 'trend',
   period: 'cumulative-and-peak',
   reconstruction: 'reconstruction-cost',
+  explorer: 'cost-explorer',
 };
 
 /** The view shown at `/`, and where an unrecognised path lands. */

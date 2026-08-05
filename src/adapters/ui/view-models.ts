@@ -37,7 +37,8 @@ export type ConsoleViewKey =
   | 'scenario'
   | 'trend'
   | 'period'
-  | 'reconstruction';
+  | 'reconstruction'
+  | 'explorer';
 
 export type ConsoleView = {
   readonly key: ConsoleViewKey;
@@ -86,6 +87,11 @@ export const CONSOLE_VIEWS: readonly ConsoleView[] = [
     key: 'reconstruction',
     label: 'Reconstruction Cost',
     question: 'What would rebuilding cost, and does it remove the risk or repeat it?',
+  },
+  {
+    key: 'explorer',
+    label: 'Cost Explorer',
+    question: 'Where does the money go, and which judgement moves it most?',
   },
 ];
 

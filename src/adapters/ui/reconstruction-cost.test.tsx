@@ -336,17 +336,22 @@ describe('ReconstructionCost — the executive summary', () => {
 
 describe('ReconstructionCost — the assumptions register', () => {
   it('ranks by rupee swing, not by how wide the range is', () => {
-    // The correction that matters. Floor area has the NARROWEST range of the
-    // three in the fixture (2.25x) and the largest effect (₹52.6 cr); road
-    // length has the widest range (7.5x) and the smallest effect (₹5.1 cr).
-    // Ranking by range would put them in exactly the wrong order and send a
-    // reader to argue about the wrong number.
+    // The correction that matters. Asserted as a property of the ordering
+    // rather than by naming two rows, because the fixture's contents move as
+    // assumptions are re-sourced and the ordering rule does not.
     const { container } = renderSummary();
+    const rendered = [...container.querySelectorAll('[data-assumption]')].map((row) =>
+      row.getAttribute('data-assumption'),
+    );
+    const register = periodSummaryFixture.replacement.assumptionRegister;
 
-    const rows = [...container.querySelectorAll('[data-assumption]')];
-    expect(rows.length).toBeGreaterThan(0);
-    expect(rows[0]?.getAttribute('data-assumption')).toMatch(/Floor area/);
-    expect(rows[rows.length - 1]?.getAttribute('data-assumption')).toMatch(/damaged length/);
+    expect(rendered.length).toBe(register.length);
+    expect(rendered).toEqual([...register].sort((a, b) => b.swing - a.swing).map((a) => a.label));
+    // And NOT the order a reader would get by ranking on range width — if these
+    // agreed, the whole correction would be untested.
+    expect(rendered).not.toEqual(
+      [...register].sort((a, b) => b.spread - a.spread).map((a) => a.label),
+    );
   });
 
   it('shows what each assumption is worth in rupees', () => {
@@ -355,7 +360,7 @@ describe('ReconstructionCost — the assumptions register', () => {
     const swing = container.querySelector(
       '[data-assumption-swing="Floor area of a replaced dwelling"]',
     ) as HTMLElement;
-    expect(swing.textContent).toMatch(/₹52\.6 cr/);
+    expect(swing.textContent).toMatch(/₹43\.8 cr/);
   });
 
   it('explains that the two columns measure different things', () => {
@@ -374,8 +379,8 @@ describe('ReconstructionCost — the assumptions register', () => {
     const row = container.querySelector(
       '[data-assumption="Average damaged length per reported road"]',
     ) as HTMLElement;
-    expect(row.textContent).toMatch(/0\.2–1\.5/);
-    expect(row.textContent).toMatch(/7\.5×/);
+    expect(row.textContent).toMatch(/0\.4–2\.5/);
+    expect(row.textContent).toMatch(/6\.3×/);
   });
 
   it('names which figure each assumption feeds', () => {

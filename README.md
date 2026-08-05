@@ -180,6 +180,7 @@ discussed rather than told where to click:
 | Trend | `/trend` |
 | Cumulative & Peak | `/cumulative-and-peak` |
 | Reconstruction Cost | `/reconstruction-cost` |
+| Cost Explorer | `/cost-explorer` |
 
 Back and forward work, and an unrecognised path lands on the Situation Summary
 rather than a blank screen. Bulletins live in the browser, not the URL, so a
@@ -226,6 +227,53 @@ brick, cement and RCC, and a Kuccha house is bamboo, timber and thatch. Under
 "protect in place" the raised plinths beneath them **are** priced, which is the
 direct answer to building defences where rebuilding in permanent materials is
 not possible.
+
+## Cost Explorer
+
+The same argument as Reconstruction Cost, shown rather than stated — one model,
+two reading postures. Reconstruction Cost is a document, read top to bottom by
+somebody who has to defend a figure, and its ordering *is* the argument: the
+warning precedes the number, the derivation precedes the total. Dropping charts
+into it would break that, because a chart is read before the paragraph above it
+whatever the DOM says. This view is for orienting, deciding what to ask about,
+or presenting to a room.
+
+**An interval is drawn as a floating band, never a bar with whiskers.** A bar
+rising from zero to the central value reads as *the* number and makes the
+whiskers look like tolerance on a measurement — the exact impression ADR-0014
+exists to prevent. So each bar runs from the low bound to the high with the
+central value ticked inside it. There is no single length for the eye to read
+off; the band is the answer. Every chart also ships with the same data as a
+table, because NFR-8 forbids colour as the only channel and NFR-11 puts this on
+a washed-out projector.
+
+Three refusals are geometric rather than editorial here, because a chart can
+mislead in a shape where prose cannot:
+
+- **The tiers are never one chart.** Household assets and public infrastructure
+  are separate panels, so they cannot be added by eye. There is no total series
+  to render by accident.
+- **A policy's cost is never drawn without its effect on future risk**, which is
+  a table column rather than a legend colour. The cheapest policy is the one
+  that rebuilds the vulnerability.
+- **The ₹10 lakh comparison carries its denominators on the bars.** Almost all
+  of the gap between the two totals is that the demand reaches ~147,000
+  households and reconstruction 3,494 — two bars without those counts would be
+  the most misleading thing this console could draw.
+
+Four controls change **how the figures are expressed, never what they are**:
+the denominator (total, per destroyed dwelling, per affected household), the
+sensitivity ranking (rupee swing or range width — offered because they
+disagree, and the disagreement is the lesson), which figure's assumptions to
+show, and how many. Truncation announces itself: the chart says how many
+assumptions it is hiding and what they are worth.
+
+Assumptions are *not* editable here. ADR-0014 §6 commits to that, and doing it
+properly means re-evaluating derivations in the domain and carrying the result
+back through the view model. Faking it in the view — scaling a total by a ratio
+— would produce numbers no derivation supports, on the one screen whose whole
+purpose is that every number has one. The control is missing rather than
+dishonest.
 
 ## Deployment
 
