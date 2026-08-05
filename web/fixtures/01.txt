@@ -1,0 +1,53 @@
+[1mRVM Demo 1 — Witnessed Hello[0m
+Every privileged action emits a 64-byte hash-chained audit record.
+
+[1m1. Say hello, witnessed[0m
+-----------------------
+seq  action           actor target  payload     prev_hash   rec_hash  signature
+  0  PartitionCreate      0      1  "hello..."        0x0 0xabd4170c  valid    
+  1  CapabilityGrant      1      2  "world..." 0xabd4170c 0xf0a60690  valid    
+  2  PartitionDestroy     1      1  "!......." 0xf0a60690 0x7cb17d7b  valid    
+
+3 records, 64 bytes each, 192 bytes total
+
+[1m2. Verify the untampered chain[0m
+------------------------------
+verify_chain  -> OK, 3 records link cleanly
+signatures    -> all valid
+
+[1m3. Tamper with a payload: rewrite history's content[0m
+---------------------------------------------------
+Rewriting record 1's payload from "world" to "pwned"...
+
+verify_chain  -> OK, 3 records link cleanly   <-- tamper NOT caught
+signatures    -> INVALID at index 1                <-- tamper caught here
+
+[33mWhy:[0m `append` sets record_hash = compute_chain_hash(prev_hash, sequence).
+It is derived purely from position in the chain, not from record contents --
+despite the field docs describing it as a hash of bytes [0..44]. The unused
+`compute_record_hash(data)` in hash.rs is what would cover contents.
+So verify_chain proves *ordering*; only the HMAC signature proves *content*.
+Using plain `append` instead of `signed_append` would leave this undetectable.
+
+[1m4. Tamper with ordering: renumber a record[0m
+------------------------------------------
+Changing record 2's sequence from 2 to 7...
+
+verify_chain  -> FAILED: corrupted record at seq 7   <-- caught
+
+[1m5. Throughput[0m
+-------------
+append          1000000 iters in 314.25ms  =   314.2 ns/op
+signed_append   1000000 iters in    1.63s  =  1631.8 ns/op
+
+[33mOn the ~17ns figure in RVM's README:[0m that is the FNV-1a path.
+rvm-witness's *default* features include crypto-sha256, which is what you
+get unless you opt out -- and it costs an order of magnitude more. Measured
+on this machine:
+
+    append, crypto-sha256 OFF (FNV-1a)   ~22 ns/op
+    append, crypto-sha256 ON  (default) ~295 ns/op   <- rvm's own bench agrees
+
+Both are honest numbers for different builds; the README just doesn't say
+which one it is quoting. Re-run rvm's own bench to confirm:
+    cargo bench -p rvm-benches --bench witness

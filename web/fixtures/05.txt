@@ -1,0 +1,47 @@
+[1mRVM Demo 5 — Partition Ping-Pong[0m
+Two partitions, one comm edge, a scheduler, and a witness log.
+
+[1m1. Create two partitions[0m
+------------------------
+  ping = PartitionId(1)
+  pong = PartitionId(2)
+  active partitions: 2
+
+[1m2. Open comm edges[0m
+------------------
+  edge 1 : ping -> pong
+  edge 2 : pong -> ping
+  pong sending on ping's edge -> [31mrefused[0m (InsufficientCapability)
+
+[1m3. Register both partitions with the scheduler[0m
+----------------------------------------------
+  scheduler mode: Flow (coherence-aware placement)
+
+[1m4. The conversation[0m
+-------------------
+  turn  scheduler picks          message            edge weight  witness
+     0  PartitionId(1) (speaker) p1 -> p2: "hello"  1            seq 0
+     1  PartitionId(2) (speaker) p2 -> p1: "world"  1            seq 1
+     2  PartitionId(1) (speaker) p1 -> p2: "how"    2            seq 2
+     3  PartitionId(2) (speaker) p2 -> p1: "are"    2            seq 3
+     4  PartitionId(1) (speaker) p1 -> p2: "you"    3            seq 4
+     5  PartitionId(2) (speaker) p2 -> p1: "?"      3            seq 5
+
+[1m5. Epoch summary and audit trail[0m
+--------------------------------
+  context switches this epoch: 12
+
+  seq   actor   target  said      
+    0       1        2  "hello"   
+    1       2        1  "world"   
+    2       1        2  "how"     
+    3       2        1  "are"     
+    4       1        2  "you"     
+    5       2        1  "?"       
+
+  chain verification: OK, 6 records
+  signatures        : 6/6 valid
+
+[33mNote:[0m the edge weight climbs by one per send. That counter is
+exactly the signal the coherence engine consumes to decide two partitions
+are talking enough to belong together -- which is demo 6.

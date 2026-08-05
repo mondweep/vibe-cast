@@ -1,0 +1,100 @@
+[1mRVM Demo 7 — Signed Hello Package[0m
+Pack an agent, sign it, verify it, then break it.
+
+[1m1. Pack the agent[0m
+-----------------
+  container: 448 bytes
+    seg 1 type 0x07 META      payload  30 B  signed=false executable=false
+    seg 2 type 0x05 MANIFEST  payload   4 B  signed=false executable=false
+    seg 3 type 0x10 WASM      payload   8 B  signed=true executable=true
+
+[1m2. Verify with the signing key trusted[0m
+--------------------------------------
+  identity  ab02777e2100766a
+  448 bytes, 3 segments, ok = [32mtrue[0m
+    [32mPASS[0m  RootManifestPresent  seg 2   RootManifestFound
+    [32mPASS[0m  SizePolicy           -       WithinSizePolicy
+    [32mPASS[0m  CapabilityMapping    -       CapabilitiesMapped
+    [32mPASS[0m  ContentHash          seg 1   ContentHashMatches
+    [32mPASS[0m  ContentHash          seg 2   ContentHashMatches
+    [32mPASS[0m  ContentHash          seg 3   ContentHashMatches
+    [32mPASS[0m  ExecutableSigned     seg 3   ExecutableIsSigned
+    [32mPASS[0m  Signature            seg 3   SignatureVerifies
+
+[1m3. Verify with NO trusted key[0m
+-----------------------------
+  identity  ab02777e2100766a
+  448 bytes, 3 segments, ok = [32mtrue[0m
+    [32mPASS[0m  RootManifestPresent  seg 2   RootManifestFound
+    [32mPASS[0m  SizePolicy           -       WithinSizePolicy
+    [32mPASS[0m  CapabilityMapping    -       CapabilitiesMapped
+    [32mPASS[0m  ContentHash          seg 1   ContentHashMatches
+    [32mPASS[0m  ContentHash          seg 2   ContentHashMatches
+    [32mPASS[0m  ContentHash          seg 3   ContentHashMatches
+    [32mPASS[0m  ExecutableSigned     seg 3   ExecutableIsSigned
+    [33mSKIP[0m  Signature            seg 3   NoTrustedKey
+
+[1m4. Pin the identity[0m
+-------------------
+  correct expected identity          [32maccepted[0m
+  wrong expected identity            [31mrefused[0m  Identity/IdentityMismatch
+
+[1m5. Corrupt one byte at a time[0m
+-----------------------------
+  flip a byte of agent bytecode      [31mrefused[0m  ContentHash/ContentHashMismatch, Signature/SignatureRejected
+  flip a byte of the signature       [31mrefused[0m  Signature/SignatureRejected
+  flip the container magic           [31mrefused[0m  parse: BadMagic
+  rewrite the capability string      [31mrefused[0m  ContentHash/ContentHashMismatch
+  signed by an untrusted key         [31mrefused[0m  Signature/SignatureRejected
+  truncate the last segment          [31mrefused[0m  parse: Truncated
+
+[1m6. Capability mapping[0m
+---------------------
+  declared: "network,clock"
+  granted : [Network, Clock]
+  denied  : 13 other classes
+
+  tampered package: ok = false
+  granted : [Network, Clock]
+  [33m^ note this carefully.[0m The rustdoc on `capabilities` says that when
+    the capability check fails, the mapping is deny-everything. That is
+    true, but it is narrower than it reads: only a CapabilityMapping
+    failure zeroes it. Here ContentHash and Signature both failed, ok is
+    false, and the mapping still grants Network and Clock.
+    A caller must gate on `report.ok` before touching `report.capabilities`.
+
+[1m7. Verification is witnessed[0m
+----------------------------
+  emitted 8 records for the good package, 8 for the tampered one
+
+  seq    kind  tier      
+    0  0x0051  P2
+    1  0x0051  P2
+    2  0x0051  P2
+    3  0x0051  P2
+    4  0x0051  P2
+    5  0x0051  P2
+    6  0x0051  P2
+    7  0x0051  P2
+    8  0x0051  P2
+    9  0x0051  P2
+   10  0x0051  P2
+   11  0x0051  P2
+   12  0x0051  P2
+   13  0x0053  P2
+   14  0x0051  P2
+   15  0x0053  P2
+
+[33mTakeaway:[0m every refusal in section 5 is a distinct check with its own
+detail code, and the report is deterministic -- same bytes, same options,
+same report. That is what makes an RVF verdict comparable across backends
+rather than a local opinion.
+
+Two traps for callers, both visible above:
+
+  * Section 3: with no trusted key the signature check is SKIP and the
+    report is still ok = true. `ok` means "nothing failed", not "the
+    signature was verified". To actually require a verified signature you
+    must supply a trusted key AND confirm the Signature record is Pass.
+  * Section 6: `capabilities` stays populated on a failed report unless
+    the capability check itself is what failed.

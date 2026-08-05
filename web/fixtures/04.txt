@@ -1,0 +1,34 @@
+
+========================================
+  RVM Demo 4 - UART Hello
+  hello world, from a bare partition
+========================================
+
+Exception level : EL1
+Witness ring    : 32 records (2048 bytes)
+
+Boot sequence
+-------------
+  phase 0  HalInit         witnessed at seq 0
+  phase 1  MemoryInit      witnessed at seq 1
+  phase 2  CapabilityInit  witnessed at seq 2
+  phase 3  WitnessInit     witnessed at seq 3
+  phase 4  SchedulerInit   witnessed at seq 4
+  phase 5  RootPartition   witnessed at seq 5
+  phase 6  Handoff         witnessed at seq 6
+
+Witness chain
+-------------
+  seq   prev_hash    rec_hash    signature
+  0     0x00000000    0xabd4170c    valid
+  1     0xabd4170c    0xf0a60690    valid
+  2     0xf0a60690    0x7cb17d7b    valid
+  3     0x7cb17d7b    0x1040ac1f    valid
+  4     0x1040ac1f    0x7c5aae51    valid
+  5     0x7c5aae51    0xff284e8a    valid
+  6     0xff284e8a    0x935c8dd0    valid
+
+  chain verification: OK, 7 records link cleanly
+
+Boot complete. Entering idle loop.
+(Ctrl-A X to exit QEMU)

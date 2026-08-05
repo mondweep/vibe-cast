@@ -1,0 +1,97 @@
+[1mRVM Demo 6 — Two Agents That Get Closer[0m
+Communication reshapes the partition graph.
+
+[1m1. Validate the agent modules[0m
+-----------------------------
+  empty  8 bytes -> valid, 0 section(s)
+  typed  12 bytes -> valid, 1 section(s)
+  corrupt magic          -> [31mrejected[0m (ProofInvalid)
+
+[1m2. Spawn one agent into each partition[0m
+--------------------------------------
+  alpha  agent 0x00a1 in partition p1  state=Running
+  beta   agent 0x00b2 in partition p2  state=Running
+
+[1m3. Wire both partitions into the coherence engine[0m
+-------------------------------------------------
+  tracking 2 partitions
+  mincut backend    : stoer-wagner-builtin
+  coherence backend : ratio-builtin
+  thresholds        : split > 8000 bp, merge >= 4000 bp
+
+[1m4. Quiet: a trickle of cross-partition chatter[0m
+----------------------------------------------
+  epoch 0: NoAction
+      edges: p1->p1=38  p2->p2=38  p1->p2=1  p2->p1=1  
+      nodes: p1[score 4871 bp, pressure 5128 bp]  p2[score 4871 bp, pressure 5128 bp]  
+  epoch 1: NoAction
+      edges: p1->p1=74  p2->p2=74  p1->p2=2  p2->p1=2  
+      nodes: p1[score 4868 bp, pressure 5131 bp]  p2[score 4868 bp, pressure 5131 bp]  
+  epoch 2: NoAction
+      edges: p1->p1=108  p2->p2=108  p1->p2=3  p2->p1=3  
+      nodes: p1[score 4864 bp, pressure 5135 bp]  p2[score 4864 bp, pressure 5135 bp]  
+
+[1m5. Loud: the two agents start talking constantly[0m
+------------------------------------------------
+  epoch 3: NoAction
+      edges: p1->p1=112  p2->p2=112  p1->p2=145  p2->p1=145  
+      nodes: p1[score 2178 bp, pressure 7821 bp]  p2[score 2178 bp, pressure 7821 bp]  
+  epoch 4: [35mSplitRecommended[0m p1 (pressure 8544 bp)
+      edges: p1->p1=115  p2->p2=115  p1->p2=280  p2->p1=280  
+      nodes: p1[score 1455 bp, pressure 8544 bp]  p2[score 1455 bp, pressure 8544 bp]  
+  epoch 5: [35mSplitRecommended[0m p1 (pressure 8878 bp)
+      edges: p1->p1=118  p2->p2=118  p1->p2=408  p2->p1=408  
+      nodes: p1[score 1121 bp, pressure 8878 bp]  p2[score 1121 bp, pressure 8878 bp]  
+  epoch 6: [35mSplitRecommended[0m p1 (pressure 9070 bp)
+      edges: p1->p1=121  p2->p2=121  p1->p2=530  p2->p1=530  
+      nodes: p1[score 929 bp, pressure 9070 bp]  p2[score 929 bp, pressure 9070 bp]  
+  epoch 7: [35mSplitRecommended[0m p1 (pressure 9194 bp)
+      edges: p1->p1=124  p2->p2=124  p1->p2=646  p2->p1=646  
+      nodes: p1[score 805 bp, pressure 9194 bp]  p2[score 805 bp, pressure 9194 bp]  
+
+  [33mThat is a split, not a merge.[0m Cross-partition traffic is *external*
+  weight, and cut pressure is external/total -- so the harder two partitions
+  talk, the more the engine wants to pull them apart.
+
+[1m6. The merge signal fires -- and is then discarded[0m
+--------------------------------------------------
+  evaluate_merge(p1, p2) -> mutual 4194 bp, should_merge = true
+  engine.recommend()     -> [35mSplitRecommended[0m p1 (pressure 9194 bp)
+
+  Both are true at once. `recommend()` scans for a split candidate first
+  and returns on the first hit, so the merge branch below it is never
+  reached while any partition is over pressure.
+
+[1m7. Is a merge reachable at all? Search the space[0m
+------------------------------------------------
+  searched 4032 weight combinations
+    MergeRecommended actually returned : [1m0[0m
+    merge signal set, split returned instead : 1244
+    lowest-pressure shadowed case: self(100,0) cross(0,400)
+      -> pressure p1=8333 p2=10000, mutual=4000 bp, split threshold 8000
+
+[1m8. Why merge is unreachable here[0m
+--------------------------------
+  Across the sweep, mutual coherence and cut pressure track each other:
+  mutual_bp is roughly pressure_bp - 5000. Mutual coherence divides the
+  pair's shared weight by the sum of both totals, so it can only get
+  large when nearly all of both partitions' traffic is with each other --
+  which is exactly the condition that maximises external/total.
+
+  So `should_merge` (>= 4000 bp) implies pressure around 9000 bp, which is
+  over the 8000 bp split threshold, and `recommend()` returns the split.
+  The merge arm is live code that this control flow cannot reach.
+
+  pressure.rs already carries a comment about the merge threshold being
+  lowered from 7000 to 4000 because "a threshold of 7000 (70%) was
+  unreachable, preventing merge signals from ever firing". That fixed
+  evaluate_merge; the shadowing in recommend() is the half still open.
+
+  [33mBottom line:[0m the split half of the coherence loop demonstrably works.
+  The merge half -- the half the project leads with -- does not fire at
+  this revision. Fixing it means ranking split and merge candidates
+  against each other rather than returning on the first split found.
+
+  witness records from the agent lifecycle: 2 (TaskSpawn x2)
+  [33mnote:[0m the coherence engine emits no witnesses -- graph mutation is not
+        a witnessed privileged action at this revision.

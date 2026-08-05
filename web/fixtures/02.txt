@@ -1,0 +1,36 @@
+[1mRVM Demo 2 — Hello, Denied[0m
+Capability tokens are the only way to touch a resource.
+
+[1m1. The hypervisor mints a root capability[0m
+-----------------------------------------
+  root cap  index=0 gen=1  rights=READ|WRITE|GRANT
+  agent tries the same          -> [31mdenied[0m (GrantNotPermitted)
+
+[1m2. Delegate READ-only to the agent, then try to write[0m
+-----------------------------------------------------
+  granted   index=1 gen=1  rights=READ
+
+  agent reads the region             [32mALLOWED[0m  (tier P1, witness seq 0)
+  agent writes the region            [31mDENIED[0m   InsufficientRights: token holds READ
+
+[1m3. Monotonic attenuation: you cannot grant what you lack[0m
+--------------------------------------------------------
+  agent grants itself READ|WRITE -> [31mdenied[0m (GrantNotPermitted:
+                                    its READ-only token has neither GRANT nor GRANT_ONCE)
+
+[1m4. GRANT_ONCE: authority that evaporates after one use[0m
+------------------------------------------------------
+  minted    rights=READ|GRANT_ONCE
+  1st delegation to partition 3 -> [32mok[0m (index=3 gen=1)
+  source rights are now READ   <-- GRANT_ONCE consumed
+  2nd delegation to partition 3 -> [31mdenied[0m (GrantNotPermitted)
+
+[1m5. The audit trail: denials are witnessed too[0m
+---------------------------------------------
+seq  action            tier    cap_hash
+  0  RegionShare        P1   0x1000002
+  1  [31mProofRejected[0m       -   0x1000002
+
+[33mNote:[0m the denied write is in the log as ProofRejected with the same
+cap_hash as the successful read -- so an auditor can see exactly which
+token was presented for a refused operation, not just that something failed.

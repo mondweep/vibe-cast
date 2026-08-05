@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RVM Hello World — Seven Demos</title>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --line:#30363d; --fg:#e6edf3; --dim:#8b949e;
+  --accent:#58a6ff; --green:#3fb950; --red:#f85149; --yellow:#d29922;
+  --magenta:#bc8cff; --cyan:#39c5cf;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px 80px}
+header.top{padding:48px 0 24px;border-bottom:1px solid var(--line);margin-bottom:28px}
+h1{margin:0 0 8px;font-size:30px;letter-spacing:-.02em}
+.sub{color:var(--dim);margin:0 0 18px;max-width:70ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:12px/1 var(--mono);background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:6px 11px;color:var(--dim)}
+.chip b{color:var(--fg);font-weight:600}
+h3.sec{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);
+  margin:36px 0 12px;font-weight:600}
+ul.findings{list-style:none;margin:0;padding:0;display:grid;gap:6px;
+  grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+.finding button{width:100%;display:flex;align-items:center;gap:10px;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line);border-left-width:3px;
+  border-radius:7px;padding:10px 12px;color:var(--fg);font-size:13.5px;text-align:left;
+  font-family:inherit;transition:border-color .15s,transform .1s}
+.finding button:hover{border-color:var(--accent);transform:translateY(-1px)}
+.finding.correctness button{border-left-color:var(--red)}
+.finding.api button{border-left-color:var(--yellow)}
+.finding.trap button{border-left-color:var(--magenta)}
+.finding.docs button{border-left-color:var(--dim)}
+.fnum{font:600 11px var(--mono);color:var(--dim);min-width:14px}
+.ftext{flex:1}
+.fkind{font:11px var(--mono);color:var(--dim)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 20px}
+.tab{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:7px;
+  padding:9px 13px;color:var(--dim);font:13.5px inherit;font-family:inherit;
+  display:flex;align-items:center;gap:8px;transition:.15s}
+.tab:hover{color:var(--fg);border-color:#484f58}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.tab .num{font:600 11px var(--mono);opacity:.65}
+.panel{display:none}
+.panel.active{display:block}
+.panel-head h2{margin:0 0 4px;font-size:21px}
+.crates{margin:0;font:12.5px var(--mono);color:var(--cyan)}
+.blurb{color:var(--dim);margin:9px 0 12px;max-width:75ch}
+.cmd{display:inline-block;font:12.5px var(--mono);background:#010409;
+  border:1px solid var(--line);border-radius:6px;padding:7px 11px;color:var(--green)}
+.cmd::before{content:"$ ";color:var(--dim)}
+.run{margin-left:10px;cursor:pointer;background:var(--green);border:none;border-radius:6px;
+  padding:8px 14px;color:#0d1117;font:600 12.5px inherit;font-family:inherit;vertical-align:middle}
+.run:hover{filter:brightness(1.1)}
+.run:disabled{opacity:.55;cursor:default}
+.runstate{margin-left:9px;font:12px var(--mono);color:var(--dim)}
+.pill{font:11px var(--mono);background:var(--magenta);color:#0d1117;border-radius:4px;
+  padding:2px 7px;vertical-align:middle;margin-left:6px;font-weight:600}
+pre.term{background:#010409;border:1px solid var(--line);border-radius:9px;
+  padding:18px;overflow-x:auto;margin:16px 0 0}
+pre.term code{font:12.5px/1.55 var(--mono);white-space:pre;color:var(--fg)}
+.b{font-weight:700} .u{text-decoration:underline}
+.red{color:var(--red)} .green{color:var(--green)} .yellow{color:var(--yellow)}
+.magenta{color:var(--magenta)} .cyan{color:var(--cyan)}
+.inv{background:var(--fg);color:var(--bg)}
+footer{margin-top:52px;padding-top:22px;border-top:1px solid var(--line);
+  color:var(--dim);font-size:13px}
+footer a{color:var(--accent)}
+@media (max-width:640px){.wrap{padding:0 14px 50px}h1{font-size:24px}
+  ul.findings{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>RVM “Hello World” — Seven Demos</h1>
+  <p class="sub">Seven runnable first-programs built against
+    <a href="https://github.com/ruvnet/rvm" style="color:var(--accent)">ruvnet/rvm</a>,
+    a bare-metal Rust hypervisor. All seven run. Every line of output below is
+    real, captured from an actual run — nothing is quoted from documentation.</p>
+  <div class="meta">
+    <span class="chip">rvm <b>78acb36</b></span>
+    <span class="chip">rustc <b>1.94.1</b></span>
+    <span class="chip">host <b>x86-64 Linux</b></span>
+    <span class="chip">bare metal <b>aarch64-unknown-none</b></span>
+    <span class="chip">demos <b>7 / 7 passing</b></span>
+    <span class="chip">findings <b>9</b></span>
+  </div>
+</header>
+
+<h3 class="sec">What we found — click one to jump to its evidence</h3>
+<ul class="findings">
+<li class="finding correctness"><button data-demo="01"><span class="fnum">1</span><span class="ftext">record_hash doesn&#x27;t cover record contents</span><span class="fkind">correctness</span></button></li>
+<li class="finding correctness"><button data-demo="06"><span class="fnum">2</span><span class="ftext">Coherence engine&#x27;s merge path is unreachable</span><span class="fkind">correctness</span></button></li>
+<li class="finding correctness"><button data-demo="04"><span class="fnum">3</span><span class="ftext">make run cannot work as shipped (3 causes)</span><span class="fkind">correctness</span></button></li>
+<li class="finding api"><button data-demo="03"><span class="fnum">4</span><span class="ftext">verify_p2 is public but uncallable</span><span class="fkind">api</span></button></li>
+<li class="finding api"><button data-demo="07"><span class="fnum">5</span><span class="ftext">rvm-rvf reads containers but nothing writes one</span><span class="fkind">api</span></button></li>
+<li class="finding trap"><button data-demo="07"><span class="fnum">6</span><span class="ftext">report.ok == true doesn&#x27;t mean the signature was checked</span><span class="fkind">trap</span></button></li>
+<li class="finding trap"><button data-demo="07"><span class="fnum">7</span><span class="ftext">report.capabilities stays populated on a failed report</span><span class="fkind">trap</span></button></li>
+<li class="finding docs"><button data-demo="01"><span class="fnum">8</span><span class="ftext">The ~17ns witness figure is the FNV-1a path</span><span class="fkind">docs</span></button></li>
+<li class="finding docs"><button data-demo="05"><span class="fnum">9</span><span class="ftext">Two capability claims are narrower than they sound</span><span class="fkind">docs</span></button></li>
+</ul>
+
+<h3 class="sec">The demos</h3>
+<nav class="tabs">
+<button class="tab active" data-demo="01"><span class="num">01</span>Witnessed Hello</button>
+<button class="tab" data-demo="02"><span class="num">02</span>Hello, Denied</button>
+<button class="tab" data-demo="03"><span class="num">03</span>Three Ways to Prove Hello</button>
+<button class="tab" data-demo="04"><span class="num">04</span>UART Hello</button>
+<button class="tab" data-demo="05"><span class="num">05</span>Partition Ping-Pong</button>
+<button class="tab" data-demo="06"><span class="num">06</span>Two Agents That Get Closer</button>
+<button class="tab" data-demo="07"><span class="num">07</span>Signed Hello Package</button>
+</nav>
+
+
+<section class="panel active" id="demo-01">
+  <header class="panel-head">
+    <h2>Witnessed Hello</h2>
+    <p class="crates">rvm-witness</p>
+    <p class="blurb">Hash-chained 64-byte audit records. What the chain catches, what only the HMAC catches, and how fast emission actually is.</p>
+    <code class="cmd">cargo run -p demo-01-witnessed-hello --release</code>
+    <button class="run" data-demo="01" hidden>Run live</button>
+    <span class="runstate" data-demo="01"></span>
+  </header>
+  <pre class="term"><code><span class="b">RVM Demo 1 — Witnessed Hello</span>
+Every privileged action emits a 64-byte hash-chained audit record.
+
+<span class="b">1. Say hello, witnessed</span>
+-----------------------
+seq  action           actor target  payload     prev_hash   rec_hash  signature
+  0  PartitionCreate      0      1  &quot;hello...&quot;        0x0 0xabd4170c  valid    
+  1  CapabilityGrant      1      2  &quot;world...&quot; 0xabd4170c 0xf0a60690  valid    
+  2  PartitionDestroy     1      1  &quot;!.......&quot; 0xf0a60690 0x7cb17d7b  valid    
+
+3 records, 64 bytes each, 192 bytes total
+
+<span class="b">2. Verify the untampered chain</span>
+------------------------------
+verify_chain  -&gt; OK, 3 records link cleanly
+signatures    -&gt; all valid
+
+<span class="b">3. Tamper with a payload: rewrite history&#x27;s content</span>
+---------------------------------------------------
+Rewriting record 1&#x27;s payload from &quot;world&quot; to &quot;pwned&quot;...
+
+verify_chain  -&gt; OK, 3 records link cleanly   &lt;-- tamper NOT caught
+signatures    -&gt; INVALID at index 1                &lt;-- tamper caught here
+
+<span class="yellow">Why:</span> `append` sets record_hash = compute_chain_hash(prev_hash, sequence).
+It is derived purely from position in the chain, not from record contents --
+despite the field docs describing it as a hash of bytes [0..44]. The unused
+`compute_record_hash(data)` in hash.rs is what would cover contents.
+So verify_chain proves *ordering*; only the HMAC signature proves *content*.
+Using plain `append` instead of `signed_append` would leave this undetectable.
+
+<span class="b">4. Tamper with ordering: renumber a record</span>
+------------------------------------------
+Changing record 2&#x27;s sequence from 2 to 7...
+
+verify_chain  -&gt; FAILED: corrupted record at seq 7   &lt;-- caught
+
+<span class="b">5. Throughput</span>
+-------------
+append          1000000 iters in 314.25ms  =   314.2 ns/op
+signed_append   1000000 iters in    1.63s  =  1631.8 ns/op
+
+<span class="yellow">On the ~17ns figure in RVM&#x27;s README:</span> that is the FNV-1a path.
+rvm-witness&#x27;s *default* features include crypto-sha256, which is what you
+get unless you opt out -- and it costs an order of magnitude more. Measured
+on this machine:
+
+    append, crypto-sha256 OFF (FNV-1a)   ~22 ns/op
+    append, crypto-sha256 ON  (default) ~295 ns/op   &lt;- rvm&#x27;s own bench agrees
+
+Both are honest numbers for different builds; the README just doesn&#x27;t say
+which one it is quoting. Re-run rvm&#x27;s own bench to confirm:
+    cargo bench -p rvm-benches --bench witness
+</code></pre>
+</section>
+
+<section class="panel" id="demo-02">
+  <header class="panel-head">
+    <h2>Hello, Denied</h2>
+    <p class="crates">rvm-cap · rvm-security</p>
+    <p class="blurb">Capability minting, monotonic attenuation, GRANT_ONCE evaporating after one use, and denials landing in the audit log beside grants.</p>
+    <code class="cmd">cargo run -p demo-02-hello-denied --release</code>
+    <button class="run" data-demo="02" hidden>Run live</button>
+    <span class="runstate" data-demo="02"></span>
+  </header>
+  <pre class="term"><code><span class="b">RVM Demo 2 — Hello, Denied</span>
+Capability tokens are the only way to touch a resource.
+
+<span class="b">1. The hypervisor mints a root capability</span>
+-----------------------------------------
+  root cap  index=0 gen=1  rights=READ|WRITE|GRANT
+  agent tries the same          -&gt; <span class="red">denied</span> (GrantNotPermitted)
+
+<span class="b">2. Delegate READ-only to the agent, then try to write</span>
+-----------------------------------------------------
+  granted   index=1 gen=1  rights=READ
+
+  agent reads the region             <span class="green">ALLOWED</span>  (tier P1, witness seq 0)
+  agent writes the region            <span class="red">DENIED</span>   InsufficientRights: token holds READ
+
+<span class="b">3. Monotonic attenuation: you cannot grant what you lack</span>
+--------------------------------------------------------
+  agent grants itself READ|WRITE -&gt; <span class="red">denied</span> (GrantNotPermitted:
+                                    its READ-only token has neither GRANT nor GRANT_ONCE)
+
+<span class="b">4. GRANT_ONCE: authority that evaporates after one use</span>
+------------------------------------------------------
+  minted    rights=READ|GRANT_ONCE
+  1st delegation to partition 3 -&gt; <span class="green">ok</span> (index=3 gen=1)
+  source rights are now READ   &lt;-- GRANT_ONCE consumed
+  2nd delegation to partition 3 -&gt; <span class="red">denied</span> (GrantNotPermitted)
+
+<span class="b">5. The audit trail: denials are witnessed too</span>
+---------------------------------------------
+seq  action            tier    cap_hash
+  0  RegionShare        P1   0x1000002
+  1  <span class="red">ProofRejected</span>       -   0x1000002
+
+<span class="yellow">Note:</span> the denied write is in the log as ProofRejected with the same
+cap_hash as the successful read -- so an auditor can see exactly which
+token was presented for a refused operation, not just that something failed.
+</code></pre>
+</section>
+
+<section class="panel" id="demo-03">
+  <header class="panel-head">
+    <h2>Three Ways to Prove Hello</h2>
+    <p class="crates">rvm-cap · rvm-security</p>
+    <p class="blurb">The P1/P2/P3 proof tiers: which one catches what, and what each costs.</p>
+    <code class="cmd">cargo run -p demo-03-prove-hello --release</code>
+    <button class="run" data-demo="03" hidden>Run live</button>
+    <span class="runstate" data-demo="03"></span>
+  </header>
+  <pre class="term"><code><span class="b">RVM Demo 3 — Three Ways to Prove Hello</span>
+Same mutation, three depths of proof.
+
+Delegation chain:  root(depth 0) -&gt; mid(depth 1) -&gt; leaf(depth 2)
+The mutation is attempted with the leaf capability.
+
+<span class="b">1. P1 and P3 on the happy path</span>
+------------------------------
+  P1  handle + epoch + rights            <span class="green">PASS</span>
+  P3  full derivation chain to root      <span class="green">PASS</span>
+
+<span class="b">2. Which tier catches what</span>
+--------------------------
+
+  <span class="u">Case A: token lacks EXECUTE</span>
+    P1  <span class="red">FAIL</span> (P1: insufficient rights)
+    P3  <span class="green">PASS</span>
+        ^ rights are a P1 concern. P3 does not look at rights at all,
+          so it passes -- the tiers are additive, not ordered by strictness.
+
+  <span class="u">Case B: an ancestor mid-chain is revoked</span>
+    revoke(mid) invalidated 2 capabilities
+    P1  <span class="red">FAIL</span> (P1: invalid capability handle)
+    P3  <span class="red">FAIL</span> (P3: derivation chain broken)
+        ^ <span class="yellow">both fail, and that is deliberate.</span> revoke_capability walks
+          the derivation subtree and force-invalidates every descendant&#x27;s
+          table slot, so the cheap P1 check already rejects the leaf. The
+          source comment is explicit that this is the point: &quot;Without this,
+          a revoked child capability&#x27;s table slot remains is_valid: true and
+          would pass P1 verification.&quot; So revocation is NOT a P3-only case.
+
+  <span class="u">Case C: chain is longer than policy allows</span>
+    P1                    <span class="green">PASS</span>
+    P3 with max_depth=8   <span class="green">PASS</span>
+    P3 with max_depth=1   <span class="red">FAIL</span> (P3: derivation chain broken)
+        ^ <span class="yellow">here P1 passes and P3 fails.</span> Delegation-depth policy is
+          structural: it is a property of the chain, invisible to a token
+          that looks perfectly valid on its own. Walking to the root is the
+          only way to enforce it.
+
+<span class="b">3. P2 is unreachable from outside rvm-cap</span>
+-----------------------------------------
+  Both `CapabilityManager::verify_p2` and `ProofVerifier::verify_p2` are
+  public and take `ctx: &amp;PolicyContext` -- but rvm-cap&#x27;s lib.rs declares
+  `mod verify;` privately and re-exports only `ProofVerifier`, never
+  `PolicyContext`. The type cannot be named by any external caller, so
+  the function cannot be called. Writing the obvious thing:
+
+      use rvm_cap::verify::PolicyContext;
+
+  fails to compile with:
+
+      error[E0603]: module `verify` is private
+
+  Nothing else in the workspace re-exports it either (checked all 17
+  crates). Upstream fix is one line in rvm-cap/src/lib.rs:
+
+      pub use verify::{ProofVerifier, PolicyContext};
+
+  Until then P2&#x27;s own checks -- owner match, region bounds, lease expiry,
+  nonce replay -- are reachable only from inside the crate&#x27;s unit tests.
+
+<span class="b">4. The tier-2 path that IS reachable: the security gate</span>
+-------------------------------------------------------
+  no commitment            -&gt; allowed at tier <span class="b">P1</span>
+  non-zero commitment      -&gt; allowed at tier <span class="b">P2</span>
+  all-zero commitment      -&gt; <span class="red">denied</span> (PolicyViolation)  &lt;-- a zero hash is not a proof
+  require_p3, no chain     -&gt; <span class="red">denied</span> (DerivationChainBroken)
+
+  Note the last one: the gate does not trust the caller&#x27;s `p3_chain_valid`
+  flag. It is set to false here and would be ignored either way -- the gate
+  re-derives the answer from `p3_witness_data`, and absent data means no.
+
+<span class="b">5. What the tiers cost</span>
+----------------------
+  path                        ns/op    ADR target   checks
+  verify_p1                     1.2        &lt; 1 us   handle, epoch, rights
+  verify_p3                     4.6          deep   + chain walk to root
+  gate (P2 + witness)         336.6             -   + commitment + witness emit
+
+<span class="yellow">Takeaway:</span> P1 and P3 both land far inside their ADR targets, and P3 is
+not dramatically dearer -- its cost grows with delegation depth, not table
+size, and this chain is two hops. The gate row is the expensive one, and
+nearly all of that is the witness emission measured in demo 1, not the
+proof check. The reason to pick a tier is Case C, not the clock.
+</code></pre>
+</section>
+
+<section class="panel" id="demo-04">
+  <header class="panel-head">
+    <h2>UART Hello <span class="pill">bare metal</span></h2>
+    <p class="crates">rvm-hal · rvm-boot</p>
+    <p class="blurb">A no_std AArch64 kernel booting under QEMU, emitting a witness record per boot phase.</p>
+    <code class="cmd">cd demos/04-uart-hello &amp;&amp; ./run.sh</code>
+    <button class="run" data-demo="04" hidden>Run live</button>
+    <span class="runstate" data-demo="04"></span>
+  </header>
+  <pre class="term"><code>
+========================================
+  RVM Demo 4 - UART Hello
+  hello world, from a bare partition
+========================================
+
+Exception level : EL1
+Witness ring    : 32 records (2048 bytes)
+
+Boot sequence
+-------------
+  phase 0  HalInit         witnessed at seq 0
+  phase 1  MemoryInit      witnessed at seq 1
+  phase 2  CapabilityInit  witnessed at seq 2
+  phase 3  WitnessInit     witnessed at seq 3
+  phase 4  SchedulerInit   witnessed at seq 4
+  phase 5  RootPartition   witnessed at seq 5
+  phase 6  Handoff         witnessed at seq 6
+
+Witness chain
+-------------
+  seq   prev_hash    rec_hash    signature
+  0     0x00000000    0xabd4170c    valid
+  1     0xabd4170c    0xf0a60690    valid
+  2     0xf0a60690    0x7cb17d7b    valid
+  3     0x7cb17d7b    0x1040ac1f    valid
+  4     0x1040ac1f    0x7c5aae51    valid
+  5     0x7c5aae51    0xff284e8a    valid
+  6     0xff284e8a    0x935c8dd0    valid
+
+  chain verification: OK, 7 records link cleanly
+
+Boot complete. Entering idle loop.
+(Ctrl-A X to exit QEMU)</code></pre>
+</section>
+
+<section class="panel" id="demo-05">
+  <header class="panel-head">
+    <h2>Partition Ping-Pong</h2>
+    <p class="crates">rvm-partition · rvm-sched</p>
+    <p class="blurb">Two partitions talking across directional comm edges under the two-signal scheduler.</p>
+    <code class="cmd">cargo run -p demo-05-partition-pingpong --release</code>
+    <button class="run" data-demo="05" hidden>Run live</button>
+    <span class="runstate" data-demo="05"></span>
+  </header>
+  <pre class="term"><code><span class="b">RVM Demo 5 — Partition Ping-Pong</span>
+Two partitions, one comm edge, a scheduler, and a witness log.
+
+<span class="b">1. Create two partitions</span>
+------------------------
+  ping = PartitionId(1)
+  pong = PartitionId(2)
+  active partitions: 2
+
+<span class="b">2. Open comm edges</span>
+------------------
+  edge 1 : ping -&gt; pong
+  edge 2 : pong -&gt; ping
+  pong sending on ping&#x27;s edge -&gt; <span class="red">refused</span> (InsufficientCapability)
+
+<span class="b">3. Register both partitions with the scheduler</span>
+----------------------------------------------
+  scheduler mode: Flow (coherence-aware placement)
+
+<span class="b">4. The conversation</span>
+-------------------
+  turn  scheduler picks          message            edge weight  witness
+     0  PartitionId(1) (speaker) p1 -&gt; p2: &quot;hello&quot;  1            seq 0
+     1  PartitionId(2) (speaker) p2 -&gt; p1: &quot;world&quot;  1            seq 1
+     2  PartitionId(1) (speaker) p1 -&gt; p2: &quot;how&quot;    2            seq 2
+     3  PartitionId(2) (speaker) p2 -&gt; p1: &quot;are&quot;    2            seq 3
+     4  PartitionId(1) (speaker) p1 -&gt; p2: &quot;you&quot;    3            seq 4
+     5  PartitionId(2) (speaker) p2 -&gt; p1: &quot;?&quot;      3            seq 5
+
+<span class="b">5. Epoch summary and audit trail</span>
+--------------------------------
+  context switches this epoch: 12
+
+  seq   actor   target  said      
+    0       1        2  &quot;hello&quot;   
+    1       2        1  &quot;world&quot;   
+    2       1        2  &quot;how&quot;     
+    3       2        1  &quot;are&quot;     
+    4       1        2  &quot;you&quot;     
+    5       2        1  &quot;?&quot;       
+
+  chain verification: OK, 6 records
+  signatures        : 6/6 valid
+
+<span class="yellow">Note:</span> the edge weight climbs by one per send. That counter is
+exactly the signal the coherence engine consumes to decide two partitions
+are talking enough to belong together -- which is demo 6.
+</code></pre>
+</section>
+
+<section class="panel" id="demo-06">
+  <header class="panel-head">
+    <h2>Two Agents That Get Closer</h2>
+    <p class="crates">rvm-coherence · rvm-wasm</p>
+    <p class="blurb">The coherence graph reshaping under load — and the sweep showing the merge path never fires.</p>
+    <code class="cmd">cargo run -p demo-06-agents-get-closer --release</code>
+    <button class="run" data-demo="06" hidden>Run live</button>
+    <span class="runstate" data-demo="06"></span>
+  </header>
+  <pre class="term"><code><span class="b">RVM Demo 6 — Two Agents That Get Closer</span>
+Communication reshapes the partition graph.
+
+<span class="b">1. Validate the agent modules</span>
+-----------------------------
+  empty  8 bytes -&gt; valid, 0 section(s)
+  typed  12 bytes -&gt; valid, 1 section(s)
+  corrupt magic          -&gt; <span class="red">rejected</span> (ProofInvalid)
+
+<span class="b">2. Spawn one agent into each partition</span>
+--------------------------------------
+  alpha  agent 0x00a1 in partition p1  state=Running
+  beta   agent 0x00b2 in partition p2  state=Running
+
+<span class="b">3. Wire both partitions into the coherence engine</span>
+-------------------------------------------------
+  tracking 2 partitions
+  mincut backend    : stoer-wagner-builtin
+  coherence backend : ratio-builtin
+  thresholds        : split &gt; 8000 bp, merge &gt;= 4000 bp
+
+<span class="b">4. Quiet: a trickle of cross-partition chatter</span>
+----------------------------------------------
+  epoch 0: NoAction
+      edges: p1-&gt;p1=38  p2-&gt;p2=38  p1-&gt;p2=1  p2-&gt;p1=1  
+      nodes: p1[score 4871 bp, pressure 5128 bp]  p2[score 4871 bp, pressure 5128 bp]  
+  epoch 1: NoAction
+      edges: p1-&gt;p1=74  p2-&gt;p2=74  p1-&gt;p2=2  p2-&gt;p1=2  
+      nodes: p1[score 4868 bp, pressure 5131 bp]  p2[score 4868 bp, pressure 5131 bp]  
+  epoch 2: NoAction
+      edges: p1-&gt;p1=108  p2-&gt;p2=108  p1-&gt;p2=3  p2-&gt;p1=3  
+      nodes: p1[score 4864 bp, pressure 5135 bp]  p2[score 4864 bp, pressure 5135 bp]  
+
+<span class="b">5. Loud: the two agents start talking constantly</span>
+------------------------------------------------
+  epoch 3: NoAction
+      edges: p1-&gt;p1=112  p2-&gt;p2=112  p1-&gt;p2=145  p2-&gt;p1=145  
+      nodes: p1[score 2178 bp, pressure 7821 bp]  p2[score 2178 bp, pressure 7821 bp]  
+  epoch 4: <span class="magenta">SplitRecommended</span> p1 (pressure 8544 bp)
+      edges: p1-&gt;p1=115  p2-&gt;p2=115  p1-&gt;p2=280  p2-&gt;p1=280  
+      nodes: p1[score 1455 bp, pressure 8544 bp]  p2[score 1455 bp, pressure 8544 bp]  
+  epoch 5: <span class="magenta">SplitRecommended</span> p1 (pressure 8878 bp)
+      edges: p1-&gt;p1=118  p2-&gt;p2=118  p1-&gt;p2=408  p2-&gt;p1=408  
+      nodes: p1[score 1121 bp, pressure 8878 bp]  p2[score 1121 bp, pressure 8878 bp]  
+  epoch 6: <span class="magenta">SplitRecommended</span> p1 (pressure 9070 bp)
+      edges: p1-&gt;p1=121  p2-&gt;p2=121  p1-&gt;p2=530  p2-&gt;p1=530  
+      nodes: p1[score 929 bp, pressure 9070 bp]  p2[score 929 bp, pressure 9070 bp]  
+  epoch 7: <span class="magenta">SplitRecommended</span> p1 (pressure 9194 bp)
+      edges: p1-&gt;p1=124  p2-&gt;p2=124  p1-&gt;p2=646  p2-&gt;p1=646  
+      nodes: p1[score 805 bp, pressure 9194 bp]  p2[score 805 bp, pressure 9194 bp]  
+
+  <span class="yellow">That is a split, not a merge.</span> Cross-partition traffic is *external*
+  weight, and cut pressure is external/total -- so the harder two partitions
+  talk, the more the engine wants to pull them apart.
+
+<span class="b">6. The merge signal fires -- and is then discarded</span>
+--------------------------------------------------
+  evaluate_merge(p1, p2) -&gt; mutual 4194 bp, should_merge = true
+  engine.recommend()     -&gt; <span class="magenta">SplitRecommended</span> p1 (pressure 9194 bp)
+
+  Both are true at once. `recommend()` scans for a split candidate first
+  and returns on the first hit, so the merge branch below it is never
+  reached while any partition is over pressure.
+
+<span class="b">7. Is a merge reachable at all? Search the space</span>
+------------------------------------------------
+  searched 4032 weight combinations
+    MergeRecommended actually returned : <span class="b">0</span>
+    merge signal set, split returned instead : 1244
+    lowest-pressure shadowed case: self(100,0) cross(0,400)
+      -&gt; pressure p1=8333 p2=10000, mutual=4000 bp, split threshold 8000
+
+<span class="b">8. Why merge is unreachable here</span>
+--------------------------------
+  Across the sweep, mutual coherence and cut pressure track each other:
+  mutual_bp is roughly pressure_bp - 5000. Mutual coherence divides the
+  pair&#x27;s shared weight by the sum of both totals, so it can only get
+  large when nearly all of both partitions&#x27; traffic is with each other --
+  which is exactly the condition that maximises external/total.
+
+  So `should_merge` (&gt;= 4000 bp) implies pressure around 9000 bp, which is
+  over the 8000 bp split threshold, and `recommend()` returns the split.
+  The merge arm is live code that this control flow cannot reach.
+
+  pressure.rs already carries a comment about the merge threshold being
+  lowered from 7000 to 4000 because &quot;a threshold of 7000 (70%) was
+  unreachable, preventing merge signals from ever firing&quot;. That fixed
+  evaluate_merge; the shadowing in recommend() is the half still open.
+
+  <span class="yellow">Bottom line:</span> the split half of the coherence loop demonstrably works.
+  The merge half -- the half the project leads with -- does not fire at
+  this revision. Fixing it means ranking split and merge candidates
+  against each other rather than returning on the first split found.
+
+  witness records from the agent lifecycle: 2 (TaskSpawn x2)
+  <span class="yellow">note:</span> the coherence engine emits no witnesses -- graph mutation is not
+        a witnessed privileged action at this revision.
+</code></pre>
+</section>
+
+<section class="panel" id="demo-07">
+  <header class="panel-head">
+    <h2>Signed Hello Package</h2>
+    <p class="crates">rvm-rvf</p>
+    <p class="blurb">Building a signed RVForge container, then breaking it six ways.</p>
+    <code class="cmd">cargo run -p demo-07-signed-hello --release</code>
+    <button class="run" data-demo="07" hidden>Run live</button>
+    <span class="runstate" data-demo="07"></span>
+  </header>
+  <pre class="term"><code><span class="b">RVM Demo 7 — Signed Hello Package</span>
+Pack an agent, sign it, verify it, then break it.
+
+<span class="b">1. Pack the agent</span>
+-----------------
+  container: 448 bytes
+    seg 1 type 0x07 META      payload  30 B  signed=false executable=false
+    seg 2 type 0x05 MANIFEST  payload   4 B  signed=false executable=false
+    seg 3 type 0x10 WASM      payload   8 B  signed=true executable=true
+
+<span class="b">2. Verify with the signing key trusted</span>
+--------------------------------------
+  identity  ab02777e2100766a
+  448 bytes, 3 segments, ok = <span class="green">true</span>
+    <span class="green">PASS</span>  RootManifestPresent  seg 2   RootManifestFound
+    <span class="green">PASS</span>  SizePolicy           -       WithinSizePolicy
+    <span class="green">PASS</span>  CapabilityMapping    -       CapabilitiesMapped
+    <span class="green">PASS</span>  ContentHash          seg 1   ContentHashMatches
+    <span class="green">PASS</span>  ContentHash          seg 2   ContentHashMatches
+    <span class="green">PASS</span>  ContentHash          seg 3   ContentHashMatches
+    <span class="green">PASS</span>  ExecutableSigned     seg 3   ExecutableIsSigned
+    <span class="green">PASS</span>  Signature            seg 3   SignatureVerifies
+
+<span class="b">3. Verify with NO trusted key</span>
+-----------------------------
+  identity  ab02777e2100766a
+  448 bytes, 3 segments, ok = <span class="green">true</span>
+    <span class="green">PASS</span>  RootManifestPresent  seg 2   RootManifestFound
+    <span class="green">PASS</span>  SizePolicy           -       WithinSizePolicy
+    <span class="green">PASS</span>  CapabilityMapping    -       CapabilitiesMapped
+    <span class="green">PASS</span>  ContentHash          seg 1   ContentHashMatches
+    <span class="green">PASS</span>  ContentHash          seg 2   ContentHashMatches
+    <span class="green">PASS</span>  ContentHash          seg 3   ContentHashMatches
+    <span class="green">PASS</span>  ExecutableSigned     seg 3   ExecutableIsSigned
+    <span class="yellow">SKIP</span>  Signature            seg 3   NoTrustedKey
+
+<span class="b">4. Pin the identity</span>
+-------------------
+  correct expected identity          <span class="green">accepted</span>
+  wrong expected identity            <span class="red">refused</span>  Identity/IdentityMismatch
+
+<span class="b">5. Corrupt one byte at a time</span>
+-----------------------------
+  flip a byte of agent bytecode      <span class="red">refused</span>  ContentHash/ContentHashMismatch, Signature/SignatureRejected
+  flip a byte of the signature       <span class="red">refused</span>  Signature/SignatureRejected
+  flip the container magic           <span class="red">refused</span>  parse: BadMagic
+  rewrite the capability string      <span class="red">refused</span>  ContentHash/ContentHashMismatch
+  signed by an untrusted key         <span class="red">refused</span>  Signature/SignatureRejected
+  truncate the last segment          <span class="red">refused</span>  parse: Truncated
+
+<span class="b">6. Capability mapping</span>
+---------------------
+  declared: &quot;network,clock&quot;
+  granted : [Network, Clock]
+  denied  : 13 other classes
+
+  tampered package: ok = false
+  granted : [Network, Clock]
+  <span class="yellow">^ note this carefully.</span> The rustdoc on `capabilities` says that when
+    the capability check fails, the mapping is deny-everything. That is
+    true, but it is narrower than it reads: only a CapabilityMapping
+    failure zeroes it. Here ContentHash and Signature both failed, ok is
+    false, and the mapping still grants Network and Clock.
+    A caller must gate on `report.ok` before touching `report.capabilities`.
+
+<span class="b">7. Verification is witnessed</span>
+----------------------------
+  emitted 8 records for the good package, 8 for the tampered one
+
+  seq    kind  tier      
+    0  0x0051  P2
+    1  0x0051  P2
+    2  0x0051  P2
+    3  0x0051  P2
+    4  0x0051  P2
+    5  0x0051  P2
+    6  0x0051  P2
+    7  0x0051  P2
+    8  0x0051  P2
+    9  0x0051  P2
+   10  0x0051  P2
+   11  0x0051  P2
+   12  0x0051  P2
+   13  0x0053  P2
+   14  0x0051  P2
+   15  0x0053  P2
+
+<span class="yellow">Takeaway:</span> every refusal in section 5 is a distinct check with its own
+detail code, and the report is deterministic -- same bytes, same options,
+same report. That is what makes an RVF verdict comparable across backends
+rather than a local opinion.
+
+Two traps for callers, both visible above:
+
+  * Section 3: with no trusted key the signature check is SKIP and the
+    report is still ok = true. `ok` means &quot;nothing failed&quot;, not &quot;the
+    signature was verified&quot;. To actually require a verified signature you
+    must supply a trusted key AND confirm the Signature record is Pass.
+  * Section 6: `capabilities` stays populated on a failed report unless
+    the capability check itself is what failed.
+</code></pre>
+</section>
+
+<footer>
+  Generated from real demo output by <code>web/build.py</code>.
+  Source and full write-up:
+  <a href="https://github.com/mondweep/vibe-cast/tree/claude/rvm-hello-world-ideas-mua6ja">mondweep/vibe-cast</a>.
+</footer>
+
+</div>
+<script>
+function show(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='demo-'+id));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.demo===id));
+}
+// If a backend is present (Cloud Run deploy), expose per-demo "Run live".
+fetch('/healthz').then(r=>r.ok?r.json():Promise.reject()).then(()=>{
+  document.querySelectorAll('.run').forEach(b=>{ b.hidden=false; });
+}).catch(()=>{ /* static host: captured output only */ });
+
+document.querySelectorAll('.run').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const id = btn.dataset.demo;
+    const state = document.querySelector('.runstate[data-demo="'+id+'"]');
+    const pre = document.querySelector('#demo-'+id+' .term code');
+    btn.disabled = true; state.textContent = 'running...';
+    try{
+      const r = await fetch('/run/'+id);
+      const d = await r.json();
+      if(d.html){ pre.innerHTML = d.html; }
+      state.textContent = d.live ? 'live \u00b7 exit '+d.exit_code
+                                 : (d.note || 'captured output');
+    }catch(e){ state.textContent = 'failed: '+e; }
+    btn.disabled = false;
+  });
+});
+
+document.querySelectorAll('.tab, .finding button').forEach(el=>{
+  el.addEventListener('click',()=>{
+    show(el.dataset.demo);
+    document.querySelector('nav.tabs').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+</script>
+</body>
+</html>

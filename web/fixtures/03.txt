@@ -1,0 +1,85 @@
+[1mRVM Demo 3 — Three Ways to Prove Hello[0m
+Same mutation, three depths of proof.
+
+Delegation chain:  root(depth 0) -> mid(depth 1) -> leaf(depth 2)
+The mutation is attempted with the leaf capability.
+
+[1m1. P1 and P3 on the happy path[0m
+------------------------------
+  P1  handle + epoch + rights            [32mPASS[0m
+  P3  full derivation chain to root      [32mPASS[0m
+
+[1m2. Which tier catches what[0m
+--------------------------
+
+  [4mCase A: token lacks EXECUTE[0m
+    P1  [31mFAIL[0m (P1: insufficient rights)
+    P3  [32mPASS[0m
+        ^ rights are a P1 concern. P3 does not look at rights at all,
+          so it passes -- the tiers are additive, not ordered by strictness.
+
+  [4mCase B: an ancestor mid-chain is revoked[0m
+    revoke(mid) invalidated 2 capabilities
+    P1  [31mFAIL[0m (P1: invalid capability handle)
+    P3  [31mFAIL[0m (P3: derivation chain broken)
+        ^ [33mboth fail, and that is deliberate.[0m revoke_capability walks
+          the derivation subtree and force-invalidates every descendant's
+          table slot, so the cheap P1 check already rejects the leaf. The
+          source comment is explicit that this is the point: "Without this,
+          a revoked child capability's table slot remains is_valid: true and
+          would pass P1 verification." So revocation is NOT a P3-only case.
+
+  [4mCase C: chain is longer than policy allows[0m
+    P1                    [32mPASS[0m
+    P3 with max_depth=8   [32mPASS[0m
+    P3 with max_depth=1   [31mFAIL[0m (P3: derivation chain broken)
+        ^ [33mhere P1 passes and P3 fails.[0m Delegation-depth policy is
+          structural: it is a property of the chain, invisible to a token
+          that looks perfectly valid on its own. Walking to the root is the
+          only way to enforce it.
+
+[1m3. P2 is unreachable from outside rvm-cap[0m
+-----------------------------------------
+  Both `CapabilityManager::verify_p2` and `ProofVerifier::verify_p2` are
+  public and take `ctx: &PolicyContext` -- but rvm-cap's lib.rs declares
+  `mod verify;` privately and re-exports only `ProofVerifier`, never
+  `PolicyContext`. The type cannot be named by any external caller, so
+  the function cannot be called. Writing the obvious thing:
+
+      use rvm_cap::verify::PolicyContext;
+
+  fails to compile with:
+
+      error[E0603]: module `verify` is private
+
+  Nothing else in the workspace re-exports it either (checked all 17
+  crates). Upstream fix is one line in rvm-cap/src/lib.rs:
+
+      pub use verify::{ProofVerifier, PolicyContext};
+
+  Until then P2's own checks -- owner match, region bounds, lease expiry,
+  nonce replay -- are reachable only from inside the crate's unit tests.
+
+[1m4. The tier-2 path that IS reachable: the security gate[0m
+-------------------------------------------------------
+  no commitment            -> allowed at tier [1mP1[0m
+  non-zero commitment      -> allowed at tier [1mP2[0m
+  all-zero commitment      -> [31mdenied[0m (PolicyViolation)  <-- a zero hash is not a proof
+  require_p3, no chain     -> [31mdenied[0m (DerivationChainBroken)
+
+  Note the last one: the gate does not trust the caller's `p3_chain_valid`
+  flag. It is set to false here and would be ignored either way -- the gate
+  re-derives the answer from `p3_witness_data`, and absent data means no.
+
+[1m5. What the tiers cost[0m
+----------------------
+  path                        ns/op    ADR target   checks
+  verify_p1                     1.2        < 1 us   handle, epoch, rights
+  verify_p3                     4.6          deep   + chain walk to root
+  gate (P2 + witness)         336.6             -   + commitment + witness emit
+
+[33mTakeaway:[0m P1 and P3 both land far inside their ADR targets, and P3 is
+not dramatically dearer -- its cost grows with delegation depth, not table
+size, and this chain is two hops. The gate row is the expensive one, and
+nearly all of that is the witness emission measured in demo 1, not the
+proof check. The reason to pick a tier is Case C, not the clock.
