@@ -335,14 +335,37 @@ describe('ReconstructionCost — the executive summary', () => {
 });
 
 describe('ReconstructionCost — the assumptions register', () => {
-  it('lists every assumption in one place, widest spread first', () => {
+  it('ranks by rupee swing, not by how wide the range is', () => {
+    // The correction that matters. Floor area has the NARROWEST range of the
+    // three in the fixture (2.25x) and the largest effect (₹52.6 cr); road
+    // length has the widest range (7.5x) and the smallest effect (₹5.1 cr).
+    // Ranking by range would put them in exactly the wrong order and send a
+    // reader to argue about the wrong number.
     const { container } = renderSummary();
 
-    const rows = container.querySelectorAll('[data-assumption]');
+    const rows = [...container.querySelectorAll('[data-assumption]')];
     expect(rows.length).toBeGreaterThan(0);
-    // The fixture is ordered 7.5x, 5x, 2.25x — the register must not re-sort
-    // into declaration order or alphabetically.
-    expect(rows[0]?.getAttribute('data-assumption')).toMatch(/damaged length/);
+    expect(rows[0]?.getAttribute('data-assumption')).toMatch(/Floor area/);
+    expect(rows[rows.length - 1]?.getAttribute('data-assumption')).toMatch(/damaged length/);
+  });
+
+  it('shows what each assumption is worth in rupees', () => {
+    const { container } = renderSummary();
+
+    const swing = container.querySelector(
+      '[data-assumption-swing="Floor area of a replaced dwelling"]',
+    ) as HTMLElement;
+    expect(swing.textContent).toMatch(/₹52\.6 cr/);
+  });
+
+  it('explains that the two columns measure different things', () => {
+    // A reader who sees "7.5x" with no explanation cannot use it, and a reader
+    // who assumes it means rupees is misled.
+    const { container } = renderSummary();
+
+    const note = container.querySelector('[data-register-metrics]') as HTMLElement;
+    expect(note.textContent).toMatch(/how unsure we are/);
+    expect(note.textContent).toMatch(/what that uncertainty is actually worth/);
   });
 
   it('shows the range and the spread multiple for each', () => {

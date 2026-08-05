@@ -33,7 +33,7 @@ import {
 } from '../domain/timeline/measure';
 import { integrateOverPeriod } from '../domain/timeline/stock-integral';
 import { impliedRation } from '../domain/economics/relief-adequacy';
-import { relativeWidth, type Derivation } from '../domain/economics/derivation';
+import { relativeWidth, sensitivity, type Derivation } from '../domain/economics/derivation';
 import { KUCCHA_NOT_COSTED, pukkaDwellingReplacement } from '../domain/economics/replacement-cost';
 import {
   costPolicy,
@@ -277,11 +277,16 @@ const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel 
   );
 
   // Every derivation in the model, so the register cannot miss one.
+  // The dwelling and plinth derivations are PER DWELLING; the recovery lines are
+  // already statewide totals. Scaling by the caseload is what makes their
+  // assumptions comparable — without it a per-dwelling judgement looks three
+  // thousand times less important than it is.
+  const caseload = houses ?? 0;
   const allDerivations = [
-    { affects: 'Dwelling replacement', derivation: cost.derivation },
-    { affects: 'Raised plinth', derivation: plinth.derivation },
-    ...microLines.map((l) => ({ affects: l.label, derivation: l.derivation })),
-    ...macroLines.map((l) => ({ affects: l.label, derivation: l.derivation })),
+    { affects: 'Dwelling replacement', derivation: cost.derivation, scale: caseload },
+    { affects: 'Raised plinth', derivation: plinth.derivation, scale: caseload },
+    ...microLines.map((l) => ({ affects: l.label, derivation: l.derivation, scale: 1 })),
+    ...macroLines.map((l) => ({ affects: l.label, derivation: l.derivation, scale: 1 })),
   ];
   const register = assumptionRegister(allDerivations);
 
@@ -457,14 +462,21 @@ const tierView = (
  * excluded — they are not judgements.
  */
 const assumptionRegister = (
-  sources: readonly { readonly affects: string; readonly derivation: Derivation }[],
+  sources: readonly {
+    readonly affects: string;
+    readonly derivation: Derivation;
+    /** Caseload the derivation applies to, so per-unit and total lines compare. */
+    readonly scale: number;
+  }[],
 ): readonly PeriodAssumptionViewModel[] =>
   sources
-    .flatMap(({ affects, derivation: d }) =>
-      d.inputs
+    .flatMap(({ affects, derivation: d, scale }) => {
+      const swings = new Map(sensitivity(d, scale).map((s) => [s.label, s]));
+      return d.inputs
         .filter((i) => i.kind === 'assumed' && i.low !== i.high)
         .map((i) => {
           const a = i as Extract<typeof i, { kind: 'assumed' }>;
+          const s = swings.get(a.label);
           return {
             label: a.label,
             affects,
@@ -473,11 +485,13 @@ const assumptionRegister = (
             low: a.low,
             high: a.high,
             reason: a.reason,
-            movesBy: a.low === 0 ? Number.POSITIVE_INFINITY : a.high / a.low,
+            spread: s?.spread ?? 1,
+            swing: s?.swing ?? 0,
           };
-        }),
-    )
-    .sort((x, y) => y.movesBy - x.movesBy);
+        });
+    })
+    // By SWING, not spread. See `PeriodAssumptionViewModel`.
+    .sort((x, y) => y.swing - x.swing);
 
 export const periodSummaryFrom = (timeline: BulletinTimeline): PeriodSummaryViewModel => ({
   coverage: coverageViewModel(periodCoverage(timeline)),

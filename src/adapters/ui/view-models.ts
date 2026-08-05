@@ -581,10 +581,16 @@ export type PeriodExecutiveViewModel = {
 /**
  * One assumption, wherever in the model it lives.
  *
- * `movesBy` is the ratio of the high bound to the low bound — a crude but
- * honest proxy for how much of the answer this one judgement is carrying. The
- * register is sorted by it, so the reader's eye lands on the assumptions worth
- * arguing with rather than on the ones that happen to come first.
+ * Carries BOTH measures, because they disagree and the disagreement is the
+ * useful part:
+ *
+ *   `spread`  high ÷ low of the assumption's own range — how unsure we are
+ *   `swing`   rupees the answer moves if only this assumption goes low→high
+ *
+ * The register sorts by `swing`. Sorting by `spread` is the obvious choice and
+ * it is wrong: average damaged road length has a 7.5× spread and moves ₹5.1 cr,
+ * while the SDRF ceiling share has a 3.3× spread and moves ₹55 cr. Ranking by
+ * spread sends the reader to argue about the wrong number.
  */
 export type PeriodAssumptionViewModel = {
   readonly label: string;
@@ -595,7 +601,10 @@ export type PeriodAssumptionViewModel = {
   readonly low: number;
   readonly high: number;
   readonly reason: string;
-  readonly movesBy: number;
+  /** high ÷ low of the range. How unsure we are. */
+  readonly spread: number;
+  /** Rupees the answer moves if only this assumption goes low→high. */
+  readonly swing: number;
 };
 
 /**

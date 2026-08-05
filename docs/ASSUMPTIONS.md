@@ -33,23 +33,51 @@ signalling vague caution.
 
 ---
 
+## Two measures, and they disagree
+
+Each assumption carries two numbers, and confusing them sends you to argue about
+the wrong thing:
+
+- **Range (spread)** — the top of the plausible range divided by the bottom.
+  *How unsure we are.*
+- **Moves the answer by (swing)** — take that one assumption to each end of its
+  range, hold every other at its middle value, and see how many rupees the total
+  shifts. *What that uncertainty is actually worth.*
+
+A wide range on a small line matters less than a narrow range on a large one:
+
+| Assumption | Range | Moves the answer by |
+|---|---|---|
+| Average damaged road length | **7.5×** | ₹5.1 cr |
+| Share of the SDRF ceiling actually needed | 3.3× | **₹55.0 cr** |
+
+Ranking by range puts these in exactly the wrong order. The register sorts by
+swing.
+
 ## The five that carry the answer
 
-Ranked by how far the bounds spread, which is a rough proxy for how much a
-single judgement moves the result. **These are the ones worth arguing with.**
-
-| Assumption | Used | Range | Spread |
+| Assumption | Used | Range | Moves the answer by |
 |---|---|---|---|
-| Share of land rendered uncultivable by sand casting | 3% | 1–8% | 8.0× |
-| Average damaged length per reported road | 0.6 km | 0.2–1.5 | 7.5× |
-| Deposit to remove per homestead | 12 m³ | 5–25 | 5.0× |
-| Share of submerged land carrying a clearable deposit | 20% | 8–40% | 5.0× |
-| Share of affected households needing homestead clearance | 35% | 15–60% | 4.0× |
+| Share of the SDRF ceiling actually needed | 60% | 30–100% | ₹55.0 cr |
+| Floor area of a replaced dwelling | 30 m² | 20–45 | ₹52.6 cr |
+| Deposit to remove per homestead | 12 m³ | 5–25 | ₹33.6 cr |
+| Share of submerged land carrying a clearable deposit | 20% | 8–40% | ₹32.6 cr |
+| Share of affected households needing homestead clearance | 35% | 15–60% | ₹26.0 cr |
 
-Note what this ranking says: **the dwelling costing is not where the uncertainty
-lives.** Floor area and the finishes uplift look like the big judgements and are
-not — the silt, land and roads work added later carries far more. That is worth
-knowing before spending effort on a quantity take-off for the house.
+**This ranking corrected two earlier recommendations, both of which were wrong.**
+
+First I said the finishes uplift was "the largest single judgement in the
+derivation" and worth replacing with a real take-off. It moves the answer by
+₹14 cr and ranks eighth.
+
+Then, when the register was first built and sorted by *range*, I said the
+dwelling costing was not where the uncertainty lived and that a sand-cast survey
+and the road-length extractor were worth most. Also wrong: floor area is the
+second-largest lever at ₹52.6 cr, and the road extractor is worth ₹5.1 cr —
+about a twelfth of what the SDRF ceiling share is worth.
+
+The lesson is in the method rather than the numbers: **an uncertainty measure
+that ignores the size of the line it sits on will mis-rank, confidently.**
 
 ### Submerged is not silted
 

@@ -161,6 +161,54 @@ export const evaluate = (spec: Derivation): Interval => {
   return { low: Math.min(...results), central, high: Math.max(...results) };
 };
 
+export type Sensitivity = {
+  readonly label: string;
+  /** high ÷ low of the assumption's own range. */
+  readonly spread: number;
+  /** Rupees the answer moves when ONLY this assumption goes low→high. */
+  readonly swing: number;
+};
+
+/**
+ * One-at-a-time sensitivity: what each assumption is actually worth.
+ *
+ * ---------------------------------------------------------------------------
+ * Why spread was the wrong measure
+ * ---------------------------------------------------------------------------
+ *
+ * The obvious ranking is by how wide an assumption's range is — high ÷ low —
+ * and it is misleading, because a wide range on a small line moves the total
+ * less than a narrow range on a large one. Measured against this model:
+ *
+ *   average damaged road length   7.5× spread   moves ₹5.1 cr
+ *   share of the SDRF ceiling     3.3× spread   moves ₹55.0 cr
+ *
+ * Ranking by spread puts the first above the second and sends the reader to
+ * argue about the wrong number. Ranking by **rupee swing** — move one
+ * assumption to each bound, hold every other at its central value, and take the
+ * difference — puts them in the order a reader should actually spend attention
+ * in.
+ *
+ * `scale` is the caseload the derivation is applied to (3,494 dwellings, say),
+ * so a per-unit derivation and an already-total one come out comparable.
+ * Without it a per-dwelling assumption looks a thousand times less important
+ * than it is.
+ */
+export const sensitivity = (spec: Derivation, scale = 1): readonly Sensitivity[] =>
+  spec.inputs
+    .map((input, index) => {
+      if (input.kind !== 'assumed' || input.low === input.high) return undefined;
+      const at = (value: number) =>
+        spec.combine(spec.inputs.map((other, j) => (j === index ? value : other.value))) * scale;
+      return {
+        label: input.label,
+        spread: input.low === 0 ? Number.POSITIVE_INFINITY : input.high / input.low,
+        // Absolute, because a formula need not be increasing in every input.
+        swing: Math.abs(at(input.high) - at(input.low)),
+      };
+    })
+    .filter((s): s is Sensitivity => s !== undefined);
+
 /** How much of the answer is our judgement: the interval width over its centre. */
 export const relativeWidth = (interval: Interval): number =>
   interval.central === 0 ? 0 : (interval.high - interval.low) / interval.central;

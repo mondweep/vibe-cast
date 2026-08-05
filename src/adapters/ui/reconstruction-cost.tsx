@@ -601,15 +601,27 @@ export const ReconstructionCost = ({ replacement }: ReconstructionCostProps) => 
             Every assumption in one place
           </h2>
           <span className="panel__note">
-            {replacement.assumptionRegister.length} judgements, widest first.
+            {replacement.assumptionRegister.length} judgements, biggest effect first.
           </span>
         </div>
         <p className="text-small text-muted">
           Collected by walking the derivations rather than kept as a list, so an assumption
           added anywhere appears here automatically — an incomplete register is worse than none,
-          because it implies the ones it omits do not exist. Sorted by how far the bounds
-          spread, which is a rough measure of how much of the answer each judgement is
-          carrying. <strong>The ones at the top are the ones worth arguing with.</strong>
+          because it implies the ones it omits do not exist.
+        </p>
+        <p className="text-small text-muted" data-register-metrics>
+          Two columns say different things and they often disagree.{' '}
+          <strong>Range</strong> is how unsure we are — the top of the plausible range divided
+          by the bottom. <strong>Moves the answer by</strong> is what that uncertainty is
+          actually worth: take one assumption to each end of its range, hold every other at its
+          middle value, and see how many rupees the total shifts.
+        </p>
+        <p className="text-small text-muted">
+          A wide range on a small line matters less than a narrow range on a large one. Average
+          damaged road length has the second-widest range here and moves the answer by about a
+          twelfth of what the SDRF ceiling share moves it, whose range is less than half as
+          wide. <strong>So this table is sorted by the second column, and it is the second
+          column that tells you what to argue about.</strong>
         </p>
         <TableScroll label="Assumptions register">
           <table className="data-table">
@@ -621,7 +633,10 @@ export const ReconstructionCost = ({ replacement }: ReconstructionCostProps) => 
                   Used
                 </th>
                 <th scope="col" className="numeric">
-                  Range
+                  Range <span className="text-small text-muted">(how unsure)</span>
+                </th>
+                <th scope="col" className="numeric">
+                  Moves the answer by
                 </th>
                 <th scope="col">Why this value</th>
               </tr>
@@ -636,10 +651,10 @@ export const ReconstructionCost = ({ replacement }: ReconstructionCostProps) => 
                   </td>
                   <td className="numeric">
                     {a.low}–{a.high}
-                    <span className="text-small text-muted">
-                      {' '}
-                      ({a.movesBy.toFixed(1)}×)
-                    </span>
+                    <span className="text-small text-muted"> ({a.spread.toFixed(1)}×)</span>
+                  </td>
+                  <td className="numeric" data-assumption-swing={a.label}>
+                    {money(a.swing)}
                   </td>
                   <td className="text-small text-muted">{a.reason}</td>
                 </tr>
