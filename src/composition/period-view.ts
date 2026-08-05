@@ -24,6 +24,7 @@ import {
   CUMULATIVE_MEASURES,
   EXPOSURE_MEASURES,
   NON_CAMP_INMATES,
+  CROP_AREA_SUBMERGED,
   POPULATION_AFFECTED,
   RICE_DISTRIBUTED,
   PEAK_ONLY_MEASURES,
@@ -39,6 +40,14 @@ import {
   raisedPlinthResilience,
   RECONSTRUCTION_POLICIES,
 } from '../domain/economics/reconstruction-policy';
+import {
+  MACRO_IS_RESTORATION_NOT_RECONSTRUCTION,
+  MACRO_NOT_COVERED,
+  macroRecoveryLines,
+  microRecoveryLines,
+  sumLines,
+  type RecoveryLine,
+} from '../domain/economics/asset-recovery';
 import {
   ASSAM_HOUSEHOLD_SIZE,
   compareWithBenchmark,
@@ -56,6 +65,7 @@ import {
 import type {
   PeriodBackTestViewModel,
   PeriodBenchmarkViewModel,
+  PeriodTierViewModel,
   PeriodDerivationInputViewModel,
   PeriodPolicyViewModel,
   PeriodReplacementViewModel,
@@ -307,12 +317,96 @@ const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel 
       central: cost.interval.central + plinth.interval.central,
       high: cost.interval.high + plinth.interval.high,
     }, houses),
+    micro: tierView(
+      'Household assets',
+      microRecoveryLines({
+        submergedHectares: peakOf(timeline, CROP_AREA_SUBMERGED).value ?? 0,
+        householdsAffected:
+          (peakOf(timeline, POPULATION_AFFECTED).value ?? 0) / ASSAM_HOUSEHOLD_SIZE.central,
+      }),
+      '',
+      '',
+    ),
+    macro: tierView(
+      'Public infrastructure',
+      macroRecoveryLines(infrastructureCounts(timeline)),
+      MACRO_NOT_COVERED,
+      MACRO_IS_RESTORATION_NOT_RECONSTRUCTION,
+    ),
     kucchaSharePercent:
       kuccha === undefined || pukka === undefined || kuccha + pukka === 0
         ? undefined
         : Math.round((kuccha / (kuccha + pukka)) * 100),
     plinthCentral: plinth.interval.central,
     policies,
+  };
+};
+
+/**
+ * Damaged public assets by class, counted from the bulletin's own listing.
+ *
+ * `damageClass` is used rather than the department column, deliberately: the
+ * department field still carries the wrapped-cell defect that once broke the
+ * District names (`Water` + `Resource`, `Women &` + `Child`, 793 orphaned
+ * `Deptt.` tails), so department-keyed costing would mis-file about a third of
+ * items. `damageClass` is clean.
+ */
+const infrastructureCounts = (timeline: BulletinTimeline) => {
+  const items = timeline.reports.flatMap((r) => r.infrastructureDamage);
+  const count = (kind: string) => items.filter((i) => i.damageClass === kind).length;
+  if (items.length === 0) {
+    return {
+      roads: undefined,
+      bridges: undefined,
+      embankmentsBreached: undefined,
+      embankmentsAffected: undefined,
+      other: undefined,
+    };
+  }
+  return {
+    roads: count('road'),
+    bridges: count('bridge'),
+    embankmentsBreached: count('embankment-breached'),
+    embankmentsAffected: count('embankment-affected'),
+    other: count('other'),
+  };
+};
+
+const tierView = (
+  label: string,
+  lines: readonly RecoveryLine[],
+  notCovered: string,
+  rateScope: string,
+): PeriodTierViewModel => {
+  const subtotal = sumLines(lines);
+  return {
+    label,
+    lines: lines.map((l) => ({
+      label: l.label,
+      low: l.interval.low,
+      central: l.interval.central,
+      high: l.interval.high,
+      formula: l.derivation.formula,
+      // Assumptions only. The published rates are already listed in full on the
+      // replacement derivation table, and repeating them here would bury the
+      // judgements among figures nobody needs to argue with.
+      assumptions: l.derivation.inputs
+        .filter((i) => i.kind === 'assumed' && i.low !== i.high)
+        .map((i) => ({
+          kind: 'assumed' as const,
+          label: i.label,
+          value: i.value,
+          unit: i.unit,
+          low: i.kind === 'assumed' ? i.low : undefined,
+          high: i.kind === 'assumed' ? i.high : undefined,
+          reason: i.kind === 'assumed' ? i.reason : undefined,
+        })),
+    })),
+    subtotalLow: subtotal.low,
+    subtotalCentral: subtotal.central,
+    subtotalHigh: subtotal.high,
+    notCovered,
+    rateScope,
   };
 };
 

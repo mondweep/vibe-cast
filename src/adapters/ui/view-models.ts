@@ -543,6 +543,39 @@ export type PeriodReplacementViewModel = {
   readonly policies: readonly PeriodPolicyViewModel[];
   /** How reconstruction compares with a publicly demanded compensation figure. */
   readonly benchmark: PeriodBenchmarkViewModel;
+  /** Household assets: silt clearance, land. Never added to `macro`. */
+  readonly micro: PeriodTierViewModel;
+  /** Public infrastructure. Never added to `micro`. */
+  readonly macro: PeriodTierViewModel;
+};
+
+/**
+ * One recovery tier — household or public.
+ *
+ * There is no combined-total field anywhere in this model. An appeal that adds
+ * a road to a family's home produces a figure in which the two are
+ * interchangeable, and a per-household comparison built on it is nonsense.
+ */
+export type PeriodTierViewModel = {
+  readonly label: string;
+  readonly lines: readonly PeriodTierLineViewModel[];
+  readonly subtotalLow: number;
+  readonly subtotalCentral: number;
+  readonly subtotalHigh: number;
+  /** What this tier structurally cannot see. Empty for the micro tier. */
+  readonly notCovered: string;
+  /** What the rates actually buy. Empty where it is not in doubt. */
+  readonly rateScope: string;
+};
+
+export type PeriodTierLineViewModel = {
+  readonly label: string;
+  readonly low: number;
+  readonly central: number;
+  readonly high: number;
+  readonly formula: string;
+  /** The assumptions only — published rates are listed on the derivation view. */
+  readonly assumptions: readonly PeriodDerivationInputViewModel[];
 };
 
 /**

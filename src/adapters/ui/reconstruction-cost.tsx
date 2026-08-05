@@ -19,7 +19,7 @@
  */
 
 import { TableScroll } from './table-scroll';
-import type { PeriodReplacementViewModel } from './view-models';
+import type { PeriodReplacementViewModel, PeriodTierViewModel } from './view-models';
 
 /**
  * Rupees, scaled to the magnitude being shown.
@@ -53,6 +53,91 @@ const money = (value: number | undefined): string => {
 export type ReconstructionCostProps = {
   readonly replacement: PeriodReplacementViewModel;
 };
+
+/**
+ * One recovery tier.
+ *
+ * Rendered by a shared component so the household and public tiers are visibly
+ * the same kind of table — which is what makes the fact that they are NEVER
+ * added legible rather than merely true.
+ */
+const Tier = ({ tier, kind }: { tier: PeriodTierViewModel; kind: 'micro' | 'macro' }) => (
+  <section className="panel" aria-labelledby={`tier-${kind}-heading`} data-tier={kind}>
+    <div className="panel__head">
+      <h2 className="panel__title" id={`tier-${kind}-heading`}>
+        {tier.label} <span className="figure-tag figure-tag--constructed">constructed</span>
+      </h2>
+      <span className="panel__note">
+        {kind === 'micro'
+          ? 'What belongs to households — and must be cleared before rebuilding.'
+          : 'Public works. No household receives this.'}
+      </span>
+    </div>
+
+    {tier.rateScope === '' ? null : (
+      <div className="callout callout--assumption" data-tier-scope={kind}>
+        <p>{tier.rateScope}</p>
+      </div>
+    )}
+
+    <TableScroll label={`${tier.label} recovery table`}>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th scope="col">Line</th>
+            <th scope="col" className="numeric">
+              Cost
+            </th>
+            <th scope="col">What is assumed</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tier.lines.map((l) => (
+            <tr key={l.label} data-tier-line={l.label}>
+              <th scope="row">
+                {l.label}
+                <span className="text-small text-muted"> — {l.formula}</span>
+              </th>
+              <td className="numeric">
+                {money(l.low)} – {money(l.high)}
+                <span className="text-small text-muted"> (central {money(l.central)})</span>
+              </td>
+              <td className="text-small text-muted">
+                {l.assumptions.map((a) => (
+                  <p key={a.label}>
+                    <strong>
+                      {a.label}: {a.value} {a.unit} [{a.low}–{a.high}]
+                    </strong>{' '}
+                    — {a.reason}
+                  </p>
+                ))}
+              </td>
+            </tr>
+          ))}
+          <tr data-tier-subtotal={kind}>
+            <th scope="row">Subtotal — {tier.label}</th>
+            <td className="numeric">
+              {money(tier.subtotalLow)} – {money(tier.subtotalHigh)}
+              <span className="text-small text-muted">
+                {' '}
+                (central {money(tier.subtotalCentral)})
+              </span>
+            </td>
+            <td className="text-small text-muted">
+              Not added to the other tier — see below.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </TableScroll>
+
+    {tier.notCovered === '' ? null : (
+      <p className="text-small text-muted" data-tier-not-covered={kind}>
+        <strong>Not in this total:</strong> {tier.notCovered}
+      </p>
+    )}
+  </section>
+);
 
 export const ReconstructionCost = ({ replacement }: ReconstructionCostProps) => {
   return (
@@ -369,6 +454,32 @@ export const ReconstructionCost = ({ replacement }: ReconstructionCostProps) => 
           <strong>{replacement.benchmark.label}:</strong> {replacement.benchmark.source}
         </p>
         <p className="text-small text-muted">{replacement.benchmark.caveat}</p>
+      </section>
+
+      <Tier tier={replacement.micro} kind="micro" />
+      <Tier tier={replacement.macro} kind="macro" />
+
+      <section className="panel" aria-labelledby="tiers-note-heading">
+        <div className="panel__head">
+          <h2 className="panel__title" id="tiers-note-heading">
+            Why these two are never one number
+          </h2>
+        </div>
+        <p className="text-small text-muted" data-tiers-never-summed>
+          A household's losses and a state's losses are both real and they are not the same
+          claim. Household assets are a transfer to identifiable families, counted in
+          households; public infrastructure is public works, counted in assets, and no
+          household receives it. <strong>There is no combined total anywhere in this
+          console</strong> — an appeal that adds a road to a family's home produces a figure in
+          which the two are interchangeable, and any per-household comparison built on it is
+          nonsense.
+        </p>
+        <p className="text-small text-muted">
+          <strong>Silt clearance comes first in sequence, not just in the table.</strong> Sand
+          has to come off a field before it can be sown and out of a house before it can be
+          rebuilt, so a plan that funds rebuilding without funding clearance has funded work
+          that cannot start.
+        </p>
       </section>
 
     </div>

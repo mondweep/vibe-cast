@@ -220,3 +220,65 @@ describe('ReconstructionCost — how money is scaled', () => {
     expect(row.textContent).toMatch(/₹186\.7 cr/);
   });
 });
+
+describe('ReconstructionCost — the two recovery tiers', () => {
+  it('renders household and public assets as separate tiers', () => {
+    const { container } = renderSummary();
+
+    expect(container.querySelector('[data-tier="micro"]')).not.toBeNull();
+    expect(container.querySelector('[data-tier="macro"]')).not.toBeNull();
+  });
+
+  it('never renders a combined total across the two tiers', () => {
+    // The load-bearing property. Each tier has its own subtotal and there is
+    // no element carrying their sum, because a figure in which a road and a
+    // family's home are interchangeable answers no question.
+    const { container } = renderSummary();
+
+    expect(container.querySelector('[data-tier-subtotal="micro"]')).not.toBeNull();
+    expect(container.querySelector('[data-tier-subtotal="macro"]')).not.toBeNull();
+    expect(container.querySelector('[data-combined-total]')).toBeNull();
+
+    const combined = 485_000_000 + 518_000_000;
+    expect(container.textContent).not.toContain(String(combined));
+    expect(container.textContent).not.toContain('₹100.3 cr');
+  });
+
+  it('says in words why they are never one number', () => {
+    const { container } = renderSummary();
+
+    const note = container.querySelector('[data-tiers-never-summed]') as HTMLElement;
+    expect(note.textContent).toMatch(/no combined total anywhere in this console/i);
+    expect(note.textContent).toMatch(/interchangeable/);
+  });
+
+  it('says silt clearance is a precondition, not just another line', () => {
+    renderSummary();
+
+    expect(screen.getByText(/funded work that cannot start/)).toBeTruthy();
+  });
+
+  it('warns that the public rates buy restoration, not reconstruction', () => {
+    const { container } = renderSummary();
+
+    const scope = container.querySelector('[data-tier-scope="macro"]') as HTMLElement;
+    expect(scope.textContent).toMatch(/RESTORATION figures, not reconstruction/);
+  });
+
+  it('declares the railway gap on the public tier', () => {
+    const { container } = renderSummary();
+
+    const gap = container.querySelector('[data-tier-not-covered="macro"]') as HTMLElement;
+    expect(gap.textContent).toMatch(/four mention a railway/);
+  });
+
+  it('shows each line’s assumptions with their range and reason', () => {
+    const { container } = renderSummary();
+
+    const row = container.querySelector(
+      '[data-tier-line="Agricultural land de-silting"]',
+    ) as HTMLElement;
+    expect(row.textContent).toMatch(/SUBMERGED IS NOT SILTED/);
+    expect(row.textContent).toMatch(/\[0\.08–0\.4\]/);
+  });
+});

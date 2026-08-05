@@ -703,6 +703,84 @@ export const periodSummaryFixture: PeriodSummaryViewModel = {
     notCosted:
       'A Kuccha dwelling is built from bamboo, timber and thatch, so costing it from a ' +
       'civil works schedule would answer a question about a different building.',
+    micro: {
+      label: 'Household assets',
+      lines: [
+        {
+          label: 'Homestead silt clearance',
+          low: 34_000_000,
+          central: 202_000_000,
+          high: 721_000_000,
+          formula: 'households needing clearance × volume per homestead × excavation rate × GST',
+          assumptions: [
+            {
+              kind: 'assumed',
+              label: 'Share of affected households needing homestead clearance',
+              value: 0.35,
+              unit: 'share',
+              low: 0.15,
+              high: 0.6,
+              reason: 'Being flooded and being left with a clearable deposit are different things.',
+            },
+          ],
+        },
+        {
+          label: 'Agricultural land de-silting',
+          low: 82_000_000,
+          central: 204_000_000,
+          high: 408_000_000,
+          formula: 'peak submerged area × share carrying clearable deposit × SDRF de-silting rate',
+          assumptions: [
+            {
+              kind: 'assumed',
+              label: 'Share of submerged land carrying a clearable deposit',
+              value: 0.2,
+              unit: 'share',
+              low: 0.08,
+              high: 0.4,
+              reason: 'SUBMERGED IS NOT SILTED. Deposition concentrates near breaches.',
+            },
+          ],
+        },
+      ],
+      subtotalLow: 142_000_000,
+      subtotalCentral: 485_000_000,
+      subtotalHigh: 1_341_000_000,
+      notCovered: '',
+      rateScope: '',
+    },
+    macro: {
+      label: 'Public infrastructure',
+      lines: [
+        {
+          label: 'Roads',
+          low: 8_000_000,
+          central: 23_000_000,
+          high: 58_000_000,
+          formula: 'damaged road items × average damaged length × SDRF rural road repair rate',
+          assumptions: [
+            {
+              kind: 'assumed',
+              label: 'Average damaged length per reported road',
+              value: 0.6,
+              unit: 'km',
+              low: 0.2,
+              high: 1.5,
+              reason: 'THE WEAKEST NUMBER IN THIS TIER. The SDRF pays per kilometre.',
+            },
+          ],
+        },
+      ],
+      subtotalLow: 255_000_000,
+      subtotalCentral: 518_000_000,
+      subtotalHigh: 883_000_000,
+      notCovered:
+        'Railways are not in this total, and cannot be: across 4,780 damaged-asset records, ' +
+        'four mention a railway at all.',
+      rateScope:
+        'These are RESTORATION figures, not reconstruction. The SDRF rates come from a ' +
+        'chapter headed "Repair/Restoration (Immediate Nature) of Damaged Infrastructure".',
+    },
     benchmark: {
       label: '₹10 lakh per affected household',
       source:
