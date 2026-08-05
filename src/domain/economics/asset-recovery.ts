@@ -409,21 +409,7 @@ export const microRecoveryLines = (input: {
 export const macroRecoveryLines = (counts: InfrastructureCounts): readonly RecoveryLine[] => {
   const out: RecoveryLine[] = [];
   if (counts.roads !== undefined) out.push(line('Roads', 'macro', roadRestoration(counts.roads)));
-  if (counts.bridges !== undefined) {
-    out.push(
-      line(
-        'Bridges and culverts',
-        'macro',
-        perAsset(
-          'Damaged bridges and culverts reported',
-          counts.bridges,
-          60_000,
-          'Repair/restoration — RCC culvert/bridge, normal areas',
-          'Repair of RCC culvert/bridge, normal areas',
-        ),
-      ),
-    );
-  }
+  // Bridges and culverts are NOT a line here. See `BRIDGES_NOT_COSTED`.
   const embankments =
     counts.embankmentsBreached === undefined || counts.embankmentsAffected === undefined
       ? undefined
@@ -499,6 +485,53 @@ export const MACRO_IS_RESTORATION_NOT_RECONSTRUCTION =
   'breaches, temporary repair of approaches, making a road passable. Rebuilding the same ' +
   'assets permanently would cost considerably more, and the bulletin does not carry the ' +
   'dimensions needed to price it.';
+
+/**
+ * Why bridges and culverts carry a count and no cost.
+ *
+ * ---------------------------------------------------------------------------
+ * A rate that was the road rate wearing a different unit
+ * ---------------------------------------------------------------------------
+ *
+ * This line used to exist, and it produced **₹3.24 lakh for every damaged
+ * bridge and culvert in Assam**. The figure was absurd and its cause was
+ * simple: the ceiling applied per bridge was ₹60,000 — the identical constant
+ * the road line uses, where the SDRF states it **per kilometre**. The same
+ * number carried across into a different unit. Under it, `Ladoigarh Br. 16/2`,
+ * whose remark reads `Washed away`, was priced at ₹36,000.
+ *
+ * ---------------------------------------------------------------------------
+ * Why the answer is a gap and not a better rate
+ * ---------------------------------------------------------------------------
+ *
+ * There is no per-bridge ceiling in the SDRF to substitute. The schedule folds
+ * this work into the ROAD item, and its own wording says what it buys:
+ * *"repair of breached culverts… providing diversions to the damaged/washed out
+ * portions of bridges to restore immediate connectivity… temporary repair of
+ * approaches to bridges"*. That is the money to get traffic past a failed
+ * bridge, not the money to rebuild one — and it is already inside the rate the
+ * road line applies.
+ *
+ * So a separate per-bridge figure has only two available forms and both are
+ * wrong: invent a ceiling nothing publishes, or re-count work the road line has
+ * already paid for. ADR-0011 settles it — a rate that cannot cite its source
+ * cannot exist — so the count is reported and the cost is not.
+ *
+ * The real number this leaves missing is large and worth naming: permanent
+ * reconstruction of a washed-away bridge is priced in crores from a works
+ * schedule, against a macro tier whose whole subtotal is tens of crores. The
+ * bulletin carries no span, width or class for any of these items, so nothing
+ * here can produce it.
+ */
+export const BRIDGES_NOT_COSTED =
+  'Bridges and culverts are counted here and deliberately NOT costed. The SDRF has no ' +
+  'per-bridge ceiling to apply: it folds this work into the road item, where what it buys is ' +
+  '"repair of breached culverts", "diversions to the damaged/washed out portions of bridges" ' +
+  'and "temporary repair of approaches" — money to get traffic past a failed bridge, already ' +
+  'inside the rate the Roads line uses. A separate figure would either invent a rate nothing ' +
+  'publishes or charge twice for the same work. Rebuilding a washed-away bridge permanently ' +
+  'is a much larger number, priced in crores from a works schedule, and the bulletin carries ' +
+  'no span, width or class for any of these items to build it from.';
 
 export const MACRO_NOT_COVERED =
   'Railways are not in this total, and cannot be: across 4,780 damaged-asset records in the ' +

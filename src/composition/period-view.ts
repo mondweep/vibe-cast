@@ -41,6 +41,7 @@ import {
   RECONSTRUCTION_POLICIES,
 } from '../domain/economics/reconstruction-policy';
 import {
+  BRIDGES_NOT_COSTED,
   MACRO_IS_RESTORATION_NOT_RECONSTRUCTION,
   MACRO_NOT_COVERED,
   macroRecoveryLines,
@@ -269,11 +270,23 @@ const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel 
   });
   const macroLines = macroRecoveryLines(infrastructureCounts(timeline));
   const microTier = tierView('Household assets', microLines, '', '');
+  const counts = infrastructureCounts(timeline);
   const macroTier = tierView(
     'Public infrastructure',
     macroLines,
     MACRO_NOT_COVERED,
     MACRO_IS_RESTORATION_NOT_RECONSTRUCTION,
+    // Counted and deliberately not costed. The count is real, so a blank beside
+    // it would read as "none damaged" rather than "no citable rate exists".
+    counts.bridges === undefined
+      ? []
+      : [
+          {
+            label: 'Bridges and culverts',
+            count: counts.bridges,
+            reason: BRIDGES_NOT_COSTED,
+          },
+        ],
   );
 
   // Every derivation in the model, so the register cannot miss one.
@@ -413,6 +426,7 @@ const tierView = (
   lines: readonly RecoveryLine[],
   notCovered: string,
   rateScope: string,
+  uncosted: readonly { readonly label: string; readonly count: number; readonly reason: string }[] = [],
 ): PeriodTierViewModel => {
   const subtotal = sumLines(lines);
   return {
@@ -443,6 +457,7 @@ const tierView = (
     subtotalHigh: subtotal.high,
     notCovered,
     rateScope,
+    uncosted,
   };
 };
 

@@ -630,6 +630,22 @@ export type PeriodTierViewModel = {
   readonly notCovered: string;
   /** What the rates actually buy. Empty where it is not in doubt. */
   readonly rateScope: string;
+  /**
+   * Assets the tier COUNTS but refuses to cost, and why.
+   *
+   * Structured rather than folded into `notCovered`, because these two say
+   * different things. `notCovered` is what the source never reported —
+   * railways, National Highways. This is what the source DID report and no
+   * citable rate exists for: the count is real, so the absence of a figure
+   * beside it is a finding rather than a blank.
+   */
+  readonly uncosted: readonly PeriodUncostedViewModel[];
+};
+
+export type PeriodUncostedViewModel = {
+  readonly label: string;
+  readonly count: number;
+  readonly reason: string;
 };
 
 export type PeriodTierLineViewModel = {

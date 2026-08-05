@@ -9,6 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  BRIDGES_NOT_COSTED,
   MACRO_NOT_COVERED,
   macroRecoveryLines,
   microRecoveryLines,
@@ -72,14 +73,46 @@ describe('micro — land and homestead restoration', () => {
 });
 
 describe('macro — public infrastructure', () => {
-  it('costs each asset class the bulletin actually distinguishes', () => {
+  it('costs each asset class the bulletin distinguishes AND a rate exists for', () => {
+    // Bridges and culverts are absent by design, not by oversight. See below.
     expect(macro.map((l) => l.label)).toEqual([
       'Roads',
-      'Bridges and culverts',
       'Embankments breached and affected',
       'Schools, anganwadi, water supply, power and other assets',
     ]);
     for (const l of macro) expect(l.tier).toBe('macro');
+  });
+
+  it('refuses to price bridges and culverts rather than reusing the road rate', () => {
+    // This line existed and produced ₹3.24 lakh for every damaged bridge and
+    // culvert in Assam, because the ceiling applied per bridge was ₹60,000 —
+    // the identical constant the road line uses, where the SDRF states it per
+    // KILOMETRE. Under it a bridge whose remark reads "Washed away" cost
+    // ₹36,000. There is no per-bridge ceiling to substitute: the SDRF folds the
+    // work into the road item, so a separate figure would either invent a rate
+    // or charge twice. ADR-0011 settles it.
+    expect(macro.some((l) => /bridge|culvert/i.test(l.label))).toBe(false);
+
+    expect(BRIDGES_NOT_COSTED).toMatch(/deliberately NOT costed/);
+    expect(BRIDGES_NOT_COSTED).toMatch(/no .*per-bridge ceiling/);
+    // The reader must be told what the missing number is worth, not just that
+    // it is missing — "crores" against a tier subtotal of tens of crores.
+    expect(BRIDGES_NOT_COSTED).toMatch(/crores/);
+  });
+
+  it('never lets the road per-kilometre rate be reused as a per-unit ceiling', () => {
+    // The defect in general form. A per-km rate and a per-unit ceiling are
+    // different quantities, and the way this went wrong was one constant used
+    // as both. Nothing costed per unit may carry the road rate's value.
+    const roads = macro.find((l) => l.label === 'Roads')!;
+    const perKm = roads.derivation.inputs.find((i) => i.unit === '₹/km');
+    expect(perKm?.value).toBeDefined();
+
+    for (const l of macro) {
+      if (l.label === 'Roads') continue;
+      const perUnit = l.derivation.inputs.filter((i) => i.unit === '₹/unit');
+      for (const rate of perUnit) expect(rate.value).not.toBe(perKm!.value);
+    }
   });
 
   it('treats the SDRF per-unit figure as a ceiling, not a flat payment', () => {

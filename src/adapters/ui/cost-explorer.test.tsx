@@ -135,6 +135,28 @@ describe('CostExplorer — intervals survive being drawn', () => {
     expect(container.querySelector('[data-explorer-tier="macro"]')).not.toBeNull();
   });
 
+  it('states beneath the chart what was counted and not costed', () => {
+    // A bar that is absent from a chart is invisible in a way an empty table
+    // cell is not, so the omission has to be written out.
+    const { container } = renderExplorer();
+    const note = container.querySelector(
+      '[data-explorer-uncosted="Bridges and culverts"]',
+    ) as HTMLElement;
+
+    expect(note).not.toBeNull();
+    expect(note.textContent).toMatch(/Not on this chart/);
+    expect(note.textContent).toMatch(/12 reported, no cost shown/);
+  });
+
+  it('draws no bridge band, since there is no figure to draw', () => {
+    const { container } = renderExplorer();
+    const bands = [...container.querySelectorAll('[data-band-row]')].map((r) =>
+      r.getAttribute('data-band-row'),
+    );
+
+    expect(bands.some((label) => /bridge|culvert/i.test(label ?? ''))).toBe(false);
+  });
+
   it('names what the public tier cannot see, beside the public tier', () => {
     const { container } = renderExplorer();
     const gap = container.querySelector('[data-explorer-macro-gap]');

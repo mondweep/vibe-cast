@@ -228,6 +228,17 @@ brick, cement and RCC, and a Kuccha house is bamboo, timber and thatch. Under
 direct answer to building defences where rebuilding in permanent materials is
 not possible.
 
+**Bridges and culverts are counted and not costed**, and the reason is worth
+reading as a worked example of what ADR-0011 is for. They were costed once, at
+₹3.24 lakh for every damaged bridge and culvert in the state, because the
+ceiling applied per bridge was ₹60,000 — the same constant the road line uses,
+where the SDRF states it *per kilometre*. One number, two units; a bridge whose
+remark reads `Washed away` came out at ₹36,000. There is no per-bridge ceiling
+to put in its place: the SDRF folds this work into the road item, where what it
+buys is diversions and temporary repair of approaches, already inside the rate
+the Roads line applies. A separate figure could only invent a rate or charge
+twice, so the count is shown where the cost would have been and says so.
+
 ## Cost Explorer
 
 The same argument as Reconstruction Cost, shown rather than stated — one model,

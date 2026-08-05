@@ -945,6 +945,7 @@ export const periodSummaryFixture: PeriodSummaryViewModel = {
       subtotalHigh: 1_341_000_000,
       notCovered: '',
       rateScope: '',
+      uncosted: [],
     },
     macro: {
       label: 'Public infrastructure',
@@ -977,6 +978,16 @@ export const periodSummaryFixture: PeriodSummaryViewModel = {
       rateScope:
         'These are RESTORATION figures, not reconstruction. The SDRF rates come from a ' +
         'chapter headed "Repair/Restoration (Immediate Nature) of Damaged Infrastructure".',
+      // Counted, deliberately not costed: the SDRF has no per-bridge ceiling.
+      uncosted: [
+        {
+          label: 'Bridges and culverts',
+          count: 12,
+          reason:
+            'Bridges and culverts are counted here and deliberately NOT costed. The SDRF has ' +
+            'no per-bridge ceiling to apply: it folds this work into the road item.',
+        },
+      ],
     },
     benchmark: {
       label: '₹10 lakh per affected household',

@@ -235,6 +235,24 @@ Three places where the honest answer was silence rather than a number:
 - **Kuccha superstructures are not costed.** A civil-works schedule prices brick,
   cement and RCC; a Kuccha house is bamboo, timber and thatch. Under
   *protect in place* the raised plinths beneath them **are** priced.
+- **Bridges and culverts are counted and not costed.** They *were* costed, at
+  ₹3.24 lakh for every damaged bridge and culvert in Assam, because the ceiling
+  applied per bridge was **₹60,000 — the identical constant the road line uses,
+  where the SDRF states it per _kilometre_**. One number, two units. Under it a
+  bridge whose remark reads `Washed away` cost ₹36,000.
+
+  There is no per-bridge ceiling to substitute. The SDRF folds this work into
+  the road item, and its own wording says what it buys: *"repair of breached
+  culverts… providing diversions to the damaged/washed out portions of bridges
+  to restore immediate connectivity… temporary repair of approaches"*. That is
+  money to get traffic past a failed bridge, already inside the rate the Roads
+  line applies. A separate figure could only invent a rate or charge twice, and
+  ADR-0011 settles which of those is allowed: neither.
+
+  What this leaves missing is large and named on the view: permanent
+  reconstruction of a washed-away bridge runs to crores, against a public tier
+  whose entire subtotal is tens of crores. The bulletin carries no span, width
+  or class for any of these items, so nothing here can produce it.
 - **Railways and National Highways are absent from the public tier**, because
   they are absent from the source: four of 4,780 damaged-asset records mention a
   railway. ASDMA reports what State departments report to it.

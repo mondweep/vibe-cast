@@ -398,3 +398,37 @@ describe('ReconstructionCost — the assumptions register', () => {
     expect(screen.getByText(/an incomplete register is worse than none/)).toBeTruthy();
   });
 });
+
+describe('ReconstructionCost — what is counted and deliberately not costed', () => {
+  it('shows the bridge count where the cost would have been, not a blank', () => {
+    // A count with nothing beside it reads as "none damaged". This says the
+    // opposite: they were damaged, and no citable rate exists to price them.
+    const { container } = renderSummary();
+    const uncosted = container.querySelector(
+      '[data-tier-uncosted="Bridges and culverts"]',
+    ) as HTMLElement;
+
+    expect(uncosted).not.toBeNull();
+    expect(uncosted.textContent).toMatch(/12 reported, no cost shown/);
+    expect(uncosted.textContent).toMatch(/no per-bridge ceiling/);
+  });
+
+  it('puts it inside the public tier, where the missing line belongs', () => {
+    const { container } = renderSummary();
+    const macro = container.querySelector('[data-tier="macro"]') as HTMLElement;
+
+    expect(macro.querySelector('[data-tier-uncosted="Bridges and culverts"]')).not.toBeNull();
+    // And never in the household tier, which has nothing uncosted.
+    const micro = container.querySelector('[data-tier="micro"]') as HTMLElement;
+    expect(micro.querySelector('[data-tier-uncosted]')).toBeNull();
+  });
+
+  it('never renders a bridge cost row in the public tier table', () => {
+    const { container } = renderSummary();
+    const rows = [...container.querySelectorAll('[data-tier-line]')].map((r) =>
+      r.getAttribute('data-tier-line'),
+    );
+
+    expect(rows.some((label) => /bridge|culvert/i.test(label ?? ''))).toBe(false);
+  });
+});

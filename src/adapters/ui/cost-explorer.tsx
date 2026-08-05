@@ -439,6 +439,26 @@ export const CostExplorer = ({ replacement, chartWidth }: CostExplorerProps) => 
           {rupees(replacement.macro.subtotalHigh)} (central{' '}
           {rupees(replacement.macro.subtotalCentral)}). Never added to the household tier.
         </p>
+        {/*
+          A bar that is absent from a chart is invisible in a way a blank table
+          cell is not, so what was counted and not costed is stated in words
+          directly beneath the chart rather than left to the reader to notice.
+        */}
+        {replacement.macro.uncosted.map((u) => (
+          <div
+            className="callout callout--assumption"
+            key={u.label}
+            data-explorer-uncosted={u.label}
+          >
+            <p>
+              <strong>
+                Not on this chart — {u.label}: {u.count.toLocaleString('en-IN')} reported, no
+                cost shown.
+              </strong>{' '}
+              {u.reason}
+            </p>
+          </div>
+        ))}
         {replacement.macro.notCovered === '' ? null : (
           <p className="text-small text-muted" data-explorer-macro-gap>
             <strong>Not in this total:</strong> {replacement.macro.notCovered}

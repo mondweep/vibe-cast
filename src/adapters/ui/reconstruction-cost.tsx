@@ -131,6 +131,22 @@ const Tier = ({ tier, kind }: { tier: PeriodTierViewModel; kind: 'micro' | 'macr
       </table>
     </TableScroll>
 
+    {/*
+      Counted and not costed, rendered where the cost would have been. A count
+      with a blank beside it reads as "none damaged"; this says the opposite,
+      which is the whole point of keeping the count.
+    */}
+    {tier.uncosted.map((u) => (
+      <div className="callout callout--assumption" key={u.label} data-tier-uncosted={u.label}>
+        <p>
+          <strong>
+            {u.label}: {u.count.toLocaleString('en-IN')} reported, no cost shown.
+          </strong>{' '}
+          {u.reason}
+        </p>
+      </div>
+    ))}
+
     {tier.notCovered === '' ? null : (
       <p className="text-small text-muted" data-tier-not-covered={kind}>
         <strong>Not in this total:</strong> {tier.notCovered}
