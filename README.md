@@ -32,8 +32,8 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) | Feasibility assessment with verified evidence from the real bulletin |
 | [`docs/adr/`](docs/adr/) | Architecture decision records |
 | [`docs/BULLETIN-SYNC.md`](docs/BULLETIN-SYNC.md) | Keeping the bundled archive current from a Drive folder, and what to do when it breaks |
-| [`docs/PRD-REHABILITATION-ECONOMICS.md`](docs/PRD-REHABILITATION-ECONOMICS.md) | *Proposed:* costing rehabilitation from the bulletins — damage, loss, needs, funding gap |
-| [`docs/FEASIBILITY-REHABILITATION-ECONOMICS.md`](docs/FEASIBILITY-REHABILITATION-ECONOMICS.md) | *Proposed:* whether that model is buildable on this data, measured against the archive |
+| [`docs/PRD-REHABILITATION-ECONOMICS.md`](docs/PRD-REHABILITATION-ECONOMICS.md) | *In build:* costing rehabilitation from the bulletins — damage, loss, needs, funding gap |
+| [`docs/FEASIBILITY-REHABILITATION-ECONOMICS.md`](docs/FEASIBILITY-REHABILITATION-ECONOMICS.md) | *In build:* whether that model is buildable on this data, measured against the archive |
 
 ### Architecture decisions
 
@@ -49,9 +49,9 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [0008](docs/adr/0008-svg-point-map-not-mapping-library.md) | Inline SVG point map, deferred choropleth *(partially superseded by 0009)* |
 | [0009](docs/adr/0009-district-boundaries-and-choropleth.md) | District boundaries bundled; choropleth shipped; projection corrected |
 | [0010](docs/adr/0010-bundled-bulletin-archive.md) | Every bulletin in `fixtures/` ships pre-parsed; the historical ones are split out of first paint |
-| [0011](docs/adr/0011-cost-norms-are-cited-versioned-and-never-invented.md) | *Proposed:* cost norms are cited, versioned, and never invented |
-| [0012](docs/adr/0012-integrating-a-stock-changes-its-unit.md) | *Proposed:* integrating a stock changes its unit — person-days are not people |
-| [0013](docs/adr/0013-no-backend-for-the-economic-model.md) | *Proposed:* no backend for the economic model; Supabase is a separate question |
+| [0011](docs/adr/0011-cost-norms-are-cited-versioned-and-never-invented.md) | Cost norms are cited, versioned, and never invented |
+| [0012](docs/adr/0012-integrating-a-stock-changes-its-unit.md) | Integrating a stock changes its unit — person-days are not people |
+| [0013](docs/adr/0013-supabase-backend-for-archive-norms-and-plans.md) | Supabase backend for the archive, norms and plans, under a `floodmonitoring_` namespace |
 
 ## Design principles
 

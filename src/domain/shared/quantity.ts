@@ -32,6 +32,23 @@ export type Quantity<U extends string> = Known<U> | Unknown<U>;
 export type Quintals = Quantity<'Q'>;
 export type Litres = Quantity<'L'>;
 export type Hectares = Quantity<'Hect'>;
+/**
+ * One person in one condition for one day, summed over a period (ADR-0012).
+ *
+ * A separate unit from `Count` on purpose, and the separation is the whole
+ * point. `Population Affected` is a stock: the same person appears in sixteen
+ * consecutive bulletins because they are still affected, not because sixteen
+ * people are. Summing that stock to get *people* is meaningless and the type
+ * system refuses it. Integrating it over time to get *person-days* is
+ * meaningful, and it is the unit relief costs are actually denominated in —
+ * feeding somebody costs per person per day.
+ *
+ * The arithmetic of the two is identical; only the unit of the answer differs.
+ * That is exactly the case a unit-typed quantity exists to catch, so
+ * `PersonDays` cannot be passed where a headcount is expected: 302,253
+ * camp-inmate-days must never be read as 302,253 people.
+ */
+export type PersonDays = Quantity<'person-days'>;
 export type Kilograms = Quantity<'kg'>;
 /** A dimensionless count of people, camps, boats, houses, animals. */
 export type Count = Quantity<'count'>;
@@ -47,11 +64,13 @@ export const litres = known('L');
 export const hectares = known('Hect');
 export const kilograms = known('kg');
 export const count = known('count');
+export const personDays = known('person-days');
 
 export const unknownQuintals = (): Quintals => unknown('Q');
 export const unknownLitres = (): Litres => unknown('L');
 export const unknownHectares = (): Hectares => unknown('Hect');
 export const unknownCount = (): Count => unknown('count');
+export const unknownPersonDays = (): PersonDays => unknown('person-days');
 
 export const isKnown = <U extends string>(q: Quantity<U>): q is Known<U> => q.kind === 'known';
 

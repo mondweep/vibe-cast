@@ -1,6 +1,9 @@
 # ADR-0011: Cost norms are cited, versioned, and never invented
 
-- **Status:** Proposed
+- **Status:** Accepted 2026-08-06. Two schedules are wanted — government relief
+  norms (SDRF/NDRF) *and* replacement cost — which this ADR already provides for
+  as named, switchable bases that never mix in one total. **Neither is sourced
+  yet, and until one is no rupee figure can be produced.**
 - **Date:** 2026-08-06
 - **Context:** [`PRD-REHABILITATION-ECONOMICS.md`](../PRD-REHABILITATION-ECONOMICS.md) §3.4, §5
 - **Relates to:** ADR-0005 (unknown is not zero), ADR-0006 (severity index is user-weighted)
@@ -116,7 +119,14 @@ an operational estimate that lives for a day, whereas a rate schedule produces
 figures that get published and must be reproducible months later. Citation and
 versioning are needed on top of adjustability, not instead of it.
 
-**Fetch rates from a live source.** Keeps them current, breaks ADR-0004's
-zero-egress guarantee for a small, slow-changing dataset. Bundling at build time
-is the established pattern here (bulletins, district boundaries) and costs
-nothing in trust. See ADR-0013.
+**Fetch rates from a live source.** This was rejected when written, on the
+grounds that it breaks ADR-0004's zero-egress guarantee for a small,
+slow-changing dataset that could simply be bundled.
+
+**ADR-0013 has since taken the project the other way**, and schedules will live
+in Supabase. That changes where a rate is stored; it changes nothing above.
+Citation, effective date, immutable versioning and the ban on mixing bases are
+requirements of the *rate*, not of the transport, and an assessment must still
+pin the schedule version it used so it can be reproduced exactly. A rate arriving
+over the network without a citation is as unconstructable as one typed into a
+constant.

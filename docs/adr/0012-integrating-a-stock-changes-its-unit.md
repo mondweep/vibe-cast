@@ -1,6 +1,8 @@
 # ADR-0012: Integrating a stock changes its unit
 
-- **Status:** Proposed
+- **Status:** Accepted — implemented 2026-08-06 in
+  `src/domain/timeline/stock-integral.ts`; both type guards verified non-vacuous
+  (see *Consequences*)
 - **Date:** 2026-08-06
 - **Context:** [`PRD-REHABILITATION-ECONOMICS.md`](../PRD-REHABILITATION-ECONOMICS.md) §4.2
 - **Relates to:** ADR-0005 (unknown is not zero), `src/domain/timeline/measure.ts`
@@ -97,10 +99,26 @@ and the same cost `Quantity` and `Hectares` already paid. The alternative is a
 `integrateOverPeriod` and wonders whether the stock rule has been quietly relaxed
 finds instead that it is enforced in both directions.
 
-**Verification is straightforward and must be non-vacuous.** The guard is proved
-by attempting `cumulativeOf(t, CAMP_INMATES)` and `integrateOverPeriod(t,
-FLOOD_DEATHS)` and confirming both fail to compile — the same technique already
-used to prove `cumulativeOf(t, POPULATION_AFFECTED)` fails with `TS2345`.
+**Verification is non-vacuous, and was checked rather than assumed.** Both
+directions were compiled through the project's own `tsconfig.test.json`:
+
+```
+cumulativeOf(t, CAMP_INMATES)
+  error TS2345: Argument of type 'Measure<"stock">' is not assignable to
+  parameter of type 'FlowMeasure'.
+integrateOverPeriod(t, FLOOD_DEATHS)
+  error TS2345: Argument of type 'Measure<"flow">' is not assignable to
+  parameter of type 'StockMeasure'.
+```
+
+and a control with the arguments the right way round compiles clean, so the
+guard is rejecting the kind rather than rejecting everything.
+
+Worth recording how nearly this was got wrong: the first attempt ran `tsc`
+against a scratch file with flags on the command line, which made it refuse to
+load `tsconfig.json` at all and emit `TS5112` instead of type-checking anything.
+Grepping that output for errors found none, which reads exactly like a pass. A
+verification that cannot fail is not a verification.
 
 ## Alternatives considered
 
