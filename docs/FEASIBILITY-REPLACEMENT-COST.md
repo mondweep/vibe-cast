@@ -154,6 +154,80 @@ Two lessons from the SDRF sourcing exercise that apply directly:
 
 ---
 
+## 4a. The two Assam PWD schedules of rates — what they are, and what they are not
+
+Both were obtained and read. **Neither gives a cost per square metre of a house,
+and one of them cannot be cited at all in its current form.**
+
+### Roads: `SOR for Rural Roads 2020-21` — good provenance, directly usable
+
+From the official PWD (Roads) portal. 170 pages, **full text layer**, and it
+carries everything ADR-0011 demands: a named issuing authority (Chief Engineer,
+PWD Roads, Assam), a stated year, and a certificate page recording that it was
+prepared on the MoRD *Standard Data Book for Analysis of Rates for Rural Roads*,
+with labour wages fixed by the Labour Commissioner, Government of Assam.
+
+This is the right price basis for the **501 dimensioned infrastructure items**
+(§3): road chainages and damage lengths in metres, conductor runs in kilometres.
+Caveat: it is 2020-21, so it is five years stale against a 2026 flood, and the
+document itself says the schedule "is required to be updated every year
+considering the market variation".
+
+### Buildings: `Assam PWD Building Schedule of Rates for Civil Works`
+
+36 chapters, 172 pages, full text layer, itemised in Cum / Sqm / RM / Each.
+Internal references to "The Chief Engineer, PWD (Bldg.)" confirm the Buildings
+wing. Held at [`docs/reference/`](reference/).
+
+**It is a component schedule, not a building-cost schedule.** Every square-metre
+rate in it prices a *component*, never a completed structure:
+
+```
+Ceramic floor tiles, 600×600 and above     Sqm  1,300.00
+Timber shuttering, 38mm plank              Sqm    276.07
+Over-deck thermal insulation               Sqm  1,088.16
+M20 RCC in substructure                    Cum  6,063.65
+```
+
+There is **no plinth-area rate and no per-dwelling rate anywhere in it** —
+searched explicitly. So the intuitive move, `houses destroyed × ₹/m² × assumed
+floor area`, has no rate in this document to draw on. A figure built that way
+would be using a floor-finish price as if it were a building price, which is
+wrong by roughly an order of magnitude and wrong in a direction that flatters
+the total.
+
+**Two provenance defects, both fixable:**
+
+1. **No year or effective date appears anywhere in the text.** ADR-0011 requires
+   `effectiveFrom`, and `unitRate` throws without a complete citation — so as it
+   stands, not one rate from this document can be constructed. This is not
+   pedantry: the roads SOR was revised in 2005-06, 2017-18 and 2020-21, so a
+   buildings SOR of unknown vintage could be anywhere in a fifteen-year band.
+2. **The copy is from a document-sharing site**, not the PWD (Buildings) portal.
+   The roads portal (`pwdroads.assam.gov.in`) carries roads schedules only; the
+   Buildings wing publishes separately.
+
+### How it *can* be used: as the price basis for a constructed rate
+
+The honest route is ADR-0014's derivation tree, and it is a genuinely reasonable
+amount of work rather than a lookup:
+
+```
+reference dwelling  (assumed: floor area, wall type, roof type)
+  → quantity take-off  (assumed: m³ concrete, m² walling, m² roofing per dwelling)
+  → priced from this SOR, item by item   (published, and each cites an item number)
+  = ₹ per dwelling replaced
+```
+
+Every leaf is then either a cited SOR line or a stated assumption with a range —
+which is exactly what makes the resulting figure arguable rather than asserted.
+A cheaper variant, and probably the right first move, is to price a handful of
+**assembly** rates from the SOR (₹/m² of RCC roof slab, ₹/m² of brick walling,
+₹/m² of flooring) and combine those with an assumed dwelling geometry. Fewer
+assumptions than a full bill of quantities, same traceability.
+
+---
+
 ## 5. The design answer: rate provenance as a type
 
 The one thing that must not happen is a constructed rate rendering
