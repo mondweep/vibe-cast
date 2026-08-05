@@ -124,6 +124,7 @@ describe('PeriodSummary — what a total is allowed to claim', () => {
       cumulative: [],
       peaks: [],
       exposure: [],
+      backTest: [],
     });
 
     expect(screen.getByText(/nothing to accumulate/)).toBeTruthy();

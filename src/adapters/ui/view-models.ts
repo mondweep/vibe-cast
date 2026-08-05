@@ -494,6 +494,25 @@ export type PeriodSummaryViewModel = {
   readonly peaks: readonly PeriodFigureViewModel[];
   /** Stocks integrated over the period, in person-days (ADR-0012). */
   readonly exposure: readonly PeriodExposureViewModel[];
+  /** Distributed relief against that exposure — the model's one real check. */
+  readonly backTest: readonly PeriodBackTestViewModel[];
+};
+
+/**
+ * One implied ration rate, from relief actually distributed.
+ *
+ * Deliberately has no "expected" or "shortfall" field. What was handed out and
+ * what people were owed are different facts, and putting them in one row would
+ * turn a sanity check into a compliance finding it has no standing to make.
+ */
+export type PeriodBackTestViewModel = {
+  /** Which population the rate assumes was fed, e.g. "Camp inmates". */
+  readonly basis: string;
+  /** `undefined`, never 0, when the quantity or the exposure is unknown. */
+  readonly kgPerPersonPerDay: number | undefined;
+  /** The division with real numbers in it. */
+  readonly workings: string;
+  readonly caveat: string;
 };
 
 /**

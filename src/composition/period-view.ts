@@ -20,13 +20,19 @@
 
 import type { BulletinTimeline } from '../domain/timeline/bulletin-timeline';
 import {
+  CAMP_INMATES,
   CUMULATIVE_MEASURES,
   EXPOSURE_MEASURES,
+  NON_CAMP_INMATES,
+  POPULATION_AFFECTED,
+  RICE_DISTRIBUTED,
   PEAK_ONLY_MEASURES,
   type FlowMeasure,
   type StockMeasure,
 } from '../domain/timeline/measure';
 import { integrateOverPeriod } from '../domain/timeline/stock-integral';
+import { impliedRation } from '../domain/economics/relief-adequacy';
+import { personDays, quintals, unknownPersonDays, unknownQuintals } from '../domain/shared/quantity';
 import {
   cumulativeOf,
   peakOf,
@@ -34,6 +40,7 @@ import {
   type PeriodCoverage,
 } from '../domain/timeline/period-totals';
 import type {
+  PeriodBackTestViewModel,
   PeriodCoverageViewModel,
   PeriodExposureViewModel,
   PeriodFigureViewModel,
@@ -132,9 +139,46 @@ const exposureRow = (
   };
 };
 
+/**
+ * The back-test: distributed rice against each candidate exposure.
+ *
+ * This is the only place the two contexts meet, and they meet as data. The
+ * economics context is handed person-days and quintals; it never reaches into
+ * the timeline for them, which is what keeps the boundary in
+ * `architecture.test.ts` honest.
+ *
+ * The three bases are a judgement about the response, not arithmetic, and they
+ * are listed widest-denominator-last so the spread reads as a narrowing. All
+ * three are shown because the bulletin never says who the relief reached, and
+ * the spread between them is more informative than any one of them.
+ */
+const backTestRows = (timeline: BulletinTimeline): readonly PeriodBackTestViewModel[] => {
+  const integralOf = (measure: typeof CAMP_INMATES) => integrateOverPeriod(timeline, measure).total;
+  const camp = integralOf(CAMP_INMATES);
+  const nonCamp = integralOf(NON_CAMP_INMATES);
+  const affected = integralOf(POPULATION_AFFECTED);
+
+  // Camp and non-camp are two disjoint populations, so their person-days add.
+  // If either is unknown the sum is unknown rather than the other one alone —
+  // a partial denominator would inflate the rate and look like generosity.
+  const both =
+    camp.kind === 'known' && nonCamp.kind === 'known'
+      ? personDays(camp.value + nonCamp.value)
+      : unknownPersonDays();
+
+  const rice = cumulativeOf(timeline, RICE_DISTRIBUTED);
+
+  return impliedRation(rice.total === undefined ? unknownQuintals() : quintals(rice.total), [
+    { label: 'Camp inmates', personDays: camp },
+    { label: 'Camp and non-camp inmates', personDays: both },
+    { label: 'All affected', personDays: affected },
+  ]);
+};
+
 export const periodSummaryFrom = (timeline: BulletinTimeline): PeriodSummaryViewModel => ({
   coverage: coverageViewModel(periodCoverage(timeline)),
   cumulative: CUMULATIVE_MEASURES.map((measure) => cumulativeRow(timeline, measure)),
   peaks: PEAK_ONLY_MEASURES.map((measure) => peakRow(timeline, measure)),
   exposure: EXPOSURE_MEASURES.map((measure) => exposureRow(timeline, measure)),
+  backTest: backTestRows(timeline),
 });

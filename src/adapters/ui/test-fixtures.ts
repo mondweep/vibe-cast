@@ -541,6 +541,10 @@ const PERIOD_CAVEAT =
  * example of adding a stock — and as person-days it is perfectly correct. That
  * is exactly why the unit has to travel with it.
  */
+const BACK_TEST_CAVEAT =
+  'Derived here, not reported by ASDMA. This is what was distributed divided by the ' +
+  'exposure, so it is the rate delivered and not the rate anyone was entitled to.';
+
 const EXPOSURE_CAVEAT =
   'Derived here, not reported by ASDMA: Population Affected integrated over 6 bulletins, ' +
   '2026-07-20 to 2026-07-27, 2 days missing. This is a count of person-days — one person ' +
@@ -647,6 +651,20 @@ export const periodSummaryFixture: PeriodSummaryViewModel = {
       workings: '362933 + 564660 + 653164 + 654838 + 524733 + 445495 = 3205823',
       completeness: 'partial',
       caveat: EXPOSURE_CAVEAT,
+    },
+  ],
+  backTest: [
+    {
+      basis: 'Camp inmates',
+      kgPerPersonPerDay: 7.173,
+      workings: '21,680 quintals = 2,168,004 kg ÷ 302,253 person-days = 7.173 kg',
+      caveat: BACK_TEST_CAVEAT,
+    },
+    {
+      basis: 'Camp and non-camp inmates',
+      kgPerPersonPerDay: 1.3,
+      workings: '21,680 quintals = 2,168,004 kg ÷ 1,667,298 person-days = 1.300 kg',
+      caveat: BACK_TEST_CAVEAT,
     },
   ],
 };

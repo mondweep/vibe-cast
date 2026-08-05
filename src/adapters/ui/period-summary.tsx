@@ -164,7 +164,7 @@ const CompletenessMark = ({ figure }: { readonly figure: PeriodFigureViewModel }
 );
 
 export const PeriodSummary = ({ summary, archive }: PeriodSummaryProps) => {
-  const { coverage, cumulative, peaks, exposure } = summary;
+  const { coverage, cumulative, peaks, exposure, backTest } = summary;
   // While the bundled archive is in flight the console is about to hold eleven
   // bulletins, so telling the officer to go and find earlier PDFs would be
   // advice it retracts on its own a moment later.
@@ -379,6 +379,59 @@ export const PeriodSummary = ({ summary, archive }: PeriodSummaryProps) => {
           </table>
         </TableScroll>
         <p className="text-small text-muted">{exposure[0]?.caveat}</p>
+      </section>
+
+      <section className="panel" aria-labelledby="back-test-heading">
+        <div className="panel__head">
+          <h2 className="panel__title" id="back-test-heading">
+            Does this check out?
+          </h2>
+          <span className="panel__note">
+            Rice actually distributed, divided by the exposure above.
+          </span>
+        </div>
+        <p className="text-small text-muted">
+          Person-days are derived, so nothing in the bulletin contradicts them —
+          which is a reason to be sceptical of them. This is the one check
+          available: ASDMA reports relief <em>actually handed out</em>, in
+          quintals, so dividing it by the exposure gives the ration rate really
+          delivered. If a rate here is implausible, the exposure it was divided
+          by is the thing to doubt.
+        </p>
+        <TableScroll label="Implied ration rate table">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">If the relief reached…</th>
+                <th scope="col" className="numeric">
+                  Implied ration
+                </th>
+                <th scope="col">Working</th>
+              </tr>
+            </thead>
+            <tbody>
+              {backTest.map((row) => (
+                <tr key={row.basis} data-back-test={row.basis}>
+                  <th scope="row">{row.basis}</th>
+                  <td className="numeric" data-implied-ration={row.basis}>
+                    {row.kgPerPersonPerDay === undefined
+                      ? '—'
+                      : `${row.kgPerPersonPerDay.toFixed(3)} kg`}
+                    <span className="text-small text-muted"> per person per day</span>
+                  </td>
+                  <td className="text-small figure">{row.workings}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableScroll>
+        {/*
+          No "expected" column, and no shortfall. What was handed out and what
+          people were owed are different facts; putting them side by side would
+          turn a sanity check into a compliance finding it has no standing to
+          make.
+        */}
+        <p className="text-small text-muted">{backTest[0]?.caveat}</p>
       </section>
     </div>
   );

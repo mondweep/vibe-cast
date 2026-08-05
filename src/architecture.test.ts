@@ -108,7 +108,19 @@ describe('ADR-0001: dependencies point inward only', () => {
     // PRD §3.2: contexts integrate through the published language and the
     // shared kernel. A direct domain/scenario -> domain/response import would
     // be the first crack in that boundary.
-    const contexts = ['situation', 'response', 'scenario', 'timeline', 'infrastructure-impact'];
+    // `economics` is listed from its first module on purpose. It is the context
+    // most tempted to reach sideways — it wants the timeline's integrals and
+    // the situation's quantities — so it takes them as data from the
+    // composition root instead. Adding it here later, once something had
+    // already reached across, would have been adding a rule to a violation.
+    const contexts = [
+      'situation',
+      'response',
+      'scenario',
+      'timeline',
+      'infrastructure-impact',
+      'economics',
+    ];
     const violations: string[] = [];
     for (const context of contexts) {
       for (const file of sourceFilesUnder(join(SRC, 'domain', context))) {

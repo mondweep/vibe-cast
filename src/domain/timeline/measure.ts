@@ -94,7 +94,8 @@ export type MeasureKey =
   | 'big-animals-washed-away'
   | 'small-animals-washed-away'
   | 'poultry-washed-away'
-  | 'persons-evacuated-by-boat';
+  | 'persons-evacuated-by-boat'
+  | 'rice-distributed';
 
 export type Measure<K extends MeasureKind = MeasureKind> = {
   readonly key: MeasureKey;
@@ -444,6 +445,31 @@ export const PERSONS_EVACUATED_BY_BOAT = measure<'flow'>({
   read: fromDistrictRows('count', (d) => d.rescue.personsEvacuatedByBoat),
 });
 
+/**
+ * Rice handed out, in quintals.
+ *
+ * A flow, and an unusual one: every other measure here counts something the
+ * flood did, and this counts something the response did. It is in the
+ * catalogue because it is the only figure in the bulletin that is *already
+ * incurred expenditure*, stated in physical units — which makes it the one
+ * thing the derived person-day exposure can be checked against
+ * (`domain/economics/relief-adequacy`).
+ *
+ * Summable for the ordinary reason: each bulletin reports the period's
+ * distribution, so yesterday's quintals are not in today's row.
+ */
+export const RICE_DISTRIBUTED = measure<'flow'>({
+  key: 'rice-distributed',
+  label: 'Rice Distributed',
+  kind: 'flow',
+  unit: 'Q',
+  precision: 2,
+  rationale:
+    'Handed out during the period the bulletin covers, so each day’s quintals ' +
+    'are additional to the day before’s.',
+  read: fromDistrictRows('Q', (d) => d.relief.rice),
+});
+
 /** Every measure, keyed. Exhaustive: a new `MeasureKey` will not compile until listed. */
 export const MEASURES: Readonly<Record<MeasureKey, Measure>> = {
   'population-affected': POPULATION_AFFECTED,
@@ -466,6 +492,7 @@ export const MEASURES: Readonly<Record<MeasureKey, Measure>> = {
   'small-animals-washed-away': SMALL_ANIMALS_WASHED_AWAY,
   'poultry-washed-away': POULTRY_WASHED_AWAY,
   'persons-evacuated-by-boat': PERSONS_EVACUATED_BY_BOAT,
+  'rice-distributed': RICE_DISTRIBUTED,
 };
 
 /**
