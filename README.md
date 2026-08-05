@@ -34,6 +34,7 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [`docs/BULLETIN-SYNC.md`](docs/BULLETIN-SYNC.md) | Keeping the bundled archive current from a Drive folder, and what to do when it breaks |
 | [`docs/PRD-REHABILITATION-ECONOMICS.md`](docs/PRD-REHABILITATION-ECONOMICS.md) | *In build:* costing rehabilitation from the bulletins — damage, loss, needs, funding gap |
 | [`docs/FEASIBILITY-REHABILITATION-ECONOMICS.md`](docs/FEASIBILITY-REHABILITATION-ECONOMICS.md) | *In build:* whether that model is buildable on this data, measured against the archive |
+| [`docs/FEASIBILITY-REPLACEMENT-COST.md`](docs/FEASIBILITY-REPLACEMENT-COST.md) | *Proposed:* replacement cost and working-capital loss from documented assumptions |
 
 ### Architecture decisions
 
@@ -52,6 +53,7 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [0011](docs/adr/0011-cost-norms-are-cited-versioned-and-never-invented.md) | Cost norms are cited, versioned, and never invented |
 | [0012](docs/adr/0012-integrating-a-stock-changes-its-unit.md) | Integrating a stock changes its unit — person-days are not people |
 | [0013](docs/adr/0013-no-backend-for-the-economic-model.md) | No backend for the economic model; it needs none, so none was adopted |
+| [0014](docs/adr/0014-constructed-rates-carry-a-derivation-not-a-citation.md) | *Proposed:* a constructed rate carries a derivation, not a citation |
 
 ## Design principles
 

@@ -101,9 +101,24 @@ The bulletin itemises infrastructure damage richly — 88 to 587 items per day,
 each with a name, department, village, location and often coordinates. On
 4 August: 131 items across `road` and `other`.
 
-**But it never dimensions anything.** A damaged road has no length. A breached
-embankment has no breach width. A damaged school has no floor area. There is a
-count of things and no measure of how much of each thing.
+**But it never dimensions anything in a column.** A damaged road has no length
+field. A breached embankment has no breach-width field. There is a count of
+things and no structured measure of how much of each thing.
+
+> **Correction, 2026-08-06.** The sentence above originally read "it never
+> dimensions anything", and that was too strong. Measured across the 4,780
+> infrastructure items in the archive, **501 (10.5%) carry a dimension in the
+> free-text remarks**: road chainages (`Chainage 1300.00m to 2800.00m`), damage
+> lengths (`The damage Length - 150.00m`), conductor runs (`0.3KM`), and fishery
+> water areas (`23 fish tanks, covering a total water area of 6.50 hectares`).
+>
+> The structured claim stands — there is no dimension column. The absolute one
+> does not. Those 501 items *could* be costed against the SDRF per-kilometre and
+> per-culvert rates, via a second extractor over prose with its own confidence
+> model. That is real, bounded work recovering roughly a tenth of the largest
+> damage category, and it is scoped in
+> [`FEASIBILITY-REPLACEMENT-COST.md`](FEASIBILITY-REPLACEMENT-COST.md) §3 rather
+> than here. The recommendation below is unchanged: do not cost the other 90%.
 
 Infrastructure is typically the largest single line in a real post-flood damage
 assessment, and it is the one this data cannot support. The honest options:
