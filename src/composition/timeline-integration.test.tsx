@@ -18,7 +18,7 @@
  *   2026-07-27       445495        28695     90            0    37139.52          6
  *
  * **23 and 24 July are deliberately left out.** The console ships with all
- * sixteen consecutive days, 20 July to 4 August, so a hole has to be made on
+ * seventeen consecutive days, 20 July to 4 August, so a hole has to be made on
  * purpose to test for one — and it must be tested for, because interpolating across a
  * missing bulletin is the single most damaging thing this view could do.
  * Several assertions below exist only to prove nothing is drawn, summed or
@@ -358,19 +358,19 @@ describe('six real bulletins — dropped into the console one after another', ()
     // withhold. Their own 27 July superseded the bundled one, so the seventh
     // bulletin is 4 August and the period runs to it.
     expect(coverage.textContent).toContain('7 bulletins');
-    expect(coverage.textContent).toContain('20 July 2026 to 4 August 2026');
-    // Nine days missing: the two they withheld on purpose (23, 24 July) and the
-    // seven between their newest and the bundled 4 August.
-    expect(coverage.textContent).toContain('9 days missing');
+    expect(coverage.textContent).toContain('20 July 2026 to 5 August 2026');
+    // Ten days missing: the two they withheld on purpose (23, 24 July) and the
+    // eight between their newest and the bundled 5 August.
+    expect(coverage.textContent).toContain('10 days missing');
     expect(coverage.textContent).toContain(
       '2026-07-23, 2026-07-24, 2026-07-28, 2026-07-29, 2026-07-30, 2026-07-31, ' +
         '2026-08-01, 2026-08-02, 2026-08-03',
     );
 
-    // 41 across their six, plus 2 on the bundled 4 August — the second cell of
-    // that bulletin's printed "Total 2 2 0 1 0 1 0 0" row, read from the PDF
+    // 41 across their six, plus 5 on the bundled 5 August — the second cell of
+    // that bulletin's printed "Total 5 5 0 4 1 0 0 0" row, read from the PDF
     // rather than from the parser.
-    expect(document.querySelector('[data-total="flood-deaths"]')?.textContent).toBe('43');
+    expect(document.querySelector('[data-total="flood-deaths"]')?.textContent).toBe('46');
     // The peaks are unmoved: 4 August is the mildest day in this set on every
     // one of them (122,137 affected, 12,382 inmates, 15,342.92 Hect.).
     expect(
@@ -415,7 +415,7 @@ describe('six real bulletins — dropped into the console one after another', ()
     const gap = screen.getByText(/No bulletin for/).closest('li');
     expect(gap?.textContent).toContain('2026-07-21, 2026-07-22, 2026-07-23');
     expect(gap?.textContent).toContain('2026-08-03');
-    expect(gap?.textContent).toContain('between 2026-07-20 and 2026-08-04');
+    expect(gap?.textContent).toContain('between 2026-07-20 and 2026-08-05');
     expect(screen.queryByText(/1 bulletin held/)).toBeNull();
     // And the console says how many of the points they did not choose.
     expect(screen.getByTestId('trend-archive-note').textContent).toMatch(/1 of the/);

@@ -40,7 +40,11 @@ import {
   type VisualRow,
 } from './text-run';
 import { knownDistrictName } from './assam-districts';
-import { repairWrappedDistrictNames, type DistrictVocabulary } from './wrapped-district-name';
+import {
+  repairWrappedDistrictNames,
+  resolveWrappedNameList,
+  type DistrictVocabulary,
+} from './wrapped-district-name';
 
 /** One table row as a human reads it, however many printed lines it occupies. */
 export type LogicalRow = {
@@ -145,6 +149,16 @@ const ITEMISED_SECTIONS: ReadonlySet<SectionKind> = new Set<SectionKind>([
   'infrastructure-embankment-affected',
   'infrastructure-others',
 ]);
+
+/**
+ * Sections whose second cell is a comma-separated list of District names.
+ *
+ * The wrapped-name repair works on cell 0, the District column, and these
+ * sections do not have one — they carry every District in a single list cell
+ * that wraps like any other. Left alone, its newline collapses to a space and
+ * manufactures a District: see `resolveWrappedNameList`.
+ */
+const NAME_LIST_SECTIONS: ReadonlySet<SectionKind> = new Set<SectionKind>(['districts-affected']);
 
 /**
  * Where an infrastructure table's item columns are, counted from the RIGHT.
@@ -465,7 +479,18 @@ export const createSectionAssembler = (
           rows: repaired.map((r) => ({
             // Whatever the repair declined to vouch for keeps the shape DRIMS
             // printed: the District cell is a name, so its newline is a space.
-            cells: r.cells.map((c, i) => (i === 0 ? c.replace(/\s*\n\s*/g, ' ').trim() : c)),
+            //
+            // A name-LIST cell is the exception. Collapsing its newline the same
+            // way is what produced `Karbi Udalguri` on 5 August, so it is
+            // resolved on evidence and re-joined with commas — the shape the
+            // interpreter expects — rather than flattened.
+            cells: r.cells.map((c, i) => {
+              if (i === 0) return c.replace(/\s*\n\s*/g, ' ').trim();
+              if (i === 1 && NAME_LIST_SECTIONS.has(kind) && c.includes('\n')) {
+                return resolveWrappedNameList(c, knows).join(', ');
+              }
+              return c;
+            }),
             pages: r.pages,
           })),
         };

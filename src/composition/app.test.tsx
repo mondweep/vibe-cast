@@ -124,13 +124,13 @@ describe('App', () => {
     // No fetch, no pdf.js, no loading state: the figures are on screen in the
     // first paint (NFR-3).
     //
-    // 104,280 is the headline gap for 4 August 2026, the newest bundled day.
+    // 116,249 is the headline gap for 5 August 2026, the newest bundled day.
     // Derived from that bulletin's own printed Total rows, not from parser
-    // output: 122,137 affected ("Total 53770 51434 16933 122137 15342.92",
-    // page 2) − 12,382 camp inmates ("Total 12382 5018 4926 2402 29 7",
-    // page 2) − 5,475 non-camp inmates ("Total 5475 2127 2006 1342 4959 3607
-    // 0", page 3) = 104,280.
-    expect(screen.getAllByText('104,280').length).toBeGreaterThan(0);
+    // output: 160,653 affected ("Total 73026 68273 19354 160653 16951.761")
+    // − 12,356 camp inmates ("Total 12356 5653 4784 1876 36 7")
+    // − 32,048 non-camp inmates ("Total 32048 12184 12730 7134 7155 6272 0")
+    // = 116,249.
+    expect(screen.getAllByText('116,249').length).toBeGreaterThan(0);
     await waitFor(() => expect(list).toHaveBeenCalled());
     expect(screen.getByTestId('bulletin-dropzone')).toBeTruthy();
   });
@@ -257,11 +257,11 @@ describe('App — the bundled archive and its age', () => {
   const banner = () => screen.getByTestId('staleness-banner');
   const openTrend = () => userEvent.click(screen.getByRole('button', { name: /Trend/ }));
 
-  it('opens on sixteen consecutive real ASDMA bulletins, with no gaps', async () => {
+  it('opens on seventeen consecutive real ASDMA bulletins, with no gaps', async () => {
     // The whole point of shipping the archive: a link someone is sent opens on
-    // a working fifteen-day trend, not on a blank console they must populate.
+    // a working sixteen-day trend, not on a blank console they must populate.
     //
-    // Sixteen, and consecutive. 28 July was briefly absent — the file uploaded
+    // Seventeen, and consecutive. 28 July was briefly absent — the file uploaded
     // under that name was a 9 kB HTML page from the ASDMA website rather than a
     // PDF, and the sync rightly refused it — so for a while the bundle carried
     // a genuine one-day hole. The real bulletin has since been uploaded. This
@@ -276,13 +276,13 @@ describe('App — the bundled archive and its age', () => {
     await openTrend();
 
     await waitFor(() =>
-      expect(screen.getByTestId('trend-archive-note').textContent).toMatch(/16 of the 16/),
+      expect(screen.getByTestId('trend-archive-note').textContent).toMatch(/17 of the 17/),
     );
     expect(screen.getByText(/No gaps/)).toBeTruthy();
     expect(screen.queryByText(/bulletin held\./)).toBeNull();
   });
 
-  it('draws a delta for every one of the fifteen day-over-day steps, and none across a hole', async () => {
+  it('draws a delta for every one of the sixteen day-over-day steps, and none across a hole', async () => {
     const { container } = aContainer();
 
     const { container: dom } = render(<App container={container} loadArchive={theArchive} />);
@@ -312,7 +312,7 @@ describe('App — the bundled archive and its age', () => {
       expect(dom.querySelector(`[data-delta="${from}→${to}"]`)).not.toBeNull();
     }
 
-    // Fifteen steps across sixteen days, and not one more. A delta that skipped
+    // Sixteen steps across seventeen days, and not one more. A delta that skipped
     // a day would divide the apparent rate of change by the size of the hole, so
     // the spans that would exist only if a day were missing must not be drawn.
     expect(dom.querySelector('[data-delta="2026-07-27→2026-07-29"]')).toBeNull();
@@ -328,15 +328,15 @@ describe('App — the bundled archive and its age', () => {
 
     // Population Affected is a stock: peaked at 721,024 on 23 July, and has no
     // total anywhere in this console because the same person affected on
-    // sixteen days is one person.
+    // seventeen days is one person.
     //
-    // 721,024 is still the peak after the archive grew to sixteen days, and
+    // 721,024 is still the peak after the archive grew to seventeen days, and
     // that is a fact about the bulletins rather than an assumption carried over.
     // Every day's printed `Total Population` cell was read from the PDF text
     // layer without this parser: 362,933 / 564,660 / 653,164 / **721,024** /
     // 705,148 / 654,838 / 524,733 / 445,495 / 332,639 / 300,031 / 212,441 /
     // 192,799 / 178,837 / 136,203 / 128,072 / 122,137. The 23rd is the maximum
-    // of those sixteen, and the flood has receded monotonically since the 24th
+    // of those seventeen, and the flood has receded monotonically since the 24th
     // — every one of the nine newest days is smaller than the day before.
     await waitFor(() =>
       expect(dom.querySelector('[data-peak-value="population-affected"]')?.textContent).toBe(
@@ -370,7 +370,7 @@ describe('App — the bundled archive and its age', () => {
     // Hect., rounded to 56,606.78 for display. Worth pinning explicitly,
     // because 48,742.09 on the 26th is the figure a six-bulletin timeline that
     // omits 23 and 24 July produces (see `timeline-integration.test.tsx`), and
-    // the two are easy to confuse. Over the full sixteen days the printed crop
+    // the two are easy to confuse. Over the full seventeen days the printed crop
     // totals are 19,099.5944 / 24,210.35 / 24,897.27 / 25,375.443 /
     // **56,606.777** / 34,970.8 / 48,742.09 / 37,139.52 / 45,341.98 /
     // 21,523.08 / 17,198.09 / 15,430 / 15,060 / 15,422 / 14,230.148 /
@@ -384,12 +384,12 @@ describe('App — the bundled archive and its age', () => {
 
     // And it covers a real period with nothing missing from it.
     expect(screen.getByTestId('period-coverage').textContent).toMatch(
-      /Computed across 16 bulletins/,
+      /Computed across 17 bulletins/,
     );
     expect(screen.getByTestId('period-coverage').textContent).toMatch(/no days missing/);
   });
 
-  it('totals the flood deaths as a flow across all sixteen days', async () => {
+  it('totals the flood deaths as a flow across all seventeen days', async () => {
     // Split out of the peaks above because it is the one Cumulative & Peak
     // figure that *sums* across every day, so it is the one a single broken
     // bulletin silently shrinks. It did: while 28 July parsed to a husk this
@@ -412,8 +412,9 @@ describe('App — the bundled archive and its age', () => {
     //    2 Aug  3  ("Total 3 3 0 2 1 0 0 0")
     //    3 Aug  3  ("Total 3 3 0 1 1 0 1 0")
     //    4 Aug  2  ("Total 2 2 0 1 0 1 0 0")
+    //    5 Aug  5  ("Total 5 5 0 4 1 0 0 0")
     //
-    // 5 + 21 + 9 + 6 + 14 + 4 + 2 + 0 + 7 + 3 + 2 + 2 + 0 + 3 + 3 + 2 = 83.
+    // 5 + 21 + 9 + 6 + 14 + 4 + 2 + 0 + 7 + 3 + 2 + 2 + 0 + 3 + 3 + 2 + 5 = 88.
     //
     // Never added to general drownings — the type has no `total` (PRD §4.2).
     const { container } = aContainer();
@@ -426,20 +427,24 @@ describe('App — the bundled archive and its age', () => {
     );
     const deaths = dom.querySelector('[data-cumulative="flood-deaths"]') as HTMLElement;
     expect(deaths.textContent).toMatch(
-      /5 \+ 21 \+ 9 \+ 6 \+ 14 \+ 4 \+ 2 \+ 0 \+ 7 \+ 3 \+ 2 \+ 2 \+ 0 \+ 3 \+ 3 \+ 2 = 83/,
+      /5 \+ 21 \+ 9 \+ 6 \+ 14 \+ 4 \+ 2 \+ 0 \+ 7 \+ 3 \+ 2 \+ 2 \+ 0 \+ 3 \+ 3 \+ 2 \+ 5 = 88/,
     );
-    expect(dom.querySelector('[data-total="flood-deaths"]')?.textContent).toBe('83');
-    // 83 no longer carries the "true figure is higher" caveat, and that is a
+    expect(dom.querySelector('[data-total="flood-deaths"]')?.textContent).toBe('88');
+    // 88 no longer carries the "true figure is higher" caveat, and that is a
     // repair rather than a loss of caution. The caveat fired because Districts
     // reported no flood-death figure — but every such District was half of a
     // wrapped name, a row the parser had invented, which of course reported
-    // nothing. With the names put back together every District in all sixteen
-    // bulletins carries a figure, so 83 is the toll and not a floor.
+    // nothing. With the names put back together every District in all seventeen
+    // bulletins carries a figure, so 88 is the toll and not a floor. 5 August
+    // nearly broke that: a wrapped NAME LIST published an eighteenth District
+    // that reported nothing, and the caveat came straight back. Repaired at
+    // source in `resolveWrappedNameList`, which is why this assertion still
+    // holds rather than having been relaxed.
     expect(deaths.textContent).not.toMatch(/the true figure is higher/);
   });
 
   it('renders figures immediately and says the history is still on its way', async () => {
-    // First paint holds one bulletin and is about to hold sixteen. Announcing
+    // First paint holds one bulletin and is about to hold seventeen. Announcing
     // a count it is about to change would teach the officer to distrust the
     // console's own account of what it holds.
     const { container } = aContainer();
@@ -448,13 +453,13 @@ describe('App — the bundled archive and its age', () => {
 
     // Real figures, in the first paint, with no waiting — the 4 August headline
     // gap, 122,137 − 12,382 − 5,475.
-    expect(screen.getAllByText('104,280').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('116,249').length).toBeGreaterThan(0);
 
     await openTrend();
     const note = screen.getByTestId('trend-archive-loading');
     expect(note.textContent).toMatch(/Loading the bundled history/);
-    // Fifteen: every bundled day but the eager one, already on screen.
-    expect(note.textContent).toMatch(/15 more real ASDMA bulletins/);
+    // Sixteen: every bundled day but the eager one, already on screen.
+    expect(note.textContent).toMatch(/16 more real ASDMA bulletins/);
     expect(screen.queryByText(/1 bulletin held/)).toBeNull();
   });
 
@@ -473,7 +478,7 @@ describe('App — the bundled archive and its age', () => {
     deliver(ARCHIVED_BULLETINS);
 
     await waitFor(() => expect(screen.queryByTestId('trend-archive-loading')).toBeNull());
-    expect(screen.getByTestId('trend-archive-note').textContent).toMatch(/16 of the 16/);
+    expect(screen.getByTestId('trend-archive-note').textContent).toMatch(/17 of the 17/);
     expect(screen.getByText(/No gaps/)).toBeTruthy();
   });
 
@@ -485,7 +490,7 @@ describe('App — the bundled archive and its age', () => {
 
     // The figures it does hold are still real, and still on screen — the eager
     // 4 August bulletin's headline gap.
-    expect(screen.getAllByText('104,280').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('116,249').length).toBeGreaterThan(0);
 
     await openTrend();
     await waitFor(() =>
@@ -496,9 +501,9 @@ describe('App — the bundled archive and its age', () => {
   });
 
   it('frames the archive as bundled history, not as today’s situation', async () => {
-    // 4 August: the day the newest bundled bulletin is dated, so the archive is
+    // 5 August: the day the newest bundled bulletin is dated, so the archive is
     // genuinely current rather than merely future-dated.
-    const { container, list } = aContainer(atAssamTime('2026-08-04T09:00:00+05:30'));
+    const { container, list } = aContainer(atAssamTime('2026-08-05T09:00:00+05:30'));
 
     render(<App container={container} loadArchive={theArchive} />);
     await waitFor(() => expect(list).toHaveBeenCalled());
@@ -512,12 +517,12 @@ describe('App — the bundled archive and its age', () => {
   });
 
   it('says in plain words how old the bundled archive has become', async () => {
-    const { container, list } = aContainer(atAssamTime('2026-09-04T09:00:00+05:30'));
+    const { container, list } = aContainer(atAssamTime('2026-09-05T09:00:00+05:30'));
 
     render(<App container={container} loadArchive={theArchive} />);
     await waitFor(() => expect(list).toHaveBeenCalled());
 
-    // 4 August to 4 September is 31 days — August has 31.
+    // 5 August to 5 September is 31 days — August has 31.
     expect(banner().textContent).toMatch(/This bulletin is 31 days old/);
     expect(banner().getAttribute('data-level')).toBe('obsolete');
     expect(banner().textContent).toMatch(/Do not use these figures for current decisions/);
@@ -533,13 +538,13 @@ describe('App — the bundled archive and its age', () => {
       return banner().getAttribute('data-level');
     };
 
-    // Ages measured against the newest bundled bulletin, 4 August, and placed in
+    // Ages measured against the newest bundled bulletin, 5 August, and placed in
     // the bands `STALENESS_BANDS` defines: current 0–1, ageing 2–3, stale 4–14,
     // obsolete beyond. The dates below are 1, 2, 6 and 91 days after it.
-    expect(await levelOn('2026-08-05T09:00:00+05:30')).toBe('current');
-    expect(await levelOn('2026-08-06T09:00:00+05:30')).toBe('ageing');
-    expect(await levelOn('2026-08-10T09:00:00+05:30')).toBe('stale');
-    expect(await levelOn('2026-11-03T09:00:00+05:30')).toBe('obsolete');
+    expect(await levelOn('2026-08-06T09:00:00+05:30')).toBe('current');
+    expect(await levelOn('2026-08-07T09:00:00+05:30')).toBe('ageing');
+    expect(await levelOn('2026-08-11T09:00:00+05:30')).toBe('stale');
+    expect(await levelOn('2026-11-04T09:00:00+05:30')).toBe('obsolete');
   });
 
   it('is superseded, day for day, by a bulletin the officer loads for an archived date', async () => {
@@ -554,11 +559,11 @@ describe('App — the bundled archive and its age', () => {
     await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
     await openTrend();
 
-    // Still sixteen days — their 23 July replaced the bundled one rather than
+    // Still seventeen days — their 23 July replaced the bundled one rather than
     // adding a seventeenth, exactly as the BulletinTimeline aggregate specifies.
-    // Fifteen of the sixteen points are now bundled; the sixteenth is theirs.
+    // Sixteen of the seventeen points are now bundled; the seventeenth is theirs.
     await waitFor(() =>
-      expect(screen.getByTestId('trend-archive-note').textContent).toMatch(/15 of the 16/),
+      expect(screen.getByTestId('trend-archive-note').textContent).toMatch(/16 of the 17/),
     );
     expect(screen.getByText(/No gaps/)).toBeTruthy();
   });
@@ -588,10 +593,10 @@ describe('App — the bundled archive and its age', () => {
 
   it('never lets bundled history make a stale console look current', async () => {
     // The hazard in shipping an archive: an officer opens the console in
-    // November, sees sixteen days of confident figures, and is not told they
+    // November, sees seventeen days of confident figures, and is not told they
     // are three months old. Staleness is measured against the newest bulletin
-    // held, which here is 4 August — 91 days back (27 + 30 + 31 + 3).
-    const { container, list } = aContainer(atAssamTime('2026-11-03T09:00:00+05:30'));
+    // held, which here is 5 August — 91 days back (26 + 30 + 31 + 4).
+    const { container, list } = aContainer(atAssamTime('2026-11-04T09:00:00+05:30'));
 
     render(<App container={container} loadArchive={theArchive} />);
     await waitFor(() => expect(list).toHaveBeenCalled());
@@ -672,17 +677,17 @@ describe('App — the bundled archive and its age', () => {
   it('takes its clock from the container, never from the system', async () => {
     // The banner is only a safety control if it can be tested at an arbitrary
     // date. Two different injected clocks, two different answers. Both are
-    // measured against the eager 4 August bulletin, which is all `noArchive`
+    // measured against the eager 5 August bulletin, which is all `noArchive`
     // leaves the console holding.
-    const early = aContainer(atAssamTime('2026-08-04T09:00:00+05:30'));
+    const early = aContainer(atAssamTime('2026-08-05T09:00:00+05:30'));
     render(<App container={early.container} loadArchive={noArchive} />);
     await waitFor(() => expect(early.list).toHaveBeenCalled());
     expect(banner().getAttribute('data-level')).toBe('current');
 
     cleanup();
 
-    // 2026-08-04 to 2027-08-04 is 365 days — 2027 is not a leap year.
-    const late = aContainer(atAssamTime('2027-08-04T09:00:00+05:30'));
+    // 2026-08-05 to 2027-08-05 is 365 days — 2027 is not a leap year.
+    const late = aContainer(atAssamTime('2027-08-05T09:00:00+05:30'));
     render(<App container={late.container} loadArchive={noArchive} />);
     await waitFor(() => expect(late.list).toHaveBeenCalled());
     expect(banner().getAttribute('data-level')).toBe('obsolete');

@@ -17,6 +17,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   joinWrappedDistrictName,
   repairWrappedDistrictNames,
+  resolveWrappedNameList,
   type DistrictVocabulary,
 } from './wrapped-district-name';
 
@@ -239,5 +240,56 @@ describe('repairWrappedDistrictNames, in an itemised infrastructure table', () =
     const rows = [row('Jorhat', '2', '(Teok | 2)', 'Bridge'), row('', '', '(Titabor | 0)', 'Nil')];
     const repaired = repairWrappedDistrictNames(rows, { itemised: true, knows: knowing('Jorhat') });
     expect(repaired).toEqual(rows);
+  });
+});
+
+describe('resolveWrappedNameList — the Districts Affected header', () => {
+  const assam = knowing('Karbi Anglong', 'Udalguri', 'Darrang', 'Golaghat', 'Kamrup (M)');
+
+  it('never manufactures a District from an unevidenced wrap', () => {
+    // The 5 August defect, exactly as it arrived: the printed `Anglong,` was
+    // lost between the two lines, leaving `Karbi` and `Udalguri` in one
+    // comma-separated element. Joining them produced `Karbi Udalguri` — a
+    // District that has never existed, carrying no data, which then showed as
+    // an unplaceable name on the choropleth and made every cumulative figure
+    // claim "the true figure is higher" because one row reported nothing.
+    const names = resolveWrappedNameList('Golaghat, Darrang, Karbi\nUdalguri', assam);
+
+    expect(names).not.toContain('Karbi Udalguri');
+    expect(names).not.toContain('Karbi');
+    expect(names).toEqual(['Golaghat', 'Darrang', 'Udalguri']);
+  });
+
+  it('closes a wrap the vocabulary vouches for', () => {
+    // The ordinary case, and the reason the rule is not simply "split and drop":
+    // a genuine wrap inside one name must still be put back together.
+    expect(resolveWrappedNameList('Golaghat, Karbi\nAnglong', assam)).toEqual([
+      'Golaghat',
+      'Karbi Anglong',
+    ]);
+  });
+
+  it('closes a wrap that broke inside a word, not only on a space', () => {
+    expect(resolveWrappedNameList('Udalg\nuri', knowing('Udalguri'))).toEqual(['Udalguri']);
+  });
+
+  it('leaves an unwrapped list exactly as printed', () => {
+    expect(resolveWrappedNameList('Golaghat, Darrang, Udalguri', assam)).toEqual([
+      'Golaghat',
+      'Darrang',
+      'Udalguri',
+    ]);
+  });
+
+  it('drops ASDMA’s Nil rather than publishing a District called Nil', () => {
+    expect(resolveWrappedNameList('Nil', assam)).toEqual([]);
+  });
+
+  it('refuses a three-line wrap it cannot close all the way', () => {
+    // A `reduce` restarting from the surviving segment is how half a name gets
+    // published; nothing here is evidenced, so nothing is emitted.
+    expect(resolveWrappedNameList('Kar\nbi\nUdalguri', knowing('Udalguri'))).toEqual([
+      'Udalguri',
+    ]);
   });
 });

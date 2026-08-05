@@ -145,6 +145,56 @@ const mergeInto = (into: LogicalRow, from: LogicalRow, name: string): LogicalRow
 });
 
 /**
+ * Resolve a comma-separated LIST of District names whose printed lines wrapped.
+ *
+ * THE DEFECT THIS EXISTS FOR. The Districts Affected header is one cell holding
+ * every affected District, and it wraps like any other cell. On 2026-08-05 it
+ * arrived as
+ *
+ *     'Golaghat, ..., Darrang, Karbi\nUdalguri'
+ *
+ * — the printed `Anglong,` lost between the two lines. Splitting that on commas
+ * alone yields one element, `Karbi\nUdalguri`, and collapsing its newline to a
+ * space manufactures `Karbi Udalguri`: a District that has never existed, with
+ * no data on it, which then shows as an unplaceable name on the choropleth and
+ * makes every cumulative figure claim "the true figure is higher" because one
+ * row reported nothing.
+ *
+ * THE RULE. A newline inside one list element is a wrap. Close it only where
+ * the join is evidenced, exactly as `joinWrappedDistrictName` requires. Where it
+ * is not, keep the segments the vocabulary recognises and DROP the ones it does
+ * not — because an unrecognised half-name in this particular cell is never new
+ * information: this list is redundant, every District on it that reported
+ * anything also appears in the data tables below, so a fragment dropped here
+ * costs nothing and a fragment kept invents a District.
+ *
+ * That last clause is why this is a different rule from `resolveCell`, which
+ * must preserve the printed shape because its cell is the only place the name
+ * appears.
+ */
+export const resolveWrappedNameList = (
+  raw: string,
+  knows: DistrictVocabulary,
+): readonly string[] =>
+  raw
+    .split(',')
+    .flatMap((element) => {
+      const segments = element.split('\n').map(collapse).filter((s) => s !== '');
+      if (segments.length <= 1) return segments;
+
+      // Folded left to right; once a break cannot be closed the whole element
+      // is unevidenced. A `reduce` would silently restart from the next
+      // segment, which is how a three-line wrap would produce half a name.
+      let joined: string | undefined = segments[0];
+      for (const tail of segments.slice(1)) {
+        joined = joined === undefined ? undefined : joinWrappedDistrictName(joined, tail, knows);
+      }
+      // Evidenced: one name. Unevidenced: only the halves that stand alone.
+      return joined === undefined ? segments.filter((s) => knows(s)) : [joined];
+    })
+    .filter((name) => name !== '' && name.toLowerCase() !== 'nil');
+
+/**
  * Put every District name in a section's rows back together, and say nothing
  * about the ones that did not need it.
  */
