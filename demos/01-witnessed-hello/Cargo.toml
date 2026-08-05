@@ -1,0 +1,9 @@
+[package]
+name = "demo-01-witnessed-hello"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rvm-types.workspace = true
+rvm-witness.workspace = true

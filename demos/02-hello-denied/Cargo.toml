@@ -1,0 +1,11 @@
+[package]
+name = "demo-02-hello-denied"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rvm-types.workspace = true
+rvm-witness.workspace = true
+rvm-cap.workspace = true
+rvm-security.workspace = true

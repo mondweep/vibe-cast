@@ -1,0 +1,24 @@
+[workspace]
+members = ["demos/*"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+# RVM is consumed as a sibling checkout rather than a git dependency:
+# cargo initialises submodules for git deps, and rvm's three submodules
+# (rudevolution, ruvector, cuda-wasm) are excluded from its workspace and
+# very slow to fetch. `scripts/bootstrap.sh` clones it correctly.
+[workspace.dependencies]
+rvm-types = { path = "../rvm/crates/rvm-types", features = ["std"] }
+rvm-witness = { path = "../rvm/crates/rvm-witness", features = ["std"] }
+rvm-cap = { path = "../rvm/crates/rvm-cap", features = ["std"] }
+rvm-security = { path = "../rvm/crates/rvm-security", features = ["std"] }
+rvm-proof = { path = "../rvm/crates/rvm-proof", features = ["std"] }
+rvm-partition = { path = "../rvm/crates/rvm-partition", features = ["std"] }
+rvm-sched = { path = "../rvm/crates/rvm-sched", features = ["std"] }
+rvm-coherence = { path = "../rvm/crates/rvm-coherence", features = ["std"] }
+rvm-wasm = { path = "../rvm/crates/rvm-wasm", features = ["std"] }
+rvm-rvf = { path = "../rvm/crates/rvm-rvf", features = ["std"] }
