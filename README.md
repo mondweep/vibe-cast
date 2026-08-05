@@ -51,7 +51,7 @@ From the 2026-07-27 bulletin, the single figure the console exists to surface:
 | [0010](docs/adr/0010-bundled-bulletin-archive.md) | Every bulletin in `fixtures/` ships pre-parsed; the historical ones are split out of first paint |
 | [0011](docs/adr/0011-cost-norms-are-cited-versioned-and-never-invented.md) | Cost norms are cited, versioned, and never invented |
 | [0012](docs/adr/0012-integrating-a-stock-changes-its-unit.md) | Integrating a stock changes its unit — person-days are not people |
-| [0013](docs/adr/0013-supabase-backend-for-archive-norms-and-plans.md) | Supabase backend for the archive, norms and plans, under a `floodmonitoring_` namespace |
+| [0013](docs/adr/0013-no-backend-for-the-economic-model.md) | No backend for the economic model; it needs none, so none was adopted |
 
 ## Design principles
 

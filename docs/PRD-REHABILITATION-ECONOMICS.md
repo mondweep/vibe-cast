@@ -387,5 +387,8 @@ These are genuinely open and are the subject of the ADRs, not settled here:
 1. **Where norms come from** and which ships by default — ADR-0011.
 2. **How stock integration is typed** so person-days cannot leak into headcounts
    — ADR-0012.
-3. **Whether any of this gains a backend** (Supabase), given that ADR-0004 makes
-   zero egress a browser-enforced property and the README promises it — ADR-0013.
+3. ~~Whether any of this gains a backend~~ — **settled by ADR-0013: no.** The
+   model is arithmetic over data already in memory, and building it confirmed
+   that a backend's absence never made anything harder. Reopen only when
+   something concrete needs one — sharing a plan, or holding a bulletin newer
+   than the last deploy.
