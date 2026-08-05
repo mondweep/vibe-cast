@@ -349,7 +349,65 @@ describe('PeriodSummary — a constructed figure must not read as a published on
     const { container } = renderSummary();
 
     const notCosted = container.querySelector('[data-not-costed]') as HTMLElement;
-    expect(notCosted.textContent).toMatch(/not costed/i);
+    expect(notCosted.textContent).toMatch(/cannot be priced from this schedule/i);
     expect(notCosted.textContent).toMatch(/bamboo, timber and thatch/);
+  });
+});
+
+describe('PeriodSummary — what to rebuild', () => {
+  it('shows all three policies, never one', () => {
+    // A selector would let the cheapest be chosen without ever seeing what the
+    // alternatives cost, or what they cost in future risk.
+    const { container } = renderSummary();
+
+    expect(container.querySelectorAll('[data-policy]')).toHaveLength(3);
+    expect(container.querySelector('[data-policy="like-for-like"]')).not.toBeNull();
+    expect(container.querySelector('[data-policy="build-back-better"]')).not.toBeNull();
+  });
+
+  it('never shows a policy cost without its effect on future risk', () => {
+    // The load-bearing assertion in this panel. Money alone makes the cheapest
+    // look best, and the cheapest is the one that rebuilds the vulnerability.
+    const { container } = renderSummary();
+
+    for (const row of container.querySelectorAll('[data-policy]')) {
+      const key = row.getAttribute('data-policy');
+      expect(row.querySelector(`[data-policy-total="${key}"]`)).not.toBeNull();
+      expect(row.querySelector(`[data-policy-risk="${key}"]`)).not.toBeNull();
+    }
+  });
+
+  it('says like-for-like would let the same flood destroy them again', () => {
+    const { container } = renderSummary();
+
+    const risk = container.querySelector('[data-policy-risk="like-for-like"]') as HTMLElement;
+    expect(risk.textContent).toMatch(/destroy them again/);
+  });
+
+  it('marks a policy total as a floor when dwellings could not be priced', () => {
+    const { container } = renderSummary();
+
+    const floored = container.querySelector('[data-policy-total="protect-in-place"]') as HTMLElement;
+    expect(floored.textContent).toMatch(/at least/);
+
+    const complete = container.querySelector(
+      '[data-policy-total="build-back-better"]',
+    ) as HTMLElement;
+    expect(complete.textContent).not.toMatch(/at least/);
+  });
+
+  it('leads with the Kuccha share, because it is why the choice matters', () => {
+    renderSummary();
+
+    expect(screen.getByText(/91% of the dwellings destroyed outright were/)).toBeTruthy();
+  });
+
+  it('does not let the fully-costable policy read as the best-evidenced one', () => {
+    const { container } = renderSummary();
+
+    const caveat = container.querySelector(
+      '[data-policy-caveat="protect-in-place"]',
+    ) as HTMLElement;
+    expect(caveat.textContent).toMatch(/raised plinths beneath them ARE priced/);
   });
 });

@@ -185,6 +185,57 @@ Three refusals worth recording, because each was the tempting shortcut:
 - **GST is an input, not an afterthought.** The SOR states plainly that it
   excludes GST, so leaving it out would have understated by 18%.
 
+## Amendment — reconstruction is a policy choice, and the model says so
+
+The first version costed replacement like for like and declined to cost Kuccha
+dwellings at all, noting that rebuilding them to a permanent standard "is a
+policy choice, not a valuation". That choice has since been made: reconstruction
+should mitigate future risk, so the aspiration is a Pukka dwelling even where a
+Kuccha one stood — or failing that, Pukka defences under the Kuccha one.
+
+**The measurement that makes this the dominant question.** Across the archive,
+**91.2% of the dwellings destroyed outright were Kuccha** — 3,187 of 3,494. So
+what a destroyed Kuccha house is rebuilt as moves the bill further than every
+other assumption in this codebase combined. It is modelled as a **named policy
+shown in full**, not as a constant, and not behind a selector that would let one
+be chosen without seeing the others.
+
+| Policy | Cost (central) | Uncosted | Effect on future risk |
+|---|---|---|---|
+| Like for like | ₹5.5 cr | 3,187 | Reproduces the exposure; the same flood destroys them again |
+| Protect in place | ₹21.4 cr | 3,187 | Kuccha rebuilt as Kuccha on a raised Pukka plinth |
+| Build back better | ₹78.9 cr | 0 | Removes exposure and vulnerability together |
+
+A raised plinth with apron protection costs **₹45,263 per dwelling**, about 25%
+of a full Pukka house, priced from three SOR lines (earth filling in plinth,
+plinth brickwork, Ch-19 plinth protection).
+
+**The finding worth carrying into a memorandum:** protect-in-place costs
+₹21.4 crore, against **₹41.9 crore of SDRF assistance those same 3,494 houses
+already attract**. Raising every destroyed dwelling above the flood line costs
+roughly half what is already payable for them. That is a statement about
+sequencing rather than about generosity, and it is the kind of claim this whole
+apparatus exists to make defensible.
+
+Three design consequences, each guarding a specific way this could mislead:
+
+1. **Risk effect shares a table row with cost and cannot be read without it.**
+   Split across two tables or hidden in a tooltip, the cheapest policy reads as
+   the best — when the cheapest is the one that rebuilds the vulnerability.
+2. **`protect-in-place` costs the defences under houses it cannot price.** A
+   Kuccha superstructure is not priceable from a civil-works schedule under any
+   policy, but the plinth beneath it is. That makes this the direct answer to
+   "at least build suitable defences", and a real floor rather than an empty one.
+3. **The only fully-costable policy must not read as the best-evidenced one.**
+   `build-back-better` leaves nothing uncosted purely because it rebuilds in
+   materials the schedule covers. Its caveat says so in those words: *"a fact
+   about the schedule, not a reason to choose it."* Asserted in a test.
+
+The raise height is the weakest input and admits it: the right height is the
+highest flood level at that site, which the bulletin never reports, so 0.9 m
+[0.6–1.5] is floodplain practice rather than a site figure. Per-site HFL data
+would improve this more than anything else here.
+
 ## Alternatives considered
 
 **Exempt constructed rates from ADR-0011.** Simplest. Rejected: a rule with a

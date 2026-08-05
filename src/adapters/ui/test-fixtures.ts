@@ -703,6 +703,56 @@ export const periodSummaryFixture: PeriodSummaryViewModel = {
     notCosted:
       'A Kuccha dwelling is built from bamboo, timber and thatch, so costing it from a ' +
       'civil works schedule would answer a question about a different building.',
+    kucchaSharePercent: 91,
+    plinthCentral: 45_263,
+    policies: [
+      {
+        key: 'like-for-like',
+        label: 'Like for like',
+        summary: 'Rebuild each dwelling in the material it was, at the same level.',
+        riskEffect:
+          'Reproduces the exposure that caused the loss. The next flood of the same size ' +
+          'would destroy them again.',
+        totalLow: 26_104_000,
+        totalCentral: 55_456_000,
+        totalHigh: 119_862_000,
+        uncostedDwellings: 3187,
+        isFloor: true,
+        caveat: 'This is a floor — at least this much. Nothing at all is included for them above.',
+      },
+      {
+        key: 'protect-in-place',
+        label: 'Protect in place',
+        summary: 'Rebuild Kuccha as Kuccha, but on a raised Pukka plinth.',
+        riskEffect:
+          'Removes most of the flood exposure without changing how people build. The plinth ' +
+          'outlives several rebuilds of the house on top of it.',
+        totalLow: 83_000_000,
+        totalCentral: 214_000_000,
+        totalHigh: 623_000_000,
+        uncostedDwellings: 3187,
+        isFloor: true,
+        caveat:
+          'This is a floor — at least this much. The raised plinths beneath them ARE priced ' +
+          'and are included above.',
+      },
+      {
+        key: 'build-back-better',
+        label: 'Build back better',
+        summary: 'Rebuild every destroyed dwelling to a permanent Pukka standard, raised.',
+        riskEffect:
+          'Removes the exposure and the vulnerability together. The most expensive option ' +
+          'and the only one that does not leave a known weakness in place.',
+        totalLow: 354_000_000,
+        totalCentral: 789_000_000,
+        totalHigh: 1_867_000_000,
+        uncostedDwellings: 0,
+        isFloor: false,
+        caveat:
+          'Every dwelling in the caseload is priced. That is a fact about the schedule, not ' +
+          'a reason to choose it.',
+      },
+    ],
   },
 };
 

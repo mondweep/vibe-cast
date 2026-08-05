@@ -529,6 +529,32 @@ export type PeriodReplacementViewModel = {
   readonly caveat: string;
   /** Why a Kuccha dwelling has no figure. Rendered, not hidden. */
   readonly notCosted: string;
+  /** The share of destroyed dwellings that were Kuccha — why policy dominates. */
+  readonly kucchaSharePercent: number | undefined;
+  /** Per-dwelling cost of the raised plinth, central. */
+  readonly plinthCentral: number;
+  /** All three policies, shown together. Never one, never a default that hides the rest. */
+  readonly policies: readonly PeriodPolicyViewModel[];
+};
+
+/**
+ * One reconstruction policy, costed.
+ *
+ * `riskEffect` sits alongside the cost and is never optional. A table of
+ * policies showing only money would make the cheapest look like the best, when
+ * the cheapest is precisely the one that rebuilds the vulnerability.
+ */
+export type PeriodPolicyViewModel = {
+  readonly key: string;
+  readonly label: string;
+  readonly summary: string;
+  readonly riskEffect: string;
+  readonly totalLow: number | undefined;
+  readonly totalCentral: number | undefined;
+  readonly totalHigh: number | undefined;
+  readonly uncostedDwellings: number | undefined;
+  readonly isFloor: boolean;
+  readonly caveat: string;
 };
 
 export type PeriodDerivationInputViewModel = {

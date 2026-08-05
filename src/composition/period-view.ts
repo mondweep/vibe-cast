@@ -34,6 +34,12 @@ import { integrateOverPeriod } from '../domain/timeline/stock-integral';
 import { impliedRation } from '../domain/economics/relief-adequacy';
 import { relativeWidth } from '../domain/economics/derivation';
 import { KUCCHA_NOT_COSTED, pukkaDwellingReplacement } from '../domain/economics/replacement-cost';
+import {
+  costPolicy,
+  raisedPlinthResilience,
+  RECONSTRUCTION_POLICIES,
+} from '../domain/economics/reconstruction-policy';
+import { HOUSES_FULLY_SEVERELY_KUCCHA, HOUSES_FULLY_SEVERELY_PUKKA } from '../domain/timeline/measure';
 import { HOUSES_FULLY_SEVERELY_DAMAGED } from '../domain/timeline/measure';
 import { personDays, quintals, unknownPersonDays, unknownQuintals } from '../domain/shared/quantity';
 import {
@@ -45,6 +51,7 @@ import {
 import type {
   PeriodBackTestViewModel,
   PeriodDerivationInputViewModel,
+  PeriodPolicyViewModel,
   PeriodReplacementViewModel,
   PeriodCoverageViewModel,
   PeriodExposureViewModel,
@@ -190,7 +197,28 @@ const backTestRows = (timeline: BulletinTimeline): readonly PeriodBackTestViewMo
  */
 const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel => {
   const cost = pukkaDwellingReplacement();
+  const plinth = raisedPlinthResilience();
   const houses = cumulativeOf(timeline, HOUSES_FULLY_SEVERELY_DAMAGED).total;
+  const kuccha = cumulativeOf(timeline, HOUSES_FULLY_SEVERELY_KUCCHA).total;
+  const pukka = cumulativeOf(timeline, HOUSES_FULLY_SEVERELY_PUKKA).total;
+
+  // All three, always. A selector showing one policy at a time would let the
+  // cheapest be chosen without ever seeing what it costs in future risk.
+  const policies: readonly PeriodPolicyViewModel[] = RECONSTRUCTION_POLICIES.map((policy) => {
+    const costed = costPolicy(policy, { kuccha, pukka }, cost.interval, plinth.interval);
+    return {
+      key: policy.key,
+      label: policy.label,
+      summary: policy.summary,
+      riskEffect: policy.riskEffect,
+      totalLow: costed.totalLow,
+      totalCentral: costed.totalCentral,
+      totalHigh: costed.totalHigh,
+      uncostedDwellings: costed.uncostedDwellings,
+      isFloor: costed.isFloor,
+      caveat: costed.caveat,
+    };
+  });
 
   const inputs: readonly PeriodDerivationInputViewModel[] = cost.derivation.inputs.map((input) =>
     input.kind === 'assumed'
@@ -227,6 +255,12 @@ const replacementRow = (timeline: BulletinTimeline): PeriodReplacementViewModel 
     judgementSharePercent: Math.round(relativeWidth(cost.interval) * 100),
     caveat: cost.caveat,
     notCosted: KUCCHA_NOT_COSTED,
+    kucchaSharePercent:
+      kuccha === undefined || pukka === undefined || kuccha + pukka === 0
+        ? undefined
+        : Math.round((kuccha / (kuccha + pukka)) * 100),
+    plinthCentral: plinth.interval.central,
+    policies,
   };
 };
 

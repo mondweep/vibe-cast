@@ -543,8 +543,94 @@ export const PeriodSummary = ({ summary, archive }: PeriodSummaryProps) => {
         </TableScroll>
 
         <p className="text-small text-muted" data-not-costed>
-          <strong>Kuccha dwellings are not costed here.</strong> {replacement.notCosted}
+          <strong>A Kuccha superstructure cannot be priced from this schedule.</strong>{' '}
+          {replacement.notCosted}
         </p>
+        <p className="text-small text-muted">{replacement.caveat}</p>
+      </section>
+
+      <section className="panel" aria-labelledby="policy-heading">
+        <div className="panel__head">
+          <h2 className="panel__title" id="policy-heading">
+            What to rebuild{' '}
+            <span className="figure-tag figure-tag--constructed">constructed</span>
+          </h2>
+          <span className="panel__note">
+            Reconstruction either removes the exposure or reproduces it.
+          </span>
+        </div>
+
+        <p className="text-small text-muted">
+          {replacement.kucchaSharePercent === undefined ? (
+            'The Kuccha share of destroyed dwellings was not reported.'
+          ) : (
+            <>
+              <strong>
+                {replacement.kucchaSharePercent}% of the dwellings destroyed outright were
+                Kuccha.
+              </strong>{' '}
+              So what a destroyed Kuccha house is rebuilt as moves this bill further than
+              every other assumption in the model put together. That is a decision about
+              future risk, not a modelling detail, which is why all three options are shown
+              rather than one being chosen here. A raised plinth costs{' '}
+              {money(replacement.plinthCentral)} per dwelling.
+            </>
+          )}
+        </p>
+
+        <TableScroll label="Reconstruction policy comparison table">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Policy</th>
+                <th scope="col" className="numeric">
+                  Cost
+                </th>
+                <th scope="col">Effect on future risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              {replacement.policies.map((policy) => (
+                <tr key={policy.key} data-policy={policy.key}>
+                  <th scope="row">
+                    {policy.label}
+                    <span className="text-small text-muted"> — {policy.summary}</span>
+                  </th>
+                  <td className="numeric" data-policy-total={policy.key}>
+                    {policy.totalLow === undefined ? (
+                      '—'
+                    ) : (
+                      <>
+                        {policy.isFloor ? 'at least ' : ''}
+                        {money(policy.totalLow)} – {money(policy.totalHigh)}
+                        <span className="text-small text-muted">
+                          {' '}
+                          (central {money(policy.totalCentral)})
+                        </span>
+                      </>
+                    )}
+                  </td>
+                  {/*
+                    The risk effect shares a row with the cost and cannot be
+                    read without it. Split across two tables, or hidden behind
+                    a tooltip, the cheapest policy would read as the best.
+                  */}
+                  <td className="text-small" data-policy-risk={policy.key}>
+                    {policy.riskEffect}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableScroll>
+
+        {replacement.policies.map((policy) =>
+          policy.isFloor ? (
+            <p className="text-small text-muted" key={policy.key} data-policy-caveat={policy.key}>
+              <strong>{policy.label}:</strong> {policy.caveat}
+            </p>
+          ) : null,
+        )}
         <p className="text-small text-muted">{replacement.caveat}</p>
       </section>
     </div>

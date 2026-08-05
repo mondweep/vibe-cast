@@ -95,7 +95,9 @@ export type MeasureKey =
   | 'small-animals-washed-away'
   | 'poultry-washed-away'
   | 'persons-evacuated-by-boat'
-  | 'rice-distributed';
+  | 'rice-distributed'
+  | 'houses-fully-severely-kuccha'
+  | 'houses-fully-severely-pukka';
 
 export type Measure<K extends MeasureKind = MeasureKind> = {
   readonly key: MeasureKey;
@@ -376,6 +378,36 @@ export const HOUSES_FULLY_SEVERELY_DAMAGED = measure<'flow'>({
   ),
 });
 
+/**
+ * The Kuccha/Pukka split of outright destruction, as two measures.
+ *
+ * `HOUSES_FULLY_SEVERELY_DAMAGED` sums them, and for the situation views that is
+ * the right figure — a family whose house is gone is in the same position
+ * either way. Reconstruction is where the split starts to matter, because it
+ * decides what gets rebuilt: across the bundled archive 91% of outright
+ * destruction was Kuccha, so the two are not a detail of one number, they are
+ * the number.
+ */
+export const HOUSES_FULLY_SEVERELY_KUCCHA = measure<'flow'>({
+  key: 'houses-fully-severely-kuccha',
+  label: 'Houses Damaged — Fully / Severely, Kuccha',
+  kind: 'flow',
+  unit: 'count',
+  precision: 0,
+  rationale: WITHIN_THE_DAY,
+  read: fromDistrictRows('count', (d) => d.houses.fullySeverelyKuccha),
+});
+
+export const HOUSES_FULLY_SEVERELY_PUKKA = measure<'flow'>({
+  key: 'houses-fully-severely-pukka',
+  label: 'Houses Damaged — Fully / Severely, Pukka',
+  kind: 'flow',
+  unit: 'count',
+  precision: 0,
+  rationale: WITHIN_THE_DAY,
+  read: fromDistrictRows('count', (d) => d.houses.fullySeverelyPukka),
+});
+
 export const HOUSES_PARTIALLY_DAMAGED = measure<'flow'>({
   key: 'houses-partially-damaged',
   label: 'Houses Damaged — Partially',
@@ -493,6 +525,8 @@ export const MEASURES: Readonly<Record<MeasureKey, Measure>> = {
   'poultry-washed-away': POULTRY_WASHED_AWAY,
   'persons-evacuated-by-boat': PERSONS_EVACUATED_BY_BOAT,
   'rice-distributed': RICE_DISTRIBUTED,
+  'houses-fully-severely-kuccha': HOUSES_FULLY_SEVERELY_KUCCHA,
+  'houses-fully-severely-pukka': HOUSES_FULLY_SEVERELY_PUKKA,
 };
 
 /**
