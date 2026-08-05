@@ -1,9 +1,16 @@
 # ADR-0011: Cost norms are cited, versioned, and never invented
 
-- **Status:** Accepted 2026-08-06. Two schedules are wanted — government relief
-  norms (SDRF/NDRF) *and* replacement cost — which this ADR already provides for
-  as named, switchable bases that never mix in one total. **Neither is sourced
-  yet, and until one is no rupee figure can be produced.**
+- **Status:** Accepted and implemented 2026-08-06. The SDRF schedule is sourced
+  and shipped (`src/domain/economics/norm-schedule.ts`); replacement cost is
+  still unsourced and therefore still absent, exactly as §6 requires.
+- **Sourcing outcome:** MHA F. No. 33-03/2020-NDM-I (Vol-II), 10 October 2022,
+  covering 2022-23 to 2025-26. **It expired on 31 March 2026, and the bulletins
+  are from July–August 2026.** That is one financial year beyond it — FY 2026-27
+  is the first year of the Sixteenth Finance Commission cycle, so a successor
+  almost certainly exists and could not be verified. This is the ADR's
+  `effectiveFrom`/`effectiveTo` requirement doing the exact job it was written
+  for: the model computes, and says the rates are indicative of scale rather
+  than an entitlement.
 - **Date:** 2026-08-06
 - **Context:** [`PRD-REHABILITATION-ECONOMICS.md`](../PRD-REHABILITATION-ECONOMICS.md) §3.4, §5
 - **Relates to:** ADR-0005 (unknown is not zero), ADR-0006 (severity index is user-weighted)
