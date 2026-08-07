@@ -11,6 +11,11 @@ the code and the docs disagree, the demos say so and show the evidence.
 
 This is an **orphan branch**: it shares no history with `main`.
 
+> **New here?** [**PRD.md**](PRD.md) explains how this work came about and why
+> each piece is shaped the way it is — the goals, the seven candidates and how
+> they were chosen, the decision log, and what we deliberately left out. This
+> README is the results; the PRD is the reasoning.
+
 ---
 
 ## What we did
@@ -443,6 +448,8 @@ demos/06-agents-get-closer/     cargo run -p demo-06-agents-get-closer
 demos/07-signed-hello/          cargo run -p demo-07-signed-hello
 scripts/bootstrap.sh            clones rvm to ../rvm at a pinned rev
 scripts/run-all.sh              runs every host demo in order
+web/                            the shareable demo site (see web/README.md)
+PRD.md                          why the work is shaped this way; decision log
 ```
 
 rvm is consumed as a **sibling checkout** at `../rvm`, not a git dependency:
