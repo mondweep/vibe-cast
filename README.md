@@ -96,6 +96,18 @@ rustup target add aarch64-unknown-none
 Skip this if you already know the codebase. It exists so the demo results below
 make sense without reading kernel source.
 
+<!--
+  Mermaid house rules for this file. GitHub renders mermaid with htmlLabels
+  disabled, which means:
+    * <b> and <i> inside a node label render as LITERAL TEXT, and the extra
+      width pushes the real text outside the box, where it gets clipped.
+    * keep every <br/>-separated line under ~30 characters, or narrow viewports
+      clip it.
+  So: no HTML tags in labels, no emoji, ASCII arrows only, short lines.
+  Use styles (style X fill:...) for emphasis instead of bold.
+  Verified with web/../scripts -- see the commit that introduced this note.
+-->
+
 **What RVM is trying to be.** Normally, running untrusted programs safely means
 giving each one a whole fake computer — a virtual machine, with a fake disk, fake
 network card, and its own operating system. That's heavy. RVM's bet is that AI
@@ -106,11 +118,11 @@ is machinery around those three ideas.
 
 ```mermaid
 flowchart TB
-    L4["<b>Packaging</b> — what may run at all<br/><br/>rvm-rvf · rvm-host · rvm-launch"]
-    L3["<b>Adaptation</b> — should the boxes be rearranged?<br/><br/>rvm-coherence · rvm-wasm"]
-    L2["<b>Runtime</b> — boxes, turns and space<br/><br/>rvm-partition · rvm-sched · rvm-memory"]
-    L1["<b>Trust</b> — may this happen, and who saw it?<br/><br/>rvm-cap · rvm-witness · rvm-proof · rvm-security"]
-    L0["<b>Ground</b> — the machine itself<br/><br/>rvm-hal · rvm-boot · rvm-types"]
+    L4["PACKAGING<br/>what may run at all<br/>rvm-rvf . rvm-host . rvm-launch"]
+    L3["ADAPTATION<br/>should boxes be rearranged?<br/>rvm-coherence . rvm-wasm"]
+    L2["RUNTIME<br/>boxes, turns and space<br/>rvm-partition . rvm-sched<br/>rvm-memory"]
+    L1["TRUST<br/>may this happen? who saw it?<br/>rvm-cap . rvm-witness<br/>rvm-proof . rvm-security"]
+    L0["GROUND<br/>the machine itself<br/>rvm-hal . rvm-boot . rvm-types"]
     L4 --> L3 --> L2 --> L1 --> L0
     style L4 fill:#e8f0ff,stroke:#4a6fa5
     style L3 fill:#fff0e8,stroke:#a5744a
@@ -175,13 +187,15 @@ find out what each one actually covers.
 
 ```mermaid
 flowchart LR
-    T1["Someone edits<br/><b>what a record says</b><br/>'world' → 'pwned'"] --> C1{"Chain check"}
-    C1 -->|"passes ✅<br/><b>does not notice</b>"| X1["🔴 missed"]
+    T1["Edit what a<br/>record SAYS"] --> C1{"Chain check"}
     T1 --> S1{"Signature check"}
-    S1 -->|"fails ❌"| Y1["🟢 caught"]
-
-    T2["Someone reorders or<br/><b>renumbers records</b>"] --> C2{"Chain check"}
-    C2 -->|"fails ❌"| Y2["🟢 caught"]
+    C1 -->|passes| X1["MISSED"]
+    S1 -->|fails| Y1["caught"]
+    T2["REORDER or<br/>renumber records"] --> C2{"Chain check"}
+    C2 -->|fails| Y2["caught"]
+    style X1 fill:#ffe0e0,stroke:#c00
+    style Y1 fill:#e0ffe0,stroke:#0a0
+    style Y2 fill:#e0ffe0,stroke:#0a0
 ```
 
 **The point:** the hash chain proves records are *in the right order*, not that
@@ -193,14 +207,17 @@ log an attacker can silently rewrite. That's finding 1.
 
 ```mermaid
 flowchart TB
-    H["🏛️ Hypervisor<br/><i>the only one who can mint</i>"]
-    R["🔑 Root key<br/>READ + WRITE + GRANT"]
-    A["🔑 Agent's key<br/>READ only"]
+    H["Hypervisor<br/>the only minter"]
+    R["Root key<br/>READ WRITE GRANT"]
+    A["Agent key<br/>READ only"]
     H -->|mints| R
-    R -->|"hands on a weaker copy"| A
-    A -->|"tries to read"| OK["✅ allowed"]
-    A -->|"tries to write"| NO["❌ refused<br/><i>and the refusal is logged</i>"]
-    A -->|"tries to give itself WRITE"| NO2["❌ refused<br/><i>can't hand on what you don't hold</i>"]
+    R -->|"weaker copy"| A
+    A -->|reads| OK["allowed"]
+    A -->|writes| NO["refused<br/>and logged"]
+    A -->|"self-grants WRITE"| NO2["refused<br/>cannot exceed<br/>what you hold"]
+    style OK fill:#e0ffe0,stroke:#0a0
+    style NO fill:#ffe0e0,stroke:#c00
+    style NO2 fill:#ffe0e0,stroke:#c00
 ```
 
 **The point:** authority only ever shrinks as it's passed along. An agent cannot
@@ -215,9 +232,9 @@ the ability, automatically. We watched the right disappear after a single use.
 
 ```mermaid
 flowchart LR
-    Q1["<b>P1</b><br/>Is this badge<br/>real and current,<br/>and does it open<br/>this door?"]
-    Q2["<b>P2</b><br/>Is this request<br/>legal right now?<br/>Right person, in<br/>bounds, not expired,<br/>not a repeat?"]
-    Q3["<b>P3</b><br/>Did whoever issued<br/>this badge actually<br/>have the authority,<br/>all the way up?"]
+    Q1["P1<br/>Is the badge real<br/>and current, and<br/>does it open<br/>this door?"]
+    Q2["P2<br/>Is the request<br/>legal right now?<br/>Right person,<br/>in bounds,<br/>not expired,<br/>not a repeat?"]
+    Q3["P3<br/>Did the issuer<br/>actually have<br/>the authority,<br/>all the way up?"]
     Q1 --- Q2 --- Q3
 ```
 
@@ -233,12 +250,16 @@ RVM's pitch is: *when two agents talk more, RVM moves them closer together.*
 
 ```mermaid
 flowchart TB
-    START["Two agents start<br/>talking a lot more"] --> P["Their traffic is<br/><b>cross-box</b> traffic"]
-    P --> PRESSURE["'Cut pressure' measures<br/>traffic leaving the box<br/>as a share of all traffic<br/>→ so it goes <b>UP</b>"]
-    PRESSURE --> DEC{"The engine decides"}
-    DEC -->|"pressure over the limit"| SPLIT["🔪 <b>SPLIT them apart</b><br/><i>this is what happens</i>"]
-    DEC -.->|"never reached"| MERGE["🤝 Merge them together<br/><i>what the pitch describes</i>"]
-    SPLIT --> WHY["Merge is checked <b>after</b> split,<br/>and the code returns as soon<br/>as it finds a split candidate"]
+    START["Two agents talk<br/>a lot more"]
+    P["That traffic is<br/>cross-box traffic"]
+    PRESSURE["Cut pressure counts<br/>traffic leaving the box<br/>as a share of all of it<br/>so it goes UP"]
+    START --> P --> PRESSURE
+    PRESSURE --> DEC{"Engine decides"}
+    DEC -->|"over the limit"| SPLIT["SPLIT them apart<br/>what actually happens"]
+    DEC -.->|"never reached"| MERGE["Merge them together<br/>what the pitch says"]
+    SPLIT --> WHY["Merge is checked after<br/>split, and the code stops<br/>at the first split it finds"]
+    style SPLIT fill:#ffe0e0,stroke:#c00
+    style MERGE fill:#eeeeee,stroke:#999
 ```
 
 #### First, what "external weight" means
@@ -249,13 +270,13 @@ partition has two kinds of line:
 
 ```mermaid
 flowchart LR
-    subgraph BoxA["Agent A's box"]
-        AW["work it does alone<br/><b>INTERNAL weight</b>"]
+    subgraph BoxA["Agent A box"]
+        AW["work done alone<br/>INTERNAL weight"]
     end
-    subgraph BoxB["Agent B's box"]
-        BW["work it does alone<br/><b>INTERNAL weight</b>"]
+    subgraph BoxB["Agent B box"]
+        BW["work done alone<br/>INTERNAL weight"]
     end
-    BoxA <== "traffic between the boxes<br/><b>EXTERNAL weight — counted for both</b>" ==> BoxB
+    BoxA <== "traffic between boxes<br/>EXTERNAL weight<br/>counted for BOTH" ==> BoxB
     style AW fill:#e8ffe8,stroke:#4aa54a
     style BW fill:#e8ffe8,stroke:#4aa54a
 ```
@@ -288,15 +309,15 @@ figure**, because two functions disagree about how to count a self-loop:
 
 ```mermaid
 flowchart TB
-    SELF["Agent A's own private work<br/><b>weight 100</b><br/><i>a loop from A back to A</i>"]
-    SELF --> OUT["counts as OUTGOING: 100"]
-    SELF --> INC["counts as INCOMING: 100"]
-    OUT --> TOT["<b>total_weight = 200</b><br/><i>outgoing + incoming<br/>— counts the loop TWICE</i>"]
+    SELF["A partition's own work<br/>a self-loop, weight 100"]
+    SELF --> OUT["counts as OUTGOING<br/>100"]
+    SELF --> INC["counts as INCOMING<br/>100"]
+    OUT --> TOT["total_weight = 200<br/>counts the loop TWICE"]
     INC --> TOT
-    SELF --> INT["<b>internal_weight = 100</b><br/><i>— counts the loop ONCE</i>"]
-    TOT --> EXT["external = total − internal<br/>= 200 − 100 = <b>100</b>"]
+    SELF --> INT["internal_weight = 100<br/>counts the loop ONCE"]
+    TOT --> EXT["external = 200 - 100<br/>= 100"]
     INT --> EXT
-    EXT --> P["cut pressure = 100 ÷ 200 = <b>50%</b><br/>for a partition talking to <b>nobody</b>"]
+    EXT --> P["cut pressure = 50%<br/>for a partition that<br/>talks to NOBODY"]
     style P fill:#ffe0e0,stroke:#c00
     style TOT fill:#fff3cd,stroke:#a80
 ```
@@ -347,15 +368,15 @@ That's finding 2, and it's the most significant thing we found.
 
 ```mermaid
 flowchart LR
-    PKG["📦 Signed<br/>package"] --> V{"Verification"}
-    V --> C1["Is the file intact?"]
-    V --> C2["Is there a manifest?"]
-    V --> C3["Do contents match<br/>their fingerprints?"]
-    V --> C4["Is the code signed?"]
+    PKG["Signed package"] --> V{"Verification"}
+    V --> C1["File intact?"]
+    V --> C2["Manifest present?"]
+    V --> C3["Contents match<br/>fingerprints?"]
+    V --> C4["Code signed?"]
     V --> C5["Signed by someone<br/>we trust?"]
     V --> C6["Within size limits?"]
-    V --> C7["What permissions<br/>does it ask for?"]
-    C1 & C2 & C3 & C4 & C5 & C6 & C7 --> OUT["📋 A report:<br/>pass / fail / skipped<br/><b>per check</b>"]
+    V --> C7["What permissions<br/>requested?"]
+    C1 & C2 & C3 & C4 & C5 & C6 & C7 --> OUT["A report:<br/>pass / fail / skipped<br/>per check"]
 ```
 
 **The point:** we broke the package six different ways — altered the code,
@@ -709,12 +730,12 @@ work is silently classified as external traffic:
 
 ```mermaid
 flowchart LR
-    L["self-loop<br/>weight <b>W</b>"] --> A["cached_outgoing<br/>+W"]
-    L --> B["cached_incoming<br/>+W"]
-    A --> T["total_weight = <b>2W</b>"]
+    L["self-loop<br/>weight W"] --> A["cached_outgoing<br/>plus W"]
+    L --> B["cached_incoming<br/>plus W"]
+    A --> T["total_weight<br/>= 2W"]
     B --> T
-    L --> I["internal_weight = <b>W</b>"]
-    T --> E["external = 2W − W = <b>W</b><br/><i>but the true external is 0</i>"]
+    L --> I["internal_weight<br/>= W"]
+    T --> E["external = 2W - W = W<br/>true external is 0"]
     I --> E
     style E fill:#ffe0e0,stroke:#c00
 ```
