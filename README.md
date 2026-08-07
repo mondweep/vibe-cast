@@ -249,49 +249,90 @@ partition has two kinds of line:
 
 ```mermaid
 flowchart LR
-    A(("Agent A")) -- "conversation with B<br/><b>EXTERNAL</b>" --> B(("Agent B"))
-    B -- "conversation with A<br/><b>EXTERNAL</b>" --> A
-    A -. "its own work<br/><b>INTERNAL</b>" .-> A
-    B -. "its own work<br/><b>INTERNAL</b>" .-> B
+    subgraph BoxA["Agent A's box"]
+        AW["work it does alone<br/><b>INTERNAL weight</b>"]
+    end
+    subgraph BoxB["Agent B's box"]
+        BW["work it does alone<br/><b>INTERNAL weight</b>"]
+    end
+    BoxA <== "traffic between the boxes<br/><b>EXTERNAL weight — counted for both</b>" ==> BoxB
+    style AW fill:#e8ffe8,stroke:#4aa54a
+    style BW fill:#e8ffe8,stroke:#4aa54a
 ```
 
-- **Internal weight** — work a partition does by itself, needing nobody. Drawn
-  as a loop back to itself.
-- **External weight** — traffic to *other* partitions. Its share of the
-  conversation with the outside world.
+- **Internal weight** — work a partition does by itself, needing nobody. In the
+  graph this is an edge from the partition back to itself, a *self-loop*.
+- **External weight** — traffic to *other* partitions. Note that traffic between
+  two agents is external **for both of them** — that fact is what drives
+  finding 2 below.
 
-**Cut pressure** is simply `external ÷ (external + internal)`, as a percentage.
-It answers: *"of everything this box does, how much of it involves reaching
-outside?"* The name comes from imagining you cut this box away from the rest —
-how much traffic would you be severing? Above 80%, the engine flags it for
-splitting, on the logic that a box mostly talking outward is badly placed.
+**Cut pressure** is meant to be `external ÷ (external + internal)`, as a
+percentage. It answers: *"of everything this box does, how much of it involves
+reaching outside?"* The name comes from imagining you cut this box away from
+the rest — how much traffic would you be severing? Above 80%, the engine flags
+it for splitting, on the logic that a box mostly talking outward is badly
+placed.
 
-Here are **measured** values from the real engine (not a model — these come
-from `rvm-coherence` itself, with one partition doing 100 units of its own work):
+So on the intended reading:
 
-| Talk with the other agent | Cut pressure | Verdict |
-|---|---|---|
-| 0 — completely alone | **50.0%** | *see below* |
-| 10 — barely | 52.0% | fine |
-| 100 | 66.5% | fine |
-| 200 | 75.0% | fine |
-| 400 | 83.3% | **split!** |
-| 900 | 90.9% | **split!** |
-| 2000 | 95.5% | **split!** |
+| Situation | Expected pressure |
+|---|---|
+| Works entirely alone | 0% — nothing to sever |
+| Half its traffic goes outside | 50% |
+| Talks only to others, never works alone | 100% — split it |
 
-Read the bottom rows first: **the closer two agents get, the more the system
-wants to separate them.** "These two are inseparable" and "this box is badly
-placed" are the same number, and the split rule only ever reads it one way.
+#### What the code actually computes
 
-Now read the top row. A partition talking to *nobody* should be at 0% — the
-crate's own documentation says so. It measures 50%. That is finding 10 below,
-and we only noticed it because we sat down to write this explanation and the
-arithmetic wouldn't come out.
+It doesn't do that. A partition's own private work **leaks into the external
+figure**, because two functions disagree about how to count a self-loop:
 
-And the merge test has the same problem in mirror image: for two partitions to
-look worth merging, nearly all of both their traffic has to be with each other
-— exactly the condition that pushes cut pressure to its maximum. So whenever
-the merge test says yes, the split test has already said yes louder.
+```mermaid
+flowchart TB
+    SELF["Agent A's own private work<br/><b>weight 100</b><br/><i>a loop from A back to A</i>"]
+    SELF --> OUT["counts as OUTGOING: 100"]
+    SELF --> INC["counts as INCOMING: 100"]
+    OUT --> TOT["<b>total_weight = 200</b><br/><i>outgoing + incoming<br/>— counts the loop TWICE</i>"]
+    INC --> TOT
+    SELF --> INT["<b>internal_weight = 100</b><br/><i>— counts the loop ONCE</i>"]
+    TOT --> EXT["external = total − internal<br/>= 200 − 100 = <b>100</b>"]
+    INT --> EXT
+    EXT --> P["cut pressure = 100 ÷ 200 = <b>50%</b><br/>for a partition talking to <b>nobody</b>"]
+    style P fill:#ffe0e0,stroke:#c00
+    style TOT fill:#fff3cd,stroke:#a80
+```
+
+One spare copy of the partition's own work gets filed as traffic to the outside
+world. This is **finding 10** below.
+
+#### The measured numbers
+
+Taken from `rvm-coherence` itself — not a model — with each partition doing 100
+units of its own work:
+
+| Talk with the other agent | Cut pressure | Expected on the intended reading | Verdict |
+|---|---|---|---|
+| 0 — completely alone | **50.0%** | 0% | *wrong* |
+| 10 — barely | 52.0% | 7.8% | fine |
+| 100 | 66.5% | 49.7% | fine |
+| 200 | 75.0% | 66.7% | fine |
+| 400 | 83.3% | 80.0% | **split!** |
+| 900 | 90.9% | 90.0% | **split!** |
+| 2000 | 95.5% | 95.2% | **split!** |
+
+Two separate things to take from this table.
+
+**The bottom rows are finding 2.** The closer two agents get, the more the
+system wants to separate them. "These two are inseparable" and "this box is
+badly placed" are the same number, and the split rule only ever reads it one
+way. The merge test has the same problem in mirror image: for two partitions to
+look worth merging, nearly all of both their traffic must be with each other —
+exactly the condition that pushes cut pressure to its maximum. So whenever the
+merge test says yes, the split test has already said yes louder.
+
+**The top row is finding 10.** A partition talking to nobody should read 0%.
+It reads 50%, and the error shrinks as real external traffic grows, which is
+why it hides so well — at the thresholds that matter it is only a few points
+off, and nothing downstream looks obviously broken.
 
 **The point:** talking more makes the system want to pull them *apart*, not push
 them together. We didn't want to claim that from one example, so the demo tries
@@ -664,7 +705,24 @@ wouldn't reconcile, which turned out to be the code's fault rather than ours.
 self-loop is both outgoing and incoming, so it is counted **twice**.
 `internal_weight` scans for `from == to` and counts it **once**. Cut pressure is
 `(total − internal) / total`, so one spare copy of the partition's own internal
-work is silently classified as external traffic.
+work is silently classified as external traffic:
+
+```mermaid
+flowchart LR
+    L["self-loop<br/>weight <b>W</b>"] --> A["cached_outgoing<br/>+W"]
+    L --> B["cached_incoming<br/>+W"]
+    A --> T["total_weight = <b>2W</b>"]
+    B --> T
+    L --> I["internal_weight = <b>W</b>"]
+    T --> E["external = 2W − W = <b>W</b><br/><i>but the true external is 0</i>"]
+    I --> E
+    style E fill:#ffe0e0,stroke:#c00
+```
+
+The error is largest exactly where it matters least noticed: at zero external
+traffic it is the whole answer (50% instead of 0%), and it shrinks toward
+nothing as real external traffic grows. At the 80% split threshold the reading
+is only ~3 points high — wrong, but not obviously so.
 
 Measured, with `rvm-coherence` directly:
 

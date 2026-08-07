@@ -121,6 +121,10 @@ The same loop for each demo, and the ordering matters:
    demo was rewritten around the observed behaviour.
 4. **Verify every surprise before reporting it.** A single failing case is an
    anecdote. See §8.
+5. **Check the explanation too.** Findings 10 came out of writing documentation,
+   not running code: the worked example for a non-technical reader was validated
+   against the engine before publishing, and did not match. Explaining a thing
+   simply is its own test of whether it works.
 
 Step 3 is the one that did real work. Two demos changed shape:
 
@@ -158,7 +162,20 @@ pressures climb — and above the threshold the engine recommends *splitting*
 them. See the worked example in
 [README §What each demo actually showed](README.md#demo-6--the-headline-claim-and-why-it-doesnt-happen).
 
-A single counterexample would have been weak — perhaps we picked bad weights.
+**Finding 10 — cut pressure double-counts self-loops.** Worth recording *how*
+this one surfaced, because it validates the method in §6 from an unexpected
+direction. It did not come from running a demo. It came from writing the
+plain-language explanation of "external weight" for a non-technical reader: the
+illustrative numbers were checked against the engine before publishing, and they
+did not reconcile. The code was wrong, not the arithmetic. `total_weight` sums
+outgoing and incoming, so a self-loop counts twice, while `internal_weight`
+counts it once — one copy of a partition's own work is filed as external
+traffic. An isolated partition with a self-loop and no neighbours reads 50%
+cut pressure where `pressure.rs` says it should read 0%. It compounds finding 2:
+inflating every partition's pressure pushes the already-unreachable merge window
+further out of reach.
+
+**On finding 2's evidence.** A single counterexample would have been weak — perhaps we picked bad weights.
 So demo 6 sweeps 4,032 points of the two-partition weight space. `recommend()`
 returns `MergeRecommended` **zero** times; the underlying merge signal is set
 and then discarded in **1,244**. The arithmetic explains it: mutual coherence
