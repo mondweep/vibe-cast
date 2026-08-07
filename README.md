@@ -107,6 +107,10 @@ make sense without reading kernel source.
     * no <br/>, no <b>/<i>, no emoji, ASCII arrows only
     * emphasis via `style X fill:...`, never via markup
     * detail that will not fit belongs in the prose around the diagram
+    3. A diagram taller than roughly 420px is CLIPPED VERTICALLY by GitHub's
+       viewer. Prefer `flowchart LR` over `TB`, keep the rank count low, and
+       turn anything that is really a list into a markdown table -- tables
+       never clip. Measure height before committing.
   Rendering locally with default settings will NOT reproduce either failure --
   check with htmlLabels:false and no <br/> support before trusting it.
 -->
@@ -120,13 +124,8 @@ logbook by the door.* Its box is called a **partition**, the lock is a
 is machinery around those three ideas.
 
 ```mermaid
-flowchart TB
-    L4["PACKAGING: what may run"]
-    L3["ADAPTATION: rearrange?"]
-    L2["RUNTIME: boxes and turns"]
-    L1["TRUST: may this happen?"]
-    L0["GROUND: the machine"]
-    L4 --> L3 --> L2 --> L1 --> L0
+flowchart LR
+    L0["GROUND: the machine"] --> L1["TRUST: may this happen?"] --> L2["RUNTIME: boxes and turns"] --> L3["ADAPTATION: rearrange?"] --> L4["PACKAGING: what may run"]
     style L4 fill:#e8f0ff,stroke:#4a6fa5
     style L3 fill:#fff0e8,stroke:#a5744a
     style L2 fill:#e8ffe8,stroke:#4aa54a
@@ -200,16 +199,20 @@ find out what each one actually covers.
 
 ```mermaid
 flowchart LR
-    T1["Edit a record's content"] --> C1{"Chain check"}
-    T1 --> S1{"Signature check"}
-    C1 -->|passes| X1["MISSED"]
-    S1 -->|fails| Y1["caught"]
-    T2["Reorder or renumber"] --> C2{"Chain check"}
-    C2 -->|fails| Y2["caught"]
-    style X1 fill:#ffe0e0,stroke:#c00
-    style Y1 fill:#e0ffe0,stroke:#0a0
-    style Y2 fill:#e0ffe0,stroke:#0a0
+    A["Edit what a record says"] --> B{"Chain check"}
+    A --> C{"Signature check"}
+    B -->|passes| D["MISSED"]
+    C -->|fails| E["caught"]
+    style D fill:#ffe0e0,stroke:#c00
+    style E fill:#e0ffe0,stroke:#0a0
 ```
+
+Both tampering attempts against both protections:
+
+| What the attacker does | Chain check | Signature check |
+|---|---|---|
+| Edits **what a record says** | passes — **misses it** | fails — caught |
+| **Reorders or renumbers** records | fails — caught | fails — caught |
 
 **The point:** the hash chain proves records are *in the right order*, not that
 their *contents* are unchanged — even though its documentation says otherwise.
@@ -219,12 +222,9 @@ log an attacker can silently rewrite. That's finding 1.
 ### Demo 2 — keys that can only ever get weaker
 
 ```mermaid
-flowchart TB
-    H["Hypervisor: the only minter"]
-    R["Root key: READ WRITE GRANT"]
-    A["Agent key: READ only"]
-    H -->|mints| R
-    R -->|"weaker copy"| A
+flowchart LR
+    H["Hypervisor: only minter"] -->|mints| R["Root: READ WRITE GRANT"]
+    R -->|"weaker copy"| A["Agent: READ only"]
     A -->|reads| OK["allowed"]
     A -->|writes| NO["refused, and logged"]
     A -->|"self-grants WRITE"| NO2["refused: cannot exceed"]
@@ -270,15 +270,12 @@ times inside their budget.
 RVM's pitch is: *when two agents talk more, RVM moves them closer together.*
 
 ```mermaid
-flowchart TB
-    START["Two agents talk more"]
-    P["That traffic is cross-box"]
-    PRESSURE["So cut pressure goes UP"]
-    START --> P --> PRESSURE
+flowchart LR
+    START["Two agents talk more"] --> P["Traffic is cross-box"]
+    P --> PRESSURE["Cut pressure goes UP"]
     PRESSURE --> DEC{"Engine decides"}
     DEC -->|"over the limit"| SPLIT["SPLIT them apart"]
     DEC -.->|"never reached"| MERGE["Merge them together"]
-    SPLIT --> WHY["Split is checked first"]
     style SPLIT fill:#ffe0e0,stroke:#c00
     style MERGE fill:#eeeeee,stroke:#999
 ```
@@ -329,17 +326,15 @@ It doesn't do that. A partition's own private work **leaks into the external
 figure**, because two functions disagree about how to count a self-loop:
 
 ```mermaid
-flowchart TB
-    SELF["Self-loop, weight 100"]
-    SELF --> OUT["OUTGOING gets 100"]
+flowchart LR
+    SELF["Self-loop, weight 100"] --> OUT["OUTGOING gets 100"]
     SELF --> INC["INCOMING gets 100"]
     OUT --> TOT["total_weight = 200"]
     INC --> TOT
     SELF --> INT["internal_weight = 100"]
-    TOT --> EXT["external = 200 - 100"]
+    TOT --> EXT["external = 100, truly 0"]
     INT --> EXT
-    EXT --> P["cut pressure = 50%"]
-    style P fill:#ffe0e0,stroke:#c00
+    style EXT fill:#ffe0e0,stroke:#c00
     style TOT fill:#fff3cd,stroke:#a80
 ```
 
@@ -394,16 +389,26 @@ That's finding 2, and it's the most significant thing we found.
 
 ```mermaid
 flowchart LR
-    PKG["Signed package"] --> V{"Verification"}
-    V --> C1["File intact?"]
-    V --> C2["Manifest present?"]
-    V --> C3["Contents match hashes?"]
-    V --> C4["Code signed?"]
-    V --> C5["Signed by a trusted key?"]
-    V --> C6["Within size limits?"]
-    V --> C7["What permissions asked?"]
-    C1 & C2 & C3 & C4 & C5 & C6 & C7 --> OUT["Report: pass/fail/skipped"]
+    PKG["Signed package"] --> V{"Seven checks"} --> OUT["Report per check"]
+    OUT --> PASS["pass"]
+    OUT --> FAIL["fail"]
+    OUT --> SKIP["skipped"]
+    style PASS fill:#e0ffe0,stroke:#0a0
+    style FAIL fill:#ffe0e0,stroke:#c00
+    style SKIP fill:#fff3cd,stroke:#a80
 ```
+
+The seven checks, each reported separately:
+
+| # | Check |
+|---|---|
+| 1 | Is the container's identity what we expected? |
+| 2 | Is a root manifest present? |
+| 3 | Do the contents match the fingerprints in their headers? |
+| 4 | Is executable code signed at all? |
+| 5 | Does the signature verify against a key we trust? |
+| 6 | Does it fit inside the size policy? |
+| 7 | Do its declared permissions map to real rights? |
 
 **The point:** we broke the package six different ways — altered the code,
 altered the signature, corrupted the header, rewrote the requested permissions,
