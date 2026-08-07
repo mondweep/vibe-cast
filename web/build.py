@@ -49,6 +49,7 @@ FINDINGS = [
     (7, "report.capabilities stays populated on a failed report", "trap", "07"),
     (8, "The ~17ns witness figure is the FNV-1a path", "docs", "01"),
     (9, "Two capability claims are narrower than they sound", "docs", "05"),
+    (10, "Cut pressure double-counts self-loops (isolated partition reads 50%)", "correctness", "06"),
 ]
 
 # ANSI SGR -> css class
@@ -246,7 +247,7 @@ footer a{color:var(--accent)}
     <span class="chip">host <b>x86-64 Linux</b></span>
     <span class="chip">bare metal <b>aarch64-unknown-none</b></span>
     <span class="chip">demos <b>7 / 7 passing</b></span>
-    <span class="chip">findings <b>9</b></span>
+    <span class="chip">findings <b>10</b></span>
   </div>
 </header>
 

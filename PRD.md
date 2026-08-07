@@ -140,18 +140,23 @@ Step 3 is the one that did real work. Two demos changed shape:
 | A2 | Workspace compiles with zero warnings | Clean |
 | A3 | Demo 4 boots under QEMU and prints | Boots, 7 phases witnessed, chain verifies |
 | A4 | Every reported number reproducible by re-running | `scripts/run-all.sh` |
-| A5 | Findings cite a specific file and are independently checkable | 9/9 |
+| A5 | Findings cite a specific file and are independently checkable | 10/10 |
 | A6 | Results viewable without a Rust toolchain | [`web/`](web/) on Netlify or Cloud Run |
 
 ## 8. Findings — and how each was established
 
-Nine findings, in [README.md §Findings](README.md#findings). The two that took
-real work to establish:
+Ten findings, in [README.md §Findings](README.md#findings). The two that took
+the most work to establish:
 
 **Finding 2 — the coherence engine's merge path never fires.** RVM's headline
 claim is *"when two agents start talking more, RVM moves them closer."*
-Observed behaviour is the reverse: cross-partition traffic is external weight,
-cut pressure is `external/total`, so talking more triggers a *split*.
+Observed behaviour is the reverse. Each partition's traffic splits into
+*internal* (work it does alone) and *external* (traffic to other partitions);
+cut pressure is `external / (internal + external)`. Traffic between two agents
+is external **for both**, so the more they talk, the higher both their
+pressures climb — and above the threshold the engine recommends *splitting*
+them. See the worked example in
+[README §What each demo actually showed](README.md#demo-6--the-headline-claim-and-why-it-doesnt-happen).
 
 A single counterexample would have been weak — perhaps we picked bad weights.
 So demo 6 sweeps 4,032 points of the two-partition weight space. `recommend()`

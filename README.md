@@ -39,7 +39,7 @@ The method for each demo was the same:
    confirmed by patching rvm and watching it boot. The coherence finding was
    confirmed by an exhaustive sweep, not a single failing case.
 
-Total: ~1,800 lines of demo code across seven crates, and 9 findings.
+Total: ~1,800 lines of demo code across seven crates, and 10 findings.
 
 ### Environment
 
@@ -88,6 +88,246 @@ Demo 4 additionally needs:
 sudo apt-get install -y qemu-system-arm
 rustup target add aarch64-unknown-none
 ```
+
+---
+
+## The parts of RVM, in plain language
+
+Skip this if you already know the codebase. It exists so the demo results below
+make sense without reading kernel source.
+
+**What RVM is trying to be.** Normally, running untrusted programs safely means
+giving each one a whole fake computer — a virtual machine, with a fake disk, fake
+network card, and its own operating system. That's heavy. RVM's bet is that AI
+agents don't need a fake computer; they need *a box with a lock on it and a
+logbook by the door.* Its box is called a **partition**, the lock is a
+**capability**, and the logbook is the **witness log**. Almost everything else
+is machinery around those three ideas.
+
+```mermaid
+flowchart TB
+    L4["<b>Packaging</b> — what may run at all<br/><br/>rvm-rvf · rvm-host · rvm-launch"]
+    L3["<b>Adaptation</b> — should the boxes be rearranged?<br/><br/>rvm-coherence · rvm-wasm"]
+    L2["<b>Runtime</b> — boxes, turns and space<br/><br/>rvm-partition · rvm-sched · rvm-memory"]
+    L1["<b>Trust</b> — may this happen, and who saw it?<br/><br/>rvm-cap · rvm-witness · rvm-proof · rvm-security"]
+    L0["<b>Ground</b> — the machine itself<br/><br/>rvm-hal · rvm-boot · rvm-types"]
+    L4 --> L3 --> L2 --> L1 --> L0
+    style L4 fill:#e8f0ff,stroke:#4a6fa5
+    style L3 fill:#fff0e8,stroke:#a5744a
+    style L2 fill:#e8ffe8,stroke:#4aa54a
+    style L1 fill:#ffe8f0,stroke:#a54a6f
+    style L0 fill:#f0f0f0,stroke:#777
+```
+
+### Every crate, one line each
+
+The **Verified** column is the honest part: seven demos do not cover seventeen
+crates. "used" means our code called it and we watched what it did. "read only"
+means we read the source but never exercised it, so nothing in this repo tests
+those claims.
+
+| Crate | What it does | Demo | Verified |
+|---|---|---|---|
+| `rvm-types` | The shared vocabulary — IDs, rights, the 64-byte record layout. Every other crate depends on it | all | used |
+| `rvm-hal` | Talks to actual hardware: memory mapping, timers, interrupts, the serial port | 4 | used |
+| `rvm-cap` | **The keys.** Issues unforgeable tokens, tracks who gave what to whom, enforces that you can never hand on more than you hold | 2, 3 | used |
+| `rvm-witness` | **The logbook.** Every privileged action writes a 64-byte record, chained to the one before it. Core rule: *no witness, no mutation* | 1, 4, 5, 7 | used |
+| `rvm-proof` | Proof-gated state changes and hardware-backed signing | — | read only |
+| `rvm-security` | **The gate.** One door that checks the key, checks the proof, and writes the logbook entry — for allowed *and* refused attempts | 2, 3 | used |
+| `rvm-partition` | **The boxes.** Creating them, and the one-way channels they message each other over | 5 | used |
+| `rvm-sched` | Whose turn to run. Priority = deadline urgency + how badly a partition wants to be somewhere else | 5 | used |
+| `rvm-memory` | Four tiers from hot SRAM down to cold archive, with rebuild-on-demand | — | read only |
+| `rvm-coherence` | **The interesting one.** Watches who talks to whom and decides whether boxes should merge or split | 6 | used |
+| `rvm-boot` | Startup in seven ordered phases, each one logged before the next begins | 4 | used |
+| `rvm-wasm` | Checks WebAssembly modules are well-formed and tracks agent lifecycle states | 6 | used |
+| `rvm-rvf` | The bouncer for packaged agents: signature, contents, declared permissions | 7 | used |
+| `rvm-gpu` | Optional GPU compute with per-partition budgets | — | read only |
+| `rvm-host` | What a verified artifact actually runs inside | — | read only |
+| `rvm-launch` | Driving one instance through create → start → suspend → checkpoint → terminate | — | read only |
+| `rvm-kernel` | Wires all of the above into one API and one bootable binary | 4 (indirectly) | see finding 3 |
+
+### One trap worth knowing before you read the code
+
+**There are two different things called `ProofTier`, and a third meaning of
+"tier" on top.** If you go looking, this will cost you an hour:
+
+| Where | Values | Meaning |
+|---|---|---|
+| `rvm_types::ProofTier` | `P1`, `P2`, `P3` | How deeply we checked (the one demo 3 is about) |
+| `rvm_proof::ProofTier` | `Hash`, `Witness`, `Zk` | What *kind* of cryptographic proof accompanies a change |
+| `rvm-security`'s gate | `1`, `2`, `3` | A label the gate stamps on its own log entries |
+
+Same word, three unrelated scales. Also note `rvm-cap`'s own header table lists
+P3 as *"Deferred"*, and its error type still carries `P3NotImplemented` — but
+`verify_p3` is implemented and passes in demo 3. The doc comment is stale.
+
+---
+
+## What each demo actually showed
+
+Five pictures for the results that are hard to see from a wall of terminal
+output. Full transcripts are under [Results](#results).
+
+### Demo 1 — two locks on the logbook, and one is weaker than it looks
+
+The audit log has two independent protections. We tampered with it two ways to
+find out what each one actually covers.
+
+```mermaid
+flowchart LR
+    T1["Someone edits<br/><b>what a record says</b><br/>'world' → 'pwned'"] --> C1{"Chain check"}
+    C1 -->|"passes ✅<br/><b>does not notice</b>"| X1["🔴 missed"]
+    T1 --> S1{"Signature check"}
+    S1 -->|"fails ❌"| Y1["🟢 caught"]
+
+    T2["Someone reorders or<br/><b>renumbers records</b>"] --> C2{"Chain check"}
+    C2 -->|"fails ❌"| Y2["🟢 caught"]
+```
+
+**The point:** the hash chain proves records are *in the right order*, not that
+their *contents* are unchanged — even though its documentation says otherwise.
+Only the signature covers contents. A deployment that skips signing has an audit
+log an attacker can silently rewrite. That's finding 1.
+
+### Demo 2 — keys that can only ever get weaker
+
+```mermaid
+flowchart TB
+    H["🏛️ Hypervisor<br/><i>the only one who can mint</i>"]
+    R["🔑 Root key<br/>READ + WRITE + GRANT"]
+    A["🔑 Agent's key<br/>READ only"]
+    H -->|mints| R
+    R -->|"hands on a weaker copy"| A
+    A -->|"tries to read"| OK["✅ allowed"]
+    A -->|"tries to write"| NO["❌ refused<br/><i>and the refusal is logged</i>"]
+    A -->|"tries to give itself WRITE"| NO2["❌ refused<br/><i>can't hand on what you don't hold</i>"]
+```
+
+**The point:** authority only ever shrinks as it's passed along. An agent cannot
+upgrade itself, and every refusal is written to the logbook with the same key
+fingerprint as the successful reads — so an auditor sees exactly which key was
+presented for a rejected action, not just that something failed.
+
+There's also `GRANT_ONCE`: a key that may be shared exactly once and then loses
+the ability, automatically. We watched the right disappear after a single use.
+
+### Demo 3 — three different questions, not three strictness levels
+
+```mermaid
+flowchart LR
+    Q1["<b>P1</b><br/>Is this badge<br/>real and current,<br/>and does it open<br/>this door?"]
+    Q2["<b>P2</b><br/>Is this request<br/>legal right now?<br/>Right person, in<br/>bounds, not expired,<br/>not a repeat?"]
+    Q3["<b>P3</b><br/>Did whoever issued<br/>this badge actually<br/>have the authority,<br/>all the way up?"]
+    Q1 --- Q2 --- Q3
+```
+
+**The point:** the names suggest P3 is a stricter P1. It isn't — they ask
+*unrelated* questions. A key missing a permission fails P1 but **passes** P3,
+because P3 never looks at permissions at all. You don't escalate between them;
+you pick the question you need answered. Both cost nanoseconds, thousands of
+times inside their budget.
+
+### Demo 6 — the headline claim, and why it doesn't happen
+
+RVM's pitch is: *when two agents talk more, RVM moves them closer together.*
+
+```mermaid
+flowchart TB
+    START["Two agents start<br/>talking a lot more"] --> P["Their traffic is<br/><b>cross-box</b> traffic"]
+    P --> PRESSURE["'Cut pressure' measures<br/>traffic leaving the box<br/>as a share of all traffic<br/>→ so it goes <b>UP</b>"]
+    PRESSURE --> DEC{"The engine decides"}
+    DEC -->|"pressure over the limit"| SPLIT["🔪 <b>SPLIT them apart</b><br/><i>this is what happens</i>"]
+    DEC -.->|"never reached"| MERGE["🤝 Merge them together<br/><i>what the pitch describes</i>"]
+    SPLIT --> WHY["Merge is checked <b>after</b> split,<br/>and the code returns as soon<br/>as it finds a split candidate"]
+```
+
+#### First, what "external weight" means
+
+The engine keeps a map of who talks to whom. Each partition is a dot; each
+channel is a line whose thickness is how much traffic has crossed it. Every
+partition has two kinds of line:
+
+```mermaid
+flowchart LR
+    A(("Agent A")) -- "conversation with B<br/><b>EXTERNAL</b>" --> B(("Agent B"))
+    B -- "conversation with A<br/><b>EXTERNAL</b>" --> A
+    A -. "its own work<br/><b>INTERNAL</b>" .-> A
+    B -. "its own work<br/><b>INTERNAL</b>" .-> B
+```
+
+- **Internal weight** — work a partition does by itself, needing nobody. Drawn
+  as a loop back to itself.
+- **External weight** — traffic to *other* partitions. Its share of the
+  conversation with the outside world.
+
+**Cut pressure** is simply `external ÷ (external + internal)`, as a percentage.
+It answers: *"of everything this box does, how much of it involves reaching
+outside?"* The name comes from imagining you cut this box away from the rest —
+how much traffic would you be severing? Above 80%, the engine flags it for
+splitting, on the logic that a box mostly talking outward is badly placed.
+
+Here are **measured** values from the real engine (not a model — these come
+from `rvm-coherence` itself, with one partition doing 100 units of its own work):
+
+| Talk with the other agent | Cut pressure | Verdict |
+|---|---|---|
+| 0 — completely alone | **50.0%** | *see below* |
+| 10 — barely | 52.0% | fine |
+| 100 | 66.5% | fine |
+| 200 | 75.0% | fine |
+| 400 | 83.3% | **split!** |
+| 900 | 90.9% | **split!** |
+| 2000 | 95.5% | **split!** |
+
+Read the bottom rows first: **the closer two agents get, the more the system
+wants to separate them.** "These two are inseparable" and "this box is badly
+placed" are the same number, and the split rule only ever reads it one way.
+
+Now read the top row. A partition talking to *nobody* should be at 0% — the
+crate's own documentation says so. It measures 50%. That is finding 10 below,
+and we only noticed it because we sat down to write this explanation and the
+arithmetic wouldn't come out.
+
+And the merge test has the same problem in mirror image: for two partitions to
+look worth merging, nearly all of both their traffic has to be with each other
+— exactly the condition that pushes cut pressure to its maximum. So whenever
+the merge test says yes, the split test has already said yes louder.
+
+**The point:** talking more makes the system want to pull them *apart*, not push
+them together. We didn't want to claim that from one example, so the demo tries
+**4,032 different combinations** of how much the agents talk to each other versus
+to themselves. The merge recommendation came back **zero times**. In 1,244 of
+those combinations the system internally decided "these should merge" — and then
+threw that answer away because it had already found a reason to split.
+
+That's finding 2, and it's the most significant thing we found.
+
+### Demo 7 — the bouncer, and six ways to get turned away
+
+```mermaid
+flowchart LR
+    PKG["📦 Signed<br/>package"] --> V{"Verification"}
+    V --> C1["Is the file intact?"]
+    V --> C2["Is there a manifest?"]
+    V --> C3["Do contents match<br/>their fingerprints?"]
+    V --> C4["Is the code signed?"]
+    V --> C5["Signed by someone<br/>we trust?"]
+    V --> C6["Within size limits?"]
+    V --> C7["What permissions<br/>does it ask for?"]
+    C1 & C2 & C3 & C4 & C5 & C6 & C7 --> OUT["📋 A report:<br/>pass / fail / skipped<br/><b>per check</b>"]
+```
+
+**The point:** we broke the package six different ways — altered the code,
+altered the signature, corrupted the header, rewrote the requested permissions,
+signed with the wrong key, and truncated the file. All six were refused, each
+with a *specific* reason rather than a generic "invalid". This is the
+best-built part of RVM.
+
+Two traps for anyone using it, though (findings 6 and 7): a report can say
+`ok = true` when the signature was never actually checked — because "skipped"
+isn't "failed" — and a *rejected* package still reports the permissions it
+asked for, so code that reads that field without checking the verdict first
+would happily grant them.
 
 ---
 
@@ -286,7 +526,7 @@ subsystem in the tree.
 
 ## Findings
 
-Nine things worth reporting upstream. Each is reproduced by the demo listed and
+Ten things worth reporting upstream. Each is reproduced by the demo listed and
 was verified against source, not inferred.
 
 | # | Finding | Severity | Demo |
@@ -300,6 +540,7 @@ was verified against source, not inferred.
 | 7 | `report.capabilities` stays populated on a failed report | Caller trap | 7 |
 | 8 | The ~17ns witness figure is the FNV-1a path | Docs | 1 |
 | 9 | Two capability claims are narrower than they sound | Docs | 5, 6 |
+| 10 | Cut pressure double-counts self-loops; an isolated partition reads 50% | Correctness | 6 |
 
 ### 1. `record_hash` does not cover record contents
 
@@ -413,6 +654,46 @@ it quotes. The ADR targets are still met by orders of magnitude either way.
 
 Neither is a defect — both are reasonable designs — but "WASM agent runtime" and
 "inter-partition messaging" read as more than they are.
+
+### 10. Cut pressure double-counts self-loops
+
+Found while writing the plain-language explanation above — the arithmetic
+wouldn't reconcile, which turned out to be the code's fault rather than ours.
+
+`CoherenceGraph::total_weight` returns `cached_outgoing + cached_incoming`. A
+self-loop is both outgoing and incoming, so it is counted **twice**.
+`internal_weight` scans for `from == to` and counts it **once**. Cut pressure is
+`(total − internal) / total`, so one spare copy of the partition's own internal
+work is silently classified as external traffic.
+
+Measured, with `rvm-coherence` directly:
+
+```
+ISOLATED partition, self-loop 100, zero neighbours:
+  total_weight    = 200
+  internal_weight = 100
+  external        = 100      <-- should be 0
+  cut pressure    = 50.0%    <-- should be 0%
+```
+
+`pressure.rs` states the intended behaviour plainly: *"A partition with no edges
+has zero pressure."* There is even a test named `isolated_partition_zero_pressure`
+— but it adds a node with **no edges at all**, so it passes trivially and never
+exercises a self-loop.
+
+Consequences:
+
+- **Cut pressure has a floor of 50%** for any partition doing local work. It
+  cannot express "this partition is well-placed", only degrees of badly-placed.
+- The usable range of the split signal is halved — everything is squeezed into
+  50–100% against an 8000 bp (80%) threshold.
+- It **compounds finding 2.** Merge needs low pressure and high mutual
+  coherence; inflating everyone's pressure pushes the merge window further out
+  of reach.
+
+The fix is a one-line change in `total_weight` — subtract the self-loop once, or
+have `compute_cut_pressure` use the adjacency row alone — plus a test that
+actually adds a self-loop.
 
 ---
 
