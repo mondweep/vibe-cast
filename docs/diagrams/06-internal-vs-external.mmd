@@ -1,0 +1,10 @@
+flowchart LR
+    subgraph BoxA["Agent A box"]
+        AW["INTERNAL: work alone"]
+    end
+    subgraph BoxB["Agent B box"]
+        BW["INTERNAL: work alone"]
+    end
+    BoxA <== "EXTERNAL: counted for both" ==> BoxB
+    style AW fill:#e8ffe8,stroke:#4aa54a
+    style BW fill:#e8ffe8,stroke:#4aa54a

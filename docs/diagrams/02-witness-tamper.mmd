@@ -1,0 +1,7 @@
+flowchart LR
+    A["Edit what a record says"] --> B{"Chain check"}
+    A --> C{"Signature check"}
+    B -->|passes| D["MISSED"]
+    C -->|fails| E["caught"]
+    style D fill:#ffe0e0,stroke:#c00
+    style E fill:#e0ffe0,stroke:#0a0

@@ -1,0 +1,9 @@
+flowchart LR
+    H["Hypervisor: only minter"] -->|mints| R["Root: READ WRITE GRANT"]
+    R -->|"weaker copy"| A["Agent: READ only"]
+    A -->|reads| OK["allowed"]
+    A -->|writes| NO["refused, and logged"]
+    A -->|"self-grants WRITE"| NO2["refused: cannot exceed"]
+    style OK fill:#e0ffe0,stroke:#0a0
+    style NO fill:#ffe0e0,stroke:#c00
+    style NO2 fill:#ffe0e0,stroke:#c00

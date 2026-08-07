@@ -1,0 +1,10 @@
+flowchart LR
+    SELF["Self-loop, weight 100"] --> OUT["OUTGOING gets 100"]
+    SELF --> INC["INCOMING gets 100"]
+    OUT --> TOT["total_weight = 200"]
+    INC --> TOT
+    SELF --> INT["internal_weight = 100"]
+    TOT --> EXT["external = 100, truly 0"]
+    INT --> EXT
+    style EXT fill:#ffe0e0,stroke:#c00
+    style TOT fill:#fff3cd,stroke:#a80

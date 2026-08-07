@@ -1,0 +1,8 @@
+flowchart LR
+    PKG["Signed package"] --> V{"Seven checks"} --> OUT["Report per check"]
+    OUT --> PASS["pass"]
+    OUT --> FAIL["fail"]
+    OUT --> SKIP["skipped"]
+    style PASS fill:#e0ffe0,stroke:#0a0
+    style FAIL fill:#ffe0e0,stroke:#c00
+    style SKIP fill:#fff3cd,stroke:#a80

@@ -1,0 +1,8 @@
+flowchart LR
+    START["Two agents talk more"] --> P["Traffic is cross-box"]
+    P --> PRESSURE["Cut pressure goes UP"]
+    PRESSURE --> DEC{"Engine decides"}
+    DEC -->|"over the limit"| SPLIT["SPLIT them apart"]
+    DEC -.->|"never reached"| MERGE["Merge them together"]
+    style SPLIT fill:#ffe0e0,stroke:#c00
+    style MERGE fill:#eeeeee,stroke:#999

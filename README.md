@@ -97,22 +97,26 @@ Skip this if you already know the codebase. It exists so the demo results below
 make sense without reading kernel source.
 
 <!--
-  Mermaid house rules for this file. GitHub's renderer is stricter than the
-  mermaid you get locally, and breaks in two ways we have actually hit:
+  Diagrams are PRE-RENDERED, not inline ```mermaid blocks.
+
+  Sources live in docs/diagrams/*.mmd; the committed SVGs beside them are what
+  the README references. Regenerate with:
+
+      ./scripts/build-diagrams.sh            rebuild every SVG
+      ./scripts/build-diagrams.sh --check    fail if any SVG is stale
+
+  Why not inline mermaid: GitHub's viewer broke these three separate ways.
     1. <b>/<i> in a node label render as LITERAL TEXT (htmlLabels is off).
-    2. <br/> is DROPPED WITHOUT a line break, so a multi-line label becomes one
-       long concatenated string that overflows its box and gets clipped.
-  Therefore, in every mermaid block below:
-    * one short line per label, roughly 30 characters maximum
-    * no <br/>, no <b>/<i>, no emoji, ASCII arrows only
-    * emphasis via `style X fill:...`, never via markup
-    * detail that will not fit belongs in the prose around the diagram
-    3. A diagram taller than roughly 420px is CLIPPED VERTICALLY by GitHub's
-       viewer. Prefer `flowchart LR` over `TB`, keep the rank count low, and
-       turn anything that is really a list into a markdown table -- tables
-       never clip. Measure height before committing.
-  Rendering locally with default settings will NOT reproduce either failure --
-  check with htmlLabels:false and no <br/> support before trusting it.
+    2. <br/> is DROPPED WITHOUT a line break, so a multi-line label becomes
+       one long concatenated string that overflows its box.
+    3. Anything taller than roughly 420px is CLIPPED VERTICALLY.
+  Rendering locally with default mermaid settings reproduces none of these,
+  which is how two "verified" fixes still shipped broken.
+
+  Rendering here sidesteps all three, but keep the habits anyway -- they made
+  the diagrams better: short single-line labels, flowchart LR over TB, colour
+  via `style X fill:...` rather than markup, and anything that is really a
+  list belongs in a markdown table instead of a graph.
 -->
 
 **What RVM is trying to be.** Normally, running untrusted programs safely means
@@ -123,15 +127,7 @@ logbook by the door.* Its box is called a **partition**, the lock is a
 **capability**, and the logbook is the **witness log**. Almost everything else
 is machinery around those three ideas.
 
-```mermaid
-flowchart LR
-    L0["GROUND: the machine"] --> L1["TRUST: may this happen?"] --> L2["RUNTIME: boxes and turns"] --> L3["ADAPTATION: rearrange?"] --> L4["PACKAGING: what may run"]
-    style L4 fill:#e8f0ff,stroke:#4a6fa5
-    style L3 fill:#fff0e8,stroke:#a5744a
-    style L2 fill:#e8ffe8,stroke:#4aa54a
-    style L1 fill:#ffe8f0,stroke:#a54a6f
-    style L0 fill:#f0f0f0,stroke:#777
-```
+![RVM's five layers, from the machine up to packaging](docs/diagrams/01-rvm-layers.svg)
 
 Which crates live at each layer:
 
@@ -197,15 +193,7 @@ output. Full transcripts are under [Results](#results).
 The audit log has two independent protections. We tampered with it two ways to
 find out what each one actually covers.
 
-```mermaid
-flowchart LR
-    A["Edit what a record says"] --> B{"Chain check"}
-    A --> C{"Signature check"}
-    B -->|passes| D["MISSED"]
-    C -->|fails| E["caught"]
-    style D fill:#ffe0e0,stroke:#c00
-    style E fill:#e0ffe0,stroke:#0a0
-```
+![Editing a record's content passes the chain check but fails the signature check](docs/diagrams/02-witness-tamper.svg)
 
 Both tampering attempts against both protections:
 
@@ -221,17 +209,7 @@ log an attacker can silently rewrite. That's finding 1.
 
 ### Demo 2 — keys that can only ever get weaker
 
-```mermaid
-flowchart LR
-    H["Hypervisor: only minter"] -->|mints| R["Root: READ WRITE GRANT"]
-    R -->|"weaker copy"| A["Agent: READ only"]
-    A -->|reads| OK["allowed"]
-    A -->|writes| NO["refused, and logged"]
-    A -->|"self-grants WRITE"| NO2["refused: cannot exceed"]
-    style OK fill:#e0ffe0,stroke:#0a0
-    style NO fill:#ffe0e0,stroke:#c00
-    style NO2 fill:#ffe0e0,stroke:#c00
-```
+![Authority only ever weakens as it is delegated](docs/diagrams/03-capability-attenuation.svg)
 
 **The point:** authority only ever shrinks as it's passed along. An agent cannot
 upgrade itself, and every refusal is written to the logbook with the same key
@@ -243,13 +221,7 @@ the ability, automatically. We watched the right disappear after a single use.
 
 ### Demo 3 — three different questions, not three strictness levels
 
-```mermaid
-flowchart LR
-    Q1["P1: is the badge valid?"]
-    Q2["P2: is the request legal?"]
-    Q3["P3: was the issuer allowed?"]
-    Q1 --- Q2 --- Q3
-```
+![P1, P2 and P3 ask three unrelated questions](docs/diagrams/04-proof-tiers.svg)
 
 In full, each tier asks:
 
@@ -269,16 +241,7 @@ times inside their budget.
 
 RVM's pitch is: *when two agents talk more, RVM moves them closer together.*
 
-```mermaid
-flowchart LR
-    START["Two agents talk more"] --> P["Traffic is cross-box"]
-    P --> PRESSURE["Cut pressure goes UP"]
-    PRESSURE --> DEC{"Engine decides"}
-    DEC -->|"over the limit"| SPLIT["SPLIT them apart"]
-    DEC -.->|"never reached"| MERGE["Merge them together"]
-    style SPLIT fill:#ffe0e0,stroke:#c00
-    style MERGE fill:#eeeeee,stroke:#999
-```
+![More cross-partition traffic raises cut pressure, which triggers a split](docs/diagrams/05-coherence-decides.svg)
 
 #### First, what "external weight" means
 
@@ -286,18 +249,7 @@ The engine keeps a map of who talks to whom. Each partition is a dot; each
 channel is a line whose thickness is how much traffic has crossed it. Every
 partition has two kinds of line:
 
-```mermaid
-flowchart LR
-    subgraph BoxA["Agent A box"]
-        AW["INTERNAL: work alone"]
-    end
-    subgraph BoxB["Agent B box"]
-        BW["INTERNAL: work alone"]
-    end
-    BoxA <== "EXTERNAL: counted for both" ==> BoxB
-    style AW fill:#e8ffe8,stroke:#4aa54a
-    style BW fill:#e8ffe8,stroke:#4aa54a
-```
+![Internal weight is work done alone; external weight is traffic between boxes](docs/diagrams/06-internal-vs-external.svg)
 
 - **Internal weight** — work a partition does by itself, needing nobody. In the
   graph this is an edge from the partition back to itself, a *self-loop*.
@@ -325,18 +277,7 @@ So on the intended reading:
 It doesn't do that. A partition's own private work **leaks into the external
 figure**, because two functions disagree about how to count a self-loop:
 
-```mermaid
-flowchart LR
-    SELF["Self-loop, weight 100"] --> OUT["OUTGOING gets 100"]
-    SELF --> INC["INCOMING gets 100"]
-    OUT --> TOT["total_weight = 200"]
-    INC --> TOT
-    SELF --> INT["internal_weight = 100"]
-    TOT --> EXT["external = 100, truly 0"]
-    INT --> EXT
-    style EXT fill:#ffe0e0,stroke:#c00
-    style TOT fill:#fff3cd,stroke:#a80
-```
+![A self-loop counted twice in total_weight but once in internal_weight](docs/diagrams/07-cut-pressure-miscount.svg)
 
 Reading that top to bottom: the self-loop is *both* outgoing and incoming, so
 `total_weight` counts it **twice** (200). `internal_weight` looks for edges where
@@ -387,16 +328,7 @@ That's finding 2, and it's the most significant thing we found.
 
 ### Demo 7 — the bouncer, and six ways to get turned away
 
-```mermaid
-flowchart LR
-    PKG["Signed package"] --> V{"Seven checks"} --> OUT["Report per check"]
-    OUT --> PASS["pass"]
-    OUT --> FAIL["fail"]
-    OUT --> SKIP["skipped"]
-    style PASS fill:#e0ffe0,stroke:#0a0
-    style FAIL fill:#ffe0e0,stroke:#c00
-    style SKIP fill:#fff3cd,stroke:#a80
-```
+![A signed package goes through seven checks, each reported separately](docs/diagrams/08-rvf-verification.svg)
 
 The seven checks, each reported separately:
 
@@ -759,17 +691,7 @@ self-loop is both outgoing and incoming, so it is counted **twice**.
 `(total − internal) / total`, so one spare copy of the partition's own internal
 work is silently classified as external traffic:
 
-```mermaid
-flowchart LR
-    L["self-loop weight W"] --> A["cached_outgoing +W"]
-    L --> B["cached_incoming +W"]
-    A --> T["total_weight = 2W"]
-    B --> T
-    L --> I["internal_weight = W"]
-    T --> E["external = W, truly 0"]
-    I --> E
-    style E fill:#ffe0e0,stroke:#c00
-```
+![Where the spare copy of a self-loop enters the external figure](docs/diagrams/09-selfloop-double-count.svg)
 
 The error is largest exactly where it matters least noticed: at zero external
 traffic it is the whole answer (50% instead of 0%), and it shrinks toward
@@ -839,9 +761,23 @@ demos/06-agents-get-closer/     cargo run -p demo-06-agents-get-closer
 demos/07-signed-hello/          cargo run -p demo-07-signed-hello
 scripts/bootstrap.sh            clones rvm to ../rvm at a pinned rev
 scripts/run-all.sh              runs every host demo in order
+scripts/build-diagrams.sh       renders docs/diagrams/*.mmd -> *.svg
+docs/diagrams/                  diagram sources (.mmd) + committed SVGs
 web/                            the shareable demo site (see web/README.md)
 PRD.md                          why the work is shaped this way; decision log
 ```
+
+Diagrams are **pre-rendered, not inline**. Sources live in
+[`docs/diagrams/`](docs/diagrams/) as `.mmd`; the committed `.svg` beside each
+one is what the README shows. Regenerate with `./scripts/build-diagrams.sh`,
+or check for drift with `./scripts/build-diagrams.sh --check` (exit 1 if any
+SVG is stale). We render locally rather than embedding ```mermaid blocks
+because GitHub's mermaid viewer broke these three separate ways: it renders
+`<b>`/`<i>` as literal text, drops `<br/>` without a line break, and clips
+anything taller than ~420px. Rendering here means the published page shows
+what we actually saw. Kroki would solve it too, but at the cost of a
+third-party fetch for every reader and a base64 blob in place of readable
+diagram source.
 
 rvm is consumed as a **sibling checkout** at `../rvm`, not a git dependency:
 cargo initialises submodules for git deps, and rvm declares three

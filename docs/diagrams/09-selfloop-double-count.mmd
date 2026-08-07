@@ -1,0 +1,9 @@
+flowchart LR
+    L["self-loop weight W"] --> A["cached_outgoing +W"]
+    L --> B["cached_incoming +W"]
+    A --> T["total_weight = 2W"]
+    B --> T
+    L --> I["internal_weight = W"]
+    T --> E["external = W, truly 0"]
+    I --> E
+    style E fill:#ffe0e0,stroke:#c00
