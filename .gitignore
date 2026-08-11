@@ -1,0 +1,6 @@
+# Measurement output - keep the tooling in git, not the data.
+logs/
+*.csv
+run.log
+nohup.out
+isp-report.md

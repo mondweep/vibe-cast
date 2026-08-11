@@ -1,0 +1,19 @@
+[Unit]
+Description=Overnight internet connectivity and speed monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Adjust these three lines for your machine.
+User=YOUR_USER
+WorkingDirectory=/home/YOUR_USER/connectivity
+ExecStart=/home/YOUR_USER/connectivity/connectivity-test.sh --log-dir /home/YOUR_USER/connectivity/logs
+
+# Keep monitoring across transient failures; a crashed monitor looks like an
+# outage in the report, which is exactly what we must avoid.
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
