@@ -285,6 +285,29 @@ describe('resolveWrappedNameList — the Districts Affected header', () => {
     expect(resolveWrappedNameList('Nil', assam)).toEqual([]);
   });
 
+  it('drops a TRUNCATED tail, which carries no newline at all', () => {
+    // The 7 August shape: the cell simply stopped mid-name, leaving `Ch` as a
+    // complete comma-separated element. Gating the repair on the presence of a
+    // newline — as the assembler first did — skips exactly this case.
+    const names = resolveWrappedNameList('Golaghat, Darrang, Udalguri, Ch', assam);
+
+    expect(names).not.toContain('Ch');
+    expect(names).toEqual(['Golaghat', 'Darrang', 'Udalguri']);
+  });
+
+  it('keeps a District the boundary set predates, so the gate is not the map', () => {
+    // The gate is the NAME vocabulary, which is deliberately wider than the
+    // Census-2011 polygons: Sribhumi was renamed from Karimganj in 2024 and
+    // Bajali created in 2020. Filtering on the boundary set instead would have
+    // deleted two real Districts to remove one fragment.
+    const wide = knowing('Sivasagar', 'Sribhumi', 'Bajali');
+    expect(resolveWrappedNameList('Sivasagar, Sribhumi, Bajali, Ch', wide)).toEqual([
+      'Sivasagar',
+      'Sribhumi',
+      'Bajali',
+    ]);
+  });
+
   it('refuses a three-line wrap it cannot close all the way', () => {
     // A `reduce` restarting from the surviving segment is how half a name gets
     // published; nothing here is evidenced, so nothing is emitted.

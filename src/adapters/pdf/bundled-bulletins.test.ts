@@ -2,14 +2,14 @@
  * The guarantee that makes shipping generated data safe.
  *
  * `src/generated/newest-bulletin.ts` and `src/generated/bulletin-archive.ts`
- * are committed source: between them they are the seventeen-bulletin archive the
+ * are committed source: between them they are the twenty-two-bulletin archive the
  * console opens on, and nothing at build time or run time reparses the PDFs to
  * check them. That is the whole point — the default path costs no pdf.js
  * (NFR-3) — but it means the artefacts could drift from the bulletins they
  * claim to be, and drift in a flood console is figures on a screen that no
  * document supports.
  *
- * So the check moves here. This test parses all seventeen real fixture PDFs,
+ * So the check moves here. This test parses all twenty-two real fixture PDFs,
  * fresh, on every run, and asserts the results are the committed constants. It
  * fails if anyone hand-edits a generated file, and it fails if the parser
  * changes without the artefacts being regenerated. Either way the fix is the
@@ -18,7 +18,7 @@
  *     npm run generate:bundled-bulletins
  *
  * It covers **every bundled bulletin**, not just the eager one. An archive
- * verified only at its newest day would be sixteen-seventeenths unchecked, and the
+ * verified only at its newest day would be sixteen-twenty-twoths unchecked, and the
  * sixteen unchecked days are precisely the ones the Trend view draws.
  *
  * Where `golden.test.ts` asserts the parser reads Appendix B correctly, this
@@ -53,7 +53,7 @@ import { createPdfJsLoader, type PdfJsModule } from './pdfjs-loader';
  * Oldest first — the order the generator emits, and the order the archive
  * holds.
  *
- * Seventeen now, not eight. The generator used to hold a hard-coded list of dates
+ * Twenty-two now, not eight. The generator used to hold a hard-coded list of dates
  * and therefore silently ignored any fixture the Drive sync added; it now
  * discovers `fixtures/Daily_Flood_Report_YYYYMMDD.pdf` from disk, so this list
  * is the one remaining place where "what is on disk" is restated by hand. It is
@@ -78,6 +78,11 @@ const STAMPS = [
   '20260803',
   '20260804',
   '20260805',
+  '20260806',
+  '20260807',
+  '20260808',
+  '20260809',
+  '20260810',
 ] as const;
 
 const fixture = (stamp: string): string =>
@@ -134,16 +139,16 @@ describe('the bundled bulletin archive', () => {
     for (const name of names) expect(name).toMatch(/^[A-Z][A-Za-z]+(?:[ ()][A-Za-z()]+)*$/);
   });
 
-  it('holds sixteen archived bulletins and one eager one — seventeen in all', () => {
-    // Seventeen because `fixtures/` holds seventeen Daily Flood Report PDFs, one
+  it('holds twenty-one archived bulletins and one eager one — twenty-two in all', () => {
+    // Twenty-two because `fixtures/` holds twenty-two Daily Flood Report PDFs, one
     // per day from 20 July to 4 August 2026 inclusive. The eager/archive split
-    // is always "the newest one, and all the rest", so sixteen archived follows.
-    expect(ARCHIVED_BULLETINS).toHaveLength(16);
-    expect(BUNDLED_DATES).toHaveLength(17);
-    expect(BUNDLED_RANGE).toEqual({ from: '2026-07-20', to: '2026-08-05', count: 17 });
+    // is always "the newest one, and all the rest", so twenty-one archived follows.
+    expect(ARCHIVED_BULLETINS).toHaveLength(21);
+    expect(BUNDLED_DATES).toHaveLength(22);
+    expect(BUNDLED_RANGE).toEqual({ from: '2026-07-20', to: '2026-08-10', count: 22 });
   });
 
-  it('covers seventeen consecutive days, so the console opens on a trend with no gaps', () => {
+  it('covers twenty-two consecutive days, so the console opens on a trend with no gaps', () => {
     // The Trend view draws a break wherever a day is missing, and it is right
     // to. That break must never come from the bundle itself.
     //
@@ -174,6 +179,11 @@ describe('the bundled bulletin archive', () => {
       '2026-08-03',
       '2026-08-04',
       '2026-08-05',
+      '2026-08-06',
+      '2026-08-07',
+      '2026-08-08',
+      '2026-08-09',
+      '2026-08-10',
     ]);
   });
 
@@ -207,11 +217,11 @@ describe('the bundled bulletin archive', () => {
     expect(bundled.map((r) => r.bulletinId)).toEqual(
       STAMPS.map((stamp) => freshlyParsed.get(stamp)?.bulletinId),
     );
-    expect(new Set(bundled.map((r) => r.bulletinId)).size).toBe(17);
+    expect(new Set(bundled.map((r) => r.bulletinId)).size).toBe(22);
   });
 
   it('is dated and reconciled throughout, so the console never opens on a broken archive', () => {
-    // 23 sections read cleanly on every one of the seventeen. A degraded section
+    // 23 sections read cleanly on every one of the twenty-two. A degraded section
     // in bundled history would be a permanent asterisk on the first screen an
     // officer ever sees.
     //
@@ -233,11 +243,11 @@ describe('the bundled bulletin archive', () => {
       expect(report.provenance.every((p) => p.confidence === 'high')).toBe(true);
       expect(report.provenance).toHaveLength(23);
     }
-    // Printed in the page footer: "Report Generated On: 05-08-2026 07:50 PM".
-    expect(NEWEST_BUNDLED_BULLETIN.generatedAt).toBe('05-08-2026 07:50 PM');
+    // Printed in the page footer: "Report Generated On: 10-08-2026 08:58 PM".
+    expect(NEWEST_BUNDLED_BULLETIN.generatedAt).toBe('10-08-2026 08:58 PM');
   });
 
-  it('reports the verified statewide affected population for each of the seventeen days', () => {
+  it('reports the verified statewide affected population for each of the twenty-two days', () => {
     // Independently verified against the printed bulletins — each figure is the
     // `Total Population` cell of the PDF's own `Total` row in the Population
     // And Crop Area Submerged section, read through the text layer without this
@@ -275,10 +285,15 @@ describe('the bundled bulletin archive', () => {
       // "Total 53770 51434 16933 122137 15342.92", page 2.
       ['2026-08-04', { kind: 'known', unit: 'count', value: 122137 }],
       ['2026-08-05', { kind: 'known', unit: 'count', value: 160653 }],
+      ['2026-08-06', { kind: 'known', unit: 'count', value: 168701 }],
+      ['2026-08-07', { kind: 'known', unit: 'count', value: 155849 }],
+      ['2026-08-08', { kind: 'known', unit: 'count', value: 147376 }],
+      ['2026-08-09', { kind: 'known', unit: 'count', value: 137590 }],
+      ['2026-08-10', { kind: 'known', unit: 'count', value: 126431 }],
     ]);
   });
 
-  it('reports the verified relief posture for each of the seventeen days', () => {
+  it('reports the verified relief posture for each of the twenty-two days', () => {
     // The three figures the response views are built on, pinned for the same
     // reason and read the same way. Relief Camps and Relief Distribution
     // Centres share one `Total` row in the Relief Camps / Centres Opened
@@ -329,6 +344,11 @@ describe('the bundled bulletin archive', () => {
       // "Total 5475 2127 2006 1342 4959 3607 0", pages 2 and 3.
       { date: '2026-08-04', camps: known(39), inmates: known(12382), nonCamp: known(5475) },
       { date: '2026-08-05', camps: known(45), inmates: known(12356), nonCamp: known(32048) },
+      { date: '2026-08-06', camps: known(50), inmates: known(10111), nonCamp: known(35596) },
+      { date: '2026-08-07', camps: known(55), inmates: known(10326), nonCamp: known(6881) },
+      { date: '2026-08-08', camps: known(53), inmates: known(8568), nonCamp: known(13479) },
+      { date: '2026-08-09', camps: known(52), inmates: known(8000), nonCamp: known(41061) },
+      { date: '2026-08-10', camps: known(48), inmates: known(8447), nonCamp: known(15563) },
     ]);
   });
 

@@ -486,7 +486,12 @@ export const createSectionAssembler = (
             // interpreter expects — rather than flattened.
             cells: r.cells.map((c, i) => {
               if (i === 0) return c.replace(/\s*\n\s*/g, ' ').trim();
-              if (i === 1 && NAME_LIST_SECTIONS.has(kind) && c.includes('\n')) {
+              // Unconditional for a name-list cell. Gating this on the cell
+              // containing a newline was a false economy: the SAME cell also
+              // corrupts by TRUNCATING, and 7 August arrived as
+              // `'Sivasagar, ..., Jorhat, Ch'` with no newline at all — so the
+              // guard skipped exactly the case that needed repairing.
+              if (i === 1 && NAME_LIST_SECTIONS.has(kind)) {
                 return resolveWrappedNameList(c, knows).join(', ');
               }
               return c;

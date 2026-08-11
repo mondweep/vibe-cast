@@ -160,17 +160,32 @@ const mergeInto = (into: LogicalRow, from: LogicalRow, name: string): LogicalRow
  * makes every cumulative figure claim "the true figure is higher" because one
  * row reported nothing.
  *
- * THE RULE. A newline inside one list element is a wrap. Close it only where
- * the join is evidenced, exactly as `joinWrappedDistrictName` requires. Where it
- * is not, keep the segments the vocabulary recognises and DROP the ones it does
- * not — because an unrecognised half-name in this particular cell is never new
- * information: this list is redundant, every District on it that reported
- * anything also appears in the data tables below, so a fragment dropped here
- * costs nothing and a fragment kept invents a District.
+ * IT ALSO TRUNCATES. On 2026-08-07 the same cell arrived as
  *
- * That last clause is why this is a different rule from `resolveCell`, which
- * must preserve the printed shape because its cell is the only place the name
- * appears.
+ *     'Sivasagar, ..., Jorhat, Ch'
+ *
+ * — no newline this time, the tail simply lost, leaving `Ch` as a complete
+ * comma-separated element. Two shapes of the same corruption, so one rule has
+ * to cover both.
+ *
+ * THE RULE. Close a newline inside an element only where the join is evidenced,
+ * exactly as `joinWrappedDistrictName` requires. Then keep only the names the
+ * vocabulary recognises, whether they were wrapped or not.
+ *
+ * WHY DROPPING IS SAFE HERE AND NOWHERE ELSE. This list is redundant. Every
+ * District on it that reported anything also appears in the data tables below
+ * and is created from them, with its circles and its figures. So an
+ * unrecognised element is one of two things, and dropping is right for both:
+ * a fragment of a corrupted name, or a District newer than our boundary set —
+ * and if the latter reported anything at all, the data tables have already
+ * created it. What a kept fragment does instead is invent a District that
+ * carries no circles and no figures, which then shows as an unplaceable name
+ * on the choropleth and makes every cumulative figure claim "the true figure is
+ * higher" because one row reported nothing.
+ *
+ * That redundancy is exactly what `resolveCell` cannot rely on — its cell is
+ * the only place its name appears, so it must preserve the printed shape — and
+ * it is why these are two rules rather than one.
  */
 export const resolveWrappedNameList = (
   raw: string,
@@ -189,10 +204,13 @@ export const resolveWrappedNameList = (
       for (const tail of segments.slice(1)) {
         joined = joined === undefined ? undefined : joinWrappedDistrictName(joined, tail, knows);
       }
-      // Evidenced: one name. Unevidenced: only the halves that stand alone.
-      return joined === undefined ? segments.filter((s) => knows(s)) : [joined];
+      // Evidenced: one name. Unevidenced: the halves, judged individually below.
+      return joined === undefined ? segments : [joined];
     })
-    .filter((name) => name !== '' && name.toLowerCase() !== 'nil');
+    .filter((name) => name !== '' && name.toLowerCase() !== 'nil')
+    // The single gate, applied to wrapped and unwrapped elements alike, because
+    // the cell corrupts in both shapes. See "why dropping is safe here".
+    .filter((name) => knows(name));
 
 /**
  * Put every District name in a section's rows back together, and say nothing
