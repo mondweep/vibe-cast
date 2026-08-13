@@ -1,0 +1,153 @@
+{
+  "_comment": "Inventory of claude.ai plugins enabled on this account, captured 2026-08-13. Categories and 'requires' fields are assessments made for this evaluation, not fields returned by the plugin catalogue.",
+  "captured": "2026-08-13",
+  "plugins": [
+    {
+      "id": "plugin_01FTLa86dhbVJ3HB1LdHdhN7",
+      "name": "engineering",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Streamline engineering workflows — standups, code review, architecture decisions, incident response, and technical documentation."
+    },
+    {
+      "id": "plugin_01VTbvGZYaCVU2CNSvhDCnkg",
+      "name": "data",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Write SQL, explore datasets, and generate insights faster. Build visualizations and dashboards."
+    },
+    {
+      "id": "plugin_01AYHYqVLaZRH2Vi6aHgDwEw",
+      "name": "product-management",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Write feature specs, plan roadmaps, and synthesize user research faster."
+    },
+    {
+      "id": "plugin_01XXJmxLXPEhPMmnxmrgntNw",
+      "name": "design",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Critique, design system management, UX writing, accessibility audits, research synthesis, dev handoff."
+    },
+    {
+      "id": "plugin_014WxCYbLf7f3uw2isHFR9US",
+      "name": "productivity",
+      "category": "role-suite",
+      "requires": ["calendar connector", "email connector", "chat connector"],
+      "description": "Manage tasks, plan your day, and build memory of important context about your work."
+    },
+    {
+      "id": "plugin_01Eeb9y5m4iFuY3yRtytYfdc",
+      "name": "marketing",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Create content, plan campaigns, and analyze performance across marketing channels."
+    },
+    {
+      "id": "plugin_01SfWJSiw6JtGbsuW75PKvPK",
+      "name": "sales",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Prospect, craft outreach, and build deal strategy. Prep for calls and manage pipeline."
+    },
+    {
+      "id": "plugin_01KmRfL8EXGF3PeqMRzef1TR",
+      "name": "finance",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Journal entries, reconciliation, financial statements, variance analysis, audit prep, month-end close."
+    },
+    {
+      "id": "plugin_012ABz1xjgtJYWKrcJkXW6ad",
+      "name": "legal",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Contract review, NDA triage, compliance workflows, legal briefs, precedent research."
+    },
+    {
+      "id": "plugin_01BYoFffWxgV8R5TZ6fEVCih",
+      "name": "human-resources",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Recruiting, onboarding, performance reviews, compensation analysis, policy guidance."
+    },
+    {
+      "id": "plugin_019TBdWa5NQJJuDFmEc4k6BJ",
+      "name": "operations",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Vendor management, process documentation, change management, capacity planning, compliance tracking."
+    },
+    {
+      "id": "plugin_016kCmK4LhtWJEFSRVcTBZeB",
+      "name": "customer-support",
+      "category": "role-suite",
+      "requires": [],
+      "description": "Triage tickets, draft responses, escalate issues, build knowledge base."
+    },
+    {
+      "id": "plugin_01MqbKF8FHaDvXSG4JjrPkKD",
+      "name": "apollo",
+      "category": "connector-backed",
+      "requires": ["Apollo.io MCP server (OAuth)"],
+      "description": "Prospect, enrich leads, and load outreach sequences with Apollo.io."
+    },
+    {
+      "id": "plugin_01CFhE3ACL7zNXUA7KG464r9",
+      "name": "slack-by-salesforce",
+      "category": "connector-backed",
+      "requires": ["Slack workspace connector"],
+      "description": "Search messages, send communications, manage canvases."
+    },
+    {
+      "id": "plugin_018xvP9WTBWexfRWULD9s5EH",
+      "name": "common-room",
+      "category": "connector-backed",
+      "requires": ["Common Room account"],
+      "description": "Research accounts and contacts, prep for calls, draft personalized outreach."
+    },
+    {
+      "id": "plugin_01NDsrcgr1GE5eZdP9CsvXcC",
+      "name": "zoom-plugin",
+      "category": "connector-backed",
+      "requires": ["Zoom for Claude MCP server"],
+      "description": "Zoom integrations across REST APIs, SDKs, webhooks, bots; search meetings and recordings."
+    },
+    {
+      "id": "plugin_01VyNDLNYUZHHyKf7A691D7V",
+      "name": "enterprise-search",
+      "category": "connector-backed",
+      "requires": ["email, chat, document and wiki connectors"],
+      "description": "Search across company tools — email, chat, documents, wikis — in one place."
+    },
+    {
+      "id": "plugin_01DZdK2sP1iWnY1hRYRcFc9W",
+      "name": "bio-research",
+      "category": "connector-backed",
+      "requires": ["literature/genomics MCP servers"],
+      "description": "Preclinical research tools and databases: literature search, genomics analysis, target prioritization."
+    },
+    {
+      "id": "plugin_011v5h6QUzBZvas64y44XLhy",
+      "name": "pdf-viewer",
+      "category": "utility",
+      "requires": [],
+      "description": "View, annotate, and sign PDFs in a live interactive viewer."
+    },
+    {
+      "id": "plugin_019iPNgSpqW7kdNT72VAaUud",
+      "name": "brand-voice",
+      "category": "utility",
+      "requires": [],
+      "description": "Discover brand voice from documents, generate guidelines, validate AI-generated content against tone."
+    },
+    {
+      "id": "plugin_0155zZVATbJU3jHUmPP9NvMC",
+      "name": "cowork-plugin-management",
+      "category": "utility",
+      "requires": [],
+      "description": "Create, customize, and manage plugins; configure MCP servers and adapt templates."
+    }
+  ]
+}

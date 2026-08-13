@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Scratch checkouts of marketplaces being evaluated — rebuild with
+# scripts/build_ruflo_inventory.py rather than committing a vendored copy.
+/ruflo/
+/checkouts/
