@@ -31,3 +31,14 @@ def test_telemetry_and_nodeinfo_merge_into_same_node():
     node = snap["nodes"][0]
     assert node["longname"] == "Base Station"
     assert node["battery_level"] == 87
+
+
+def test_own_messages_survive_global_buffer_churn():
+    s = MeshState()
+    s.add_message("!deadbeef", "hello from me", own=True)
+    for i in range(600):
+        s.add_message(f"!other{i}", f"noise {i}", own=False)
+
+    snap = s.snapshot()
+    assert snap["own_messages"][0]["text"] == "hello from me"
+    assert all(not m["text"].startswith("hello") for m in snap["messages"])

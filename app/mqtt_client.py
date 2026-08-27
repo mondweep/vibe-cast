@@ -26,7 +26,11 @@ log = logging.getLogger("mqtt_client")
 
 DEFAULT_HOST = "mqtt.meshtastic.org"
 DEFAULT_PORT = 1883
-DEFAULT_TOPIC = "msh/+/2/json/#"
+# Scoped to the default "LongFast" channel (ordinary human chat/telemetry)
+# across all regions, rather than every channel globally -- the public
+# broker also carries high-volume automated/sensor channels that would
+# otherwise drown out normal traffic (and your own sent messages) in noise.
+DEFAULT_TOPIC = "msh/+/2/json/LongFast/#"
 DEFAULT_USERNAME = "meshdev"
 DEFAULT_PASSWORD = "large4cats"
 
@@ -97,7 +101,8 @@ def _on_message(client, userdata, msg):
     if packet_type == "text":
         text = payload.get("text") if isinstance(payload, dict) else str(payload)
         if text:
-            state.add_message(sender, text, region=region, channel=channel)
+            own = packet.get("from") == WEB_NODE_ID
+            state.add_message(sender, text, region=region, channel=channel, own=own)
     elif packet_type == "position":
         state.apply_position(sender, payload)
     elif packet_type in ("telemetry", "device_metrics"):

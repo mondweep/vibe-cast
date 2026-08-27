@@ -4,7 +4,8 @@ import threading
 import time
 from collections import deque
 
-MAX_MESSAGES = 200
+MAX_MESSAGES = 500
+MAX_OWN_MESSAGES = 50
 
 
 class MeshState:
@@ -12,6 +13,10 @@ class MeshState:
         self._lock = threading.Lock()
         self._nodes = {}
         self._messages = deque(maxlen=MAX_MESSAGES)
+        # Messages this app itself published, tracked separately so they
+        # don't get lost in the global feed's high churn (the public mesh
+        # can push through hundreds of messages a minute).
+        self._own_messages = deque(maxlen=MAX_OWN_MESSAGES)
         self._packet_count = 0
         self._started_at = time.time()
 
@@ -75,18 +80,20 @@ class MeshState:
             if payload.get("voltage") is not None:
                 node["voltage"] = payload.get("voltage")
 
-    def add_message(self, sender, text, region=None, channel=None):
+    def add_message(self, sender, text, region=None, channel=None, own=False):
         with self._lock:
             self.touch_node(sender, region=region)
-            self._messages.appendleft(
-                {
-                    "sender": sender,
-                    "text": text,
-                    "region": region,
-                    "channel": channel,
-                    "ts": time.time(),
-                }
-            )
+            entry = {
+                "sender": sender,
+                "text": text,
+                "region": region,
+                "channel": channel,
+                "ts": time.time(),
+                "own": own,
+            }
+            self._messages.appendleft(entry)
+            if own:
+                self._own_messages.appendleft(entry)
 
     def snapshot(self):
         with self._lock:
@@ -98,6 +105,7 @@ class MeshState:
             return {
                 "nodes": nodes,
                 "messages": list(self._messages),
+                "own_messages": list(self._own_messages),
                 "stats": {
                     "packet_count": self._packet_count,
                     "node_count": len(self._nodes),
