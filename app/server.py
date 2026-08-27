@@ -24,8 +24,10 @@ def on_startup():
     start_background()
 
 
-@app.get("/healthz")
-def healthz():
+@app.get("/health")
+def health():
+    # NB: "/healthz" is intercepted by Google's frontend on *.run.app domains
+    # before it reaches the container, so this endpoint deliberately avoids it.
     return {"ok": True}
 
 
