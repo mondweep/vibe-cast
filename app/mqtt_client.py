@@ -16,6 +16,7 @@ import json
 import logging
 import os
 import re
+import time
 
 import paho.mqtt.client as mqtt
 
@@ -29,7 +30,18 @@ DEFAULT_TOPIC = "msh/+/2/json/#"
 DEFAULT_USERNAME = "meshdev"
 DEFAULT_PASSWORD = "large4cats"
 
+# Identity this app publishes under. Not a real device -- a "virtual" node so
+# outgoing messages are clearly attributable to this web app, not spoofing
+# real hardware. Override via env if you want a different id.
+WEB_NODE_ID_HEX = os.environ.get("WEB_NODE_ID_HEX", "deadbeef")
+WEB_NODE_ID = int(WEB_NODE_ID_HEX, 16)
+WEB_NODE_NAME = os.environ.get("WEB_NODE_NAME", "Web Dashboard")
+PUBLISH_REGION = os.environ.get("MQTT_PUBLISH_REGION", "US")
+PUBLISH_CHANNEL = os.environ.get("MQTT_PUBLISH_CHANNEL", "LongFast")
+
 TOPIC_RE = re.compile(r"^msh/(?P<region>[^/]+)/2/json/(?P<channel>[^/]+)/(?P<node>.+)$")
+
+_client = None
 
 
 def _region_from_topic(topic):
@@ -39,11 +51,32 @@ def _region_from_topic(topic):
     return m.group("region"), m.group("channel")
 
 
+def _publish_topic():
+    return f"msh/{PUBLISH_REGION}/2/json/{PUBLISH_CHANNEL}/!{WEB_NODE_ID_HEX}"
+
+
+def _announce_self(client):
+    """Publishes a nodeinfo packet so the virtual web node shows up nicely."""
+    packet = {
+        "type": "nodeinfo",
+        "from": WEB_NODE_ID,
+        "sender": f"!{WEB_NODE_ID_HEX}",
+        "timestamp": int(time.time()),
+        "payload": {
+            "id": f"!{WEB_NODE_ID_HEX}",
+            "longname": WEB_NODE_NAME,
+            "shortname": "WEB",
+        },
+    }
+    client.publish(_publish_topic(), json.dumps(packet), qos=0, retain=False)
+
+
 def _on_connect(client, userdata, flags, reason_code, properties=None):
     topic = os.environ.get("MQTT_TOPIC", DEFAULT_TOPIC)
     if reason_code == 0 or str(reason_code) == "Success":
         log.info("connected to MQTT broker, subscribing to %s", topic)
         client.subscribe(topic)
+        _announce_self(client)
     else:
         log.warning("MQTT connect failed: %s", reason_code)
 
@@ -99,6 +132,33 @@ def run_forever():
 
 def start_background():
     """Starts the MQTT loop on a daemon thread; safe to call once at app startup."""
+    global _client
     client = build_client()
     client.loop_start()
+    _client = client
     return client
+
+
+class NotConnected(Exception):
+    pass
+
+
+def publish_text(text):
+    """Publishes a text message to the mesh under this app's virtual node.
+
+    This reaches every other client subscribed to the public broker
+    (including our own dashboard) but is NOT guaranteed to reach real LoRa
+    radios -- that additionally requires some gateway node to have MQTT
+    "downlink" enabled for this channel, which most public gateways disable
+    to protect their own airtime from spam.
+    """
+    if _client is None:
+        raise NotConnected("MQTT client is not running")
+    packet = {
+        "type": "text",
+        "from": WEB_NODE_ID,
+        "sender": f"!{WEB_NODE_ID_HEX}",
+        "timestamp": int(time.time()),
+        "payload": {"text": text},
+    }
+    _client.publish(_publish_topic(), json.dumps(packet), qos=0, retain=False)

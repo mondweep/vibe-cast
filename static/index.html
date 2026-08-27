@@ -58,6 +58,37 @@
   .msg { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
   .msg .meta { color: var(--muted); font-size: 0.75rem; }
   .empty { color: var(--muted); font-size: 0.85rem; padding: 1rem 0; }
+  footer {
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid var(--border);
+    margin-top: 0.5rem;
+  }
+  #send-form { display: flex; gap: 0.5rem; }
+  #send-text {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 0.55rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+  #send-text:focus { outline: 1px solid var(--accent); }
+  #send-btn {
+    background: var(--accent);
+    color: #06201d;
+    border: none;
+    border-radius: 6px;
+    padding: 0.55rem 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  #send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .hint { color: var(--muted); font-size: 0.75rem; margin-top: 0.6rem; line-height: 1.4; }
+  #send-status.error { color: #f87171; }
+  #send-status.ok { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -82,6 +113,18 @@
     <div class="empty" id="messages-empty" style="display:none">No text messages yet.</div>
   </section>
 </main>
+<footer>
+  <form id="send-form">
+    <input id="send-text" type="text" maxlength="180" placeholder="Send a message to the mesh&hellip;" autocomplete="off" />
+    <button type="submit" id="send-btn">Send</button>
+  </form>
+  <div class="hint">
+    Publishes to the public Meshtastic MQTT broker as the virtual node <strong>"Web Dashboard"</strong> &mdash;
+    it will show up here (and to anyone else watching the public feed), but is <em>not</em> guaranteed to reach
+    real LoRa radios, since most gateways don't relay MQTT messages back onto their local mesh.
+  </div>
+  <div class="hint" id="send-status"></div>
+</footer>
 <script>
 function timeAgo(ts) {
   if (!ts) return "-";
@@ -93,6 +136,13 @@ function timeAgo(ts) {
 
 function fmtNode(id) {
   return typeof id === "string" ? id : "!" + Number(id).toString(16);
+}
+
+function el(tag, className, text) {
+  const e = document.createElement(tag);
+  if (className) e.className = className;
+  if (text !== undefined) e.textContent = text;
+  return e;
 }
 
 async function refresh() {
@@ -116,13 +166,12 @@ async function refresh() {
     const pos = (n.latitude != null && n.longitude != null)
       ? `${n.latitude.toFixed(3)}, ${n.longitude.toFixed(3)}`
       : "-";
-    tr.innerHTML = `
-      <td>${fmtNode(n.id)}</td>
-      <td>${n.longname || n.shortname || "-"}</td>
-      <td>${n.region || "-"}</td>
-      <td>${n.battery_level != null ? n.battery_level + "%" : "-"}</td>
-      <td>${pos}</td>
-      <td>${timeAgo(n.last_seen)}</td>`;
+    tr.appendChild(el("td", null, fmtNode(n.id)));
+    tr.appendChild(el("td", null, n.longname || n.shortname || "-"));
+    tr.appendChild(el("td", null, n.region || "-"));
+    tr.appendChild(el("td", null, n.battery_level != null ? n.battery_level + "%" : "-"));
+    tr.appendChild(el("td", null, pos));
+    tr.appendChild(el("td", null, timeAgo(n.last_seen)));
     nodesBody.appendChild(tr);
   }
 
@@ -130,12 +179,49 @@ async function refresh() {
   msgDiv.innerHTML = "";
   document.getElementById("messages-empty").style.display = data.messages.length ? "none" : "block";
   for (const m of data.messages) {
-    const div = document.createElement("div");
-    div.className = "msg";
-    div.innerHTML = `<div>${m.text}</div><div class="meta">${fmtNode(m.sender)} &middot; ${m.region || "?"} &middot; ${timeAgo(m.ts)}</div>`;
+    const div = el("div", "msg");
+    div.appendChild(el("div", null, m.text));
+    const meta = el("div", "meta", `${fmtNode(m.sender)} · ${m.region || "?"} · ${timeAgo(m.ts)}`);
+    div.appendChild(meta);
     msgDiv.appendChild(div);
   }
 }
+
+async function sendMessage(text) {
+  const status = document.getElementById("send-status");
+  const btn = document.getElementById("send-btn");
+  btn.disabled = true;
+  status.className = "hint";
+  status.textContent = "Sending…";
+  try {
+    const res = await fetch("/api/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || `HTTP ${res.status}`);
+    }
+    status.className = "hint ok";
+    status.textContent = "Sent. It should appear above shortly.";
+    refresh();
+  } catch (e) {
+    status.className = "hint error";
+    status.textContent = "Failed to send: " + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("send-form").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const input = document.getElementById("send-text");
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  sendMessage(text);
+});
 
 refresh();
 setInterval(refresh, 3000);
