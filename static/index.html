@@ -30,6 +30,46 @@
   }
   header h1 { font-size: 1.1rem; margin: 0; color: var(--accent); }
   header .stats { color: var(--muted); font-size: 0.85rem; }
+  nav.tabs { display: flex; gap: 0.25rem; margin-left: auto; }
+  nav.tabs button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  nav.tabs button.active { color: var(--accent); border-color: var(--accent); }
+  #view-about { padding: 1rem 1.5rem; max-width: 760px; }
+  #view-about section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    line-height: 1.6;
+    font-size: 0.9rem;
+  }
+  #view-about h2 { color: var(--accent); font-size: 1rem; margin-top: 1.5rem; }
+  #view-about h2:first-child { margin-top: 0; }
+  #view-about a { color: var(--accent); }
+  #view-about code {
+    background: rgba(255,255,255,0.06); padding: 0.1rem 0.35rem; border-radius: 4px;
+    font-size: 0.85em;
+  }
+  .site-footer {
+    padding: 1.25rem 1.5rem 2rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .site-footer a { color: var(--muted); text-decoration: underline; }
+  .site-footer a:hover { color: var(--accent); }
+  .site-footer .sep { opacity: 0.4; }
   main {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -107,7 +147,12 @@
 <header>
   <h1>&#9737; Meshtastic Live Dashboard</h1>
   <div class="stats" id="stats">connecting&hellip;</div>
+  <nav class="tabs">
+    <button type="button" id="tab-dashboard" class="active">Dashboard</button>
+    <button type="button" id="tab-about">About</button>
+  </nav>
 </header>
+<div id="view-dashboard">
 <main>
   <section>
     <h2>Nodes heard</h2>
@@ -138,6 +183,61 @@
   <div class="hint" id="send-status"></div>
   <div id="own-messages"></div>
 </footer>
+</div>
+
+<div id="view-about" style="display:none">
+  <section>
+    <h2>What is Meshtastic?</h2>
+    <p>
+      <a href="https://meshtastic.org/" target="_blank" rel="noopener">Meshtastic</a> is an open-source,
+      off-grid mesh networking project built on cheap, low-power LoRa radios. Devices talk directly to each
+      other over long-range radio (kilometers, not meters) with no cell towers, no carrier, and no internet
+      required &mdash; and every device can relay other devices' messages onward, so a message can hop across
+      many nodes to reach far beyond any single radio's range. It's used for hiking/off-grid comms, emergency
+      networks, and general LoRa tinkering.
+    </p>
+
+    <h2>How does mesh traffic get onto the internet?</h2>
+    <p>
+      Meshtastic nodes with an internet-connected gateway can bridge their local mesh traffic onto a shared
+      public <strong>MQTT</strong> broker (<code>mqtt.meshtastic.org</code>), using a documented topic layout:
+      <code>msh/&lt;REGION&gt;/2/json/&lt;CHANNEL&gt;/&lt;NODE_ID&gt;</code>. MQTT is a lightweight
+      publish/subscribe protocol: publishers send small JSON packets to a topic, and anyone subscribed to that
+      topic (or a wildcard match) receives them in real time.
+    </p>
+
+    <h2>What this app does</h2>
+    <p>
+      This dashboard <strong>subscribes</strong> to that public broker's <code>LongFast</code> channel (the
+      default human-chat channel) across all regions, parses each packet &mdash; text messages, GPS positions,
+      battery/telemetry, and node identity &mdash; and keeps a live, in-memory registry of nodes and messages,
+      rendered here and refreshed every few seconds. No hardware, pairing, or radio required: it's purely
+      observing real traffic that other people's gateways are relaying onto the internet.
+    </p>
+    <p>
+      It also <strong>publishes</strong>: the "Send a message" box below publishes your text back onto the same
+      broker under a virtual node called <em>"Web Dashboard"</em>, which is how you see your own messages
+      appear in the feed. That message is genuinely visible to anyone else watching the public broker too &mdash;
+      but it is <em>not</em> guaranteed to reach real LoRa radios, since gateway operators keep "downlink"
+      (internet&nbsp;&rarr;&nbsp;mesh) off by default to protect their own limited, regulated radio airtime from
+      being flooded by internet traffic.
+    </p>
+
+    <h2>Why build this</h2>
+    <p>
+      It's a small, hands-on way to learn Meshtastic's actual data model and integration surface (MQTT topics,
+      JSON packet schema, node/channel concepts) by building real, working tooling against the live public
+      network &mdash; the same approach a mapping tool, chat bot, or home-automation integration would take.
+    </p>
+  </section>
+</div>
+
+<div class="site-footer">
+  <span>Built by <a href="https://www.linkedin.com/in/mondweepchakravorty" target="_blank" rel="noopener">Mondweep Chakravorty</a></span>
+  <span class="sep">&middot;</span>
+  <a href="https://github.com/mondweep/vibe-cast/tree/meshtastic-tinkering" target="_blank" rel="noopener">View on GitHub</a>
+</div>
+
 <script>
 function timeAgo(ts) {
   if (!ts) return "-";
@@ -246,6 +346,19 @@ document.getElementById("send-form").addEventListener("submit", (ev) => {
   if (!text) return;
   input.value = "";
   sendMessage(text);
+});
+
+document.getElementById("tab-dashboard").addEventListener("click", () => {
+  document.getElementById("view-dashboard").style.display = "";
+  document.getElementById("view-about").style.display = "none";
+  document.getElementById("tab-dashboard").classList.add("active");
+  document.getElementById("tab-about").classList.remove("active");
+});
+document.getElementById("tab-about").addEventListener("click", () => {
+  document.getElementById("view-dashboard").style.display = "none";
+  document.getElementById("view-about").style.display = "";
+  document.getElementById("tab-about").classList.add("active");
+  document.getElementById("tab-dashboard").classList.remove("active");
 });
 
 refresh();
