@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Meshtastic Live Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121821;
+    --border: #23303f;
+    --text: #e6edf3;
+    --muted: #8b98a5;
+    --accent: #4fd1c5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 1.1rem; margin: 0; color: var(--accent); }
+  header .stats { color: var(--muted); font-size: 0.85rem; }
+  main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+  }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow: auto;
+    max-height: 70vh;
+  }
+  section h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin: 0 0 0.75rem 0;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: normal; }
+  .msg { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .msg .meta { color: var(--muted); font-size: 0.75rem; }
+  .empty { color: var(--muted); font-size: 0.85rem; padding: 1rem 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>&#9737; Meshtastic Live Dashboard</h1>
+  <div class="stats" id="stats">connecting&hellip;</div>
+</header>
+<main>
+  <section>
+    <h2>Nodes heard</h2>
+    <table>
+      <thead>
+        <tr><th>Node</th><th>Name</th><th>Region</th><th>Battery</th><th>Position</th><th>Last seen</th></tr>
+      </thead>
+      <tbody id="nodes"></tbody>
+    </table>
+    <div class="empty" id="nodes-empty" style="display:none">No nodes heard yet.</div>
+  </section>
+  <section>
+    <h2>Recent messages</h2>
+    <div id="messages"></div>
+    <div class="empty" id="messages-empty" style="display:none">No text messages yet.</div>
+  </section>
+</main>
+<script>
+function timeAgo(ts) {
+  if (!ts) return "-";
+  const s = Math.floor(Date.now() / 1000 - ts);
+  if (s < 60) return s + "s ago";
+  if (s < 3600) return Math.floor(s / 60) + "m ago";
+  return Math.floor(s / 3600) + "h ago";
+}
+
+function fmtNode(id) {
+  return typeof id === "string" ? id : "!" + Number(id).toString(16);
+}
+
+async function refresh() {
+  let data;
+  try {
+    const res = await fetch("/api/state");
+    data = await res.json();
+  } catch (e) {
+    document.getElementById("stats").textContent = "disconnected from server";
+    return;
+  }
+
+  document.getElementById("stats").textContent =
+    `${data.stats.node_count} nodes - ${data.stats.packet_count} packets - up ${Math.floor(data.stats.uptime_seconds)}s`;
+
+  const nodesBody = document.getElementById("nodes");
+  nodesBody.innerHTML = "";
+  document.getElementById("nodes-empty").style.display = data.nodes.length ? "none" : "block";
+  for (const n of data.nodes) {
+    const tr = document.createElement("tr");
+    const pos = (n.latitude != null && n.longitude != null)
+      ? `${n.latitude.toFixed(3)}, ${n.longitude.toFixed(3)}`
+      : "-";
+    tr.innerHTML = `
+      <td>${fmtNode(n.id)}</td>
+      <td>${n.longname || n.shortname || "-"}</td>
+      <td>${n.region || "-"}</td>
+      <td>${n.battery_level != null ? n.battery_level + "%" : "-"}</td>
+      <td>${pos}</td>
+      <td>${timeAgo(n.last_seen)}</td>`;
+    nodesBody.appendChild(tr);
+  }
+
+  const msgDiv = document.getElementById("messages");
+  msgDiv.innerHTML = "";
+  document.getElementById("messages-empty").style.display = data.messages.length ? "none" : "block";
+  for (const m of data.messages) {
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.innerHTML = `<div>${m.text}</div><div class="meta">${fmtNode(m.sender)} &middot; ${m.region || "?"} &middot; ${timeAgo(m.ts)}</div>`;
+    msgDiv.appendChild(div);
+  }
+}
+
+refresh();
+setInterval(refresh, 3000);
+</script>
+</body>
+</html>
