@@ -32,7 +32,8 @@ and much of the stack has been repackaged into it.
 |---|---|---|
 | Harness | **ruflo** | ✅ **This is claude-flow, renamed.** `package.json` still says `"name": "claude-flow"` @ 3.38.21. A marketplace of 39 Claude Code plugins. |
 | Orchestration | `ruflo-core`, `ruflo-swarm`, `ruflo-sparc` | ✅ Present as plugins. Untested. |
-| Neural runtime | **`@ruvector/ruvllm`** | ❌ **Tested — not functional.** Weights are real (RuvLTRA 0.5B/1.1B, `hf.co/ruv/ruvltra`) but the package ships no code that reads them: no model-path config, no GGUF parser, zero `gguf`/`llama` strings in the native binary. `generate()` emits garbage; embeddings can't separate related from unrelated text (0.001 separation). [Evidence →](./experiments/01-ruvllm-reality-check/) |
+| Neural runtime | **`@ruvector/ruvllm`** | ❌ **Tested — not functional.** Ships no code that reads GGUF: no model-path config, no parser, zero `gguf`/`llama` strings in the native binary. `generate()` emits garbage; embeddings can't separate related from unrelated text (0.001 separation). [Evidence →](./experiments/01-ruvllm-reality-check/) |
+| Weights | **RuvLTRA** (`hf.co/ruv/ruvltra`) | ❌ **Not fine-tuned.** All three models are byte-identical copies of public models: `claude-code` and `small` are both stock **Qwen2-0.5B-Instruct** (same SHA256, same file as each other); `medium` is **TinyLlama-1.1B-Chat-v1.0**. Verified by hash locally *and* via HF's server-side etag. [Evidence →](./experiments/02-ruvltra-vs-qwen/) |
 | Cognition | `ruflo-rvf`, `ruflo-ruvector`, `ruflo-rag-memory` | ✅ Present as plugins. Untested. |
 | Agents | `ruflo-daa` | ⚠️ **Correction:** "Dynamic Agentic Architecture", *not* "Decentralised Autonomous Agents" as first guessed. |
 | Learning | `ruflo-intelligence` (SONA), `ruflo-neural-trader` | ✅ Present. ruvnet's own ADR-086 reports defects in parts of this layer — see notes. |
@@ -58,11 +59,13 @@ activity, and maturity. Fix the table above. Note what is a working tool versus 
 memory model, agent topology, and MCP surface. First real question: what does it give that plain
 subagents don't?
 
-**Phase 2 — Neural layer.** ⚠️ *First pass done, and it stopped the phase.* `@ruvector/ruvllm`
-was probed directly ([experiment 01](./experiments/01-ruvllm-reality-check/)): 2 of 8 advertised
-claims hold. GGUF inference is absent and embeddings are degenerate, so the "per-agent neural
-model" question can't be answered through ruvLLM. Open: run RuvLTRA under llama.cpp to see whether
-the *weights* are any good independent of the runtime, then revisit `ruv-FANN`.
+**Phase 2 — Neural layer.** ✅ *Done, and it answered more than it set out to.*
+[Experiment 01](./experiments/01-ruvllm-reality-check/): `@ruvector/ruvllm` holds 2 of 8 advertised
+claims — no GGUF inference, degenerate embeddings.
+[Experiment 02](./experiments/02-ruvltra-vs-qwen/): the RuvLTRA weights aren't fine-tunes at all —
+`claude-code` and `small` are both byte-identical to stock Qwen2-0.5B-Instruct, `medium` is
+TinyLlama-1.1B-Chat. Run under llama.cpp, RuvLTRA and Qwen2 give byte-identical answers on 12/12
+tasks. Open: revisit `ruv-FANN` on its own terms.
 
 **Phase 3 — Cognition & mesh.** RVF cognitive containers, reusing what the RVF branches already
 learned. Then Synaptic Mesh, if there's a runnable path.
@@ -103,7 +106,7 @@ README.md       this map, kept current as understanding changes
 |---|---|
 | 0 — Inventory | **in progress** — ruflo mapped; QuDAG / ruv-FANN / mesh still open |
 | 1 — Foundations | not started |
-| 2 — Neural | ⚠️ **blocked** — ruvLLM verified non-functional for inference ([experiment 01](./experiments/01-ruvllm-reality-check/)); needs a real runtime |
+| 2 — Neural | ✅ **done** — runtime non-functional ([exp 01](./experiments/01-ruvllm-reality-check/)); weights are re-hosted public models, not fine-tunes ([exp 02](./experiments/02-ruvltra-vs-qwen/)) |
 | 3 — Cognition & mesh | not started |
 | 4 — Consensus | not started |
 | 5 — Composition | not started |

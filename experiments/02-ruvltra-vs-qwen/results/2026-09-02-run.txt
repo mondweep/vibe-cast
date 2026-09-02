@@ -1,0 +1,58 @@
+
+========================================================================
+Loading RuvLTRA claude-code 0.5B
+========================================================================
+✓ reverse-string     pass        744ms    20tok  26.9 tok/s
+✓ sum-even           pass       1719ms    63tok  36.6 tok/s
+✓ is-palindrome      pass       6836ms   274tok  40.1 tok/s
+✗ fizzbuzz           error      2375ms    85tok  35.8 tok/s  — fizzbuzz is not defined
+✓ group-by           pass       3301ms   140tok  42.4 tok/s
+✓ flatten-deep       pass       1766ms    65tok  36.8 tok/s
+✓ debounce-count     pass       1530ms    53tok  34.6 tok/s
+✗ parse-args         fail       2433ms   102tok  41.9 tok/s  — JSON.stringify(parseArgs(["--name","test","--verbose"]))
+✗ retry-backoff      fail       3816ms   161tok  42.2 tok/s  — JSON.stringify(backoffDelays(4,100))
+✗ tool-schema        fail       1595ms    52tok  32.6 tok/s  — JSON.stringify(validateToolCall({name:"read",params:{path:"a
+✗ diff-lines         fail       1524ms    59tok  38.7 tok/s  — changedLines(["a","b"],["a","b","c"])
+✗ token-budget       error      7405ms   320tok  43.2 tok/s  — tokens is not iterable
+
+========================================================================
+Loading Qwen2-0.5B-Instruct (true base)
+========================================================================
+✓ reverse-string     pass        809ms    20tok  24.7 tok/s
+✓ sum-even           pass       1705ms    63tok  37 tok/s
+✓ is-palindrome      pass       6991ms   274tok  39.2 tok/s
+✗ fizzbuzz           error      2307ms    85tok  36.8 tok/s  — fizzbuzz is not defined
+✓ group-by           pass       3297ms   140tok  42.5 tok/s
+✓ flatten-deep       pass       1854ms    65tok  35.1 tok/s
+✓ debounce-count     pass       1424ms    53tok  37.2 tok/s
+✗ parse-args         fail       2480ms   102tok  41.1 tok/s  — JSON.stringify(parseArgs(["--name","test","--verbose"]))
+✗ retry-backoff      fail       3868ms   161tok  41.6 tok/s  — JSON.stringify(backoffDelays(4,100))
+✗ tool-schema        fail       1438ms    52tok  36.2 tok/s  — JSON.stringify(validateToolCall({name:"read",params:{path:"a
+✗ diff-lines         fail       1513ms    59tok  39 tok/s  — changedLines(["a","b"],["a","b","c"])
+✗ token-budget       error      6786ms   320tok  47.2 tok/s  — tokens is not iterable
+
+========================================================================
+Loading Qwen2.5-0.5B-Instruct (ruvnet baseline)
+========================================================================
+✓ reverse-string     pass        792ms    20tok  25.3 tok/s
+✓ sum-even           pass       1095ms    39tok  35.6 tok/s
+✓ is-palindrome      pass       1655ms    70tok  42.3 tok/s
+✓ fizzbuzz           pass       2283ms    86tok  37.7 tok/s
+✓ group-by           pass       1593ms    62tok  38.9 tok/s
+✓ flatten-deep       pass       1336ms    54tok  40.4 tok/s
+✗ debounce-count     fail        997ms    36tok  36.1 tok/s  — JSON.stringify(chunk([1,2,3,4,5], 2))
+✗ parse-args         fail       1715ms    77tok  44.9 tok/s  — JSON.stringify(parseArgs(["--name","test","--verbose"]))
+✓ retry-backoff      pass       1850ms    63tok  34.1 tok/s
+✗ tool-schema        fail       1345ms    41tok  30.5 tok/s  — JSON.stringify(validateToolCall({name:"read",params:{path:"a
+✓ diff-lines         pass       1368ms    57tok  41.7 tok/s
+✓ token-budget       pass       1923ms    74tok  38.5 tok/s
+
+========================================================================
+SUMMARY  (12 tasks, greedy decoding, temperature 0)
+========================================================================
+model                                     overall     general    agentic    tok/s
+RuvLTRA claude-code 0.5B                  6/12 50%    6/7        0/5        37.6
+Qwen2-0.5B-Instruct (true base)           6/12 50%    6/7        0/5        38.1
+Qwen2.5-0.5B-Instruct (ruvnet baseline)   9/12 75%    6/7        3/5        37.2
+
+Full transcripts written to results/latest.json

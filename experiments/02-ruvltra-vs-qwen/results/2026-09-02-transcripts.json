@@ -1,0 +1,367 @@
+{
+  "generatedAt": "2026-09-02T18:53:49.652Z",
+  "config": {
+    "maxTokens": 320,
+    "temperature": 0,
+    "tasks": 12
+  },
+  "results": {
+    "ruvltra": {
+      "label": "RuvLTRA claude-code 0.5B",
+      "file": "ruvltra-claude-code-0.5b-q4_k_m.gguf",
+      "rows": [
+        {
+          "id": "reverse-string",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 744,
+          "tokens": 20,
+          "tps": 26.9,
+          "response": "```javascript\nfunction reverseString(str) {\n  return str.split('').reverse().join('');\n}\n```"
+        },
+        {
+          "id": "sum-even",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1719,
+          "tokens": 63,
+          "tps": 36.6,
+          "response": "```javascript\nfunction sumEven(numbers) {\n    let sum = 0;\n    for (let i = 0; i < numbers.length; i++) {\n        if (numbers[i] % 2 === 0) {\n            sum += numbers[i];\n        }\n    }\n    return sum;\n}\n```"
+        },
+        {
+          "id": "is-palindrome",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 6836,
+          "tokens": 274,
+          "tps": 40.1,
+          "response": "```javascript\nfunction isPalindrome(str) {\n  // Remove non-alphanumeric characters and convert to lowercase\n  const cleanedStr = str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();\n\n  // Check if the cleaned string is a palindrome\n  const reversedStr = cleanedStr.split('').reverse().join('');\n  return cleanedStr === reversedStr;\n}\n\n// Check function to test the isPalindrome function with provided data points\nfunction checkFunction() {\n  console.log(isPalindrome(\"A man, a plan, a canal: Panama\") === true); // true\n  console.log(isPalindrome(\"No lemon, no melon\") === true); // true\n  console.log(isPalindrome(\"Hello, World!\") === false); // false\n  console.log(isPalindrome(\"Was it a car or a cat I saw?\") === true); // true\n}\n\n// Run the check function to verify the correctness of the isPalindrome function\ncheckFunction();\n```\n\nThis code snippet introduces a function `isPalindrome` that checks if a given string is a palindrome, ignoring case and non-alphanumeric characters. It uses a regular expression to remove non-alphanumeric characters and convert the string to lowercase before checking if the cleaned string is a palindrome. The `checkFunction` is used to verify the correctness of the …[truncated]"
+        },
+        {
+          "id": "fizzbuzz",
+          "category": "general",
+          "verdict": "error",
+          "detail": "fizzbuzz is not defined",
+          "ms": 2375,
+          "tokens": 85,
+          "tps": 35.8,
+          "response": "```javascript\nfunction fizzBuzz(n) {\n    if (n % 3 === 0 && n % 5 === 0) {\n        return \"FizzBuzz\";\n    } else if (n % 3 === 0) {\n        return \"Fizz\";\n    } else if (n % 5 === 0) {\n        return \"Buzz\";\n    } else {\n        return n;\n    }\n}\n```"
+        },
+        {
+          "id": "group-by",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 3301,
+          "tokens": 140,
+          "tps": 42.4,
+          "response": "```javascript\nfunction groupBy(items, keyFn) {\n  return items.reduce((acc, item) => {\n    const key = keyFn(item);\n    acc[key] = acc[key] || [];\n    acc[key].push(item);\n    return acc;\n  }, {});\n}\n```\n\nThis code defines a function `groupBy` that takes an array of items and a key function as arguments. It uses the `reduce` method to group the items based on the key function. The key is the result of applying the key function to each item. The accumulator object is used to store the grouped items. The key is added to the accumulator object for each item. The function returns the accumulator object."
+        },
+        {
+          "id": "flatten-deep",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1766,
+          "tokens": 65,
+          "tps": 36.8,
+          "response": "```javascript\nfunction flattenDeep(arr) {\n  let flatArray = [];\n  for (let item of arr) {\n    if (Array.isArray(item)) {\n      flatArray = flatArray.concat(flattenDeep(item));\n    } else {\n      flatArray.push(item);\n    }\n  }\n  return flatArray;\n}\n```"
+        },
+        {
+          "id": "debounce-count",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1530,
+          "tokens": 53,
+          "tps": 34.6,
+          "response": "```javascript\nfunction chunk(arr, size) {\n  const chunks = [];\n  for (let i = 0; i < arr.length; i += size) {\n    chunks.push(arr.slice(i, i + size));\n  }\n  return chunks;\n}\n```"
+        },
+        {
+          "id": "parse-args",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "JSON.stringify(parseArgs([\"--name\",\"test\",\"--verbose\"]))",
+          "ms": 2433,
+          "tokens": 102,
+          "tps": 41.9,
+          "response": "```javascript\nfunction parseArgs(argv) {\n    let obj = {};\n    for (let i = 0; i < argv.length; i++) {\n        let arg = argv[i];\n        if (arg.startsWith('--')) {\n            let flag = arg.slice(2);\n            if (flag === \"name\") {\n                obj.name = arg.slice(3);\n            } else if (flag === \"verbose\") {\n                obj.verbose = true;\n            }\n        }\n    }\n    return obj;\n}\n```"
+        },
+        {
+          "id": "retry-backoff",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "JSON.stringify(backoffDelays(4,100))",
+          "ms": 3816,
+          "tokens": 161,
+          "tps": 42.2,
+          "response": "```javascript\nfunction backoffDelays(attempts, baseMs) {\n    let delays = [];\n    for (let i = 0; i < attempts; i++) {\n        delays.push(Math.pow(2, i));\n    }\n    return delays;\n}\n\n// Test the function\nbackoffDelays(4, 100);\n```\n\nThis code snippet defines a function `backoffDelays` that calculates exponential backoff delays based on the number of attempts and the base time in milliseconds. It uses a loop to generate the exponential sequence and returns it as an array. The provided test function `backoffDelays(4, 100)` calls the function with the parameters 4 and 100, and it prints the resulting array of backoff delays."
+        },
+        {
+          "id": "tool-schema",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "JSON.stringify(validateToolCall({name:\"read\",params:{path:\"a\"}},{name:\"read\",required:[\"path\"]}))",
+          "ms": 1595,
+          "tokens": 52,
+          "tps": 32.6,
+          "response": "```javascript\nfunction validateToolCall(call, schema) {\n  const missingParams = [];\n  for (let key in schema) {\n    if (!call.hasOwnProperty(key)) {\n      missingParams.push(key);\n    }\n  }\n  return missingParams;\n}\n```"
+        },
+        {
+          "id": "diff-lines",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "changedLines([\"a\",\"b\"],[\"a\",\"b\",\"c\"])",
+          "ms": 1524,
+          "tokens": 59,
+          "tps": 38.7,
+          "response": "```javascript\nfunction changedLines(before, after) {\n  let count = 0;\n  for (let i = 0; i < before.length; i++) {\n    if (before[i] !== after[i]) {\n      count++;\n    }\n  }\n  return count;\n}\n```"
+        },
+        {
+          "id": "token-budget",
+          "category": "agentic",
+          "verdict": "error",
+          "detail": "tokens is not iterable",
+          "ms": 7405,
+          "tokens": 320,
+          "tps": 43.2,
+          "response": "```javascript\n/**\n * Calculates the names of items that fit within the token budget.\n * @param {Array} items - An array of objects, each containing a name and an array of tokens.\n * @param {Number} budget - The total budget available.\n * @returns {Array} An array of names of items that fit within the budget.\n */\nfunction fitBudget(items, budget) {\n    let result = [];\n    for (let item of items) {\n        let tokens = item.tokens;\n        let currentBudget = 0;\n        for (let token of tokens) {\n            currentBudget += token;\n            if (currentBudget > budget) {\n                break;\n            }\n        }\n        if (currentBudget === budget) {\n            result.push(item.name);\n        }\n    }\n    return result;\n}\n\n// Check function to verify the correctness of the solution\nfunction check() {\n    const items = [\n        {name: \"Item 1\", tokens: [\"a\", \"b\", \"c\"]},\n        {name: \"Item 2\", tokens: [\"a\", \"b\", \"d\"]},\n        {name: \"Item 3\", tokens: [\"a\", \"b\", \"c\", \"d\"]}\n    ];\n    const budget = 10;\n    const expected = [\"Item 1\", \"Item 2\"];\n    const result = fitBudget(items, budget);\n    console.log(result); // Expected output: [\"Item 1\", \"Item 2\"]\n}\n\ncheck();\n```\n\nTh…[truncated]"
+        }
+      ]
+    },
+    "qwen2": {
+      "label": "Qwen2-0.5B-Instruct (true base)",
+      "file": "qwen2-0.5b-instruct-q4_k_m.gguf",
+      "rows": [
+        {
+          "id": "reverse-string",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 809,
+          "tokens": 20,
+          "tps": 24.7,
+          "response": "```javascript\nfunction reverseString(str) {\n  return str.split('').reverse().join('');\n}\n```"
+        },
+        {
+          "id": "sum-even",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1705,
+          "tokens": 63,
+          "tps": 37,
+          "response": "```javascript\nfunction sumEven(numbers) {\n    let sum = 0;\n    for (let i = 0; i < numbers.length; i++) {\n        if (numbers[i] % 2 === 0) {\n            sum += numbers[i];\n        }\n    }\n    return sum;\n}\n```"
+        },
+        {
+          "id": "is-palindrome",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 6991,
+          "tokens": 274,
+          "tps": 39.2,
+          "response": "```javascript\nfunction isPalindrome(str) {\n  // Remove non-alphanumeric characters and convert to lowercase\n  const cleanedStr = str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();\n\n  // Check if the cleaned string is a palindrome\n  const reversedStr = cleanedStr.split('').reverse().join('');\n  return cleanedStr === reversedStr;\n}\n\n// Check function to test the isPalindrome function with provided data points\nfunction checkFunction() {\n  console.log(isPalindrome(\"A man, a plan, a canal: Panama\") === true); // true\n  console.log(isPalindrome(\"No lemon, no melon\") === true); // true\n  console.log(isPalindrome(\"Hello, World!\") === false); // false\n  console.log(isPalindrome(\"Was it a car or a cat I saw?\") === true); // true\n}\n\n// Run the check function to verify the correctness of the isPalindrome function\ncheckFunction();\n```\n\nThis code snippet introduces a function `isPalindrome` that checks if a given string is a palindrome, ignoring case and non-alphanumeric characters. It uses a regular expression to remove non-alphanumeric characters and convert the string to lowercase before checking if the cleaned string is a palindrome. The `checkFunction` is used to verify the correctness of the …[truncated]"
+        },
+        {
+          "id": "fizzbuzz",
+          "category": "general",
+          "verdict": "error",
+          "detail": "fizzbuzz is not defined",
+          "ms": 2307,
+          "tokens": 85,
+          "tps": 36.8,
+          "response": "```javascript\nfunction fizzBuzz(n) {\n    if (n % 3 === 0 && n % 5 === 0) {\n        return \"FizzBuzz\";\n    } else if (n % 3 === 0) {\n        return \"Fizz\";\n    } else if (n % 5 === 0) {\n        return \"Buzz\";\n    } else {\n        return n;\n    }\n}\n```"
+        },
+        {
+          "id": "group-by",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 3297,
+          "tokens": 140,
+          "tps": 42.5,
+          "response": "```javascript\nfunction groupBy(items, keyFn) {\n  return items.reduce((acc, item) => {\n    const key = keyFn(item);\n    acc[key] = acc[key] || [];\n    acc[key].push(item);\n    return acc;\n  }, {});\n}\n```\n\nThis code defines a function `groupBy` that takes an array of items and a key function as arguments. It uses the `reduce` method to group the items based on the key function. The key is the result of applying the key function to each item. The accumulator object is used to store the grouped items. The key is added to the accumulator object for each item. The function returns the accumulator object."
+        },
+        {
+          "id": "flatten-deep",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1854,
+          "tokens": 65,
+          "tps": 35.1,
+          "response": "```javascript\nfunction flattenDeep(arr) {\n  let flatArray = [];\n  for (let item of arr) {\n    if (Array.isArray(item)) {\n      flatArray = flatArray.concat(flattenDeep(item));\n    } else {\n      flatArray.push(item);\n    }\n  }\n  return flatArray;\n}\n```"
+        },
+        {
+          "id": "debounce-count",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1424,
+          "tokens": 53,
+          "tps": 37.2,
+          "response": "```javascript\nfunction chunk(arr, size) {\n  const chunks = [];\n  for (let i = 0; i < arr.length; i += size) {\n    chunks.push(arr.slice(i, i + size));\n  }\n  return chunks;\n}\n```"
+        },
+        {
+          "id": "parse-args",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "JSON.stringify(parseArgs([\"--name\",\"test\",\"--verbose\"]))",
+          "ms": 2480,
+          "tokens": 102,
+          "tps": 41.1,
+          "response": "```javascript\nfunction parseArgs(argv) {\n    let obj = {};\n    for (let i = 0; i < argv.length; i++) {\n        let arg = argv[i];\n        if (arg.startsWith('--')) {\n            let flag = arg.slice(2);\n            if (flag === \"name\") {\n                obj.name = arg.slice(3);\n            } else if (flag === \"verbose\") {\n                obj.verbose = true;\n            }\n        }\n    }\n    return obj;\n}\n```"
+        },
+        {
+          "id": "retry-backoff",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "JSON.stringify(backoffDelays(4,100))",
+          "ms": 3868,
+          "tokens": 161,
+          "tps": 41.6,
+          "response": "```javascript\nfunction backoffDelays(attempts, baseMs) {\n    let delays = [];\n    for (let i = 0; i < attempts; i++) {\n        delays.push(Math.pow(2, i));\n    }\n    return delays;\n}\n\n// Test the function\nbackoffDelays(4, 100);\n```\n\nThis code snippet defines a function `backoffDelays` that calculates exponential backoff delays based on the number of attempts and the base time in milliseconds. It uses a loop to generate the exponential sequence and returns it as an array. The provided test function `backoffDelays(4, 100)` calls the function with the parameters 4 and 100, and it prints the resulting array of backoff delays."
+        },
+        {
+          "id": "tool-schema",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "JSON.stringify(validateToolCall({name:\"read\",params:{path:\"a\"}},{name:\"read\",required:[\"path\"]}))",
+          "ms": 1438,
+          "tokens": 52,
+          "tps": 36.2,
+          "response": "```javascript\nfunction validateToolCall(call, schema) {\n  const missingParams = [];\n  for (let key in schema) {\n    if (!call.hasOwnProperty(key)) {\n      missingParams.push(key);\n    }\n  }\n  return missingParams;\n}\n```"
+        },
+        {
+          "id": "diff-lines",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "changedLines([\"a\",\"b\"],[\"a\",\"b\",\"c\"])",
+          "ms": 1513,
+          "tokens": 59,
+          "tps": 39,
+          "response": "```javascript\nfunction changedLines(before, after) {\n  let count = 0;\n  for (let i = 0; i < before.length; i++) {\n    if (before[i] !== after[i]) {\n      count++;\n    }\n  }\n  return count;\n}\n```"
+        },
+        {
+          "id": "token-budget",
+          "category": "agentic",
+          "verdict": "error",
+          "detail": "tokens is not iterable",
+          "ms": 6786,
+          "tokens": 320,
+          "tps": 47.2,
+          "response": "```javascript\n/**\n * Calculates the names of items that fit within the token budget.\n * @param {Array} items - An array of objects, each containing a name and an array of tokens.\n * @param {Number} budget - The total budget available.\n * @returns {Array} An array of names of items that fit within the budget.\n */\nfunction fitBudget(items, budget) {\n    let result = [];\n    for (let item of items) {\n        let tokens = item.tokens;\n        let currentBudget = 0;\n        for (let token of tokens) {\n            currentBudget += token;\n            if (currentBudget > budget) {\n                break;\n            }\n        }\n        if (currentBudget === budget) {\n            result.push(item.name);\n        }\n    }\n    return result;\n}\n\n// Check function to verify the correctness of the solution\nfunction check() {\n    const items = [\n        {name: \"Item 1\", tokens: [\"a\", \"b\", \"c\"]},\n        {name: \"Item 2\", tokens: [\"a\", \"b\", \"d\"]},\n        {name: \"Item 3\", tokens: [\"a\", \"b\", \"c\", \"d\"]}\n    ];\n    const budget = 10;\n    const expected = [\"Item 1\", \"Item 2\"];\n    const result = fitBudget(items, budget);\n    console.log(result); // Expected output: [\"Item 1\", \"Item 2\"]\n}\n\ncheck();\n```\n\nTh…[truncated]"
+        }
+      ]
+    },
+    "qwen25": {
+      "label": "Qwen2.5-0.5B-Instruct (ruvnet baseline)",
+      "file": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+      "rows": [
+        {
+          "id": "reverse-string",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 792,
+          "tokens": 20,
+          "tps": 25.3,
+          "response": "```javascript\nfunction reverseString(str) {\n  return str.split('').reverse().join('');\n}\n```"
+        },
+        {
+          "id": "sum-even",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1095,
+          "tokens": 39,
+          "tps": 35.6,
+          "response": "```javascript\nfunction sumEven(numbers) {\n  return numbers.filter(num => num % 2 === 0).reduce((acc, num) => acc + num, 0);\n}\n```"
+        },
+        {
+          "id": "is-palindrome",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1655,
+          "tokens": 70,
+          "tps": 42.3,
+          "response": "```javascript\nfunction isPalindrome(str) {\n    // Remove non-alphanumeric characters and convert to lowercase\n    const cleanedStr = str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();\n    // Check if the cleaned string is equal to its reverse\n    return cleanedStr === cleanedStr.split('').reverse().join('');\n}\n```"
+        },
+        {
+          "id": "fizzbuzz",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 2283,
+          "tokens": 86,
+          "tps": 37.7,
+          "response": "```javascript\nfunction fizzbuzz(n) {\n  if (n % 3 === 0 && n % 5 === 0) {\n    return \"FizzBuzz\";\n  } else if (n % 3 === 0) {\n    return \"Fizz\";\n  } else if (n % 5 === 0) {\n    return \"Buzz\";\n  } else {\n    return n.toString();\n  }\n}\n```"
+        },
+        {
+          "id": "group-by",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1593,
+          "tokens": 62,
+          "tps": 38.9,
+          "response": "```javascript\nfunction groupBy(items, keyFn) {\n  const grouped = {};\n  items.forEach(item => {\n    const key = keyFn(item);\n    if (!grouped[key]) {\n      grouped[key] = [];\n    }\n    grouped[key].push(item);\n  });\n  return grouped;\n}\n```"
+        },
+        {
+          "id": "flatten-deep",
+          "category": "general",
+          "verdict": "pass",
+          "ms": 1336,
+          "tokens": 54,
+          "tps": 40.4,
+          "response": "```javascript\nfunction flattenDeep(arr) {\n  return arr.reduce((acc, val) => {\n    if (Array.isArray(val)) {\n      return acc.concat(flattenDeep(val));\n    } else {\n      return acc.concat(val);\n    }\n  }, []);\n}\n```"
+        },
+        {
+          "id": "debounce-count",
+          "category": "general",
+          "verdict": "fail",
+          "detail": "JSON.stringify(chunk([1,2,3,4,5], 2))",
+          "ms": 997,
+          "tokens": 36,
+          "tps": 36.1,
+          "response": "```javascript\nfunction chunk(arr, size) {\n  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) => i + 1);\n}\n```"
+        },
+        {
+          "id": "parse-args",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "JSON.stringify(parseArgs([\"--name\",\"test\",\"--verbose\"]))",
+          "ms": 1715,
+          "tokens": 77,
+          "tps": 44.9,
+          "response": "```javascript\nfunction parseArgs(argv) {\n  const args = {};\n  for (let i = 1; i < argv.length; i++) {\n    const arg = argv[i];\n    const key = arg.slice(0, 1);\n    const value = arg.slice(1);\n    args[key] = value === 'true';\n  }\n  return args;\n}\n```"
+        },
+        {
+          "id": "retry-backoff",
+          "category": "agentic",
+          "verdict": "pass",
+          "ms": 1850,
+          "tokens": 63,
+          "tps": 34.1,
+          "response": "```javascript\nfunction backoffDelays(attempts, baseMs) {\n  var delays = [];\n  for (var i = 0; i < attempts; i++) {\n    var delay = baseMs * Math.pow(2, i);\n    delays.push(delay);\n  }\n  return delays;\n}\n```"
+        },
+        {
+          "id": "tool-schema",
+          "category": "agentic",
+          "verdict": "fail",
+          "detail": "JSON.stringify(validateToolCall({name:\"read\",params:{path:\"a\"}},{name:\"read\",required:[\"path\"]}))",
+          "ms": 1345,
+          "tokens": 41,
+          "tps": 30.5,
+          "response": "```javascript\nfunction validateToolCall(call, schema) {\n  const requiredParams = schema.required;\n  const missingParams = requiredParams.filter(param => !call[param]);\n  return missingParams;\n}\n```"
+        },
+        {
+          "id": "diff-lines",
+          "category": "agentic",
+          "verdict": "pass",
+          "ms": 1368,
+          "tokens": 57,
+          "tps": 41.7,
+          "response": "```javascript\nfunction changedLines(before, after) {\n  let count = 0;\n  for (let i = 0; i < after.length; i++) {\n    if (!before.includes(after[i])) {\n      count++;\n    }\n  }\n  return count;\n}\n```"
+        },
+        {
+          "id": "token-budget",
+          "category": "agentic",
+          "verdict": "pass",
+          "ms": 1923,
+          "tokens": 74,
+          "tps": 38.5,
+          "response": "```javascript\nfunction fitBudget(items, budget) {\n    let itemsFitted = [];\n    let currentBudget = 0;\n\n    for (let item of items) {\n        if (currentBudget + item.tokens <= budget) {\n            itemsFitted.push(item.name);\n            currentBudget += item.tokens;\n        }\n    }\n\n    return itemsFitted;\n}\n```"
+        }
+      ]
+    }
+  }
+}

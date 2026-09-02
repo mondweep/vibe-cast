@@ -113,11 +113,40 @@ So there are two claims in tension: the package advertises FlashAttention and sp
 the vendor's own ADR describes a JS coordination library with several broken numerics. **Neither has
 been tested here yet.** Generation quality and throughput are unmeasured — see `experiments/`.
 
-**Open questions:**
-1. Does `generate()` produce coherent text, and at what tokens/sec?
-2. Is the GGUF path native or JS? `isNativeLoaded()` should answer it.
-3. Are the ADR-086 defects still present in 2.6.2, or fixed since 2.5.4?
-4. What is RuvLTRA distilled from, and what does "claude-code" fine-tuning actually mean?
+**Resolved by [experiment 01](../experiments/01-ruvllm-reality-check/):**
+1. `generate()` produces garbage — no GGUF path exists. ❌
+2. Native loads fine (optional dep), but contains no GGUF/tokenizer code at all. ❌
+3. Defects persist in 2.6.2; embeddings are degenerate (0.001 separation). ❌
+
+**Still open:** whether the coordination scaffolding (sessions, trajectories, LoRA checkpoint
+plumbing) is worth studying as architecture, setting the ML aside.
+
+---
+
+## Finding 003 — RuvLTRA weights are re-hosted public models
+
+**Date:** 2026-09-02 · **Source:** executed (hash comparison + llama.cpp benchmark)
+
+Answers the last open question above — "what does the claude-code fine-tuning actually mean?"
+It means nothing: there is no fine-tuning.
+
+| `ruv/ruvltra` file | advertised as | SHA256 | actually is |
+|---|---|---|---|
+| `ruvltra-claude-code-0.5b` | "fine-tuned for Claude Code workflows" | `f0a42bb9…ab81a8` | Qwen2-0.5B-Instruct, unmodified |
+| `ruvltra-small-0.5b` | "Edge devices, IoT" | `f0a42bb9…ab81a8` | the identical file |
+| `ruvltra-medium-1.1b` | "General purpose, balanced" | `9fecc3b3…2776a0` | TinyLlama-1.1B-Chat-v1.0 |
+
+Confirmed twice: locally (matching MD5 + SHA256, identical 397,805,248-byte size) and server-side
+via HuggingFace's `x-linked-etag`, which is the stored LFS object's content hash — so it holds
+independently of any download. GGUF metadata corroborates: `general.name` is still
+`qwen2-0_5b-instruct`.
+
+Behaviourally confirmed under llama.cpp: RuvLTRA and Qwen2-0.5B-Instruct returned **byte-identical
+responses on 12/12** benchmark tasks (control: 1/12 against Qwen2.5). RuvLTRA scored **0/5 on the
+"agentic coding" tasks it is specifically sold for**, while Qwen2.5 — no such claim — scored 3/5.
+
+Note ruvnet's own `COMPARISON_MODELS` benchmarks RuvLTRA against Qwen**2.5**, a generation newer
+than the Qwen2 it actually is, attributing the difference to RuvLTRA.
 
 ---
 

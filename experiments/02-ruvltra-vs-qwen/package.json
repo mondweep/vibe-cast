@@ -1,0 +1,9 @@
+{
+  "name": "ruvltra-vs-qwen",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Head-to-head: RuvLTRA-claude-code-0.5B vs its Qwen base, under llama.cpp",
+  "type": "module",
+  "scripts": { "bench": "node bench.mjs --json results/latest.json" },
+  "dependencies": { "node-llama-cpp": "^3.0.0" }
+}
