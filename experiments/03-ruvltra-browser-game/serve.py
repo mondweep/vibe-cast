@@ -10,6 +10,7 @@ Also supports HTTP Range requests, which matter when serving a local .gguf.
 
     python3 serve.py            # http://localhost:8000
     python3 serve.py 8080
+    python3 serve.py 8080 --no-coi   # omit the headers, to mimic GitHub Pages
 """
 import os
 import re
@@ -19,10 +20,13 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 
 class Handler(SimpleHTTPRequestHandler):
+    coi = True
+
     def end_headers(self):
-        self.send_header('Cross-Origin-Opener-Policy', 'same-origin')
-        self.send_header('Cross-Origin-Embedder-Policy', 'require-corp')
-        self.send_header('Cross-Origin-Resource-Policy', 'cross-origin')
+        if self.coi:
+            self.send_header('Cross-Origin-Opener-Policy', 'same-origin')
+            self.send_header('Cross-Origin-Embedder-Policy', 'require-corp')
+            self.send_header('Cross-Origin-Resource-Policy', 'cross-origin')
         self.send_header('Cache-Control', 'no-store')
         super().end_headers()
 
@@ -78,9 +82,12 @@ class _Bounded:
 
 
 if __name__ == '__main__':
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    Handler.coi = '--no-coi' not in sys.argv
+    port = int(args[0]) if args else 8000
     root = os.path.dirname(os.path.abspath(__file__))
     srv = ThreadingHTTPServer(('0.0.0.0', port), partial(Handler, directory=root))
-    print(f'Word Smuggler on http://localhost:{port}  (cross-origin isolated)')
+    mode = 'cross-origin isolated' if Handler.coi else 'NO coi headers (mimics GitHub Pages)'
+    print(f'Word Smuggler on http://localhost:{port}  ({mode})')
     print('Serving from', root)
     srv.serve_forever()

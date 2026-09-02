@@ -1,0 +1,45 @@
+name: Deploy Pages
+
+# Publishes this branch as a static site so Word Smuggler is playable from a URL.
+# `configure-pages` with enablement:true turns Pages on via the API, so no manual
+# repository setting is needed.
+
+on:
+  push:
+    branches: ['claude/orphan-branch-explore-frn0ly']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel a half-finished deployment; queue instead.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # The site is the branch as-is: index.html at the root, the game under
+      # experiments/. Nothing to build.
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy
+        id: deploy
+        uses: actions/deploy-pages@v4

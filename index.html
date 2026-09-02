@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>explore-ruvstack — vibe-cast</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2226%22 font-size=%2226%22>🔬</text></svg>">
+<style>
+  :root {
+    --bg:#0d1117; --panel:#161b22; --line:#30363d; --ink:#e6edf3; --dim:#8b949e;
+    --accent:#7ee787; --accent-2:#79c0ff; --bad:#ff7b72; --gold:#e3b341;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 var(--mono);
+         padding:40px 18px 60px; }
+  .wrap { max-width:780px; margin:0 auto; }
+  h1 { font-size:28px; margin:0 0 8px; letter-spacing:-.5px; }
+  h1 span { color:var(--accent); }
+  .lede { color:var(--dim); font-size:14px; margin-bottom:28px; }
+  .lede a { color:var(--accent-2); }
+  h2 { font-size:16px; margin:34px 0 12px; color:var(--accent-2);
+       text-transform:uppercase; letter-spacing:1px; }
+
+  .cta { display:block; background:linear-gradient(135deg,#132b1a,#16233a);
+         border:1px solid var(--accent); border-radius:12px; padding:22px 24px;
+         text-decoration:none; color:var(--ink); margin-bottom:12px; }
+  .cta:hover { filter:brightness(1.12); }
+  .cta .t { font-size:21px; font-weight:700; color:var(--accent); margin-bottom:5px; }
+  .cta .d { color:var(--dim); font-size:13px; }
+  .cta .go { color:var(--accent-2); font-size:13px; margin-top:10px; display:block; }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:8px; }
+  th,td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+  code { color:var(--gold); font-size:12px; }
+  .no { color:var(--bad); } .yes { color:var(--accent); }
+
+  .find { background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--bad);
+          border-radius:0 8px 8px 0; padding:14px 16px; margin-bottom:12px; }
+  .find b { color:var(--ink); }
+  .find p { margin:6px 0 0; color:var(--dim); font-size:13px; }
+  footer { margin-top:44px; padding-top:20px; border-top:1px solid var(--line);
+           color:var(--dim); font-size:12px; }
+  footer a { color:var(--accent-2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>explore-<span>ruvstack</span></h1>
+  <div class="lede">
+    An orphan branch of <a href="https://github.com/mondweep/vibe-cast">vibe-cast</a> working through
+    <a href="https://github.com/ruvnet">@ruvnet</a>'s agentic stack end to end — running things rather
+    than reading about them.
+  </div>
+
+  <a class="cta" href="./experiments/03-ruvltra-browser-game/">
+    <div class="t">🤫 Play Word Smuggler</div>
+    <div class="d">
+      Trick a language model into saying a secret word you're forbidden to type.
+      The model runs entirely in your browser via llama.cpp → WebAssembly —
+      no server, no API key, nothing you type leaves your machine.
+    </div>
+    <span class="go">Play now → <span style="color:var(--dim)">(~398 MB first load, then cached)</span></span>
+  </a>
+
+  <h2>What the experiments found</h2>
+
+  <div class="find">
+    <b>ruvLLM holds 2 of 8 advertised claims.</b>
+    <p>
+      No GGUF inference exists: no model-path config, no parser in the JS, and zero
+      <code>gguf</code>/<code>llama</code>/<code>tokenizer</code> strings in the native binary.
+      <code>generate()</code> emits garbage. Embeddings can't separate related from unrelated
+      text — 0.001 separation, with two gibberish strings scoring higher than any genuinely
+      related pair.
+    </p>
+  </div>
+
+  <div class="find">
+    <b>RuvLTRA was never fine-tuned.</b>
+    <p>
+      All three models on <code>hf.co/ruv/ruvltra</code> are byte-identical copies of public models.
+      <code>claude-code</code> and <code>small</code> are both stock Qwen2-0.5B-Instruct — the same
+      file as each other — and <code>medium</code> is TinyLlama-1.1B-Chat. Verified by SHA256 locally
+      and via HuggingFace's server-side etag.
+    </p>
+  </div>
+
+  <div class="find">
+    <b>ruflo is claude-flow, renamed.</b>
+    <p>
+      The repo's <code>package.json</code> still declares <code>"name": "claude-flow"</code> at 3.38.21,
+      now shipped as a marketplace of 39 Claude Code plugins.
+    </p>
+  </div>
+
+  <h2>Benchmark — RuvLTRA vs its base</h2>
+  <table>
+    <tr><th>Model</th><th>Overall</th><th>General</th><th>Agentic</th></tr>
+    <tr><td>RuvLTRA claude-code 0.5B</td><td>6/12</td><td>6/7</td><td class="no">0/5</td></tr>
+    <tr><td>Qwen2-0.5B-Instruct <span style="color:var(--dim)">(true base)</span></td><td>6/12</td><td>6/7</td><td class="no">0/5</td></tr>
+    <tr><td>Qwen2.5-0.5B-Instruct <span style="color:var(--dim)">(ruvnet's baseline)</span></td><td class="yes">9/12</td><td>6/7</td><td class="yes">3/5</td></tr>
+  </table>
+  <div style="color:var(--dim);font-size:12px">
+    12 JavaScript tasks, 32 executable assertions, greedy decoding, code run in an isolated process.
+    RuvLTRA and Qwen2 returned <b style="color:var(--ink)">byte-identical responses on 12/12 tasks</b>;
+    control against Qwen2.5 matched 1/12. RuvLTRA scores 0/5 on the "agentic coding" tasks it is
+    specifically sold for.
+  </div>
+
+  <h2>Scope</h2>
+  <div style="color:var(--dim);font-size:13px">
+    These findings concern <code>@ruvector/ruvllm</code> and <code>ruv/ruvltra</code> as published,
+    verified 2026-09-02. They say nothing about the other 38 ruflo plugins. It's also possible
+    fine-tuned weights exist and the wrong files were uploaded — the observable artifacts are what
+    they are. ruvnet's own ADR-086 is candid about much of the runtime assessment; the gap is
+    between that ADR and the npm package description.
+  </div>
+
+  <footer>
+    Every experiment is reproducible — <code>npm run check</code> / <code>npm run bench</code>.
+    The hash finding needs no downloads at all, just two <code>curl -I</code> calls.<br>
+    <a href="https://github.com/mondweep/vibe-cast/tree/claude/orphan-branch-explore-frn0ly">Source on GitHub</a>
+    · by <a href="https://www.linkedin.com/in/mondweepchakravorty">Mondweep Chakravorty</a>
+  </footer>
+</div>
+</body>
+</html>

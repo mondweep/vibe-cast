@@ -161,6 +161,9 @@
   </footer>
 </div>
 
+<!-- Enables multi-threading on static hosts (GitHub Pages) that cannot send COOP/COEP. -->
+<script src="coi-serviceworker.js"></script>
+
 <script type="module">
 // ---------------------------------------------------------------- config
 const params = new URLSearchParams(location.search);
@@ -230,6 +233,7 @@ $('loadBtn').addEventListener('click', async () => {
     });
 
     S.ready = true;
+    S.threads = threads;
     $('loadMsg').textContent = `Ready — ${threads} thread${threads > 1 ? 's' : ''}.`;
     $('loader').classList.add('hidden');
     $('game').classList.remove('hidden');
@@ -385,6 +389,7 @@ $('form').addEventListener('submit', async e => {
 
   const secs = (performance.now() - t0) / 1000;
   $('sTps').textContent = tokens ? (tokens / secs).toFixed(1) + ' t/s' : '—';
+  $('sTps').title = `${S.threads} thread(s), cross-origin isolated: ${self.crossOriginIsolated}`;
   S.history.push({ role: 'assistant', content: reply });
 
   if (foundTarget(reply)) {

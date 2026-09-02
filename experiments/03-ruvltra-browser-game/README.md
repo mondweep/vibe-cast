@@ -21,10 +21,26 @@ curl -L -o model.gguf \
 # then open http://localhost:8000/?model=./model.gguf
 ```
 
-`serve.py` sets `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` so the page is
-cross-origin isolated, which lets the WASM build use **multiple threads**. Plain static hosting
-(GitHub Pages, `python3 -m http.server`) doesn't set those headers, so it falls back to a single
-thread and runs several times slower. It still works — just be patient.
+### Threading on static hosts
+
+llama.cpp's WASM build only uses multiple threads when the page is **cross-origin isolated**, which
+normally requires COOP/COEP response headers. `serve.py` sends them. GitHub Pages can't send custom
+headers at all — so `coi-serviceworker.js` injects them onto same-origin responses from a service
+worker instead, and the page reloads once to let it take effect.
+
+Verified with an A/B test in fresh browser contexts against a deliberately header-less server
+(`serve.py --no-coi`, which mimics GitHub Pages):
+
+| | `crossOriginIsolated` | threads |
+|---|---|---|
+| Service worker blocked | `false` | 1 |
+| Service worker active | `true` | 4 |
+
+Cross-origin requests (the wllama CDN, the model on HuggingFace) are deliberately **not** proxied by
+the worker — they're fetched in CORS mode and both hosts send `access-control-allow-origin`, which
+already satisfies COEP. Passing 398 MB through a service worker would add risk and no benefit.
+
+It fails safe: if registration is blocked, the game runs single-threaded rather than breaking.
 
 Fully offline (no CDN, no HuggingFace) — vendors wllama and the model locally:
 
