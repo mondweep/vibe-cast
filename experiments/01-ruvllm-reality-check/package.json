@@ -1,0 +1,13 @@
+{
+  "name": "ruvllm-reality-check",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Independent verification of @ruvector/ruvllm's advertised capabilities",
+  "type": "commonjs",
+  "scripts": {
+    "check": "node check.js"
+  },
+  "dependencies": {
+    "@ruvector/ruvllm": "2.6.2"
+  }
+}

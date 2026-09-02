@@ -24,22 +24,25 @@ The output of this branch is that map, backed by things actually run rather than
 
 ## What's in scope
 
-The stack, as understood going in — **every line here is a hypothesis to be checked against the
-source, not a claim.** Correcting this table is part of the work.
+Phase 0 has started, so this table now mixes verified facts with open questions. ✅ = checked
+against source or executed. ❓ = still a guess. The headline correction: **ruflo is claude-flow**,
+and much of the stack has been repackaged into it.
 
-| Layer | Component | What it's believed to do |
+| Layer | Component | Status after Phase 0 |
 |---|---|---|
-| Orchestration | `claude-flow` | Swarm/hive-mind orchestration on top of Claude Code; MCP server, SPARC modes, memory |
-| Orchestration | `ruv-swarm` | Rust/WASM swarm runtime with per-agent neural models |
-| Neural | `ruv-FANN` | Rust reimplementation of FANN; the numeric base for the swarm layer |
-| Neural | `neuro-divergent` | Forecasting models built on `ruv-FANN` |
-| Cognition | RVF / RuVector | "Cognitive containers" — portable, composable reasoning units |
-| Mesh | Synaptic Neural Mesh | Distributed neural fabric across agents/nodes |
-| Consensus | QuDAG | Quantum-resistant DAG network (ML-DSA); the substrate under DAA |
-| Agents | DAA | Decentralised Autonomous Agents SDK on top of QuDAG |
-| Cloud | Flow Nexus | Hosted swarm execution, sandboxes, challenges |
-| Quality | Agentic QE | Agentic quality-engineering fleet |
-| Edge | RuView | WiFi-CSI sensing (already tried on ESP32-S3 in `esb32-tinker-ruview`) |
+| Harness | **ruflo** | ✅ **This is claude-flow, renamed.** `package.json` still says `"name": "claude-flow"` @ 3.38.21. A marketplace of 39 Claude Code plugins. |
+| Orchestration | `ruflo-core`, `ruflo-swarm`, `ruflo-sparc` | ✅ Present as plugins. Untested. |
+| Neural runtime | **`@ruvector/ruvllm`** | ❌ **Tested — not functional.** Weights are real (RuvLTRA 0.5B/1.1B, `hf.co/ruv/ruvltra`) but the package ships no code that reads them: no model-path config, no GGUF parser, zero `gguf`/`llama` strings in the native binary. `generate()` emits garbage; embeddings can't separate related from unrelated text (0.001 separation). [Evidence →](./experiments/01-ruvllm-reality-check/) |
+| Cognition | `ruflo-rvf`, `ruflo-ruvector`, `ruflo-rag-memory` | ✅ Present as plugins. Untested. |
+| Agents | `ruflo-daa` | ⚠️ **Correction:** "Dynamic Agentic Architecture", *not* "Decentralised Autonomous Agents" as first guessed. |
+| Learning | `ruflo-intelligence` (SONA), `ruflo-neural-trader` | ✅ Present. ruvnet's own ADR-086 reports defects in parts of this layer — see notes. |
+| Consensus | QuDAG | ❓ **No ruflo plugin.** Superseded, or a separate repo? Unresolved. |
+| Neural (orig.) | `ruv-FANN`, `neuro-divergent`, `ruv-swarm` | ❓ **No ruflo plugin.** Same question. |
+| Mesh | Synaptic Neural Mesh | ❓ **No ruflo plugin.** Same question. |
+| Cloud | Flow Nexus | ❓ Not yet checked. |
+| Edge | RuView | ❓ Not yet checked (tried separately in `esb32-tinker-ruview`). |
+
+Full evidence in [`notes/00-inventory.md`](./notes/00-inventory.md).
 
 Out of scope for now: anything requiring paid infrastructure, and anything that can't be run
 locally or on a free tier.
@@ -55,9 +58,11 @@ activity, and maturity. Fix the table above. Note what is a working tool versus 
 memory model, agent topology, and MCP surface. First real question: what does it give that plain
 subagents don't?
 
-**Phase 2 — Neural layer.** Build and run `ruv-FANN`. Train something small. Understand what
-"per-agent neural model" means concretely in `ruv-swarm`, and whether it changes behaviour or is
-mostly framing.
+**Phase 2 — Neural layer.** ⚠️ *First pass done, and it stopped the phase.* `@ruvector/ruvllm`
+was probed directly ([experiment 01](./experiments/01-ruvllm-reality-check/)): 2 of 8 advertised
+claims hold. GGUF inference is absent and embeddings are degenerate, so the "per-agent neural
+model" question can't be answered through ruvLLM. Open: run RuvLTRA under llama.cpp to see whether
+the *weights* are any good independent of the runtime, then revisit `ruv-FANN`.
 
 **Phase 3 — Cognition & mesh.** RVF cognitive containers, reusing what the RVF branches already
 learned. Then Synaptic Mesh, if there's a runnable path.
@@ -96,15 +101,16 @@ README.md       this map, kept current as understanding changes
 
 | Phase | State |
 |---|---|
-| 0 — Inventory | not started |
+| 0 — Inventory | **in progress** — ruflo mapped; QuDAG / ruv-FANN / mesh still open |
 | 1 — Foundations | not started |
-| 2 — Neural | not started |
+| 2 — Neural | ⚠️ **blocked** — ruvLLM verified non-functional for inference ([experiment 01](./experiments/01-ruvllm-reality-check/)); needs a real runtime |
 | 3 — Cognition & mesh | not started |
 | 4 — Consensus | not started |
 | 5 — Composition | not started |
 | 6 — Verdict | not started |
 
-Branch created 2026-09-02. Nothing has been run yet — the table above is a starting hypothesis.
+Branch created 2026-09-02. First findings recorded the same day: the stack table above has already
+been corrected twice by actually running things.
 
 ---
 

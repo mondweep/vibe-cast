@@ -1,0 +1,40 @@
+
+=== ruvLLM reality check ===
+package version : 2.6.2
+version()       : 0.1.0
+platform        : linux-x64
+node            : v22.22.2
+
+[WARN] Package version metadata is self-consistent
+        package.json says "2.6.2", version() returns "0.1.0"
+
+[PASS] Native bindings load on this platform
+        isNativeLoaded() === true (ships as an optional dependency)
+
+[FAIL] Fallback error message names a real npm package
+        generate() tells users to run "npm install @ruvector/ruvllm-linux-x64" — that package is 404. The real name (native.js PLATFORM_PACKAGES) is "@ruvector/ruvllm-linux-x64-gnu".
+
+[FAIL] GGUF inference is implemented
+        No model-path field in RuvLLMConfig (embeddingDim, routerHiddenDim, hnswM, hnswEfConstruction, hnswEfSearch, learningEnabled, qualityThreshold, ewcLambda only). GGUF/llama references in JS dist: 0 file(s). gguf|llama|tokenizer|vocab strings in native .node binary: 0. Passing modelPath:'/nonexistent/...gguf' throws nothing and still reports isNativeLoaded()===true — toNativeConfig() whitelists 8 fields and silently drops the rest, so there is no supported way to point the engine at a weights file. The package downloads GGUF weights but ships no code that reads them.
+
+[FAIL] generate() produces coherent text
+        1140ms, letter/space ratio 80%, matched 1/6 expected words. Output:
+        "##tionitk9.=9@j@otherit9&uZthatitnot4)&asitshe|&uis@is+:&allityZyk||she=ofPandlofyhaveSnotthe.is|withwhichbeX=##alwhich&9@9uPP0that|9forjnot=of&2haveallthenu|thatother]=JJmanydol##al=##al(andasof##al-"
+
+[FAIL] Embeddings discriminate related from unrelated text
+        related mean 0.986153 [0.959392–0.999571], unrelated mean 0.985075 [0.965358–0.998673], separation 0.001078, distributions overlap: YES. Two random gibberish strings score 0.999688 — higher than any genuinely related pair. All vectors are near-parallel, so cosine ranking over them is arbitrary.
+
+[FAIL] searchMemory() retrieves the relevant entry
+        0/3 correct. Note metadata is dropped on retrieval (returned as {}), so results cannot be traced to their source. "wifi sensor hardware" -> (no metadata) (want esb32-tinker-ruview, score 0.9669) | "defi smart contract tooling" -> (no metadata) (want aave-mcp, score 0.9881) | "stock market prediction model" -> (no metadata) (want cognitum-one-neuraltrader, score 0.9923)
+
+[PASS] RuvLTRA weights exist and are downloadable
+        listModels() advertises 3: claude-code/0.5B, small/0.5B, medium/1.1B from hf.co/ruv/ruvltra. Downloaded here: qwen2.5-0.5b-instruct-q4_k_m.gguf (491 MB), ruvltra-claude-code-0.5b-q4_k_m.gguf (398 MB). NOTE: downloadModel() keys off COMPARISON_MODELS (ids "ruvltra-claude-code", "qwen-base"), NOT the RUVLTRA_MODELS ids that listModels() returns ("claude-code", "small", "medium") — so downloadModel("claude-code") throws "Unknown model" despite listModels() advertising it.
+
+======================================================================
+SUMMARY: 2 passed, 5 failed, 1 warnings (of 8 claims)
+======================================================================
+
+Bottom line: the memory/routing scaffolding runs, but the parts that would
+make it a "self-learning LLM runtime" — GGUF inference and semantically
+meaningful embeddings — are not functional in the published artifact.
+
