@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.pnp/
+.venv/
+venv/
+__pycache__/
+target/
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs & scratch
+*.log
+.claude-flow/
+.swarm/
+.hive-mind/
+memory/
+scratch/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
