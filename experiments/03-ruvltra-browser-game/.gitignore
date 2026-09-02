@@ -1,0 +1,4 @@
+# Vendored wllama runtime (fetch with ./fetch-assets.sh)
+vendor/
+# Local model copy (398 MB)
+*.gguf

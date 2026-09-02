@@ -45,6 +45,11 @@ and much of the stack has been repackaged into it.
 
 Full evidence in [`notes/00-inventory.md`](./notes/00-inventory.md).
 
+**The weights still work, though** — just not through ruvLLM. Experiment 03 runs the same GGUF in
+a browser via llama.cpp→WASM as a playable game:
+[**Word Smuggler**](./experiments/03-ruvltra-browser-game/) — trick the model into saying a secret
+word you're forbidden to type.
+
 Out of scope for now: anything requiring paid infrastructure, and anything that can't be run
 locally or on a free tier.
 
@@ -77,6 +82,10 @@ document it honestly as unrun.
 point is the seams: where the abstractions meet and whether they hold.
 
 **Phase 6 — Verdict.** An honest assessment: what to use, what to watch, what to skip, and why.
+
+*Aside — [experiment 03](./experiments/03-ruvltra-browser-game/):* the RuvLTRA GGUF running
+client-side in WebAssembly as a browser game. Not a phase, just proof the weights are fine and it
+was the runtime that wasn't.
 
 Phases are a sequence, not a schedule. A phase that turns out to be a dead end gets written up as
 one and skipped — the abandoned directions are part of the record.

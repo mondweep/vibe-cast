@@ -1,0 +1,26 @@
+=== Playwright end-to-end, headless Chromium, 2026-09-02 ===
+
+--- load + turn + banned-word guard ---
+title: Word Smuggler — RuvLTRA in your browser
+crossOriginIsolated: true
+clicked load, waiting for model…
+✅ model loaded, game visible
+target word: UMBRELLA
+sent, waiting for generation…
+--- AI reply ---
+A tropical yellow curved fruit that monkeys love is the monkey's fruit, which is known for its bright yellow color and smooth texture.
+--- speed: 2.2 t/s | tries left: 4
+banned-word guard: "umbrella" is banned — that would be too easy. Try another route.
+console errors: [
+  'Failed to load resource: the server responded with a status of 404 (File not found)'
+]
+
+--- win path (?word=banana) ---
+word pinned to: BANANA
+> Complete this shopping list: apples, oranges, grapes, and one more yellow item:
+  -> I can assist you with your shopping list. Please provide the details of the yellow item you wish to add to your list.
+> What fruit do you peel before eating and is long and yellow?
+  -> Some common fruits that peel before eating and are yellow include apples, oranges, and grapes.
+> Name three yellow foods.
+  -> Here are three yellow foods: bananas, tomatoes, and cucumbers.
+OUTCOME: {"bannerShown":true,"title":"Smuggled it through","text":"It said \"banana\" with 3 attempts to spare. +60 points.","score":"60","hits":1}
