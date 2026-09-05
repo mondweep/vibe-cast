@@ -76,6 +76,22 @@ const MarkView = ({ mark, extent }: { mark: Mark; extent: number }): JSX.Element
       )
     }
 
+    case 'segment': {
+      const from = px(mark.from)
+      const to = px(mark.to)
+      const label = labelAnchor(to, extent)
+      return (
+        <g className={emphasisClass(mark)}>
+          <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} className="segment-line" />
+          {mark.label && (
+            <text x={to.x} y={to.y} dx={label.dx} dy={label.dy} textAnchor={label.anchor} className="mark-label">
+              {mark.label}
+            </text>
+          )}
+        </g>
+      )
+    }
+
     case 'point': {
       const at = px(mark.at)
       const label = labelAnchor(at, extent)

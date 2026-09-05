@@ -6,6 +6,7 @@ import { systemClock } from '../ports/clock'
 import { EMPTY_PROGRESS, type Progress } from '../ports/progress-store'
 import { createStudyService } from '../domain/study'
 import { MASTERY_THRESHOLD, missingPrerequisites, suggestedOrder } from '../domain/graph'
+import { parts, source, totalArticles } from '../content/catalogue'
 import type { Attempt } from '../domain/grading'
 import { LessonView } from './LessonView'
 
@@ -83,7 +84,7 @@ export const App = (): JSX.Element => {
       )}
 
       <section className="concepts">
-        <h2>All concepts</h2>
+        <h2>Lessons ready to study</h2>
         <ol className="concept-list">
           {ordered.map((lesson) => {
             const level = mastery.get(lesson.id) ?? 0
@@ -114,6 +115,66 @@ export const App = (): JSX.Element => {
             )
           })}
         </ol>
+      </section>
+
+      <section className="catalogue">
+        <h2>The whole Companion</h2>
+        <p className="catalogue-note">
+          All {totalArticles} articles of <em>{source.title}</em> ({source.editor}, {source.publisher}{' '}
+          {source.year}), in the book's own order. {lessons.length} have a lesson so far — the rest are
+          listed so the map is complete and the gaps are visible. Lessons are hand-written, so this
+          fills in slowly and deliberately.
+        </p>
+
+        {parts.map((part) => {
+          const built = part.articles.reduce((n, a) => n + a.lessons.length, 0)
+          return (
+            <details key={part.id} className="part">
+              <summary>
+                <span className="part-id">Part {part.id}</span>
+                <span className="part-title">{part.title}</span>
+                <span className="part-count">
+                  {built > 0 ? `${built} of ${part.articles.length}` : `${part.articles.length} articles`}
+                </span>
+              </summary>
+              <p className="part-blurb">{part.blurb}</p>
+              <ul className="article-list">
+                {part.articles.map((article) => (
+                  <li
+                    key={article.id}
+                    className={article.lessons.length > 0 ? 'article has-lesson' : 'article'}
+                  >
+                    <span className="article-id">{article.id}</span>
+                    {article.lessons.length === 1 && article.lessons[0]!.title === article.title ? (
+                      <button
+                        type="button"
+                        className="article-link"
+                        onClick={() => setOpenLessonId(article.lessons[0]!.id)}
+                      >
+                        {article.title} →
+                      </button>
+                    ) : (
+                      <>
+                        <span className="article-title">{article.title}</span>
+                        {article.lessons.map((lesson) => (
+                          <button
+                            key={lesson.id}
+                            type="button"
+                            className="article-link"
+                            onClick={() => setOpenLessonId(lesson.id)}
+                          >
+                            {lesson.title} →
+                          </button>
+                        ))}
+                      </>
+                    )}
+                    {article.lived && <span className="article-lived">{article.lived}</span>}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )
+        })}
       </section>
 
       <footer className="home-foot">

@@ -132,6 +132,7 @@ button { cursor: pointer; font-size: .95rem; }
 .mark--focus { color: var(--accent); }
 
 .vector-line { stroke: currentColor; stroke-width: .07; }
+.segment-line { stroke: currentColor; stroke-width: .05; }
 .point-dot { fill: currentColor; }
 .span-line { stroke: currentColor; stroke-width: .045; stroke-dasharray: .22 .16; }
 .region { fill: currentColor; fill-opacity: .16; stroke: currentColor; stroke-width: .035; }
@@ -218,3 +219,52 @@ button { cursor: pointer; font-size: .95rem; }
 }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- the full catalogue ---------- */
+
+.catalogue { margin-top: 4.5rem; }
+.catalogue-note { color: var(--ink-dim); max-width: var(--measure); font-size: .95rem; }
+
+.part { border-top: 1px solid var(--rule); }
+.part:last-of-type { border-bottom: 1px solid var(--rule); }
+.part > summary {
+  display: flex; align-items: baseline; gap: .85rem; flex-wrap: wrap;
+  padding: 1rem .25rem; cursor: pointer; list-style: none;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+.part > summary::-webkit-details-marker { display: none; }
+.part > summary::before {
+  content: '+'; color: var(--ink-faint); font-size: 1rem; width: .9rem;
+}
+.part[open] > summary::before { content: '−'; color: var(--accent); }
+.part > summary:hover { background: var(--ground-raised); }
+.part-id { color: var(--ink-faint); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+.part-title { font-weight: 600; font-size: 1.02rem; color: var(--ink); }
+.part-count { margin-left: auto; font-size: .78rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+
+.part-blurb { color: var(--ink-dim); font-size: .9rem; max-width: var(--measure); margin: 0 0 1rem 1.75rem; }
+
+.article-list { list-style: none; padding: 0 0 1.25rem 1.75rem; margin: 0; display: grid; gap: .1rem; }
+.article {
+  display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap;
+  padding: .3rem 0; font-size: .92rem; color: var(--ink-faint);
+}
+.article-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .74rem; color: var(--ink-faint); min-width: 3.9rem;
+}
+.article-title { color: var(--ink-faint); }
+.article-lived { font-size: .76rem; color: var(--rule); }
+.article.has-lesson .article-id { color: var(--accent); }
+.article.has-lesson .article-title { color: var(--ink-dim); }
+.article-link {
+  background: none; border: 0; padding: 0; color: var(--ink);
+  font: inherit; text-align: left; border-bottom: 1px solid var(--accent-soft, #7d5a2a);
+}
+.article-link:hover { color: var(--accent); }
+.article-badge {
+  font-size: .64rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); border: 1px solid var(--accent-soft, #7d5a2a);
+  border-radius: 999px; padding: .1rem .5rem;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}

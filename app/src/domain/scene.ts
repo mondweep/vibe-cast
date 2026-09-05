@@ -13,6 +13,7 @@ export type Emphasis = 'muted' | 'normal' | 'focus'
 export type Mark =
   | { kind: 'grid'; id: string; extent: number; transform: Mat2; emphasis?: Emphasis }
   | { kind: 'vector'; id: string; from: Vec2; to: Vec2; label?: string; emphasis?: Emphasis }
+  | { kind: 'segment'; id: string; from: Vec2; to: Vec2; label?: string; emphasis?: Emphasis }
   | { kind: 'point'; id: string; at: Vec2; label?: string; emphasis?: Emphasis }
   | { kind: 'line'; id: string; through: Vec2; direction: Vec2; label?: string; emphasis?: Emphasis }
   | { kind: 'polygon'; id: string; points: readonly Vec2[]; label?: string; emphasis?: Emphasis }
@@ -32,6 +33,8 @@ const describeMark = (mark: Mark): string | null => {
       return null // the grid is context, not content
     case 'vector':
       return `${mark.label ?? 'a vector'} from (${fmt(mark.from)}) to (${fmt(mark.to)})`
+    case 'segment':
+      return mark.label ? `${mark.label} joining (${fmt(mark.from)}) and (${fmt(mark.to)})` : null
     case 'point':
       return `${mark.label ?? 'a point'} at (${fmt(mark.at)})`
     case 'line':
