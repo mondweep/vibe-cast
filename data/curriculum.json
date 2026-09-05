@@ -1,0 +1,1607 @@
+{
+  "source": {
+    "title": "The Princeton Companion to Mathematics",
+    "editor": "Timothy Gowers",
+    "associateEditors": [
+      "June Barrow-Green",
+      "Imre Leader"
+    ],
+    "publisher": "Princeton University Press",
+    "year": 2008,
+    "isbn": "978-0-691-11880-2",
+    "note": "Citation index only. Page numbers are 1-based positions in the PDF, not the book's printed page numbers. All lesson content in this app is written independently; this index exists to cite the source."
+  },
+  "parts": [
+    {
+      "id": "I",
+      "title": "Introduction",
+      "pdfPage": 24,
+      "articles": [
+        {
+          "id": "I.1",
+          "pdfPage": 24,
+          "title": "What Is Mathematics About?"
+        },
+        {
+          "id": "I.2",
+          "pdfPage": 31,
+          "title": "The Language and Grammar of Mathematics"
+        },
+        {
+          "id": "I.3",
+          "pdfPage": 39,
+          "title": "Some Fundamental Mathematical Definitions"
+        },
+        {
+          "id": "I.4",
+          "pdfPage": 70,
+          "title": "The General Goals of Mathematical Research"
+        }
+      ]
+    },
+    {
+      "id": "II",
+      "title": "The Origins of Modern Mathematics",
+      "pdfPage": 100,
+      "articles": [
+        {
+          "id": "II.1",
+          "pdfPage": 100,
+          "title": "From Numbers to Number Systems"
+        },
+        {
+          "id": "II.2",
+          "pdfPage": 106,
+          "title": "Geometry"
+        },
+        {
+          "id": "II.3",
+          "pdfPage": 118,
+          "title": "The Development of Abstract Algebra"
+        },
+        {
+          "id": "II.4",
+          "pdfPage": 129,
+          "title": "Algorithms"
+        },
+        {
+          "id": "II.5",
+          "pdfPage": 140,
+          "title": "The Development of Rigor in Mathematical Analysis"
+        },
+        {
+          "id": "II.6",
+          "pdfPage": 152,
+          "title": "The Development of the Idea of Proof"
+        },
+        {
+          "id": "II.7",
+          "pdfPage": 165,
+          "title": "The Crisis in the Foundations of Mathematics"
+        }
+      ]
+    },
+    {
+      "id": "III",
+      "title": "Mathematical Concepts",
+      "pdfPage": 180,
+      "articles": [
+        {
+          "id": "III.1",
+          "pdfPage": 180,
+          "title": "The Axiom of Choice"
+        },
+        {
+          "id": "III.2",
+          "pdfPage": 182,
+          "title": "The Axiom of Determinacy"
+        },
+        {
+          "id": "III.3",
+          "pdfPage": 182,
+          "title": "Bayesian Analysis"
+        },
+        {
+          "id": "III.4",
+          "pdfPage": 183,
+          "title": "Braid Groups"
+        },
+        {
+          "id": "III.5",
+          "pdfPage": 184,
+          "title": "Buildings"
+        },
+        {
+          "id": "III.6",
+          "pdfPage": 186,
+          "title": "Calabi–Yau Manifolds"
+        },
+        {
+          "id": "III.7",
+          "pdfPage": 188,
+          "title": "Cardinals"
+        },
+        {
+          "id": "III.8",
+          "pdfPage": 188,
+          "title": "Categories"
+        },
+        {
+          "id": "III.9",
+          "pdfPage": 190,
+          "title": "Compactness and Compactification"
+        },
+        {
+          "id": "III.10",
+          "pdfPage": 192,
+          "title": "Computational Complexity Classes"
+        },
+        {
+          "id": "III.11",
+          "pdfPage": 193,
+          "title": "Countable and Uncountable Sets"
+        },
+        {
+          "id": "III.12",
+          "pdfPage": 195,
+          "title": "C*-Algebras"
+        },
+        {
+          "id": "III.13",
+          "pdfPage": 195,
+          "title": "Curvature"
+        },
+        {
+          "id": "III.14",
+          "pdfPage": 195,
+          "title": "Designs"
+        },
+        {
+          "id": "III.15",
+          "pdfPage": 197,
+          "title": "Determinants"
+        },
+        {
+          "id": "III.16",
+          "pdfPage": 198,
+          "title": "Differential Forms and Integration"
+        },
+        {
+          "id": "III.17",
+          "pdfPage": 203,
+          "title": "Dimension"
+        },
+        {
+          "id": "III.18",
+          "pdfPage": 207,
+          "title": "Distributions"
+        },
+        {
+          "id": "III.19",
+          "pdfPage": 210,
+          "title": "Duality"
+        },
+        {
+          "id": "III.20",
+          "pdfPage": 213,
+          "title": "Dynamical Systems and Chaos"
+        },
+        {
+          "id": "III.21",
+          "pdfPage": 213,
+          "title": "Elliptic Curves"
+        },
+        {
+          "id": "III.22",
+          "pdfPage": 214,
+          "title": "The Euclidean Algorithm and Continued Fractions"
+        },
+        {
+          "id": "III.23",
+          "pdfPage": 216,
+          "title": "The Euler and Navier–Stokes Equations"
+        },
+        {
+          "id": "III.24",
+          "pdfPage": 219,
+          "title": "Expanders"
+        },
+        {
+          "id": "III.25",
+          "pdfPage": 222,
+          "title": "The Exponential and Logarithmic Functions"
+        },
+        {
+          "id": "III.26",
+          "pdfPage": 225,
+          "title": "The Fast Fourier Transform"
+        },
+        {
+          "id": "III.27",
+          "pdfPage": 227,
+          "title": "The Fourier Transform"
+        },
+        {
+          "id": "III.28",
+          "pdfPage": 231,
+          "title": "Fuchsian Groups"
+        },
+        {
+          "id": "III.29",
+          "pdfPage": 233,
+          "title": "Function Spaces"
+        },
+        {
+          "id": "III.30",
+          "pdfPage": 236,
+          "title": "Galois Groups"
+        },
+        {
+          "id": "III.31",
+          "pdfPage": 236,
+          "title": "The Gamma Function"
+        },
+        {
+          "id": "III.32",
+          "pdfPage": 237,
+          "title": "Generating Functions"
+        },
+        {
+          "id": "III.33",
+          "pdfPage": 238,
+          "title": "Genus"
+        },
+        {
+          "id": "III.34",
+          "pdfPage": 238,
+          "title": "Graphs"
+        },
+        {
+          "id": "III.35",
+          "pdfPage": 238,
+          "title": "Hamiltonians"
+        },
+        {
+          "id": "III.36",
+          "pdfPage": 239,
+          "title": "The Heat Equation"
+        },
+        {
+          "id": "III.37",
+          "pdfPage": 242,
+          "title": "Hilbert Spaces"
+        },
+        {
+          "id": "III.38",
+          "pdfPage": 244,
+          "title": "Homology and Cohomology"
+        },
+        {
+          "id": "III.39",
+          "pdfPage": 244,
+          "title": "Homotopy Groups"
+        },
+        {
+          "id": "III.40",
+          "pdfPage": 244,
+          "title": "The Ideal Class Group"
+        },
+        {
+          "id": "III.41",
+          "pdfPage": 245,
+          "title": "Irrational and Transcendental Numbers"
+        },
+        {
+          "id": "III.42",
+          "pdfPage": 246,
+          "title": "The Ising Model"
+        },
+        {
+          "id": "III.43",
+          "pdfPage": 246,
+          "title": "Jordan Normal Form"
+        },
+        {
+          "id": "III.44",
+          "pdfPage": 248,
+          "title": "Knot Polynomials"
+        },
+        {
+          "id": "III.45",
+          "pdfPage": 250,
+          "title": "K-Theory"
+        },
+        {
+          "id": "III.46",
+          "pdfPage": 250,
+          "title": "The Leech Lattice"
+        },
+        {
+          "id": "III.47",
+          "pdfPage": 251,
+          "title": "L-Functions"
+        },
+        {
+          "id": "III.48",
+          "pdfPage": 252,
+          "title": "Lie Theory"
+        },
+        {
+          "id": "III.49",
+          "pdfPage": 257,
+          "title": "Linear and Nonlinear Waves and Solitons"
+        },
+        {
+          "id": "III.50",
+          "pdfPage": 262,
+          "title": "Linear Operators and Their Properties"
+        },
+        {
+          "id": "III.51",
+          "pdfPage": 264,
+          "title": "Local and Global in Number Theory"
+        },
+        {
+          "id": "III.52",
+          "pdfPage": 267,
+          "title": "The Mandelbrot Set"
+        },
+        {
+          "id": "III.53",
+          "pdfPage": 267,
+          "title": "Manifolds"
+        },
+        {
+          "id": "III.54",
+          "pdfPage": 267,
+          "title": "Matroids"
+        },
+        {
+          "id": "III.55",
+          "pdfPage": 269,
+          "title": "Measures"
+        },
+        {
+          "id": "III.56",
+          "pdfPage": 270,
+          "title": "Metric Spaces"
+        },
+        {
+          "id": "III.57",
+          "pdfPage": 271,
+          "title": "Models of Set Theory"
+        },
+        {
+          "id": "III.58",
+          "pdfPage": 272,
+          "title": "Modular Arithmetic"
+        },
+        {
+          "id": "III.59",
+          "pdfPage": 273,
+          "title": "Modular Forms"
+        },
+        {
+          "id": "III.60",
+          "pdfPage": 275,
+          "title": "Moduli Spaces"
+        },
+        {
+          "id": "III.61",
+          "pdfPage": 275,
+          "title": "The Monster Group"
+        },
+        {
+          "id": "III.62",
+          "pdfPage": 275,
+          "title": "Normed Spaces and Banach Spaces"
+        },
+        {
+          "id": "III.63",
+          "pdfPage": 277,
+          "title": "Number Fields"
+        },
+        {
+          "id": "III.64",
+          "pdfPage": 278,
+          "title": "Optimization and Lagrange Multipliers"
+        },
+        {
+          "id": "III.65",
+          "pdfPage": 280,
+          "title": "Orbifolds"
+        },
+        {
+          "id": "III.66",
+          "pdfPage": 281,
+          "title": "Ordinals"
+        },
+        {
+          "id": "III.67",
+          "pdfPage": 281,
+          "title": "The Peano Axioms"
+        },
+        {
+          "id": "III.68",
+          "pdfPage": 282,
+          "title": "Permutation Groups"
+        },
+        {
+          "id": "III.69",
+          "pdfPage": 284,
+          "title": "Phase Transitions"
+        },
+        {
+          "id": "III.70",
+          "pdfPage": 284,
+          "title": "π"
+        },
+        {
+          "id": "III.71",
+          "pdfPage": 286,
+          "title": "Probability Distributions"
+        },
+        {
+          "id": "III.72",
+          "pdfPage": 290,
+          "title": "Projective Space"
+        },
+        {
+          "id": "III.73",
+          "pdfPage": 290,
+          "title": "Quadratic Forms"
+        },
+        {
+          "id": "III.74",
+          "pdfPage": 292,
+          "title": "Quantum Computation"
+        },
+        {
+          "id": "III.75",
+          "pdfPage": 295,
+          "title": "Quantum Groups"
+        },
+        {
+          "id": "III.76",
+          "pdfPage": 298,
+          "title": "Quaternions, Octonions, and Normed Division Algebras"
+        },
+        {
+          "id": "III.77",
+          "pdfPage": 302,
+          "title": "Representations"
+        },
+        {
+          "id": "III.78",
+          "pdfPage": 302,
+          "title": "Ricci Flow"
+        },
+        {
+          "id": "III.79",
+          "pdfPage": 305,
+          "title": "Riemann Surfaces"
+        },
+        {
+          "id": "III.80",
+          "pdfPage": 306,
+          "title": "The Riemann Zeta Function"
+        },
+        {
+          "id": "III.81",
+          "pdfPage": 307,
+          "title": "Rings, Ideals, and Modules"
+        },
+        {
+          "id": "III.82",
+          "pdfPage": 308,
+          "title": "Schemes"
+        },
+        {
+          "id": "III.83",
+          "pdfPage": 308,
+          "title": "The Schrödinger Equation"
+        },
+        {
+          "id": "III.84",
+          "pdfPage": 311,
+          "title": "The Simplex Algorithm"
+        },
+        {
+          "id": "III.85",
+          "pdfPage": 313,
+          "title": "Special Functions"
+        },
+        {
+          "id": "III.86",
+          "pdfPage": 317,
+          "title": "The Spectrum"
+        },
+        {
+          "id": "III.87",
+          "pdfPage": 318,
+          "title": "Spherical Harmonics"
+        },
+        {
+          "id": "III.88",
+          "pdfPage": 320,
+          "title": "Symplectic Manifolds"
+        },
+        {
+          "id": "III.89",
+          "pdfPage": 324,
+          "title": "Tensor Products"
+        },
+        {
+          "id": "III.90",
+          "pdfPage": 324,
+          "title": "Topological Spaces"
+        },
+        {
+          "id": "III.91",
+          "pdfPage": 326,
+          "title": "Transforms"
+        },
+        {
+          "id": "III.92",
+          "pdfPage": 330,
+          "title": "Trigonometric Functions"
+        },
+        {
+          "id": "III.93",
+          "pdfPage": 332,
+          "title": "Universal Covers"
+        },
+        {
+          "id": "III.94",
+          "pdfPage": 333,
+          "title": "Variational Methods"
+        },
+        {
+          "id": "III.95",
+          "pdfPage": 336,
+          "title": "Varieties"
+        },
+        {
+          "id": "III.96",
+          "pdfPage": 336,
+          "title": "Vector Bundles"
+        },
+        {
+          "id": "III.97",
+          "pdfPage": 336,
+          "title": "Von Neumann Algebras"
+        },
+        {
+          "id": "III.98",
+          "pdfPage": 336,
+          "title": "Wavelets"
+        },
+        {
+          "id": "III.99",
+          "pdfPage": 337,
+          "title": "The Zermelo–Fraenkel Axioms"
+        }
+      ]
+    },
+    {
+      "id": "IV",
+      "title": "Branches of Mathematics",
+      "pdfPage": 338,
+      "articles": [
+        {
+          "id": "IV.1",
+          "pdfPage": 338,
+          "title": "Algebraic Numbers"
+        },
+        {
+          "id": "IV.2",
+          "pdfPage": 355,
+          "title": "Analytic Number Theory"
+        },
+        {
+          "id": "IV.3",
+          "pdfPage": 371,
+          "title": "Computational Number Theory"
+        },
+        {
+          "id": "IV.4",
+          "pdfPage": 386,
+          "title": "Algebraic Geometry"
+        },
+        {
+          "id": "IV.5",
+          "pdfPage": 395,
+          "title": "Arithmetic Geometry"
+        },
+        {
+          "id": "IV.6",
+          "pdfPage": 406,
+          "title": "Algebraic Topology"
+        },
+        {
+          "id": "IV.7",
+          "pdfPage": 419,
+          "title": "Differential Topology"
+        },
+        {
+          "id": "IV.8",
+          "pdfPage": 431,
+          "title": "Moduli Spaces"
+        },
+        {
+          "id": "IV.9",
+          "pdfPage": 442,
+          "title": "Representation Theory"
+        },
+        {
+          "id": "IV.10",
+          "pdfPage": 454,
+          "title": "Geometric and Combinatorial Group Theory"
+        },
+        {
+          "id": "IV.11",
+          "pdfPage": 471,
+          "title": "Harmonic Analysis"
+        },
+        {
+          "id": "IV.12",
+          "pdfPage": 478,
+          "title": "Partial Differential Equations"
+        },
+        {
+          "id": "IV.13",
+          "pdfPage": 506,
+          "title": "General Relativity and the Einstein Equations"
+        },
+        {
+          "id": "IV.14",
+          "pdfPage": 516,
+          "title": "Dynamics"
+        },
+        {
+          "id": "IV.15",
+          "pdfPage": 533,
+          "title": "Operator Algebras"
+        },
+        {
+          "id": "IV.16",
+          "pdfPage": 546,
+          "title": "Mirror Symmetry"
+        },
+        {
+          "id": "IV.17",
+          "pdfPage": 562,
+          "title": "Vertex Operator Algebras"
+        },
+        {
+          "id": "IV.18",
+          "pdfPage": 573,
+          "title": "Enumerative and Algebraic Combinatorics"
+        },
+        {
+          "id": "IV.19",
+          "pdfPage": 585,
+          "title": "Extremal and Probabilistic Combinatorics"
+        },
+        {
+          "id": "IV.20",
+          "pdfPage": 598,
+          "title": "Computational Complexity"
+        },
+        {
+          "id": "IV.21",
+          "pdfPage": 627,
+          "title": "Numerical Analysis"
+        },
+        {
+          "id": "IV.22",
+          "pdfPage": 638,
+          "title": "Set Theory"
+        },
+        {
+          "id": "IV.23",
+          "pdfPage": 658,
+          "title": "Logic and Model Theory"
+        },
+        {
+          "id": "IV.24",
+          "pdfPage": 670,
+          "title": "Stochastic Processes"
+        },
+        {
+          "id": "IV.25",
+          "pdfPage": 680,
+          "title": "Probabilistic Models of Critical Phenomena"
+        },
+        {
+          "id": "IV.26",
+          "pdfPage": 693,
+          "title": "High-Dimensional Geometry and Its Probabilistic Analogues"
+        }
+      ]
+    },
+    {
+      "id": "V",
+      "title": "Theorems and Problems",
+      "pdfPage": 704,
+      "articles": [
+        {
+          "id": "V.1",
+          "pdfPage": 704,
+          "title": "The ABC Conjecture"
+        },
+        {
+          "id": "V.2",
+          "pdfPage": 704,
+          "title": "The Atiyah–Singer Index Theorem"
+        },
+        {
+          "id": "V.3",
+          "pdfPage": 707,
+          "title": "The Banach–Tarski Paradox"
+        },
+        {
+          "id": "V.4",
+          "pdfPage": 708,
+          "title": "The Birch–Swinnerton-Dyer Conjecture"
+        },
+        {
+          "id": "V.5",
+          "pdfPage": 709,
+          "title": "Carleson’s Theorem"
+        },
+        {
+          "id": "V.6",
+          "pdfPage": 710,
+          "title": "The Central Limit Theorem"
+        },
+        {
+          "id": "V.7",
+          "pdfPage": 710,
+          "title": "The Classification of Finite Simple Groups"
+        },
+        {
+          "id": "V.8",
+          "pdfPage": 712,
+          "title": "Dirichlet’s Theorem"
+        },
+        {
+          "id": "V.9",
+          "pdfPage": 712,
+          "title": "Ergodic Theorems"
+        },
+        {
+          "id": "V.10",
+          "pdfPage": 714,
+          "title": "Fermat’s Last Theorem"
+        },
+        {
+          "id": "V.11",
+          "pdfPage": 716,
+          "title": "Fixed Point Theorems"
+        },
+        {
+          "id": "V.12",
+          "pdfPage": 719,
+          "title": "The Four-Color Theorem"
+        },
+        {
+          "id": "V.13",
+          "pdfPage": 721,
+          "title": "The Fundamental Theorem of Algebra"
+        },
+        {
+          "id": "V.14",
+          "pdfPage": 722,
+          "title": "The Fundamental Theorem of Arithmetic"
+        },
+        {
+          "id": "V.15",
+          "pdfPage": 723,
+          "title": "Gödel’s Theorem"
+        },
+        {
+          "id": "V.16",
+          "pdfPage": 725,
+          "title": "Gromov’s Polynomial-Growth Theorem"
+        },
+        {
+          "id": "V.17",
+          "pdfPage": 726,
+          "title": "Hilbert’s Nullstellensatz"
+        },
+        {
+          "id": "V.18",
+          "pdfPage": 726,
+          "title": "The Independence of the Continuum Hypothesis"
+        },
+        {
+          "id": "V.19",
+          "pdfPage": 726,
+          "title": "Inequalities"
+        },
+        {
+          "id": "V.20",
+          "pdfPage": 729,
+          "title": "The Insolubility of the Halting Problem"
+        },
+        {
+          "id": "V.21",
+          "pdfPage": 731,
+          "title": "The Insolubility of the Quintic"
+        },
+        {
+          "id": "V.22",
+          "pdfPage": 733,
+          "title": "Liouville’s Theorem and Roth’s Theorem"
+        },
+        {
+          "id": "V.23",
+          "pdfPage": 734,
+          "title": "Mostow’s Strong Rigidity Theorem"
+        },
+        {
+          "id": "V.24",
+          "pdfPage": 736,
+          "title": "The P versus NP Problem"
+        },
+        {
+          "id": "V.25",
+          "pdfPage": 737,
+          "title": "The Poincaré Conjecture"
+        },
+        {
+          "id": "V.26",
+          "pdfPage": 737,
+          "title": "The Prime Number Theorem and the Riemann Hypothesis"
+        },
+        {
+          "id": "V.27",
+          "pdfPage": 738,
+          "title": "Problems and Results in Additive Number Theory"
+        },
+        {
+          "id": "V.28",
+          "pdfPage": 741,
+          "title": "From Quadratic Reciprocity to Class Field Theory"
+        },
+        {
+          "id": "V.29",
+          "pdfPage": 743,
+          "title": "Rational Points on Curves and the Mordell Conjecture"
+        },
+        {
+          "id": "V.30",
+          "pdfPage": 745,
+          "title": "The Resolution of Singularities"
+        },
+        {
+          "id": "V.31",
+          "pdfPage": 746,
+          "title": "The Riemann–Roch Theorem"
+        },
+        {
+          "id": "V.32",
+          "pdfPage": 748,
+          "title": "The Robertson–Seymour Theorem"
+        },
+        {
+          "id": "V.33",
+          "pdfPage": 749,
+          "title": "The Three-Body Problem"
+        },
+        {
+          "id": "V.34",
+          "pdfPage": 751,
+          "title": "The Uniformization Theorem"
+        },
+        {
+          "id": "V.35",
+          "pdfPage": 752,
+          "title": "The Weil Conjectures"
+        }
+      ]
+    },
+    {
+      "id": "VI",
+      "title": "Mathematicians",
+      "pdfPage": 756,
+      "articles": [
+        {
+          "id": "VI.1",
+          "pdfPage": 756,
+          "lived": "ca. 569 b.c.e.–ca. 494 b.c.e.",
+          "title": "Pythagoras"
+        },
+        {
+          "id": "VI.2",
+          "pdfPage": 757,
+          "lived": "ca. 325 b.c.e.–ca. 265 b.c.e.",
+          "title": "Euclid"
+        },
+        {
+          "id": "VI.3",
+          "pdfPage": 757,
+          "lived": "ca. 287 b.c.e.–212 b.c.e.",
+          "title": "Archimedes"
+        },
+        {
+          "id": "VI.4",
+          "pdfPage": 758,
+          "lived": "ca. 262 b.c.e.–ca. 190 b.c.e.",
+          "title": "Apollonius"
+        },
+        {
+          "id": "VI.5",
+          "pdfPage": 759,
+          "lived": "800–847",
+          "title": "Abu Ja’far Muhammad ibn Mūsā al-Khwārizmī"
+        },
+        {
+          "id": "VI.6",
+          "pdfPage": 760,
+          "lived": "ca. 1170–ca. 1250",
+          "title": "Leonardo of Pisa (known as Fibonacci)"
+        },
+        {
+          "id": "VI.7",
+          "pdfPage": 760,
+          "lived": "1501–1576",
+          "title": "Girolamo Cardano"
+        },
+        {
+          "id": "VI.8",
+          "pdfPage": 760,
+          "lived": "1526–after 1572",
+          "title": "Rafael Bombelli"
+        },
+        {
+          "id": "VI.9",
+          "pdfPage": 760,
+          "lived": "1540–1603",
+          "title": "François Viète"
+        },
+        {
+          "id": "VI.10",
+          "pdfPage": 761,
+          "lived": "1548–1620",
+          "title": "Simon Stevin"
+        },
+        {
+          "id": "VI.11",
+          "pdfPage": 762,
+          "lived": "1596–1650",
+          "title": "René Descartes"
+        },
+        {
+          "id": "VI.12",
+          "pdfPage": 763,
+          "lived": "160?–1665",
+          "title": "Pierre Fermat"
+        },
+        {
+          "id": "VI.13",
+          "pdfPage": 764,
+          "lived": "1623–1662",
+          "title": "Blaise Pascal"
+        },
+        {
+          "id": "VI.14",
+          "pdfPage": 765,
+          "lived": "1642–1727",
+          "title": "Isaac Newton"
+        },
+        {
+          "id": "VI.15",
+          "pdfPage": 766,
+          "lived": "1646–1716",
+          "title": "Gottfried Wilhelm Leibniz"
+        },
+        {
+          "id": "VI.16",
+          "pdfPage": 768,
+          "lived": "1685–1731",
+          "title": "Brook Taylor"
+        },
+        {
+          "id": "VI.17",
+          "pdfPage": 768,
+          "lived": "1690–1764",
+          "title": "Christian Goldbach"
+        },
+        {
+          "id": "VI.18",
+          "pdfPage": 768,
+          "title": "The Bernoullis (.. 18th century)"
+        },
+        {
+          "id": "VI.19",
+          "pdfPage": 770,
+          "lived": "1707–1783",
+          "title": "Leonhard Euler"
+        },
+        {
+          "id": "VI.20",
+          "pdfPage": 772,
+          "lived": "1717–1783",
+          "title": "Jean Le Rond d’Alembert"
+        },
+        {
+          "id": "VI.21",
+          "pdfPage": 773,
+          "lived": "ca. 1735–1798",
+          "title": "Edward Waring"
+        },
+        {
+          "id": "VI.22",
+          "pdfPage": 774,
+          "lived": "1736–1813",
+          "title": "Joseph Louis Lagrange"
+        },
+        {
+          "id": "VI.23",
+          "pdfPage": 775,
+          "lived": "1749–1827",
+          "title": "Pierre-Simon Laplace"
+        },
+        {
+          "id": "VI.24",
+          "pdfPage": 777,
+          "lived": "1752–1833",
+          "title": "Adrien-Marie Legendre"
+        },
+        {
+          "id": "VI.25",
+          "pdfPage": 778,
+          "lived": "1768–1830",
+          "title": "Jean-Baptiste Joseph Fourier"
+        },
+        {
+          "id": "VI.26",
+          "pdfPage": 778,
+          "lived": "1777–1855",
+          "title": "Carl Friedrich Gauss"
+        },
+        {
+          "id": "VI.27",
+          "pdfPage": 780,
+          "lived": "1781–1840",
+          "title": "Siméon-Denis Poisson"
+        },
+        {
+          "id": "VI.28",
+          "pdfPage": 780,
+          "lived": "1781–1848",
+          "title": "Bernard Bolzano"
+        },
+        {
+          "id": "VI.29",
+          "pdfPage": 781,
+          "lived": "1789–1857",
+          "title": "Augustin-Louis Cauchy"
+        },
+        {
+          "id": "VI.30",
+          "pdfPage": 782,
+          "lived": "1790–1868",
+          "title": "August Ferdinand Möbius"
+        },
+        {
+          "id": "VI.31",
+          "pdfPage": 782,
+          "lived": "1792–1856",
+          "title": "Nicolai Ivanovich Lobachevskii"
+        },
+        {
+          "id": "VI.32",
+          "pdfPage": 783,
+          "lived": "1793–1841",
+          "title": "George Green"
+        },
+        {
+          "id": "VI.33",
+          "pdfPage": 783,
+          "lived": "1802–1829",
+          "title": "Niels Henrik Abel"
+        },
+        {
+          "id": "VI.34",
+          "pdfPage": 785,
+          "lived": "1802–1860",
+          "title": "János Bolyai"
+        },
+        {
+          "id": "VI.35",
+          "pdfPage": 785,
+          "lived": "1804–1851",
+          "title": "Carl Gustav Jacob Jacobi"
+        },
+        {
+          "id": "VI.36",
+          "pdfPage": 787,
+          "lived": "1805–1859",
+          "title": "Peter Gustav Lejeune Dirichlet"
+        },
+        {
+          "id": "VI.37",
+          "pdfPage": 788,
+          "lived": "1805–1865",
+          "title": "William Rowan Hamilton"
+        },
+        {
+          "id": "VI.38",
+          "pdfPage": 788,
+          "lived": "1806–1871",
+          "title": "Augustus De Morgan"
+        },
+        {
+          "id": "VI.39",
+          "pdfPage": 789,
+          "lived": "1809–1882",
+          "title": "Joseph Liouville"
+        },
+        {
+          "id": "VI.40",
+          "pdfPage": 790,
+          "lived": "1810–1893",
+          "title": "Ernst Eduard Kummer"
+        },
+        {
+          "id": "VI.41",
+          "pdfPage": 790,
+          "lived": "1811–1832",
+          "title": "Évariste Galois"
+        },
+        {
+          "id": "VI.42",
+          "pdfPage": 791,
+          "lived": "1814–1897",
+          "title": "James Joseph Sylvester"
+        },
+        {
+          "id": "VI.43",
+          "pdfPage": 792,
+          "lived": "1815–1864",
+          "title": "George Boole"
+        },
+        {
+          "id": "VI.44",
+          "pdfPage": 793,
+          "lived": "1815–1897",
+          "title": "Karl Weierstrass"
+        },
+        {
+          "id": "VI.45",
+          "pdfPage": 794,
+          "lived": "1821–1894",
+          "title": "Pafnuty Chebyshev"
+        },
+        {
+          "id": "VI.46",
+          "pdfPage": 795,
+          "lived": "1821–1895",
+          "title": "Arthur Cayley"
+        },
+        {
+          "id": "VI.47",
+          "pdfPage": 796,
+          "lived": "1822–1901",
+          "title": "Charles Hermite"
+        },
+        {
+          "id": "VI.48",
+          "pdfPage": 796,
+          "lived": "1823–1891",
+          "title": "Leopold Kronecker"
+        },
+        {
+          "id": "VI.49",
+          "pdfPage": 797,
+          "lived": "1826–1866",
+          "title": "Georg Friedrich Bernhard Riemann"
+        },
+        {
+          "id": "VI.50",
+          "pdfPage": 799,
+          "lived": "1831–1916",
+          "title": "Julius Wilhelm Richard Dedekind"
+        },
+        {
+          "id": "VI.51",
+          "pdfPage": 799,
+          "lived": "1835–1890",
+          "title": "Émile Léonard Mathieu"
+        },
+        {
+          "id": "VI.52",
+          "pdfPage": 800,
+          "lived": "1838–1922",
+          "title": "Camille Jordan"
+        },
+        {
+          "id": "VI.53",
+          "pdfPage": 800,
+          "lived": "1842–1899",
+          "title": "Sophus Lie"
+        },
+        {
+          "id": "VI.54",
+          "pdfPage": 801,
+          "lived": "1845–1918",
+          "title": "Georg Cantor"
+        },
+        {
+          "id": "VI.55",
+          "pdfPage": 803,
+          "lived": "1845–1879",
+          "title": "William Kingdon Clifford"
+        },
+        {
+          "id": "VI.56",
+          "pdfPage": 803,
+          "lived": "1848–1925",
+          "title": "Gottlob Frege"
+        },
+        {
+          "id": "VI.57",
+          "pdfPage": 805,
+          "lived": "1849–1925",
+          "title": "Christian Felix Klein"
+        },
+        {
+          "id": "VI.58",
+          "pdfPage": 806,
+          "lived": "1849–1917",
+          "title": "Ferdinand Georg Frobenius"
+        },
+        {
+          "id": "VI.59",
+          "pdfPage": 807,
+          "lived": "1850–1891",
+          "title": "Sofya (Sonya) Kovalevskaya"
+        },
+        {
+          "id": "VI.60",
+          "pdfPage": 808,
+          "lived": "1852–1927",
+          "title": "William Burnside"
+        },
+        {
+          "id": "VI.61",
+          "pdfPage": 808,
+          "lived": "1854–1912",
+          "title": "Jules Henri Poincaré"
+        },
+        {
+          "id": "VI.62",
+          "pdfPage": 810,
+          "lived": "1858–1932",
+          "title": "Giuseppe Peano"
+        },
+        {
+          "id": "VI.63",
+          "pdfPage": 811,
+          "lived": "1862–1943",
+          "title": "David Hilbert"
+        },
+        {
+          "id": "VI.64",
+          "pdfPage": 812,
+          "lived": "1864–1909",
+          "title": "Hermann Minkowski"
+        },
+        {
+          "id": "VI.65",
+          "pdfPage": 813,
+          "lived": "1865–1963",
+          "title": "Jacques Hadamard"
+        },
+        {
+          "id": "VI.66",
+          "pdfPage": 814,
+          "lived": "1866–1927",
+          "title": "Ivar Fredholm"
+        },
+        {
+          "id": "VI.67",
+          "pdfPage": 815,
+          "lived": "1866–1962",
+          "title": "Charles-Jean de la Vallée Poussin"
+        },
+        {
+          "id": "VI.68",
+          "pdfPage": 815,
+          "lived": "1868–1942",
+          "title": "Felix Hausdor."
+        },
+        {
+          "id": "VI.69",
+          "pdfPage": 817,
+          "lived": "1869–1951",
+          "title": "Élie Joseph Cartan"
+        },
+        {
+          "id": "VI.70",
+          "pdfPage": 818,
+          "lived": "1871–1956",
+          "title": "Emile Borel"
+        },
+        {
+          "id": "VI.71",
+          "pdfPage": 818,
+          "lived": "1872–1970",
+          "title": "Bertrand Arthur William Russell"
+        },
+        {
+          "id": "VI.72",
+          "pdfPage": 819,
+          "lived": "1875–1941",
+          "title": "Henri Lebesgue"
+        },
+        {
+          "id": "VI.73",
+          "pdfPage": 820,
+          "lived": "1877–1947",
+          "title": "Godfrey Harold Hardy"
+        },
+        {
+          "id": "VI.74",
+          "pdfPage": 821,
+          "lived": "1880–1956",
+          "title": "Frigyes (Frédéric) Riesz"
+        },
+        {
+          "id": "VI.75",
+          "pdfPage": 822,
+          "lived": "1881–1966",
+          "title": "Luitzen Egbertus Jan Brouwer"
+        },
+        {
+          "id": "VI.76",
+          "pdfPage": 823,
+          "lived": "1882–1935",
+          "title": "Emmy Noether"
+        },
+        {
+          "id": "VI.77",
+          "pdfPage": 824,
+          "lived": "1882–1969",
+          "title": "Wacław Sierpínski"
+        },
+        {
+          "id": "VI.78",
+          "pdfPage": 825,
+          "lived": "1884–1944",
+          "title": "George Birkhoff"
+        },
+        {
+          "id": "VI.79",
+          "pdfPage": 826,
+          "lived": "1885–1977",
+          "title": "John Edensor Littlewood"
+        },
+        {
+          "id": "VI.80",
+          "pdfPage": 828,
+          "lived": "1885–1955",
+          "title": "Hermann Weyl"
+        },
+        {
+          "id": "VI.81",
+          "pdfPage": 829,
+          "lived": "1887–1963",
+          "title": "Thoralf Skolem"
+        },
+        {
+          "id": "VI.82",
+          "pdfPage": 830,
+          "lived": "1887–1920",
+          "title": "Srinivasa Ramanujan"
+        },
+        {
+          "id": "VI.83",
+          "pdfPage": 831,
+          "lived": "1888–1972",
+          "title": "Richard Courant"
+        },
+        {
+          "id": "VI.84",
+          "pdfPage": 832,
+          "lived": "1892–1945",
+          "title": "Stefan Banach"
+        },
+        {
+          "id": "VI.85",
+          "pdfPage": 834,
+          "lived": "1894–1964",
+          "title": "Norbert Wiener"
+        },
+        {
+          "id": "VI.86",
+          "pdfPage": 835,
+          "lived": "1898–1962",
+          "title": "Emil Artin"
+        },
+        {
+          "id": "VI.87",
+          "pdfPage": 836,
+          "lived": "1901–1983",
+          "title": "Alfred Tarski"
+        },
+        {
+          "id": "VI.88",
+          "pdfPage": 837,
+          "lived": "1903–1987",
+          "title": "Andrei Nikolaevich Kolmogorov"
+        },
+        {
+          "id": "VI.89",
+          "pdfPage": 839,
+          "lived": "1903–1995",
+          "title": "Alonzo Church"
+        },
+        {
+          "id": "VI.90",
+          "pdfPage": 839,
+          "lived": "1903–1975",
+          "title": "William Vallance Douglas Hodge"
+        },
+        {
+          "id": "VI.91",
+          "pdfPage": 840,
+          "lived": "1903–1957",
+          "title": "John von Neumann"
+        },
+        {
+          "id": "VI.92",
+          "pdfPage": 842,
+          "lived": "1906–1978",
+          "title": "Kurt Gödel"
+        },
+        {
+          "id": "VI.93",
+          "pdfPage": 842,
+          "lived": "1906–1998",
+          "title": "André Weil"
+        },
+        {
+          "id": "VI.94",
+          "pdfPage": 844,
+          "lived": "1912–1954",
+          "title": "Alan Turing"
+        },
+        {
+          "id": "VI.95",
+          "pdfPage": 845,
+          "lived": "1918–1974",
+          "title": "Abraham Robinson"
+        },
+        {
+          "id": "VI.96",
+          "pdfPage": 846,
+          "lived": "1935–",
+          "title": "Nicolas Bourbaki"
+        }
+      ]
+    },
+    {
+      "id": "VII",
+      "title": "The Influence of Mathematics",
+      "pdfPage": 850,
+      "articles": [
+        {
+          "id": "VII.1",
+          "pdfPage": 850,
+          "title": "Mathematics and Chemistry"
+        },
+        {
+          "id": "VII.2",
+          "pdfPage": 860,
+          "title": "Mathematical Biology"
+        },
+        {
+          "id": "VII.3",
+          "pdfPage": 871,
+          "title": "Wavelets and Applications"
+        },
+        {
+          "id": "VII.4",
+          "pdfPage": 885,
+          "title": "The Mathematics of Traffic in Networks"
+        },
+        {
+          "id": "VII.5",
+          "pdfPage": 894,
+          "title": "The Mathematics of Algorithm Design"
+        },
+        {
+          "id": "VII.6",
+          "pdfPage": 901,
+          "title": "Reliable Transmission of Information"
+        },
+        {
+          "id": "VII.7",
+          "pdfPage": 910,
+          "title": "Mathematics and Cryptography"
+        },
+        {
+          "id": "VII.8",
+          "pdfPage": 918,
+          "title": "Mathematics and Economic Reasoning"
+        },
+        {
+          "id": "VII.9",
+          "pdfPage": 933,
+          "title": "The Mathematics of Money"
+        },
+        {
+          "id": "VII.10",
+          "pdfPage": 939,
+          "title": "Mathematical Statistics"
+        },
+        {
+          "id": "VII.11",
+          "pdfPage": 944,
+          "title": "Mathematics and Medical Statistics"
+        },
+        {
+          "id": "VII.12",
+          "pdfPage": 951,
+          "title": "Analysis, Mathematical and Philosophical"
+        },
+        {
+          "id": "VII.13",
+          "pdfPage": 958,
+          "title": "Mathematics and Music"
+        },
+        {
+          "id": "VII.14",
+          "pdfPage": 967,
+          "title": "Mathematics and Art"
+        }
+      ]
+    },
+    {
+      "id": "VIII",
+      "title": "Final Perspectives",
+      "pdfPage": 978,
+      "articles": [
+        {
+          "id": "VIII.1",
+          "pdfPage": 978,
+          "title": "The Art of Problem Solving"
+        },
+        {
+          "id": "VIII.2",
+          "pdfPage": 989,
+          "title": "“Why Mathematics?” You Might Ask"
+        },
+        {
+          "id": "VIII.3",
+          "pdfPage": 1000,
+          "title": "The Ubiquity of Mathematics"
+        },
+        {
+          "id": "VIII.4",
+          "pdfPage": 1006,
+          "title": "Numeracy"
+        },
+        {
+          "id": "VIII.5",
+          "pdfPage": 1014,
+          "title": "Mathematics: An Experimental Science"
+        },
+        {
+          "id": "VIII.6",
+          "pdfPage": 1023,
+          "title": "Advice to a Young Mathematician"
+        },
+        {
+          "id": "VIII.7",
+          "pdfPage": 1033,
+          "title": "A Chronology of Mathematical Events"
+        }
+      ]
+    }
+  ]
+}

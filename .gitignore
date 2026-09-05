@@ -16,3 +16,8 @@ build/
 # Python bytecode cache
 __pycache__/
 *.pyc
+
+# Source book — copyrighted, must never be committed or deployed.
+# Kept locally only, as a reference for tools/extract_curriculum.py.
+PCM.pdf
+*.pdf
