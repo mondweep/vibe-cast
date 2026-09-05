@@ -1,0 +1,18 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log
+
+# Local credentials / runtime config — never commit
+.env
+.env.local
+config.local.js
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
