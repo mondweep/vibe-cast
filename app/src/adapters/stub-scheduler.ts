@@ -5,7 +5,7 @@
  */
 
 import type { Rating } from '../domain/grading'
-import type { ReviewCard, Scheduler } from '../ports/scheduler'
+import type { Scheduler } from '../ports/scheduler'
 
 const DAYS: Record<Rating, number> = { again: 0, hard: 1, good: 3, easy: 7 }
 

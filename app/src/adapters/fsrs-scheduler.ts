@@ -1,10 +1,12 @@
 /** ts-fsrs behind the Scheduler port (ADR 0005). The only file that imports it. */
 
-import { FSRS, Rating as FsrsRating, State, createEmptyCard, type Card } from 'ts-fsrs'
+import { FSRS, Rating as FsrsRating, State, createEmptyCard, type Card, type Grade } from 'ts-fsrs'
 import type { Rating } from '../domain/grading'
 import type { ReviewCard, Scheduler } from '../ports/scheduler'
 
-const RATINGS: Record<Rating, FsrsRating> = {
+// FSRS distinguishes Grade (what a learner can score) from Rating (which also
+// includes Manual). Only grades are reachable from an assessment.
+const RATINGS: Record<Rating, Grade> = {
   again: FsrsRating.Again,
   hard: FsrsRating.Hard,
   good: FsrsRating.Good,

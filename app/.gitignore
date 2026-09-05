@@ -2,3 +2,5 @@ node_modules/
 dist/
 .firebase/
 *.local
+e2e/screenshots/
+tsconfig.tsbuildinfo
