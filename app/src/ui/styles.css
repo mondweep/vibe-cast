@@ -268,3 +268,46 @@ button { cursor: pointer; font-size: .95rem; }
   border-radius: 999px; padding: .1rem .5rem;
   font-family: ui-sans-serif, system-ui, sans-serif;
 }
+
+/* ---------- the track's purpose ---------- */
+
+.purpose {
+  margin: 3rem 0 3.5rem;
+  padding: 1.75rem 0 0;
+  border-top: 1px solid var(--rule);
+}
+.purpose h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+.purpose p { color: var(--ink-dim); max-width: var(--measure); }
+.purpose-closing {
+  color: var(--ink) !important;
+  border-left: 2px solid var(--accent);
+  padding-left: 1.1rem;
+  margin-top: 1.5rem;
+}
+
+.stage { margin: 2.5rem 0; }
+.stage-head { margin-bottom: 1rem; }
+.stage-head h3 {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: .78rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 .3rem;
+}
+.stage-question {
+  margin: 0; font-size: 1.15rem; color: var(--ink);
+  font-family: ui-serif, Georgia, serif; max-width: var(--measure);
+}
+
+.gives {
+  max-width: var(--measure);
+  color: var(--ink-dim);
+  font-size: .95rem;
+  border-left: 2px solid var(--accent);
+  padding-left: 1rem;
+  margin: 1.25rem 0;
+}
+.gives-tag {
+  display: block;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: .66rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: .35rem;
+}

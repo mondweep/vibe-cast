@@ -5,6 +5,7 @@ import { SceneView } from './SceneView'
 import { Assessment } from './Assessment'
 import { usePrefersReducedMotion, useScrollProgress } from './useScrollProgress'
 import { lessonById } from '../content'
+import { stepFor } from '../content/track'
 import type { Attempt } from '../domain/grading'
 
 /**
@@ -112,15 +113,24 @@ export const LessonView = ({
   )
 }
 
-const LessonHeader = ({ lesson, onBack }: { lesson: Lesson; onBack: () => void }): JSX.Element => (
-  <header className="lesson-head">
-    <button type="button" className="link-button" onClick={onBack}>
-      ← All concepts
-    </button>
-    <h1>{lesson.title}</h1>
-    <p className="summary">{lesson.summary}</p>
-    <p className="citation">
-      Companion article <strong>{lesson.pcm}</strong> — read it for the full treatment.
-    </p>
-  </header>
-)
+const LessonHeader = ({ lesson, onBack }: { lesson: Lesson; onBack: () => void }): JSX.Element => {
+  const step = stepFor(lesson.id)
+  return (
+    <header className="lesson-head">
+      <button type="button" className="link-button" onClick={onBack}>
+        ← All concepts
+      </button>
+      <h1>{lesson.title}</h1>
+      <p className="summary">{lesson.summary}</p>
+      {step && (
+        <p className="gives">
+          <span className="gives-tag">What this gives you</span>
+          {step.gives}
+        </p>
+      )}
+      <p className="citation">
+        Companion article <strong>{lesson.pcm}</strong> — read it for the full treatment.
+      </p>
+    </header>
+  )
+}

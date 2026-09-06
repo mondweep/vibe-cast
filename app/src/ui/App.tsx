@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { lessons } from '../content'
+import { lessonById, lessons } from '../content'
 import { createLocalProgressStore } from '../adapters/local-progress-store'
 import { createFsrsScheduler } from '../adapters/fsrs-scheduler'
 import { systemClock } from '../ports/clock'
@@ -7,6 +7,7 @@ import { EMPTY_PROGRESS, type Progress } from '../ports/progress-store'
 import { createStudyService } from '../domain/study'
 import { MASTERY_THRESHOLD, missingPrerequisites, suggestedOrder } from '../domain/graph'
 import { parts, source, totalArticles } from '../content/catalogue'
+import { stages, trackPurpose } from '../content/track'
 import type { Attempt } from '../domain/grading'
 import { LessonView } from './LessonView'
 
@@ -57,12 +58,16 @@ export const App = (): JSX.Element => {
       <header className="home-head">
         <p className="eyebrow">A visual companion</p>
         <h1>The Visual Mathematical Dictionary</h1>
-        <p className="lede">
-          Concepts from <em>The Princeton Companion to Mathematics</em>, each explained by something
-          that moves — then tested by asking you to do mathematics rather than recall sentences
-          about it.
-        </p>
+        <p className="lede">{trackPurpose.lede}</p>
       </header>
+
+      <section className="purpose">
+        <h2>{trackPurpose.title}</h2>
+        {trackPurpose.body.map((paragraph) => (
+          <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+        ))}
+        <p className="purpose-closing">{trackPurpose.closing}</p>
+      </section>
 
       {loaded && due.length > 0 && (
         <section className="review-banner">
@@ -84,37 +89,56 @@ export const App = (): JSX.Element => {
       )}
 
       <section className="concepts">
-        <h2>Lessons ready to study</h2>
-        <ol className="concept-list">
-          {ordered.map((lesson) => {
-            const level = mastery.get(lesson.id) ?? 0
-            const missing = missingPrerequisites(lesson, mastery)
-            return (
-              <li key={lesson.id} className="concept">
-                <button type="button" className="concept-button" onClick={() => setOpenLessonId(lesson.id)}>
-                  <span className="concept-title">{lesson.title}</span>
-                  <span className="concept-pcm">{lesson.pcm}</span>
-                  <span className="concept-summary">{lesson.summary}</span>
-                  <span className="mastery" aria-label={`Mastery ${Math.round(level * 100)} percent`}>
-                    <span className="mastery-bar" style={{ width: `${Math.round(level * 100)}%` }} />
-                  </span>
-                  <span className="concept-state">
-                    {level >= MASTERY_THRESHOLD
-                      ? `Mastered — ${Math.round(level * 100)}%`
-                      : level > 0
-                        ? `Fading — ${Math.round(level * 100)}%`
-                        : 'Not started'}
-                  </span>
-                </button>
-                {missing.length > 0 && (
-                  <p className="advisory">
-                    You will get more from this after: {missing.join(', ')}. You can still read it now.
-                  </p>
-                )}
-              </li>
-            )
-          })}
-        </ol>
+        <h2>The track</h2>
+        <p className="catalogue-note">
+          Twelve concepts in four stages. Each says what it is meant to leave you with, so you can
+          judge whether it delivered.
+        </p>
+
+        {stages.map((stage) => (
+          <div key={stage.id} className="stage">
+            <div className="stage-head">
+              <h3>{stage.title}</h3>
+              <p className="stage-question">{stage.question}</p>
+            </div>
+            <ol className="concept-list">
+              {stage.steps.map(({ lesson, gives }) => {
+                const level = mastery.get(lesson.id) ?? 0
+                const missing = missingPrerequisites(lesson, mastery)
+                return (
+                  <li key={lesson.id} className="concept">
+                    <button
+                      type="button"
+                      className="concept-button"
+                      onClick={() => setOpenLessonId(lesson.id)}
+                    >
+                      <span className="concept-title">{lesson.title}</span>
+                      <span className="concept-pcm">{lesson.pcm}</span>
+                      <span className="concept-summary">{gives}</span>
+                      <span className="mastery" aria-label={`Mastery ${Math.round(level * 100)} percent`}>
+                        <span className="mastery-bar" style={{ width: `${Math.round(level * 100)}%` }} />
+                      </span>
+                      <span className="concept-state">
+                        {level >= MASTERY_THRESHOLD
+                          ? `Mastered — ${Math.round(level * 100)}%`
+                          : level > 0
+                            ? `Fading — ${Math.round(level * 100)}%`
+                            : 'Not started'}
+                      </span>
+                    </button>
+                    {missing.length > 0 && (
+                      <p className="advisory">
+                        You will get more from this after{' '}
+                        {missing.map((id) => lessonById(id)?.title ?? id).join(', ')}. You can still
+                        read it now.
+                      </p>
+                    )}
+                  </li>
+                )
+              })}
+            </ol>
+          </div>
+        ))}
       </section>
 
       <section className="catalogue">
