@@ -54,6 +54,27 @@ export function computeDivergence(field: Float32Array, resolution: number): numb
   return count === 0 ? 0 : total / count;
 }
 
+export function seedDemoField(resolution: number): Float32Array {
+  const field = createVelocityField(resolution);
+  const center = (resolution - 1) / 2;
+  const scale = 1 / resolution;
+
+  for (let y = 0; y < resolution; y++) {
+    for (let x = 0; x < resolution; x++) {
+      const dx = x - center;
+      const dy = y - center;
+      const idx = cellIndex(resolution, x, y);
+      // Solid-body rotation: divergence-free by construction, gives the
+      // learner an immediately-visible "this is alive" example field
+      // instead of a blank canvas on first load.
+      field[idx] = -dy * scale;
+      field[idx + 1] = dx * scale;
+    }
+  }
+
+  return field;
+}
+
 export function traceStreamline(
   field: Float32Array,
   resolution: number,

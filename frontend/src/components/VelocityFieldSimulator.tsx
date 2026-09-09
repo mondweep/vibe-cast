@@ -3,6 +3,7 @@ import { useSimulationStore } from '../store/simulation';
 import {
   addVelocityVector,
   computeDivergence,
+  seedDemoField,
   traceStreamline,
 } from '../lib/velocityField';
 
@@ -16,6 +17,14 @@ type ViewMode = 'vectors' | 'streamlines';
 interface GridPoint {
   x: number;
   y: number;
+}
+
+function isFieldEmpty(field: Float32Array | null): boolean {
+  if (!field) return true;
+  for (let i = 0; i < field.length; i++) {
+    if (field[i] !== 0) return false;
+  }
+  return true;
 }
 
 function toGridCoords(
@@ -99,13 +108,25 @@ export default function VelocityFieldSimulator() {
 
   const cellSize = CANVAS_DISPLAY_SIZE / grid_resolution;
 
+  // Seed a visible demo pattern on first mount so the canvas never looks
+  // blank/broken before the learner has drawn anything themselves.
+  useEffect(() => {
+    if (isFieldEmpty(velocity_field)) {
+      const seeded = seedDemoField(grid_resolution);
+      setVelocityField(seeded);
+      setDivergence(computeDivergence(seeded, grid_resolution));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, CANVAS_DISPLAY_SIZE, CANVAS_DISPLAY_SIZE);
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0, 0, CANVAS_DISPLAY_SIZE, CANVAS_DISPLAY_SIZE);
     if (mode === 'vectors') {
       drawVectors(ctx, velocity_field ?? new Float32Array(0), grid_resolution, cellSize);
     } else {

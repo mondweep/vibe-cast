@@ -36,6 +36,9 @@
   padding: 2rem;
   margin-bottom: 2rem;
   min-height: 300px;
+  /* Keyboard/programmatic scroll-into-view (e.g. Tab focus) can otherwise
+     land this flush against the sticky header and hide it underneath. */
+  scroll-margin-top: 120px;
 }
 
 .simulator-placeholder {

@@ -78,13 +78,34 @@ describe('VelocityFieldSimulator', () => {
     fireEvent.mouseMove(canvas, { clientX: 45, clientY: 30 });
     fireEvent.mouseUp(canvas);
 
-    expect(state.setVelocityField).toHaveBeenCalledTimes(1);
-    const updatedField = state.setVelocityField.mock.calls[0][0] as Float32Array;
+    // mount seeds once with a demo field; the drag above adds a second call
+    expect(state.setVelocityField).toHaveBeenCalledTimes(2);
+    const lastCall = state.setVelocityField.mock.calls[state.setVelocityField.mock.calls.length - 1];
+    const updatedField = lastCall[0] as Float32Array;
     expect(updatedField).toBeInstanceOf(Float32Array);
     expect(updatedField.some((v) => v !== 0)).toBe(true);
 
-    expect(state.setDivergence).toHaveBeenCalledTimes(1);
+    expect(state.setDivergence).toHaveBeenCalledTimes(2);
     expect(typeof state.setDivergence.mock.calls[0][0]).toBe('number');
+  });
+
+  it('seeds a visible demo field on mount when the store field is empty', () => {
+    const state = mockStore();
+    render(<VelocityFieldSimulator />);
+
+    expect(state.setVelocityField).toHaveBeenCalledTimes(1);
+    const seeded = state.setVelocityField.mock.calls[0][0] as Float32Array;
+    expect(seeded.some((v) => v !== 0)).toBe(true);
+    expect(state.setDivergence).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not overwrite an already-populated field on mount', () => {
+    const populated = createVelocityField(RESOLUTION);
+    populated[0] = 5;
+    const state = mockStore({ velocity_field: populated });
+    render(<VelocityFieldSimulator />);
+
+    expect(state.setVelocityField).not.toHaveBeenCalled();
   });
 
   it('displays the current divergence value from the store', () => {
@@ -104,13 +125,14 @@ describe('VelocityFieldSimulator', () => {
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('does not call setVelocityField when the pointer moves without a mouse-down drag', () => {
+  it('does not add a second vector when the pointer moves without a mouse-down drag', () => {
     const state = mockStore();
     render(<VelocityFieldSimulator />);
 
     const canvas = screen.getByTestId('velocity-canvas');
     fireEvent.mouseMove(canvas, { clientX: 45, clientY: 30 });
 
-    expect(state.setVelocityField).not.toHaveBeenCalled();
+    // only the mount-time seed call, no extra call from the stray mousemove
+    expect(state.setVelocityField).toHaveBeenCalledTimes(1);
   });
 });

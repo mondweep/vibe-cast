@@ -3,6 +3,7 @@ import {
   addVelocityVector,
   computeDivergence,
   traceStreamline,
+  seedDemoField,
 } from '../velocityField';
 
 describe('createVelocityField', () => {
@@ -109,5 +110,21 @@ describe('traceStreamline', () => {
       expect(p.x).toBeGreaterThanOrEqual(0);
       expect(p.x).toBeLessThan(resolution);
     }
+  });
+});
+
+describe('seedDemoField', () => {
+  it('returns a non-empty rotational field sized for the given resolution', () => {
+    const resolution = 32;
+    const field = seedDemoField(resolution);
+    expect(field).toBeInstanceOf(Float32Array);
+    expect(field.length).toBe(resolution * resolution * 2);
+    expect(Array.from(field).some((v) => v !== 0)).toBe(true);
+  });
+
+  it('is close to divergence-free (a pure rotation has ~0 divergence)', () => {
+    const resolution = 32;
+    const field = seedDemoField(resolution);
+    expect(computeDivergence(field, resolution)).toBeLessThan(0.5);
   });
 });
