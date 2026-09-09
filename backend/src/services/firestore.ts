@@ -1,11 +1,11 @@
 import * as admin from 'firebase-admin';
 import { LearnerSession, UserProfile } from '../types/index';
 
-const db = admin.firestore();
+const db = (): admin.firestore.Firestore => admin.firestore();
 
 export const firebaseService = {
   async getUserSession(userId: string): Promise<LearnerSession | null> {
-    const doc = await db.collection('sessions').doc(userId).get();
+    const doc = await db().collection('sessions').doc(userId).get();
     return doc.exists ? (doc.data() as LearnerSession) : null;
   },
 
@@ -24,7 +24,7 @@ export const firebaseService = {
       last_interaction_at: new Date(),
     };
 
-    await db.collection('sessions').doc(userId).set(session);
+    await db().collection('sessions').doc(userId).set(session);
 
     const profile: UserProfile = {
       uid: userId,
@@ -35,7 +35,7 @@ export const firebaseService = {
       progress: 0,
     };
 
-    await db.collection('users').doc(userId).set(profile);
+    await db().collection('users').doc(userId).set(profile);
 
     return session;
   },
@@ -44,7 +44,7 @@ export const firebaseService = {
     userId: string,
     moduleId: number
   ): Promise<LearnerSession> {
-    const sessionRef = db.collection('sessions').doc(userId);
+    const sessionRef = db().collection('sessions').doc(userId);
     const session = await sessionRef.get();
 
     if (!session.exists) {
@@ -72,7 +72,7 @@ export const firebaseService = {
   },
 
   async getUserProfile(userId: string): Promise<UserProfile | null> {
-    const doc = await db.collection('users').doc(userId).get();
+    const doc = await db().collection('users').doc(userId).get();
     return doc.exists ? (doc.data() as UserProfile) : null;
   },
 
@@ -82,7 +82,7 @@ export const firebaseService = {
     answer: string,
     isCorrect: boolean
   ): Promise<void> {
-    await db
+    await db()
       .collection('assessments')
       .doc(userId)
       .collection('answers')
@@ -95,7 +95,7 @@ export const firebaseService = {
   },
 
   async getSimulationState(userId: string): Promise<Record<string, unknown> | null> {
-    const doc = await db
+    const doc = await db()
       .collection('simulations')
       .doc(userId)
       .get();
@@ -106,7 +106,7 @@ export const firebaseService = {
     userId: string,
     state: Record<string, unknown>
   ): Promise<void> {
-    await db.collection('simulations').doc(userId).set({
+    await db().collection('simulations').doc(userId).set({
       ...state,
       updated_at: new Date(),
     });

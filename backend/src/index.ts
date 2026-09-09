@@ -10,12 +10,14 @@ dotenv.config();
 const app: Application = express();
 const PORT = process.env.PORT || 3000;
 
-const serviceAccount = JSON.parse(
-  process.env.FIREBASE_SERVICE_ACCOUNT || '{}'
-) as admin.ServiceAccount;
+const credential = process.env.FIREBASE_SERVICE_ACCOUNT
+  ? admin.credential.cert(
+      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) as admin.ServiceAccount
+    )
+  : admin.credential.applicationDefault();
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential,
   projectId: process.env.FIREBASE_PROJECT_ID,
 });
 
