@@ -3,6 +3,22 @@ import VelocityFieldSimulator from '../VelocityFieldSimulator';
 import { useSimulationStore } from '../../store/simulation';
 import { createVelocityField } from '../../lib/velocityField';
 
+// jsdom in this environment does not implement the PointerEvent constructor,
+// so @testing-library's fireEvent.pointerDown/Move/Up silently drop every
+// init property (clientX, clientY, pointerId all come through undefined).
+// Build a MouseEvent instead (which jsdom does support) and graft the
+// pointer-specific fields on - React reads them by property name off the
+// native event regardless of its concrete class.
+function firePointer(
+  element: Element,
+  type: 'pointerdown' | 'pointermove' | 'pointerup',
+  { clientX, clientY, pointerId }: { clientX: number; clientY: number; pointerId: number }
+) {
+  const event = new MouseEvent(type, { clientX, clientY, bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'pointerId', { value: pointerId, enumerable: true });
+  fireEvent(element, event);
+}
+
 jest.mock('../../store/simulation');
 
 const mockedUseSimulationStore = useSimulationStore as unknown as jest.Mock;
@@ -26,7 +42,7 @@ function buildStoreState() {
   };
 }
 
-function stubCanvasRect() {
+function stubCanvas() {
   Object.defineProperty(HTMLCanvasElement.prototype, 'getBoundingClientRect', {
     configurable: true,
     value: () => ({
@@ -55,32 +71,36 @@ function stubCanvasRect() {
     translate: jest.fn(),
     rotate: jest.fn(),
   }) as unknown as HTMLCanvasElement['getContext'];
+  HTMLCanvasElement.prototype.setPointerCapture = jest.fn();
+  HTMLCanvasElement.prototype.releasePointerCapture = jest.fn();
+  HTMLCanvasElement.prototype.hasPointerCapture = jest.fn().mockReturnValue(true);
 }
 
 beforeEach(() => {
   jest.clearAllMocks();
-  stubCanvasRect();
+  stubCanvas();
 });
 
 describe('VelocityFieldSimulator', () => {
   it('renders a canvas for drawing the velocity field', () => {
     mockStore();
-    render(<VelocityFieldSimulator />);
+    render(<VelocityFieldSimulator moduleId={1} />);
     expect(screen.getByTestId('velocity-canvas')).toBeInTheDocument();
   });
 
-  it('adds a velocity vector and updates divergence when the learner drags on the canvas', () => {
+  it('adds a velocity vector and updates divergence when the learner drags with a pointer (mouse or touch)', () => {
     const state = mockStore();
-    render(<VelocityFieldSimulator />);
+    render(<VelocityFieldSimulator moduleId={1} />);
 
     const canvas = screen.getByTestId('velocity-canvas');
-    fireEvent.mouseDown(canvas, { clientX: 30, clientY: 30 });
-    fireEvent.mouseMove(canvas, { clientX: 45, clientY: 30 });
-    fireEvent.mouseUp(canvas);
+    firePointer(canvas, 'pointerdown', { clientX: 30, clientY: 30, pointerId: 1 });
+    firePointer(canvas, 'pointermove', { clientX: 45, clientY: 30, pointerId: 1 });
+    firePointer(canvas, 'pointerup', { clientX: 45, clientY: 30, pointerId: 1 });
 
     // mount seeds once with a demo field; the drag above adds a second call
     expect(state.setVelocityField).toHaveBeenCalledTimes(2);
-    const lastCall = state.setVelocityField.mock.calls[state.setVelocityField.mock.calls.length - 1];
+    const lastCall =
+      state.setVelocityField.mock.calls[state.setVelocityField.mock.calls.length - 1];
     const updatedField = lastCall[0] as Float32Array;
     expect(updatedField).toBeInstanceOf(Float32Array);
     expect(updatedField.some((v) => v !== 0)).toBe(true);
@@ -89,9 +109,19 @@ describe('VelocityFieldSimulator', () => {
     expect(typeof state.setDivergence.mock.calls[0][0]).toBe('number');
   });
 
+  it('captures the pointer on drag start so touch dragging keeps tracking outside the canvas', () => {
+    mockStore();
+    render(<VelocityFieldSimulator moduleId={1} />);
+
+    const canvas = screen.getByTestId('velocity-canvas') as HTMLCanvasElement;
+    firePointer(canvas, 'pointerdown', { clientX: 30, clientY: 30, pointerId: 7 });
+
+    expect(canvas.setPointerCapture).toHaveBeenCalledWith(7);
+  });
+
   it('seeds a visible demo field on mount when the store field is empty', () => {
     const state = mockStore();
-    render(<VelocityFieldSimulator />);
+    render(<VelocityFieldSimulator moduleId={1} />);
 
     expect(state.setVelocityField).toHaveBeenCalledTimes(1);
     const seeded = state.setVelocityField.mock.calls[0][0] as Float32Array;
@@ -99,24 +129,39 @@ describe('VelocityFieldSimulator', () => {
     expect(state.setDivergence).toHaveBeenCalledTimes(1);
   });
 
-  it('does not overwrite an already-populated field on mount', () => {
-    const populated = createVelocityField(RESOLUTION);
-    populated[0] = 5;
-    const state = mockStore({ velocity_field: populated });
-    render(<VelocityFieldSimulator />);
+  it('seeds a different pattern depending on moduleId', () => {
+    const stateA = mockStore();
+    const { unmount } = render(<VelocityFieldSimulator moduleId={0} />);
+    const seededModule0 = stateA.setVelocityField.mock.calls[0][0] as Float32Array;
+    unmount();
 
-    expect(state.setVelocityField).not.toHaveBeenCalled();
+    jest.clearAllMocks();
+    stubCanvas();
+    const stateB = mockStore();
+    render(<VelocityFieldSimulator moduleId={4} />);
+    const seededModule4 = stateB.setVelocityField.mock.calls[0][0] as Float32Array;
+
+    expect(Array.from(seededModule0)).not.toEqual(Array.from(seededModule4));
+  });
+
+  it('does not reseed again on a re-render for the same module', () => {
+    const state = mockStore();
+    const { rerender } = render(<VelocityFieldSimulator moduleId={1} />);
+    expect(state.setVelocityField).toHaveBeenCalledTimes(1);
+
+    rerender(<VelocityFieldSimulator moduleId={1} />);
+    expect(state.setVelocityField).toHaveBeenCalledTimes(1);
   });
 
   it('displays the current divergence value from the store', () => {
     mockStore({ divergence: 0.4321 });
-    render(<VelocityFieldSimulator />);
+    render(<VelocityFieldSimulator moduleId={1} />);
     expect(screen.getByText(/0\.4321|0\.43/)).toBeInTheDocument();
   });
 
   it('toggles between vector field and streamline view modes', () => {
     mockStore();
-    render(<VelocityFieldSimulator />);
+    render(<VelocityFieldSimulator moduleId={1} />);
 
     const toggle = screen.getByRole('button', { name: /streamlines/i });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
@@ -125,14 +170,31 @@ describe('VelocityFieldSimulator', () => {
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('does not add a second vector when the pointer moves without a mouse-down drag', () => {
+  it('does not add a second vector when the pointer moves without a drag in progress', () => {
     const state = mockStore();
-    render(<VelocityFieldSimulator />);
+    render(<VelocityFieldSimulator moduleId={1} />);
 
     const canvas = screen.getByTestId('velocity-canvas');
-    fireEvent.mouseMove(canvas, { clientX: 45, clientY: 30 });
+    firePointer(canvas, 'pointermove', { clientX: 45, clientY: 30, pointerId: 1 });
 
-    // only the mount-time seed call, no extra call from the stray mousemove
+    // only the mount-time seed call, no extra call from the stray pointermove
     expect(state.setVelocityField).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows an explicit hint that the field is draggable', () => {
+    mockStore();
+    render(<VelocityFieldSimulator moduleId={1} />);
+    expect(screen.getAllByText(/drag/i).length).toBeGreaterThan(0);
+  });
+
+  it('hides the overlay hint once the learner has interacted', () => {
+    mockStore();
+    render(<VelocityFieldSimulator moduleId={1} />);
+    expect(screen.getByText(/drag anywhere to add flow/i)).toBeInTheDocument();
+
+    const canvas = screen.getByTestId('velocity-canvas');
+    firePointer(canvas, 'pointerdown', { clientX: 30, clientY: 30, pointerId: 1 });
+
+    expect(screen.queryByText(/drag anywhere to add flow/i)).not.toBeInTheDocument();
   });
 });

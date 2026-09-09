@@ -75,6 +75,87 @@ export function seedDemoField(resolution: number): Float32Array {
   return field;
 }
 
+function seedAmbientFlow(resolution: number): Float32Array {
+  const field = createVelocityField(resolution);
+  for (let i = 0; i < resolution * resolution; i++) {
+    field[i * 2] = 0.3; // gentle constant left-to-right drift
+    field[i * 2 + 1] = 0;
+  }
+  return field;
+}
+
+function seedConvergingForce(resolution: number): Float32Array {
+  const field = createVelocityField(resolution);
+  const center = (resolution - 1) / 2;
+  const scale = 1 / resolution;
+  for (let y = 0; y < resolution; y++) {
+    for (let x = 0; x < resolution; x++) {
+      const idx = cellIndex(resolution, x, y);
+      field[idx] = -(x - center) * scale;
+      field[idx + 1] = -(y - center) * scale;
+    }
+  }
+  return field;
+}
+
+function seedChannelFlow(resolution: number): Float32Array {
+  const field = createVelocityField(resolution);
+  const center = (resolution - 1) / 2;
+  for (let y = 0; y < resolution; y++) {
+    // Poiseuille-like parabolic profile: fastest at center, ~0 at the walls.
+    const normalized = (y - center) / center;
+    const speed = Math.max(0, 1 - normalized * normalized);
+    for (let x = 0; x < resolution; x++) {
+      const idx = cellIndex(resolution, x, y);
+      field[idx] = speed;
+      field[idx + 1] = 0;
+    }
+  }
+  return field;
+}
+
+function seedShearFlow(resolution: number): Float32Array {
+  const field = createVelocityField(resolution);
+  for (let y = 0; y < resolution; y++) {
+    // Couette flow: stationary at the bottom wall, fastest at the top.
+    const speed = y / (resolution - 1);
+    for (let x = 0; x < resolution; x++) {
+      const idx = cellIndex(resolution, x, y);
+      field[idx] = speed;
+      field[idx + 1] = 0;
+    }
+  }
+  return field;
+}
+
+function seedCombinedFlow(resolution: number): Float32Array {
+  const rotation = seedDemoField(resolution);
+  const combined = new Float32Array(rotation);
+  for (let i = 0; i < resolution * resolution; i++) {
+    combined[i * 2] += 0.15; // superpose a drift, evoking flow past an obstacle
+  }
+  return combined;
+}
+
+export function seedFieldForModule(moduleId: number, resolution: number): Float32Array {
+  switch (moduleId) {
+    case 0:
+      return seedAmbientFlow(resolution);
+    case 1:
+      return seedDemoField(resolution);
+    case 2:
+      return seedConvergingForce(resolution);
+    case 3:
+      return seedChannelFlow(resolution);
+    case 4:
+      return seedShearFlow(resolution);
+    case 5:
+      return seedCombinedFlow(resolution);
+    default:
+      return seedDemoField(resolution);
+  }
+}
+
 export function traceStreamline(
   field: Float32Array,
   resolution: number,

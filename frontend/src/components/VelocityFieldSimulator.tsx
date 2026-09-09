@@ -3,9 +3,14 @@ import { useSimulationStore } from '../store/simulation';
 import {
   addVelocityVector,
   computeDivergence,
-  seedDemoField,
+  createVelocityField,
+  seedFieldForModule,
   traceStreamline,
 } from '../lib/velocityField';
+
+interface VelocityFieldSimulatorProps {
+  moduleId: number;
+}
 
 const CANVAS_DISPLAY_SIZE = 384;
 const STREAMLINE_SEED_STEP = 16;
@@ -17,14 +22,6 @@ type ViewMode = 'vectors' | 'streamlines';
 interface GridPoint {
   x: number;
   y: number;
-}
-
-function isFieldEmpty(field: Float32Array | null): boolean {
-  if (!field) return true;
-  for (let i = 0; i < field.length; i++) {
-    if (field[i] !== 0) return false;
-  }
-  return true;
 }
 
 function toGridCoords(
@@ -99,25 +96,30 @@ function drawStreamlines(
   }
 }
 
-export default function VelocityFieldSimulator() {
+export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimulatorProps) {
   const { velocity_field, grid_resolution, divergence, setVelocityField, setDivergence } =
     useSimulationStore();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const draggingRef = useRef<GridPoint | null>(null);
+  const seededModuleRef = useRef<number | null>(null);
   const [mode, setMode] = useState<ViewMode>('vectors');
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const cellSize = CANVAS_DISPLAY_SIZE / grid_resolution;
 
-  // Seed a visible demo pattern on first mount so the canvas never looks
-  // blank/broken before the learner has drawn anything themselves.
+  // Seed a topic-appropriate demo pattern whenever the learner arrives at a
+  // new module, so every module's canvas is visibly alive from the start
+  // instead of blank. Re-renders for the *same* module (e.g. after the
+  // learner has drawn on it) are left alone.
   useEffect(() => {
-    if (isFieldEmpty(velocity_field)) {
-      const seeded = seedDemoField(grid_resolution);
-      setVelocityField(seeded);
-      setDivergence(computeDivergence(seeded, grid_resolution));
-    }
+    if (seededModuleRef.current === moduleId) return;
+    seededModuleRef.current = moduleId;
+    const seeded = seedFieldForModule(moduleId, grid_resolution);
+    setVelocityField(seeded);
+    setDivergence(computeDivergence(seeded, grid_resolution));
+    setHasInteracted(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [moduleId]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -134,16 +136,22 @@ export default function VelocityFieldSimulator() {
     }
   }, [velocity_field, grid_resolution, cellSize, mode]);
 
-  const handleMouseDown = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
+  // Pointer Events unify mouse, touch and pen into one API, so dragging
+  // works the same way on a phone as it does with a mouse. Pointer capture
+  // keeps delivering move events to this canvas even if a touch drifts
+  // outside its bounds mid-drag.
+  const handlePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLCanvasElement>) => {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setHasInteracted(true);
       const rect = event.currentTarget.getBoundingClientRect();
       draggingRef.current = toGridCoords(event.clientX, event.clientY, rect, grid_resolution);
     },
     [grid_resolution]
   );
 
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLCanvasElement>) => {
       const start = draggingRef.current;
       if (!start) return;
 
@@ -153,7 +161,7 @@ export default function VelocityFieldSimulator() {
       const vy = current.y - start.y;
       if (vx === 0 && vy === 0) return;
 
-      const field = velocity_field ?? new Float32Array(grid_resolution * grid_resolution * 2);
+      const field = velocity_field ?? createVelocityField(grid_resolution);
       const updated = addVelocityVector(field, grid_resolution, current.x, current.y, vx, vy);
       setVelocityField(updated);
       setDivergence(computeDivergence(updated, grid_resolution));
@@ -163,7 +171,10 @@ export default function VelocityFieldSimulator() {
     [grid_resolution, velocity_field, setVelocityField, setDivergence]
   );
 
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
     draggingRef.current = null;
   }, []);
 
@@ -182,18 +193,28 @@ export default function VelocityFieldSimulator() {
           Divergence: {divergence.toFixed(4)}
         </span>
       </div>
-      <canvas
-        ref={canvasRef}
-        data-testid="velocity-canvas"
-        width={CANVAS_DISPLAY_SIZE}
-        height={CANVAS_DISPLAY_SIZE}
-        className="velocity-field-canvas"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      />
-      <p className="velocity-field-hint">Click and drag on the canvas to draw velocity vectors.</p>
+      <div className="velocity-field-canvas-wrap">
+        <canvas
+          ref={canvasRef}
+          data-testid="velocity-canvas"
+          width={CANVAS_DISPLAY_SIZE}
+          height={CANVAS_DISPLAY_SIZE}
+          className="velocity-field-canvas"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        />
+        {!hasInteracted && (
+          <div className="velocity-field-overlay-hint" aria-hidden="true">
+            👆 Drag anywhere to add flow
+          </div>
+        )}
+      </div>
+      <p className="velocity-field-hint">
+        Drag anywhere on the field above to add your own velocity — watch the arrows and the
+        divergence number respond.
+      </p>
     </div>
   );
 }

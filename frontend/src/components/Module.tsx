@@ -62,16 +62,7 @@ export default function Module({ moduleId, onNext }: ModuleProps) {
       </div>
 
       <div className="module-simulator">
-        {moduleId === 1 ? (
-          <VelocityFieldSimulator />
-        ) : (
-          <div className="simulator-placeholder">
-            <p>Interactive Simulator Area (Module {moduleId})</p>
-            <p style={{ fontSize: '12px', color: '#666' }}>
-              [Visualization and interactive controls for this module would be rendered here]
-            </p>
-          </div>
-        )}
+        <VelocityFieldSimulator moduleId={moduleId} />
       </div>
 
       <div className="module-assessment">

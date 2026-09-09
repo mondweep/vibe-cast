@@ -41,15 +41,6 @@
   scroll-margin-top: 120px;
 }
 
-.simulator-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #999;
-}
-
 .velocity-field-simulator {
   display: flex;
   flex-direction: column;
@@ -68,17 +59,58 @@
   color: var(--secondary-color);
 }
 
+.velocity-field-canvas-wrap {
+  position: relative;
+  max-width: 100%;
+}
+
 .velocity-field-canvas {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   cursor: crosshair;
   max-width: 100%;
   touch-action: none;
+  display: block;
+}
+
+.velocity-field-overlay-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: velocity-hint-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .velocity-field-overlay-hint {
+    animation: none;
+  }
+}
+
+@keyframes velocity-hint-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.08);
+  }
 }
 
 .velocity-field-hint {
   font-size: 0.85rem;
   color: #999;
+  text-align: center;
+  max-width: 30rem;
 }
 
 .module-assessment {

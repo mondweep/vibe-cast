@@ -4,7 +4,10 @@ import {
   computeDivergence,
   traceStreamline,
   seedDemoField,
+  seedFieldForModule,
 } from '../velocityField';
+
+const cellVx = (resolution: number, x: number, y: number): number => (y * resolution + x) * 2;
 
 describe('createVelocityField', () => {
   it('returns a zero-filled Float32Array sized resolution^2 * 2', () => {
@@ -126,5 +129,60 @@ describe('seedDemoField', () => {
     const resolution = 32;
     const field = seedDemoField(resolution);
     expect(computeDivergence(field, resolution)).toBeLessThan(0.5);
+  });
+});
+
+describe('seedFieldForModule', () => {
+  const RES = 16;
+
+  it('module 0: ambient uniform flow (constant, non-zero, no vertical component)', () => {
+    const field = seedFieldForModule(0, RES);
+    const first = field[0];
+    const last = field[(RES * RES - 1) * 2];
+    expect(first).not.toBe(0);
+    expect(last).toBeCloseTo(first);
+    for (let i = 0; i < RES * RES; i++) {
+      expect(field[i * 2 + 1]).toBeCloseTo(0);
+    }
+  });
+
+  it('module 1: solid-body rotation (matches seedDemoField)', () => {
+    expect(Array.from(seedFieldForModule(1, RES))).toEqual(Array.from(seedDemoField(RES)));
+  });
+
+  it('module 2: converging force field (points inward toward center)', () => {
+    const field = seedFieldForModule(2, RES);
+    const center = Math.floor(RES / 2);
+    const rightOfCenter = field[cellVx(RES, RES - 2, center)];
+    const leftOfCenter = field[cellVx(RES, 1, center)];
+    expect(rightOfCenter).toBeLessThan(0); // pointing left, back toward center
+    expect(leftOfCenter).toBeGreaterThan(0); // pointing right, toward center
+  });
+
+  it('module 3: pressure-driven channel flow (fastest at center, ~0 at walls)', () => {
+    const field = seedFieldForModule(3, RES);
+    const center = Math.floor(RES / 2);
+    const centerSpeed = field[cellVx(RES, 5, center)];
+    const wallSpeed = field[cellVx(RES, 5, 0)];
+    expect(centerSpeed).toBeGreaterThan(wallSpeed);
+  });
+
+  it('module 4: shear (Couette) flow (increases from bottom to top, zero at bottom)', () => {
+    const field = seedFieldForModule(4, RES);
+    const bottom = field[cellVx(RES, 5, 0)];
+    const top = field[cellVx(RES, 5, RES - 1)];
+    expect(bottom).toBeCloseTo(0);
+    expect(top).toBeGreaterThan(bottom);
+  });
+
+  it('module 5: combined rotation + drift (differs from pure rotation)', () => {
+    const combined = seedFieldForModule(5, RES);
+    const pureRotation = seedDemoField(RES);
+    expect(Array.from(combined)).not.toEqual(Array.from(pureRotation));
+    expect(Array.from(combined).some((v) => v !== 0)).toBe(true);
+  });
+
+  it('falls back to the rotation demo field for an unrecognized module id', () => {
+    expect(Array.from(seedFieldForModule(99, RES))).toEqual(Array.from(seedDemoField(RES)));
   });
 });
