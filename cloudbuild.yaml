@@ -1,0 +1,54 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/navier-stokes-backend:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/navier-stokes-backend:latest'
+      - '-f'
+      - 'backend/Dockerfile'
+      - 'backend/'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/navier-stokes-backend:$SHORT_SHA'
+
+  - name: 'gcr.io/cloud-builders/gke-deploy'
+    args:
+      - run
+      - --filename=k8s/
+      - --image=gcr.io/$PROJECT_ID/navier-stokes-backend:$SHORT_SHA
+      - --location=us-central1
+      - --cluster=navier-stokes-prod
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/navier-stokes-frontend:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/navier-stokes-frontend:latest'
+      - '-f'
+      - 'frontend/Dockerfile'
+      - 'frontend/'
+    waitFor: ['-']
+
+  - name: 'gcr.io/cloud-builders/gke-deploy'
+    args:
+      - run
+      - --filename=k8s/frontend/
+      - --image=gcr.io/$PROJECT_ID/navier-stokes-frontend:$SHORT_SHA
+      - --location=us-central1
+      - --cluster=navier-stokes-prod
+
+images:
+  - 'gcr.io/$PROJECT_ID/navier-stokes-backend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/navier-stokes-backend:latest'
+  - 'gcr.io/$PROJECT_ID/navier-stokes-frontend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/navier-stokes-frontend:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: N1_HIGHCPU_8
