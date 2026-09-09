@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useLearnerStore } from '../store/learner';
+import VelocityFieldSimulator from './VelocityFieldSimulator';
 import '../styles/Module.css';
 
 interface ModuleProps {
@@ -61,12 +62,16 @@ export default function Module({ moduleId, onNext }: ModuleProps) {
       </div>
 
       <div className="module-simulator">
-        <div className="simulator-placeholder">
-          <p>Interactive Simulator Area (Module {moduleId})</p>
-          <p style={{ fontSize: '12px', color: '#666' }}>
-            [Visualization and interactive controls for this module would be rendered here]
-          </p>
-        </div>
+        {moduleId === 1 ? (
+          <VelocityFieldSimulator />
+        ) : (
+          <div className="simulator-placeholder">
+            <p>Interactive Simulator Area (Module {moduleId})</p>
+            <p style={{ fontSize: '12px', color: '#666' }}>
+              [Visualization and interactive controls for this module would be rendered here]
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="module-assessment">

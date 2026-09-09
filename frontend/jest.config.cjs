@@ -1,8 +1,27 @@
 module.exports = {
-  preset: 'ts-jest',
   testEnvironment: 'jsdom',
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          target: 'es2023',
+          lib: ['ES2023', 'DOM'],
+          module: 'commonjs',
+          moduleResolution: 'node',
+          jsx: 'react-jsx',
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true,
+          resolveJsonModule: true,
+          strict: true,
+          skipLibCheck: true,
+          types: ['jest', '@testing-library/jest-dom'],
+        },
+      },
+    ],
+  },
   roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
+  testMatch: ['**/__tests__/**/*.(spec|test).ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

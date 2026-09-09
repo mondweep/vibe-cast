@@ -47,6 +47,37 @@
   color: #999;
 }
 
+.velocity-field-simulator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.velocity-field-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.velocity-field-divergence {
+  font-family: monospace;
+  color: var(--secondary-color);
+}
+
+.velocity-field-canvas {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: crosshair;
+  max-width: 100%;
+  touch-action: none;
+}
+
+.velocity-field-hint {
+  font-size: 0.85rem;
+  color: #999;
+}
+
 .module-assessment {
   background: white;
   padding: 1.5rem;
