@@ -11,11 +11,14 @@ function App() {
   const { session, setCurrentModule, startSession, loginUser } = useLearnerStore();
 
   useEffect(() => {
-    // Initialize session if user is logged in
+    // Initialize session once when a user logs in (startSession() itself
+    // produces a new session object, so depending on `session` here would
+    // re-trigger the effect on every run and loop forever).
     if (session) {
       startSession();
     }
-  }, [session, startSession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.session_id, startSession]);
 
   if (!session) {
     return (
