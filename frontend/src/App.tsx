@@ -8,7 +8,7 @@ import './styles/App.css';
 
 function App() {
   const { t } = useTranslation(['common', 'modules']);
-  const { session, setCurrentModule, startSession } = useLearnerStore();
+  const { session, setCurrentModule, startSession, loginUser } = useLearnerStore();
 
   useEffect(() => {
     // Initialize session if user is logged in
@@ -23,7 +23,12 @@ function App() {
         <div className="landing-page">
           <h1>{t('common:app_title')}</h1>
           <p>{t('common:app_subtitle')}</p>
-          <button className="btn btn-primary">{t('common:btn_login')}</button>
+          <button
+            className="btn btn-primary"
+            onClick={() => loginUser(`guest_${Date.now()}`, 'guest@example.com', 'Guest')}
+          >
+            {t('common:btn_login')}
+          </button>
           <p className="text-muted">Sign in to start learning about Navier-Stokes equations</p>
         </div>
       </Layout>
