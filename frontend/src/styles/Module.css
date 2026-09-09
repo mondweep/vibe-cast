@@ -54,9 +54,75 @@
   gap: 1rem;
 }
 
+.velocity-field-explainer {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  text-align: center;
+  max-width: 34rem;
+  line-height: 1.6;
+}
+
+.velocity-field-legend-swatch {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.velocity-field-legend-swatch--source {
+  background: rgba(255, 0, 0, 0.55);
+}
+
+.velocity-field-legend-swatch--sink {
+  background: rgba(0, 0, 255, 0.55);
+}
+
+.velocity-field-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.velocity-field-readout--good {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+
+.velocity-field-readout--warn {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+.velocity-field-readout--bad {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
 .velocity-field-divergence {
   font-family: monospace;
   color: var(--secondary-color);
+}
+
+.velocity-field-interpretation {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.velocity-field-readout--good .velocity-field-interpretation {
+  color: #047857;
+}
+
+.velocity-field-readout--warn .velocity-field-interpretation {
+  color: #b45309;
+}
+
+.velocity-field-readout--bad .velocity-field-interpretation {
+  color: #b91c1c;
 }
 
 .velocity-field-canvas-wrap {

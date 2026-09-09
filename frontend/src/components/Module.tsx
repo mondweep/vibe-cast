@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLearnerStore } from '../store/learner';
 import VelocityFieldSimulator from './VelocityFieldSimulator';
@@ -38,6 +39,14 @@ const MODULE_CONTENT: Record<number, { title: string; content: string }> = {
 export default function Module({ moduleId, onNext }: ModuleProps) {
   const { markModuleComplete } = useLearnerStore();
   const module = MODULE_CONTENT[moduleId] || MODULE_CONTENT[0];
+
+  // Without this, the page can stay scrolled wherever the learner left the
+  // previous module - which can land the new module's content (including
+  // the interactive simulator) partly behind the sticky header, silently
+  // eating clicks/drags meant for the canvas underneath it.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [moduleId]);
 
   const handleComplete = () => {
     markModuleComplete(moduleId);

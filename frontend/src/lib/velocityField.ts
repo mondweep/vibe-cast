@@ -13,6 +13,8 @@ export function createVelocityField(resolution: number): Float32Array {
   return new Float32Array(resolution * resolution * 2);
 }
 
+const MAX_DRAWN_SPEED = 2;
+
 export function addVelocityVector(
   field: Float32Array,
   resolution: number,
@@ -25,19 +27,26 @@ export function addVelocityVector(
   if (!inBounds(resolution, x, y)) {
     return updated;
   }
+
+  // Overwrite rather than accumulate: dragging back and forth over the same
+  // cell should show "the flow you're drawing right now", not an
+  // ever-growing sum with no way to interpret what changed. Clamp the
+  // magnitude too, so a single fast mouse jump can't produce an
+  // absurdly large vector.
+  const magnitude = Math.hypot(vx, vy);
+  const scale = magnitude > MAX_DRAWN_SPEED ? MAX_DRAWN_SPEED / magnitude : 1;
+
   const idx = cellIndex(resolution, x, y);
-  updated[idx] += vx;
-  updated[idx + 1] += vy;
+  updated[idx] = vx * scale;
+  updated[idx + 1] = vy * scale;
   return updated;
 }
 
-export function computeDivergence(field: Float32Array, resolution: number): number {
+export function computeDivergenceField(field: Float32Array, resolution: number): Float32Array {
+  const divergence = new Float32Array(resolution * resolution);
   if (resolution <= 2) {
-    return 0;
+    return divergence;
   }
-
-  let total = 0;
-  let count = 0;
 
   for (let y = 1; y < resolution - 1; y++) {
     for (let x = 1; x < resolution - 1; x++) {
@@ -46,12 +55,57 @@ export function computeDivergence(field: Float32Array, resolution: number): numb
       const dVyDy =
         (field[cellIndex(resolution, x, y + 1) + 1] - field[cellIndex(resolution, x, y - 1) + 1]) /
         2;
-      total += Math.abs(dVxDx + dVyDy);
-      count += 1;
+      divergence[y * resolution + x] = dVxDx + dVyDy;
     }
   }
 
-  return count === 0 ? 0 : total / count;
+  return divergence;
+}
+
+export function computeDivergence(field: Float32Array, resolution: number): number {
+  if (resolution <= 2) {
+    return 0;
+  }
+
+  const divergenceField = computeDivergenceField(field, resolution);
+  const interiorCount = (resolution - 2) * (resolution - 2);
+  let total = 0;
+  for (let i = 0; i < divergenceField.length; i++) {
+    total += Math.abs(divergenceField[i]);
+  }
+
+  return interiorCount === 0 ? 0 : total / interiorCount;
+}
+
+const DIVERGENCE_COLOR_SCALE = 0.6; // divergence magnitude that reaches full color opacity
+const MAX_HEATMAP_OPACITY = 0.55;
+
+export function divergenceToColor(value: number): string {
+  if (value === 0) {
+    return 'rgba(0, 0, 0, 0)';
+  }
+  const opacity = Math.min(MAX_HEATMAP_OPACITY, (Math.abs(value) / DIVERGENCE_COLOR_SCALE) * MAX_HEATMAP_OPACITY);
+  return value > 0 ? `rgba(255, 0, 0, ${opacity.toFixed(3)})` : `rgba(0, 0, 255, ${opacity.toFixed(3)})`;
+}
+
+export interface DivergenceInterpretation {
+  label: string;
+  level: 'good' | 'warn' | 'bad';
+}
+
+export function interpretDivergence(meanAbsDivergence: number): DivergenceInterpretation {
+  // Averaged over a large grid, even a field that is divergent everywhere
+  // (e.g. the converging-force pattern) only reads ~0.01-0.02, and a single
+  // hand-drawn cell out of thousands barely moves the mean at all - so these
+  // thresholds are calibrated against the actual seed-field magnitudes
+  // rather than round numbers.
+  if (meanAbsDivergence < 0.005) {
+    return { label: 'Nearly conserved - a real fluid would look like this', level: 'good' };
+  }
+  if (meanAbsDivergence < 0.05) {
+    return { label: 'Some fluid is being created/destroyed here', level: 'warn' };
+  }
+  return { label: 'Strongly violates conservation of mass', level: 'bad' };
 }
 
 export function seedDemoField(resolution: number): Float32Array {

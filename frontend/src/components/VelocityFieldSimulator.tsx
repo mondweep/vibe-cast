@@ -3,7 +3,10 @@ import { useSimulationStore } from '../store/simulation';
 import {
   addVelocityVector,
   computeDivergence,
+  computeDivergenceField,
   createVelocityField,
+  divergenceToColor,
+  interpretDivergence,
   seedFieldForModule,
   traceStreamline,
 } from '../lib/velocityField';
@@ -34,6 +37,23 @@ function toGridCoords(
   const x = Math.min(resolution - 1, Math.max(0, Math.floor((clientX - rect.left) / cellSize)));
   const y = Math.min(resolution - 1, Math.max(0, Math.floor((clientY - rect.top) / cellSize)));
   return { x, y };
+}
+
+function drawDivergenceHeatmap(
+  ctx: CanvasRenderingContext2D,
+  field: Float32Array,
+  resolution: number,
+  cellSize: number
+): void {
+  const divergenceField = computeDivergenceField(field, resolution);
+  for (let y = 0; y < resolution; y++) {
+    for (let x = 0; x < resolution; x++) {
+      const value = divergenceField[y * resolution + x];
+      if (value === 0) continue;
+      ctx.fillStyle = divergenceToColor(value);
+      ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+    }
+  }
 }
 
 function drawVectors(
@@ -107,6 +127,16 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
 
   const cellSize = CANVAS_DISPLAY_SIZE / grid_resolution;
 
+  const applySeed = useCallback(
+    (id: number) => {
+      const seeded = seedFieldForModule(id, grid_resolution);
+      setVelocityField(seeded);
+      setDivergence(computeDivergence(seeded, grid_resolution));
+      setHasInteracted(false);
+    },
+    [grid_resolution, setVelocityField, setDivergence]
+  );
+
   // Seed a topic-appropriate demo pattern whenever the learner arrives at a
   // new module, so every module's canvas is visibly alive from the start
   // instead of blank. Re-renders for the *same* module (e.g. after the
@@ -114,10 +144,7 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
   useEffect(() => {
     if (seededModuleRef.current === moduleId) return;
     seededModuleRef.current = moduleId;
-    const seeded = seedFieldForModule(moduleId, grid_resolution);
-    setVelocityField(seeded);
-    setDivergence(computeDivergence(seeded, grid_resolution));
-    setHasInteracted(false);
+    applySeed(moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleId]);
 
@@ -127,12 +154,18 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const field = velocity_field ?? new Float32Array(0);
+
     ctx.fillStyle = '#f8f9fa';
     ctx.fillRect(0, 0, CANVAS_DISPLAY_SIZE, CANVAS_DISPLAY_SIZE);
+    // Divergence heatmap first, as a background layer: it shows *where*
+    // mass is being created (red) or destroyed (blue), which a single
+    // aggregate number can't convey on its own.
+    drawDivergenceHeatmap(ctx, field, grid_resolution, cellSize);
     if (mode === 'vectors') {
-      drawVectors(ctx, velocity_field ?? new Float32Array(0), grid_resolution, cellSize);
+      drawVectors(ctx, field, grid_resolution, cellSize);
     } else {
-      drawStreamlines(ctx, velocity_field ?? new Float32Array(0), grid_resolution, cellSize);
+      drawStreamlines(ctx, field, grid_resolution, cellSize);
     }
   }, [velocity_field, grid_resolution, cellSize, mode]);
 
@@ -178,8 +211,19 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
     draggingRef.current = null;
   }, []);
 
+  const interpretation = interpretDivergence(divergence);
+
   return (
     <div className="velocity-field-simulator">
+      <p className="velocity-field-explainer">
+        <strong>Divergence</strong> measures whether fluid is being created or destroyed at a
+        point. Real fluids conserve mass, so it should stay near zero — the colors on the field
+        below show you exactly where that breaks down:{' '}
+        <span className="velocity-field-legend-swatch velocity-field-legend-swatch--source" />{' '}
+        fluid appearing,{' '}
+        <span className="velocity-field-legend-swatch velocity-field-legend-swatch--sink" /> fluid
+        disappearing.
+      </p>
       <div className="velocity-field-controls">
         <button
           type="button"
@@ -189,9 +233,9 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
         >
           Streamlines
         </button>
-        <span aria-live="polite" className="velocity-field-divergence">
-          Divergence: {divergence.toFixed(4)}
-        </span>
+        <button type="button" className="btn btn-sm" onClick={() => applySeed(moduleId)}>
+          Reset
+        </button>
       </div>
       <div className="velocity-field-canvas-wrap">
         <canvas
@@ -211,9 +255,13 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
           </div>
         )}
       </div>
+      <div aria-live="polite" className={`velocity-field-readout velocity-field-readout--${interpretation.level}`}>
+        <span className="velocity-field-divergence">Divergence: {divergence.toFixed(4)}</span>
+        <span className="velocity-field-interpretation">{interpretation.label}</span>
+      </div>
       <p className="velocity-field-hint">
-        Drag anywhere on the field above to add your own velocity — watch the arrows and the
-        divergence number respond.
+        Drag anywhere on the field above to add your own velocity — watch the arrows, the colors,
+        and the divergence number respond.
       </p>
     </div>
   );

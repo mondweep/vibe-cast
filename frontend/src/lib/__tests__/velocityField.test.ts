@@ -2,6 +2,9 @@ import {
   createVelocityField,
   addVelocityVector,
   computeDivergence,
+  computeDivergenceField,
+  divergenceToColor,
+  interpretDivergence,
   traceStreamline,
   seedDemoField,
   seedFieldForModule,
@@ -33,13 +36,24 @@ describe('addVelocityVector', () => {
     expect(updated[idx + 1]).toBeCloseTo(-0.25);
   });
 
-  it('accumulates on top of an existing value at the same cell', () => {
+  it('overwrites (does not accumulate onto) an existing value at the same cell', () => {
+    // Repeatedly setting the same cell must not compound - otherwise a
+    // learner dragging back and forth over one spot sees the divergence
+    // number climb forever with no way to interpret what changed.
     let field = createVelocityField(2);
     field = addVelocityVector(field, 2, 0, 0, 1, 1);
-    field = addVelocityVector(field, 2, 0, 0, 0.5, -2);
+    field = addVelocityVector(field, 2, 0, 0, 0.5, -0.25);
 
-    expect(field[0]).toBeCloseTo(1.5);
-    expect(field[1]).toBeCloseTo(-1);
+    expect(field[0]).toBeCloseTo(0.5);
+    expect(field[1]).toBeCloseTo(-0.25);
+  });
+
+  it('clamps the vector magnitude to a sane maximum', () => {
+    const field = createVelocityField(2);
+    const updated = addVelocityVector(field, 2, 0, 0, 1000, 0);
+    const magnitude = Math.hypot(updated[0], updated[1]);
+    expect(magnitude).toBeLessThanOrEqual(2.01);
+    expect(updated[0]).toBeGreaterThan(0); // direction preserved
   });
 
   it('ignores coordinates outside the grid', () => {
@@ -78,6 +92,51 @@ describe('computeDivergence', () => {
   it('returns 0 for a field with no interior cells (resolution <= 2)', () => {
     const field = createVelocityField(2);
     expect(computeDivergence(field, 2)).toBe(0);
+  });
+});
+
+describe('computeDivergenceField', () => {
+  it('returns one divergence value per grid cell, zero for a uniform field', () => {
+    const resolution = 4;
+    const field = createVelocityField(resolution);
+    for (let i = 0; i < resolution * resolution; i++) {
+      field[i * 2] = 2;
+      field[i * 2 + 1] = -1;
+    }
+    const divField = computeDivergenceField(field, resolution);
+    expect(divField.length).toBe(resolution * resolution);
+    expect(Array.from(divField).every((v) => Math.abs(v) < 1e-6)).toBe(true);
+  });
+
+  it('is positive at a source and negative at a sink', () => {
+    const resolution = 5;
+    const field = createVelocityField(resolution);
+    for (let y = 0; y < resolution; y++) {
+      for (let x = 0; x < resolution; x++) {
+        const idx = (y * resolution + x) * 2;
+        field[idx] = x; // outward expansion => positive divergence
+        field[idx + 1] = y;
+      }
+    }
+    const divField = computeDivergenceField(field, resolution);
+    const center = 2 * resolution + 2; // interior cell (2,2)
+    expect(divField[center]).toBeGreaterThan(0);
+  });
+
+  it('mean absolute value matches computeDivergence', () => {
+    const resolution = 4;
+    const field = createVelocityField(resolution);
+    for (let i = 0; i < resolution * resolution; i++) {
+      field[i * 2] = Math.random();
+      field[i * 2 + 1] = Math.random();
+    }
+    const divField = computeDivergenceField(field, resolution);
+    const manualMean =
+      Array.from(divField)
+        .slice() // whole array; edge cells are 0 by construction, matching computeDivergence's interior-only average once counted correctly
+        .reduce((sum, v) => sum + Math.abs(v), 0) /
+      ((resolution - 2) * (resolution - 2));
+    expect(computeDivergence(field, resolution)).toBeCloseTo(manualMean, 5);
   });
 });
 
@@ -184,5 +243,59 @@ describe('seedFieldForModule', () => {
 
   it('falls back to the rotation demo field for an unrecognized module id', () => {
     expect(Array.from(seedFieldForModule(99, RES))).toEqual(Array.from(seedDemoField(RES)));
+  });
+
+  it('module 2 (converging force) is flagged as not mass-conserving, unlike modules 1/3/4', () => {
+    const resolution = 128;
+    const divergentModule = interpretDivergence(
+      computeDivergence(seedFieldForModule(2, resolution), resolution)
+    );
+    const conservedModules = [1, 3, 4].map((id) =>
+      interpretDivergence(computeDivergence(seedFieldForModule(id, resolution), resolution)).level
+    );
+
+    expect(divergentModule.level).not.toBe('good');
+    expect(conservedModules).toEqual(['good', 'good', 'good']);
+  });
+});
+
+describe('divergenceToColor', () => {
+  it('returns transparent for zero (or near-zero) divergence', () => {
+    expect(divergenceToColor(0)).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it('maps positive divergence (a source) to red', () => {
+    const color = divergenceToColor(0.5);
+    expect(color).toMatch(/^rgba\(255, 0, 0, 0\.\d+\)$/);
+  });
+
+  it('maps negative divergence (a sink) to blue', () => {
+    const color = divergenceToColor(-0.5);
+    expect(color).toMatch(/^rgba\(0, 0, 255, 0\.\d+\)$/);
+  });
+
+  it('clamps opacity for very large magnitudes instead of exceeding 1', () => {
+    const color = divergenceToColor(999);
+    const match = color.match(/rgba\(255, 0, 0, ([\d.]+)\)/);
+    expect(match).not.toBeNull();
+    expect(Number(match?.[1])).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('interpretDivergence', () => {
+  it('reports "good" for near-zero divergence (mass roughly conserved)', () => {
+    expect(interpretDivergence(0.001).level).toBe('good');
+  });
+
+  it('reports "warn" for a moderate imbalance', () => {
+    expect(interpretDivergence(0.02).level).toBe('warn');
+  });
+
+  it('reports "bad" for a large imbalance', () => {
+    expect(interpretDivergence(1).level).toBe('bad');
+  });
+
+  it('always includes a human-readable label', () => {
+    expect(interpretDivergence(0).label.length).toBeGreaterThan(0);
   });
 });

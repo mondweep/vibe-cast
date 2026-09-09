@@ -97,7 +97,7 @@ This document tracks the implementation status of the Navier-Stokes Learning Pla
 #### Advanced Features
 - [ ] Scroll-triggered animations (Framer Motion)
 - [ ] Parallax narrative sections
-- [x] Interactive simulators (all modules 0-5, each seeded with a topic-appropriate field: ambient flow, rotation, converging force, channel/Poiseuille flow, Couette shear flow, combined — see issues #34/#39/#40. Same underlying velocity-field mechanism reused across modules, not distinct per-module physics content per the original issue scope.)
+- [x] Interactive simulators (all modules 0-5, each seeded with a topic-appropriate field: ambient flow, rotation, converging force, channel/Poiseuille flow, Couette shear flow, combined — see issues #34/#39/#40. Same underlying velocity-field mechanism reused across modules, not distinct per-module physics content per the original issue scope.) Includes a per-cell divergence heatmap (red=source, blue=sink), a plain-language conservation-of-mass interpretation, and a Reset button — not just a raw number.
 - [ ] Assessment system with concept mapping
 - [ ] Turbulence visualization
 - [ ] Educational hyperframes

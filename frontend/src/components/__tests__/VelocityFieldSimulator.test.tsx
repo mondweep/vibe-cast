@@ -197,4 +197,34 @@ describe('VelocityFieldSimulator', () => {
 
     expect(screen.queryByText(/drag anywhere to add flow/i)).not.toBeInTheDocument();
   });
+
+  it('explains what divergence means, not just showing the raw number', () => {
+    mockStore();
+    render(<VelocityFieldSimulator moduleId={1} />);
+    expect(screen.getAllByText(/mass|conserv/i).length).toBeGreaterThan(0);
+  });
+
+  it('shows a plain-language interpretation that reacts to the divergence value', () => {
+    mockStore({ divergence: 0.001 });
+    render(<VelocityFieldSimulator moduleId={1} />);
+    expect(screen.getByText(/nearly conserved/i)).toBeInTheDocument();
+  });
+
+  it('shows a warning interpretation for a large divergence', () => {
+    mockStore({ divergence: 1 });
+    render(<VelocityFieldSimulator moduleId={1} />);
+    expect(screen.getByText(/violates conservation/i)).toBeInTheDocument();
+  });
+
+  it('resets to a fresh copy of the module pattern when the Reset button is clicked', () => {
+    const state = mockStore();
+    render(<VelocityFieldSimulator moduleId={1} />);
+    expect(state.setVelocityField).toHaveBeenCalledTimes(1); // mount seed
+
+    fireEvent.click(screen.getByRole('button', { name: /reset/i }));
+
+    expect(state.setVelocityField).toHaveBeenCalledTimes(2);
+    const resetField = state.setVelocityField.mock.calls[1][0] as Float32Array;
+    expect(resetField.some((v) => v !== 0)).toBe(true);
+  });
 });

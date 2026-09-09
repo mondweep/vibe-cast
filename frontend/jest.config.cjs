@@ -5,10 +5,15 @@ module.exports = {
       'ts-jest',
       {
         tsconfig: {
+          // Type errors are already caught by `tsc -b` in the build step;
+          // isolatedModules keeps Jest fast and avoids per-file TS Program
+          // quirks (e.g. ambient *.css module declarations not being
+          // discovered without a real tsconfig "include").
+          isolatedModules: true,
           target: 'es2023',
           lib: ['ES2023', 'DOM'],
           module: 'commonjs',
-          moduleResolution: 'node',
+          moduleResolution: 'bundler',
           jsx: 'react-jsx',
           esModuleInterop: true,
           allowSyntheticDefaultImports: true,
@@ -40,5 +45,6 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.css$': '<rootDir>/src/__mocks__/styleMock.js',
   },
 };
