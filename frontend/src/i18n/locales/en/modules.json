@@ -1,0 +1,38 @@
+{
+  "module0": {
+    "title": "Why Should You Care?",
+    "subtitle": "Understanding the Significance of Navier-Stokes",
+    "description": "Explore real-world applications and the historical significance of the Navier-Stokes equations.",
+    "content": "The Navier-Stokes equations govern how fluids move in response to forces. From weather prediction to aircraft design, these equations are fundamental to science and engineering."
+  },
+  "module1": {
+    "title": "Fluids as Continuous Mediums",
+    "subtitle": "From Molecules to Continuum Mechanics",
+    "description": "Understand how we model fluids as continuous fields rather than discrete particles.",
+    "content": "Fluids can be described at each point in space by their velocity and pressure. This module introduces the concept of velocity fields and how we interpret them visually."
+  },
+  "module2": {
+    "title": "Forces & Acceleration",
+    "subtitle": "Newton's Second Law Applied to Fluids",
+    "description": "Learn how forces act on fluids to produce acceleration.",
+    "content": "Three primary forces act on fluid elements: pressure gradients push from high to low pressure, viscosity provides internal friction, and body forces like gravity pull downward."
+  },
+  "module3": {
+    "title": "Pressure: The Dominant Force",
+    "subtitle": "Pressure Gradients and Incompressibility",
+    "description": "Explore how pressure drives fluid flow.",
+    "content": "Pressure gradients (∇p) are one of the most important driving forces in fluid dynamics. In incompressible flows, mass is conserved at every point (∇·u = 0)."
+  },
+  "module4": {
+    "title": "Viscosity & Friction",
+    "subtitle": "Internal Resistance in Fluids",
+    "description": "Understand how viscosity creates resistance and dissipates energy.",
+    "content": "Viscosity (μ) represents internal friction. Different fluids have different viscosities: honey is thick (high μ), water is moderate, air is thin (low μ)."
+  },
+  "module5": {
+    "title": "The Complete Equation",
+    "subtitle": "Putting It All Together",
+    "description": "See how all terms combine into the Navier-Stokes momentum equation.",
+    "content": "The complete Navier-Stokes equation: ρ(∂u/∂t + u·∇u) = -∇p + μ∇²u + ρg describes how fluids accelerate in response to all forces acting upon them."
+  }
+}

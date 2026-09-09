@@ -1,0 +1,71 @@
+.module-view {
+  width: 100%;
+}
+
+.module-header {
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 1rem;
+}
+
+.module-header h2 {
+  margin-bottom: 0.5rem;
+}
+
+.module-number {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+}
+
+.module-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--primary-color);
+}
+
+.module-content p {
+  line-height: 1.8;
+}
+
+.module-simulator {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  min-height: 300px;
+}
+
+.simulator-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+}
+
+.module-assessment {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.module-assessment h3 {
+  margin-bottom: 1rem;
+}
+
+.module-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.module-actions .btn {
+  flex: 1;
+  padding: 0.75rem;
+  text-align: center;
+}
