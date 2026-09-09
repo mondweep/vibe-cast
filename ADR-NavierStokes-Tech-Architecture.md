@@ -437,6 +437,8 @@ The NavierStokes Learning Platform requires real-time interactive fluid dynamics
 
 ## ADR-012: Security Architecture
 
+> **⚠️ Superseded (authentication only)**: The Google OAuth authentication decision below was **not implemented** for the initial production deployment and has been superseded by **[ADR-016: Interim Local/Guest Authentication](#adr-016-interim-localguest-authentication)**. CORS, encryption-in-transit/at-rest, and the other provisions of this ADR are unaffected and remain in force.
+
 ### Decision
 **API authentication via Google OAuth; CORS restricted to trusted origins; data encryption in transit (HTTPS) and at rest (Google-managed)**
 
@@ -588,6 +590,46 @@ The NavierStokes Learning Platform requires real-time interactive fluid dynamics
 
 ---
 
+## ADR-016: Interim Local/Guest Authentication
+
+**Decision Date**: 2026-09-09
+**Status**: Decided (interim) — **Supersedes ADR-012's authentication provisions only**
+
+### Context
+During the initial deployment of the platform to Cloud Run (project `e-vidhayak`), the "Sign in" button shipped as a non-functional UI stub — it had no click handler, and no Firebase Authentication configuration existed on the GCP project (no Identity Platform config, no Google sign-in provider enabled, no registered Firebase Web App). ADR-012 had already specified Google OAuth as the authentication mechanism, but that work was never actually carried out, so nobody could get past the login screen to reach any course content.
+
+Implementing real Google Sign-In requires several steps beyond application code: initializing Firebase Authentication for the project, enabling Google as a sign-in provider, registering a Firebase Web App to obtain client SDK credentials, configuring authorized domains for each deployed frontend URL, and wiring the frontend to attach ID tokens to backend requests verified by the existing `verifyFirebaseToken` middleware. Some of these are one-time console/API setup steps outside the application codebase itself.
+
+Given the immediate need to unblock access to course content, the team chose a fast interim path over the full OAuth implementation.
+
+### Decision
+**Use the frontend's existing local, unauthenticated session logic (`useLearnerStore().loginUser`) as the "Sign in" action, instead of Google OAuth, until real Google Sign-In is implemented.**
+
+Clicking "Sign in" creates a local Zustand-persisted session with a generated guest ID (`guest_<timestamp>`) and placeholder email/name — no identity is verified, and no credential ever leaves the browser.
+
+### Alternatives Considered
+1. **Implement full Google OAuth now** (per original ADR-012) — correct long-term answer, but blocks content access until Firebase Auth is provisioned end-to-end (GCP-side config + frontend/backend wiring); too slow for the immediate need.
+2. **Leave the button non-functional** — status quo; content stays completely unreachable.
+3. **Hardcode a single shared demo account** — no better than guest sessions, and implies false authentication.
+
+### Rationale
+- Unblocks learners immediately with a minimal, low-risk code change (one button handler).
+- Reuses logic that already existed in `learner.ts` (`loginUser`), so no new state-management code was introduced.
+- Keeps the real fix (Google OAuth) as a clearly scoped, separate follow-up rather than rushing an incomplete OAuth integration.
+
+### Consequences
+- **Positive**: Course content is reachable; no architectural work wasted (Firestore, backend session APIs, `verifyFirebaseToken` middleware all remain designed for real ID tokens and are unaffected).
+- **Negative**: **No real authentication** — anyone can access the app as an anonymous guest; there is no way to verify identity, persist progress across devices/browsers, or protect the backend's `verifyFirebaseToken`-guarded routes (the frontend does not yet call them).
+- **Negative**: Guest sessions are per-browser only (`localStorage` via Zustand `persist`), so progress is lost on a different device or cleared storage.
+- **Negative**: Violates the "No user passwords... reduces credential phishing" and GDPR/CCPA data-deletion provisions of ADR-012, since there is no real user identity to apply them to.
+- **Mitigation**: Treat this ADR as explicitly temporary. Re-open and implement ADR-012's Google OAuth decision before the platform handles any real learner data, assessment records, or multi-device progress tracking.
+
+### Validation
+- Manual check: clicking "Sign in" reaches the module content (done, 2026-09-09).
+- Follow-up (tracked separately): implement Firebase Authentication + Google sign-in provider, register a Firebase Web App, and wire the frontend/backend to real ID tokens — at which point this ADR should be marked **Superseded** by the ADR that documents that implementation.
+
+---
+
 ## Cross-Cutting Concerns
 
 ### Error Handling
@@ -623,10 +665,11 @@ The NavierStokes Learning Platform requires real-time interactive fluid dynamics
 | 009 | A11y & i18n | **Decided** | ADR-001, 002 | Week 2: a11y audit; Week 6: i18n framework |
 | 010 | DevOps | **Decided** (Cloud Build + Run) | ADR-007 | Week 3: CI/CD pipeline operational |
 | 011 | Browser Compat | **Decided** | ADR-001, 002, 003 | Week 4: BrowserStack testing |
-| 012 | Security | **Decided** (OAuth + CORS) | ADR-007 | Week 3: Security audit |
+| 012 | Security | **Superseded (auth only)** by ADR-016 (OAuth + CORS) | ADR-007 | Week 3: Security audit |
 | 013 | Testing | **Decided** (London School TDD) | All | Week 1: Test infrastructure |
 | 014 | Perf & Monitoring | **Decided** | ADR-010 | Week 4: Monitoring dashboards live |
 | 015 | Licensing | **Decided** | None | Pre-launch: License headers in code |
+| 016 | Interim Local/Guest Auth | **Decided (interim)** — supersedes ADR-012 auth | ADR-012 | Follow-up: implement real Google OAuth |
 
 ---
 
