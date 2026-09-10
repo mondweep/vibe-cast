@@ -36,15 +36,147 @@
   padding: 2rem;
   margin-bottom: 2rem;
   min-height: 300px;
+  /* Keyboard/programmatic scroll-into-view (e.g. Tab focus) can otherwise
+     land this flush against the sticky header and hide it underneath. */
+  scroll-margin-top: 120px;
 }
 
-.simulator-placeholder {
+.velocity-field-simulator {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100%;
+  gap: 0.75rem;
+}
+
+.velocity-field-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.velocity-field-explainer {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  text-align: center;
+  max-width: 34rem;
+  line-height: 1.6;
+}
+
+.velocity-field-legend-swatch {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.velocity-field-legend-swatch--source {
+  background: rgba(255, 0, 0, 0.55);
+}
+
+.velocity-field-legend-swatch--sink {
+  background: rgba(0, 0, 255, 0.55);
+}
+
+.velocity-field-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.velocity-field-readout--good {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+
+.velocity-field-readout--warn {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+.velocity-field-readout--bad {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.velocity-field-divergence {
+  font-family: monospace;
+  color: var(--secondary-color);
+}
+
+.velocity-field-interpretation {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.velocity-field-readout--good .velocity-field-interpretation {
+  color: #047857;
+}
+
+.velocity-field-readout--warn .velocity-field-interpretation {
+  color: #b45309;
+}
+
+.velocity-field-readout--bad .velocity-field-interpretation {
+  color: #b91c1c;
+}
+
+.velocity-field-canvas-wrap {
+  position: relative;
+  max-width: 100%;
+}
+
+.velocity-field-canvas {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: crosshair;
+  max-width: 100%;
+  touch-action: none;
+  display: block;
+}
+
+.velocity-field-overlay-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: velocity-hint-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .velocity-field-overlay-hint {
+    animation: none;
+  }
+}
+
+@keyframes velocity-hint-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+.velocity-field-hint {
+  font-size: 0.85rem;
   color: #999;
+  text-align: center;
+  max-width: 30rem;
 }
 
 .module-assessment {

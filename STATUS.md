@@ -89,15 +89,15 @@ This document tracks the implementation status of the Navier-Stokes Learning Pla
 #### Visualization Components
 - [ ] Three.js 3D visualization setup
 - [ ] D3.js data visualization setup
-- [ ] Velocity field visualization
+- [x] Velocity field visualization (all Modules 0-5 — Canvas 2D + Pointer Events (mouse/touch), TDD'd, see `VelocityFieldSimulator.tsx`)
 - [ ] Pressure field visualization
-- [ ] Streamline rendering
-- [ ] Interactive simulation controls
+- [x] Streamline rendering (via `traceStreamline` in `lib/velocityField.ts`, toggle available in every module)
+- [x] Interactive simulation controls (drag-to-draw with touch support, vector/streamline toggle, live divergence readout, on-canvas drag hint)
 
 #### Advanced Features
 - [ ] Scroll-triggered animations (Framer Motion)
 - [ ] Parallax narrative sections
-- [ ] Interactive simulators (one per module)
+- [x] Interactive simulators (all modules 0-5, each seeded with a topic-appropriate field: ambient flow, rotation, converging force, channel/Poiseuille flow, Couette shear flow, combined — see issues #34/#39/#40. Same underlying velocity-field mechanism reused across modules, not distinct per-module physics content per the original issue scope.) Includes a per-cell divergence heatmap (red=source, blue=sink), a plain-language conservation-of-mass interpretation, and a Reset button — not just a raw number.
 - [ ] Assessment system with concept mapping
 - [ ] Turbulence visualization
 - [ ] Educational hyperframes

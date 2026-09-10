@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLearnerStore } from '../store/learner';
+import VelocityFieldSimulator from './VelocityFieldSimulator';
 import '../styles/Module.css';
 
 interface ModuleProps {
@@ -38,6 +40,14 @@ export default function Module({ moduleId, onNext }: ModuleProps) {
   const { markModuleComplete } = useLearnerStore();
   const module = MODULE_CONTENT[moduleId] || MODULE_CONTENT[0];
 
+  // Without this, the page can stay scrolled wherever the learner left the
+  // previous module - which can land the new module's content (including
+  // the interactive simulator) partly behind the sticky header, silently
+  // eating clicks/drags meant for the canvas underneath it.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [moduleId]);
+
   const handleComplete = () => {
     markModuleComplete(moduleId);
     onNext();
@@ -61,12 +71,7 @@ export default function Module({ moduleId, onNext }: ModuleProps) {
       </div>
 
       <div className="module-simulator">
-        <div className="simulator-placeholder">
-          <p>Interactive Simulator Area (Module {moduleId})</p>
-          <p style={{ fontSize: '12px', color: '#666' }}>
-            [Visualization and interactive controls for this module would be rendered here]
-          </p>
-        </div>
+        <VelocityFieldSimulator moduleId={moduleId} />
       </div>
 
       <div className="module-assessment">
