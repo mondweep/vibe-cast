@@ -57,7 +57,7 @@ function stubCanvas() {
       toJSON: () => ({}),
     }),
   });
-  HTMLCanvasElement.prototype.getContext = jest.fn().mockReturnValue({
+  const mockContext = {
     clearRect: jest.fn(),
     beginPath: jest.fn(),
     moveTo: jest.fn(),
@@ -71,10 +71,14 @@ function stubCanvas() {
     translate: jest.fn(),
     rotate: jest.fn(),
     setLineDash: jest.fn(),
-  }) as unknown as HTMLCanvasElement['getContext'];
+  };
+  HTMLCanvasElement.prototype.getContext = jest
+    .fn()
+    .mockReturnValue(mockContext) as unknown as HTMLCanvasElement['getContext'];
   HTMLCanvasElement.prototype.setPointerCapture = jest.fn();
   HTMLCanvasElement.prototype.releasePointerCapture = jest.fn();
   HTMLCanvasElement.prototype.hasPointerCapture = jest.fn().mockReturnValue(true);
+  return mockContext;
 }
 
 beforeEach(() => {
@@ -148,6 +152,28 @@ describe('VelocityFieldSimulator', () => {
     firePointer(canvas, 'pointerup', { clientX: 30, clientY: 30, pointerId: 1 });
 
     expect(state.setVelocityField).toHaveBeenCalledTimes(1); // mount seed only
+  });
+
+  it('caps the live preview at the same length the committed arrow will have, however far the drag goes', () => {
+    resetStore();
+    const mockContext = stubCanvas();
+    render(<VelocityFieldSimulator moduleId={1} />);
+
+    const canvas = screen.getByTestId('velocity-canvas');
+    // anchor at grid cell (10,10): clientX/Y 30 -> floor(30/3)
+    firePointer(canvas, 'pointerdown', { clientX: 30, clientY: 30, pointerId: 1 });
+
+    // a drag just past the clamp threshold...
+    firePointer(canvas, 'pointermove', { clientX: 30 + 5 * 3, clientY: 30, pointerId: 1 });
+    const tipAfterModerateDrag = mockContext.lineTo.mock.calls.at(-1);
+
+    // ...and a drag wildly further in the same direction
+    firePointer(canvas, 'pointermove', { clientX: 30 + 1000 * 3, clientY: 30, pointerId: 1 });
+    const tipAfterHugeDrag = mockContext.lineTo.mock.calls.at(-1);
+
+    // both must render to the exact same capped tip - the preview should
+    // never keep growing past what will actually be committed
+    expect(tipAfterHugeDrag).toEqual(tipAfterModerateDrag);
   });
 
   it('captures the pointer on drag start so touch dragging keeps tracking outside the canvas', () => {

@@ -2,11 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSimulationStore } from '../store/simulation';
 import {
   addVelocityVector,
+  clampVector,
   computeDivergence,
   computeDivergenceField,
   createVelocityField,
   divergenceToColor,
   interpretDivergence,
+  MAX_DRAWN_SPEED,
   seedFieldForModule,
   traceStreamline,
 } from '../lib/velocityField';
@@ -62,10 +64,20 @@ function drawPreviewArrow(
   current: GridPoint,
   cellSize: number
 ): void {
+  // Render with the exact same clamp + scale formula drawVectors() uses for
+  // the committed field, so the preview can never show a longer arrow than
+  // what will actually be saved - dragging far just caps the preview at its
+  // final length instead of growing past it and snapping back on release.
+  const raw = { vx: current.x - anchor.x, vy: current.y - anchor.y };
+  const { vx, vy } = clampVector(raw.vx, raw.vy, MAX_DRAWN_SPEED);
+  const magnitude = Math.hypot(vx, vy);
+
   const originX = (anchor.x + 0.5) * cellSize;
   const originY = (anchor.y + 0.5) * cellSize;
-  const tipX = (current.x + 0.5) * cellSize;
-  const tipY = (current.y + 0.5) * cellSize;
+  const scale = Math.min(cellSize * 2, magnitude * cellSize);
+  const angle = Math.atan2(vy, vx);
+  const tipX = originX + Math.cos(angle) * scale;
+  const tipY = originY + Math.sin(angle) * scale;
 
   ctx.save();
   ctx.strokeStyle = '#ea580c';
@@ -286,14 +298,16 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
   return (
     <div className="velocity-field-simulator">
       <p className="velocity-field-explainer">
-        Drag once to add <strong>one arrow</strong>. Real fluid can't appear or vanish, so every
-        arrow has to blend smoothly with its neighbors — wherever yours doesn't, you'll see{' '}
+        Drag once to add <strong>one arrow</strong>. A real fluid can't spring from nowhere or
+        vanish into nothing — it has to conserve mass, so every arrow has to blend smoothly with
+        its neighbors. Wherever yours doesn't, you'll see{' '}
         <span className="velocity-field-legend-swatch velocity-field-legend-swatch--source" />{' '}
-        <strong>red</strong> (flow rushing away faster than it arrives, as if fluid appeared) or{' '}
+        <strong>red</strong>, like a tiny <strong>fountain</strong> — fluid springing up out of
+        nowhere — or{' '}
         <span className="velocity-field-legend-swatch velocity-field-legend-swatch--sink" />{' '}
-        <strong>blue</strong> (flow crowding in faster than it leaves, as if fluid vanished) right
-        around it. <strong>Divergence</strong> is just a single number summarizing how much of
-        that mismatch exists across the whole field.
+        <strong>blue</strong>, like a tiny <strong>drain</strong> — fluid rushing in and
+        disappearing. <strong>Divergence</strong> is just a single number summarizing how much
+        fountain/drain mismatch exists across the whole field.
       </p>
       <div className="velocity-field-controls">
         <button

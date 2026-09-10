@@ -13,7 +13,20 @@ export function createVelocityField(resolution: number): Float32Array {
   return new Float32Array(resolution * resolution * 2);
 }
 
-const MAX_DRAWN_SPEED = 2;
+export const MAX_DRAWN_SPEED = 2;
+
+export function clampVector(
+  vx: number,
+  vy: number,
+  maxMagnitude: number
+): { vx: number; vy: number } {
+  const magnitude = Math.hypot(vx, vy);
+  if (magnitude === 0 || magnitude <= maxMagnitude) {
+    return { vx, vy };
+  }
+  const scale = maxMagnitude / magnitude;
+  return { vx: vx * scale, vy: vy * scale };
+}
 
 export function addVelocityVector(
   field: Float32Array,
@@ -33,12 +46,11 @@ export function addVelocityVector(
   // ever-growing sum with no way to interpret what changed. Clamp the
   // magnitude too, so a single fast mouse jump can't produce an
   // absurdly large vector.
-  const magnitude = Math.hypot(vx, vy);
-  const scale = magnitude > MAX_DRAWN_SPEED ? MAX_DRAWN_SPEED / magnitude : 1;
+  const clamped = clampVector(vx, vy, MAX_DRAWN_SPEED);
 
   const idx = cellIndex(resolution, x, y);
-  updated[idx] = vx * scale;
-  updated[idx + 1] = vy * scale;
+  updated[idx] = clamped.vx;
+  updated[idx + 1] = clamped.vy;
   return updated;
 }
 

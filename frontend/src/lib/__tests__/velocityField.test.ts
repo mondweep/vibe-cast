@@ -1,6 +1,8 @@
 import {
   createVelocityField,
   addVelocityVector,
+  clampVector,
+  MAX_DRAWN_SPEED,
   computeDivergence,
   computeDivergenceField,
   divergenceToColor,
@@ -297,5 +299,29 @@ describe('interpretDivergence', () => {
 
   it('always includes a human-readable label', () => {
     expect(interpretDivergence(0).label.length).toBeGreaterThan(0);
+  });
+});
+
+describe('clampVector', () => {
+  it('leaves a vector under the max magnitude unchanged', () => {
+    const result = clampVector(1, 0, MAX_DRAWN_SPEED);
+    expect(result).toEqual({ vx: 1, vy: 0 });
+  });
+
+  it('scales a vector over the max magnitude down to exactly the max, preserving direction', () => {
+    const result = clampVector(100, 0, MAX_DRAWN_SPEED);
+    expect(Math.hypot(result.vx, result.vy)).toBeCloseTo(MAX_DRAWN_SPEED);
+    expect(result.vx).toBeGreaterThan(0);
+    expect(result.vy).toBeCloseTo(0);
+  });
+
+  it('preserves direction for a diagonal vector', () => {
+    const result = clampVector(30, 40, MAX_DRAWN_SPEED); // 3-4-5 triangle, magnitude 50
+    expect(Math.hypot(result.vx, result.vy)).toBeCloseTo(MAX_DRAWN_SPEED);
+    expect(result.vx / result.vy).toBeCloseTo(30 / 40);
+  });
+
+  it('does not divide by zero for a zero vector', () => {
+    expect(clampVector(0, 0, MAX_DRAWN_SPEED)).toEqual({ vx: 0, vy: 0 });
   });
 });
