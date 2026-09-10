@@ -1,7 +1,6 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import VelocityFieldSimulator from '../VelocityFieldSimulator';
 import { useSimulationStore } from '../../store/simulation';
-import { createVelocityField } from '../../lib/velocityField';
 
 // jsdom in this environment does not implement the PointerEvent constructor,
 // so @testing-library's fireEvent.pointerDown/Move/Up silently drop every
@@ -19,27 +18,28 @@ function firePointer(
   fireEvent(element, event);
 }
 
-jest.mock('../../store/simulation');
-
-const mockedUseSimulationStore = useSimulationStore as unknown as jest.Mock;
+// Rather than hand-rolling a fake store (which can't reproduce Zustand's
+// real reactivity - a mocked setter doesn't trigger a re-render, so event
+// handler closures never see updated state across renders, which is exactly
+// what this component's "seed once, then commit on drag release" logic
+// depends on), use the real store and spy on its actions by wrapping them.
+const realSetVelocityField = useSimulationStore.getState().setVelocityField;
+const realSetDivergence = useSimulationStore.getState().setDivergence;
 
 const RESOLUTION = 128;
 const CANVAS_SIZE = 384; // 3px per cell
 
-function mockStore(overrides: Partial<ReturnType<typeof buildStoreState>> = {}) {
-  const state = { ...buildStoreState(), ...overrides };
-  mockedUseSimulationStore.mockReturnValue(state);
-  return state;
-}
-
-function buildStoreState() {
-  return {
-    velocity_field: createVelocityField(RESOLUTION),
+function resetStore(overrides: Record<string, unknown> = {}) {
+  useSimulationStore.getState().reset();
+  const setVelocityField = jest.fn((field: Float32Array) => realSetVelocityField(field));
+  const setDivergence = jest.fn((value: number) => realSetDivergence(value));
+  useSimulationStore.setState({
     grid_resolution: RESOLUTION,
-    divergence: 0,
-    setVelocityField: jest.fn(),
-    setDivergence: jest.fn(),
-  };
+    setVelocityField,
+    setDivergence,
+    ...overrides,
+  });
+  return { setVelocityField, setDivergence };
 }
 
 function stubCanvas() {
@@ -70,6 +70,7 @@ function stubCanvas() {
     restore: jest.fn(),
     translate: jest.fn(),
     rotate: jest.fn(),
+    setLineDash: jest.fn(),
   }) as unknown as HTMLCanvasElement['getContext'];
   HTMLCanvasElement.prototype.setPointerCapture = jest.fn();
   HTMLCanvasElement.prototype.releasePointerCapture = jest.fn();
@@ -77,27 +78,35 @@ function stubCanvas() {
 }
 
 beforeEach(() => {
-  jest.clearAllMocks();
   stubCanvas();
 });
 
 describe('VelocityFieldSimulator', () => {
   it('renders a canvas for drawing the velocity field', () => {
-    mockStore();
+    resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
     expect(screen.getByTestId('velocity-canvas')).toBeInTheDocument();
   });
 
-  it('adds a velocity vector and updates divergence when the learner drags with a pointer (mouse or touch)', () => {
-    const state = mockStore();
+  it('commits exactly one vector on release, after previewing (not committing) during the drag', () => {
+    const state = resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
 
     const canvas = screen.getByTestId('velocity-canvas');
     firePointer(canvas, 'pointerdown', { clientX: 30, clientY: 30, pointerId: 1 });
     firePointer(canvas, 'pointermove', { clientX: 45, clientY: 30, pointerId: 1 });
-    firePointer(canvas, 'pointerup', { clientX: 45, clientY: 30, pointerId: 1 });
 
-    // mount seeds once with a demo field; the drag above adds a second call
+    // still just the mount-time seed - moving mid-drag must only preview,
+    // never write to the shared store (that's what caused a scribbled
+    // trail of independent edits instead of one legible arrow)
+    expect(state.setVelocityField).toHaveBeenCalledTimes(1);
+
+    firePointer(canvas, 'pointermove', { clientX: 60, clientY: 30, pointerId: 1 });
+    expect(state.setVelocityField).toHaveBeenCalledTimes(1);
+
+    firePointer(canvas, 'pointerup', { clientX: 60, clientY: 30, pointerId: 1 });
+
+    // mount seed + exactly one commit for the whole gesture
     expect(state.setVelocityField).toHaveBeenCalledTimes(2);
     const lastCall =
       state.setVelocityField.mock.calls[state.setVelocityField.mock.calls.length - 1];
@@ -109,8 +118,40 @@ describe('VelocityFieldSimulator', () => {
     expect(typeof state.setDivergence.mock.calls[0][0]).toBe('number');
   });
 
+  it('commits only a single cell even though the pointer crossed several grid cells', () => {
+    const state = resetStore();
+    render(<VelocityFieldSimulator moduleId={1} />);
+
+    const canvas = screen.getByTestId('velocity-canvas');
+    firePointer(canvas, 'pointerdown', { clientX: 30, clientY: 30, pointerId: 1 });
+    firePointer(canvas, 'pointermove', { clientX: 45, clientY: 30, pointerId: 1 });
+    firePointer(canvas, 'pointermove', { clientX: 90, clientY: 60, pointerId: 1 });
+    firePointer(canvas, 'pointerup', { clientX: 90, clientY: 60, pointerId: 1 });
+
+    const seedField = state.setVelocityField.mock.calls[0][0] as Float32Array;
+    const finalField = state.setVelocityField.mock.calls[1][0] as Float32Array;
+    let changedCells = 0;
+    for (let i = 0; i < finalField.length; i += 2) {
+      if (finalField[i] !== seedField[i] || finalField[i + 1] !== seedField[i + 1]) {
+        changedCells++;
+      }
+    }
+    expect(changedCells).toBe(1);
+  });
+
+  it('does not commit anything if the pointer is released without moving', () => {
+    const state = resetStore();
+    render(<VelocityFieldSimulator moduleId={1} />);
+
+    const canvas = screen.getByTestId('velocity-canvas');
+    firePointer(canvas, 'pointerdown', { clientX: 30, clientY: 30, pointerId: 1 });
+    firePointer(canvas, 'pointerup', { clientX: 30, clientY: 30, pointerId: 1 });
+
+    expect(state.setVelocityField).toHaveBeenCalledTimes(1); // mount seed only
+  });
+
   it('captures the pointer on drag start so touch dragging keeps tracking outside the canvas', () => {
-    mockStore();
+    resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
 
     const canvas = screen.getByTestId('velocity-canvas') as HTMLCanvasElement;
@@ -119,8 +160,22 @@ describe('VelocityFieldSimulator', () => {
     expect(canvas.setPointerCapture).toHaveBeenCalledWith(7);
   });
 
+  it('switches the store to a coarser 128-cell grid on mount, regardless of its default', () => {
+    useSimulationStore.getState().reset();
+    // the store's own default is 256x256 (65536 cells) - too fine for a
+    // hand-drawn single edit to move the aggregate divergence number at
+    // all (it rounds to 0.0000), which is exactly what made the number
+    // look "stuck"/unresponsive. Force the coarser, still-valid 128 grid
+    // this tool actually needs.
+    expect(useSimulationStore.getState().grid_resolution).toBe(256);
+
+    render(<VelocityFieldSimulator moduleId={1} />);
+
+    expect(useSimulationStore.getState().grid_resolution).toBe(128);
+  });
+
   it('seeds a visible demo field on mount when the store field is empty', () => {
-    const state = mockStore();
+    const state = resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
 
     expect(state.setVelocityField).toHaveBeenCalledTimes(1);
@@ -130,14 +185,12 @@ describe('VelocityFieldSimulator', () => {
   });
 
   it('seeds a different pattern depending on moduleId', () => {
-    const stateA = mockStore();
+    const stateA = resetStore();
     const { unmount } = render(<VelocityFieldSimulator moduleId={0} />);
     const seededModule0 = stateA.setVelocityField.mock.calls[0][0] as Float32Array;
     unmount();
 
-    jest.clearAllMocks();
-    stubCanvas();
-    const stateB = mockStore();
+    const stateB = resetStore();
     render(<VelocityFieldSimulator moduleId={4} />);
     const seededModule4 = stateB.setVelocityField.mock.calls[0][0] as Float32Array;
 
@@ -145,7 +198,7 @@ describe('VelocityFieldSimulator', () => {
   });
 
   it('does not reseed again on a re-render for the same module', () => {
-    const state = mockStore();
+    const state = resetStore();
     const { rerender } = render(<VelocityFieldSimulator moduleId={1} />);
     expect(state.setVelocityField).toHaveBeenCalledTimes(1);
 
@@ -154,13 +207,20 @@ describe('VelocityFieldSimulator', () => {
   });
 
   it('displays the current divergence value from the store', () => {
-    mockStore({ divergence: 0.4321 });
+    resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
+
+    // set after mount: the mount effect always seeds (and computes its own
+    // divergence) on first render, so an initial override would just be
+    // overwritten - this tests that the display reacts to later changes
+    act(() => {
+      useSimulationStore.setState({ divergence: 0.4321 });
+    });
     expect(screen.getByText(/0\.4321|0\.43/)).toBeInTheDocument();
   });
 
   it('toggles between vector field and streamline view modes', () => {
-    mockStore();
+    resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
 
     const toggle = screen.getByRole('button', { name: /streamlines/i });
@@ -171,7 +231,7 @@ describe('VelocityFieldSimulator', () => {
   });
 
   it('does not add a second vector when the pointer moves without a drag in progress', () => {
-    const state = mockStore();
+    const state = resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
 
     const canvas = screen.getByTestId('velocity-canvas');
@@ -182,42 +242,48 @@ describe('VelocityFieldSimulator', () => {
   });
 
   it('shows an explicit hint that the field is draggable', () => {
-    mockStore();
+    resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
     expect(screen.getAllByText(/drag/i).length).toBeGreaterThan(0);
   });
 
   it('hides the overlay hint once the learner has interacted', () => {
-    mockStore();
+    resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
-    expect(screen.getByText(/drag anywhere to add flow/i)).toBeInTheDocument();
+    expect(screen.getByText(/release to add one arrow/i)).toBeInTheDocument();
 
     const canvas = screen.getByTestId('velocity-canvas');
     firePointer(canvas, 'pointerdown', { clientX: 30, clientY: 30, pointerId: 1 });
 
-    expect(screen.queryByText(/drag anywhere to add flow/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/release to add one arrow/i)).not.toBeInTheDocument();
   });
 
   it('explains what divergence means, not just showing the raw number', () => {
-    mockStore();
+    resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
     expect(screen.getAllByText(/mass|conserv/i).length).toBeGreaterThan(0);
   });
 
   it('shows a plain-language interpretation that reacts to the divergence value', () => {
-    mockStore({ divergence: 0.001 });
+    resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
+    // module 1's seeded rotation is already divergence-free, so the default
+    // post-mount state already exercises the "good" interpretation
     expect(screen.getByText(/nearly conserved/i)).toBeInTheDocument();
   });
 
   it('shows a warning interpretation for a large divergence', () => {
-    mockStore({ divergence: 1 });
+    resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
+
+    act(() => {
+      useSimulationStore.setState({ divergence: 1 });
+    });
     expect(screen.getByText(/violates conservation/i)).toBeInTheDocument();
   });
 
   it('resets to a fresh copy of the module pattern when the Reset button is clicked', () => {
-    const state = mockStore();
+    const state = resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);
     expect(state.setVelocityField).toHaveBeenCalledTimes(1); // mount seed
 

@@ -17,6 +17,7 @@ beforeEach(() => {
     divergence: 0,
     setVelocityField: jest.fn(),
     setDivergence: jest.fn(),
+    setGridResolution: jest.fn(),
   });
   Object.defineProperty(HTMLCanvasElement.prototype, 'getBoundingClientRect', {
     configurable: true,

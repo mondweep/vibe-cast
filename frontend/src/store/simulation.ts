@@ -11,6 +11,7 @@ interface SimulationStore extends SimulationState {
   setPressureField: (field: Float32Array) => void;
   setDivergence: (div: number) => void;
   setSimulating: (simulating: boolean) => void;
+  setGridResolution: (resolution: 128 | 256) => void;
   reset: () => void;
   serialize: () => string;
   deserialize: (data: string) => void;
@@ -53,6 +54,9 @@ export const useSimulationStore = create<SimulationStore>()(
 
     setSimulating: (simulating) =>
       set({ is_simulating: simulating }),
+
+    setGridResolution: (resolution) =>
+      set({ grid_resolution: resolution, timestep_count: 0 }),
 
     reset: () =>
       set(initialState),
