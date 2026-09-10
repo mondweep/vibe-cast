@@ -146,30 +146,57 @@ This document tracks the implementation status of the Navier-Stokes Learning Pla
 
 ## Deployment Status
 
-### Prerequisites for Deployment
-- [ ] Google Cloud Project created
-- [ ] Firebase project configured
-- [ ] Service account key generated
-- [ ] Firestore database created
-- [ ] Google OAuth credentials configured
+### ✅ Frontend Deployment (COMPLETE)
+- **Status**: Live and operational
+- **URL**: https://navier-stokes-frontend-58061828953.us-central1.run.app/
+- **Verified**: Landing page loads, guest login works, module navigation functional
 
-### Deployment Steps
-1. **Set up Google Cloud** (See DEPLOYMENT.md)
+### ⏳ Backend Deployment (PENDING)
+- **Status**: Code compiled, not deployed to Cloud Run
+- **Docker Image**: Built locally, not pushed to GCR
+- **Prerequisites Met**:
+  - [x] Google Cloud Project created (e-vidhayak)
+  - [x] Firebase project configured
+  - [x] Firestore database created
+  - [x] Backend code complete and compiled
+- **Prerequisites Needed**:
+  - [ ] Service account key (FIREBASE_SERVICE_ACCOUNT)
+  - [ ] GCR authentication configured
+  - [ ] FIREBASE_PROJECT_ID environment variable
+
+### Deployment Steps (Phase 2)
+1. **Build backend Docker image**
    ```bash
-   export PROJECT_ID="your-project-id"
-   gcloud config set project $PROJECT_ID
-   gcloud services enable run.googleapis.com firestore.googleapis.com
+   docker build -t gcr.io/e-vidhayak/navier-stokes-backend:latest backend/
    ```
 
-2. **Deploy using script**
+2. **Push to Google Container Registry**
    ```bash
-   ./deploy.sh your-project-id us-central1
+   docker push gcr.io/e-vidhayak/navier-stokes-backend:latest
    ```
 
-3. **Verify deployment**
-   - Frontend: https://<frontend-service>.run.app
-   - Backend: https://<backend-service>.run.app
-   - Health: https://<backend-service>.run.app/health
+3. **Deploy to Cloud Run**
+   ```bash
+   gcloud run deploy navier-stokes-backend \
+     --image gcr.io/e-vidhayak/navier-stokes-backend:latest \
+     --platform managed \
+     --region us-central1 \
+     --set-env-vars=FIREBASE_PROJECT_ID=$PROJECT_ID \
+     --set-env-vars=FIREBASE_SERVICE_ACCOUNT="$(cat service-key.json)" \
+     --allow-unauthenticated
+   ```
+
+4. **Verify deployment**
+   ```bash
+   export BACKEND_URL=$(gcloud run services describe navier-stokes-backend \
+     --platform managed --region us-central1 --format='value(status.url)')
+   curl $BACKEND_URL/health
+   ```
+
+5. **Update frontend configuration**
+   - Set backend URL in frontend environment
+   - Integrate API calls in learner store
+   - Test end-to-end flow
 
 ## Module Content Status
 
@@ -197,36 +224,68 @@ This document tracks the implementation status of the Navier-Stokes Learning Pla
 | API Endpoints | 3 session routes |
 | Test Coverage | Setup ready, 0% coverage |
 
-## Next Immediate Steps
+## Current Phase Status
 
-1. **Implement Google OAuth Authentication**
-   - Add Firebase client SDK to frontend
+### ✅ Phase 1: Foundation (COMPLETE)
+All core infrastructure built and deployed to production.
+- Frontend live at: https://navier-stokes-frontend-58061828953.us-central1.run.app/
+- Guest authentication working
+- Module framework in place
+- i18n internationalization functional
+
+### ⏳ Phase 2: Backend Deployment & API Integration (NEXT)
+1. **Deploy Backend to Cloud Run** (PRIORITY 1)
+   - Build Docker image: `gcr.io/e-vidhayak/navier-stokes-backend:latest`
+   - Push to Google Container Registry
+   - Deploy with environment variables
+   - Verify health endpoint
+
+2. **Integrate Frontend with Backend API** (PRIORITY 2)
+   - Connect session endpoints
+   - Enable progress persistence to database
+   - Test end-to-end flow
+
+### 🔄 Phase 3: Authentication (ADR-012)
+- Implement Google OAuth
+- Firebase Authentication configuration
+- ID token verification
+- Replace guest auth with secure authentication
+
+### 📋 Phase 4: Visualization & Simulation
+- Create Rust WASM solver
+- Implement Three.js visualization
+- Add D3.js data visualization
+- Build interactive simulators
+
+## Next Immediate Steps (Priority Order)
+
+1. **Deploy Backend to Cloud Run** (BLOCKER)
+   - Requires: FIREBASE_PROJECT_ID, FIREBASE_SERVICE_ACCOUNT
+   - Use deploy.sh or manual gcloud commands
+   - Verify: `curl $BACKEND_URL/health`
+
+2. **Integrate Frontend API Calls** 
+   - Add API configuration to frontend
+   - Update Zustand stores to call backend
+   - Test session create/get/update endpoints
+
+3. **Implement Google OAuth Authentication**
+   - Enable Firebase Authentication in GCP
+   - Add Firebase Web SDK to frontend
    - Create login/logout components
-   - Integrate with backend token verification
+   - Verify ID token verification in backend
 
-2. **Create WASM Solver**
+4. **Create WASM Solver**
    - Set up Rust project
    - Implement 2D incompressible NS solver
    - Compile to WASM
    - Integrate with SimulationStore
 
-3. **Add Visualization Components**
+5. **Add Visualization Components**
    - Integrate Three.js for 3D graphics
    - Create velocity field visualization
    - Create pressure field visualization
    - Add interactive controls
-
-4. **Develop Interactive Simulators**
-   - One interactive simulator per module
-   - Real-time parameter adjustment
-   - Visual feedback and learning
-   - Assessment based on simulation results
-
-5. **Deploy to Google Cloud**
-   - Set up GCP project (if not already done)
-   - Configure Firebase
-   - Run deployment script
-   - Verify deployment
 
 ## Development Workflow
 
@@ -259,28 +318,73 @@ gcloud run logs read navier-stokes-frontend --region us-central1
 
 ## Known Issues & Limitations
 
-1. **WASM Solver**: Not yet implemented - impacts simulation features
-2. **Visualization**: Three.js/D3.js components not yet created
-3. **Authentication**: Firebase client SDK not integrated
-4. **Assessments**: Assessment system framework exists but no content
-5. **Mobile**: Not yet tested on mobile devices
-6. **Accessibility**: Initial setup only, needs WCAG testing
+### Phase 1 (Current)
+1. **Backend Not Deployed**: Backend code complete but not deployed to Cloud Run
+   - Impact: No backend API accessible
+   - Status: Ready for Phase 2 deployment
+   - Workaround: Using local guest sessions
+
+2. **No Real Authentication**: Using local guest sessions (intentional per ADR-016)
+   - Impact: No multi-device persistence
+   - Status: Design choice, will be fixed in Phase 3 with Google OAuth
+   - Workaround: Progress saved in localStorage only
+
+3. **No Backend Integration**: Frontend doesn't call backend API yet
+   - Impact: Session data not persisted to database
+   - Status: Deferred to Phase 2
+   - Workaround: Using local Zustand store with localStorage
+
+### Phase 3+
+4. **WASM Solver**: Not yet implemented - impacts simulation features
+   - Planned for Phase 4
+   
+5. **Visualization**: Three.js/D3.js components not yet created
+   - Planned for Phase 4
+   
+6. **Assessments**: Assessment system framework exists but no content
+   - Planned for Phase 4+
+   
+7. **Mobile**: Not yet tested on mobile devices
+   - Will test in Phase 2 after backend deployment
+   
+8. **Accessibility**: Initial setup only, needs WCAG testing
+   - Will audit in Phase 2+
 
 ## Success Criteria
 
+### Phase 1 (Complete ✅)
 - [x] Frontend builds and runs
+- [x] Frontend deployed to Cloud Run (LIVE)
 - [x] Backend API compiles and starts
 - [x] Zustand stores work correctly
 - [x] i18n configuration complete
 - [x] Docker builds successful
+- [x] Guest authentication functional
+- [x] Landing page accessible
+- [x] Module navigation working
+- [x] TypeScript strict mode passing
+- [x] ESLint configuration clean
+
+### Phase 2 (In Progress 🔄)
+- [ ] Backend deployed to Cloud Run
+- [ ] Backend API accessible from frontend
+- [ ] Session endpoints tested end-to-end
 - [ ] Google Cloud deployment successful
+
+### Phase 3 (Upcoming)
 - [ ] Google OAuth authentication working
+- [ ] ID token verification on backend
+- [ ] Multi-device progress persistence
+- [ ] User identity verification
+
+### Phase 4+ (Planned)
 - [ ] WASM solver functional
 - [ ] Simulations running in frontend
+- [ ] Three.js/D3.js visualizations working
 - [ ] All modules have interactive content
 - [ ] Assessment system operational
 - [ ] All 9 modules accessible and complete
-- [ ] User progress tracking working
+- [ ] User progress tracking across devices
 - [ ] Learning analytics dashboard
 
 ## Repository Structure
