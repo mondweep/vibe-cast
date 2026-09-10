@@ -1,52 +1,74 @@
 steps:
+  # Build backend Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/navier-stokes-backend:$SHORT_SHA'
       - '-t'
       - 'gcr.io/$PROJECT_ID/navier-stokes-backend:latest'
       - '-f'
       - 'backend/Dockerfile'
       - 'backend/'
+    id: 'build-backend'
 
+  # Push backend image to GCR
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'gcr.io/$PROJECT_ID/navier-stokes-backend:$SHORT_SHA'
+      - 'gcr.io/$PROJECT_ID/navier-stokes-backend:latest'
+    id: 'push-backend'
 
-  - name: 'gcr.io/cloud-builders/gke-deploy'
+  # Deploy backend to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
     args:
-      - run
-      - --filename=k8s/
-      - --image=gcr.io/$PROJECT_ID/navier-stokes-backend:$SHORT_SHA
-      - --location=us-central1
-      - --cluster=navier-stokes-prod
+      - 'run'
+      - 'deploy'
+      - 'navier-stokes-backend'
+      - '--image=gcr.io/$PROJECT_ID/navier-stokes-backend:latest'
+      - '--platform=managed'
+      - '--region=us-central1'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=NODE_ENV=production'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+    id: 'deploy-backend'
+    waitFor: ['push-backend']
 
+  # Build frontend image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/navier-stokes-frontend:$SHORT_SHA'
       - '-t'
       - 'gcr.io/$PROJECT_ID/navier-stokes-frontend:latest'
       - '-f'
       - 'frontend/Dockerfile'
       - 'frontend/'
-    waitFor: ['-']
+    id: 'build-frontend'
+    waitFor: ['deploy-backend']
 
-  - name: 'gcr.io/cloud-builders/gke-deploy'
+  # Push frontend image
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - run
-      - --filename=k8s/frontend/
-      - --image=gcr.io/$PROJECT_ID/navier-stokes-frontend:$SHORT_SHA
-      - --location=us-central1
-      - --cluster=navier-stokes-prod
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/navier-stokes-frontend:latest'
+    id: 'push-frontend'
+
+  # Deploy frontend to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'navier-stokes-frontend'
+      - '--image=gcr.io/$PROJECT_ID/navier-stokes-frontend:latest'
+      - '--platform=managed'
+      - '--region=us-central1'
+      - '--allow-unauthenticated'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+    id: 'deploy-frontend'
+    waitFor: ['push-frontend']
 
 images:
-  - 'gcr.io/$PROJECT_ID/navier-stokes-backend:$SHORT_SHA'
   - 'gcr.io/$PROJECT_ID/navier-stokes-backend:latest'
-  - 'gcr.io/$PROJECT_ID/navier-stokes-frontend:$SHORT_SHA'
   - 'gcr.io/$PROJECT_ID/navier-stokes-frontend:latest'
 
 options:
