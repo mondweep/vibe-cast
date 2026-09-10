@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLearnerStore } from '../store/learner';
 import VelocityFieldSimulator from './VelocityFieldSimulator';
@@ -38,6 +38,7 @@ const MODULE_CONTENT: Record<number, { title: string; content: string }> = {
 
 export default function Module({ moduleId, onNext }: ModuleProps) {
   const { markModuleComplete } = useLearnerStore();
+  const [isCompleting, setIsCompleting] = useState(false);
   const module = MODULE_CONTENT[moduleId] || MODULE_CONTENT[0];
 
   // Without this, the page can stay scrolled wherever the learner left the
@@ -48,9 +49,16 @@ export default function Module({ moduleId, onNext }: ModuleProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [moduleId]);
 
-  const handleComplete = () => {
-    markModuleComplete(moduleId);
-    onNext();
+  const handleComplete = async () => {
+    setIsCompleting(true);
+    try {
+      await markModuleComplete(moduleId);
+      onNext();
+    } catch (error) {
+      console.error('Failed to mark module complete:', error);
+    } finally {
+      setIsCompleting(false);
+    }
   };
 
   return (
@@ -80,11 +88,19 @@ export default function Module({ moduleId, onNext }: ModuleProps) {
       </div>
 
       <div className="module-actions">
-        <button className="btn btn-secondary" onClick={() => window.history.back()}>
+        <button
+          className="btn btn-secondary"
+          onClick={() => window.history.back()}
+          disabled={isCompleting}
+        >
           Previous
         </button>
-        <button className="btn btn-primary" onClick={handleComplete}>
-          Mark Complete & Continue
+        <button
+          className="btn btn-primary"
+          onClick={handleComplete}
+          disabled={isCompleting}
+        >
+          {isCompleting ? 'Saving...' : 'Mark Complete & Continue'}
         </button>
       </div>
     </motion.div>

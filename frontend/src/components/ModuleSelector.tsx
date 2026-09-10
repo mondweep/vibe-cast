@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import '../styles/ModuleSelector.css';
 
 interface ModuleSelectorProps {
-  onSelectModule: (moduleId: number) => void;
+  onSelectModule: (moduleId: number) => Promise<void> | void;
 }
 
 const MODULES = [
@@ -14,6 +15,19 @@ const MODULES = [
 ];
 
 export default function ModuleSelector({ onSelectModule }: ModuleSelectorProps) {
+  const [loadingModuleId, setLoadingModuleId] = useState<number | null>(null);
+
+  const handleSelectModule = async (moduleId: number) => {
+    setLoadingModuleId(moduleId);
+    try {
+      await onSelectModule(moduleId);
+    } catch (error) {
+      console.error('Failed to select module:', error);
+    } finally {
+      setLoadingModuleId(null);
+    }
+  };
+
   return (
     <div className="module-selector">
       <h2>Select a Module</h2>
@@ -23,10 +37,11 @@ export default function ModuleSelector({ onSelectModule }: ModuleSelectorProps) 
             <h3>{module.title}</h3>
             <p className="duration">{module.duration} minutes</p>
             <button
-              onClick={() => onSelectModule(module.id)}
+              onClick={() => handleSelectModule(module.id)}
               className="btn btn-primary"
+              disabled={loadingModuleId !== null}
             >
-              Start Module
+              {loadingModuleId === module.id ? 'Loading...' : 'Start Module'}
             </button>
           </div>
         ))}

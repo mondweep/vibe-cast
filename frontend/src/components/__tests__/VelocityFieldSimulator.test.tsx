@@ -1,4 +1,5 @@
-import { act, render, screen, fireEvent } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/dom';
 import VelocityFieldSimulator from '../VelocityFieldSimulator';
 import { useSimulationStore } from '../../store/simulation';
 
