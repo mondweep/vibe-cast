@@ -4,6 +4,13 @@ import { useSimulationStore } from '../../store/simulation';
 import { createVelocityField } from '../../lib/velocityField';
 
 jest.mock('../../store/simulation');
+// Module.tsx pulls in useLearnerStore -> services/api -> config.ts, which reads
+// Vite's import.meta.env (ESM-only syntax ts-jest can't transpile to CommonJS).
+// Mocking at the store boundary Module.tsx actually calls avoids that chain
+// entirely, matching how ../../store/simulation is mocked above.
+jest.mock('../../store/learner', () => ({
+  useLearnerStore: jest.fn(() => ({ markModuleComplete: jest.fn() })),
+}));
 jest.mock('framer-motion', () => ({
   motion: { div: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => <div {...props}>{children}</div> },
 }));

@@ -13,8 +13,8 @@ const getBackendURL = (): string => {
     return 'http://localhost:3000';
   }
 
-  // Fallback: Cloud Run backend (update URL after deployment)
-  return 'https://navier-stokes-backend-xxxxx.run.app';
+  // Fallback: Cloud Run backend (navier-stokes-backend, us-central1, e-vidhayak)
+  return 'https://navier-stokes-backend-58061828953.us-central1.run.app';
 };
 
 export const API_BASE_URL = getBackendURL();
