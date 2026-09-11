@@ -1,6 +1,8 @@
 import {
   createVelocityField,
   addVelocityVector,
+  arrowLengthPx,
+  ARROW_MAX_LENGTH_PX,
   clampVector,
   MAX_DRAWN_SPEED,
   computeDivergence,
@@ -62,6 +64,34 @@ describe('addVelocityVector', () => {
     const field = createVelocityField(2);
     const updated = addVelocityVector(field, 2, 5, 5, 1, 1);
     expect(Array.from(updated).every((v) => v === 0)).toBe(true);
+  });
+});
+
+describe('arrowLengthPx', () => {
+  // A learner's drawn arrow was rendering as a near-invisible dot: the
+  // on-screen length used to be `magnitude * cellSize`, and at the
+  // production grid_resolution (128, giving a 3px cellSize on a 384px
+  // canvas) that capped even a max-speed drag at ~6px. This function must
+  // never take cellSize/resolution as an input, so that regression - the
+  // arrow's visible length shrinking as the simulation grid gets finer -
+  // can't be reintroduced.
+  it('returns 0 for a zero vector', () => {
+    expect(arrowLengthPx(0, 0)).toBe(0);
+  });
+
+  it('grows with magnitude', () => {
+    expect(arrowLengthPx(0.1, 0)).toBeGreaterThan(0);
+    expect(arrowLengthPx(1, 0)).toBeGreaterThan(arrowLengthPx(0.1, 0));
+  });
+
+  it('caps at a fixed, clearly-visible pixel length for the maximum drawable speed', () => {
+    const length = arrowLengthPx(MAX_DRAWN_SPEED, 0);
+    expect(length).toBe(ARROW_MAX_LENGTH_PX);
+    expect(length).toBeGreaterThanOrEqual(16); // long enough to read as a line, not a dot
+  });
+
+  it('never exceeds the cap even for an absurdly large vector', () => {
+    expect(arrowLengthPx(1000, 1000)).toBe(ARROW_MAX_LENGTH_PX);
   });
 });
 

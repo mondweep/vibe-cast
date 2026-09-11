@@ -54,6 +54,22 @@ export function addVelocityVector(
   return updated;
 }
 
+// Pixels of on-screen arrow length per unit of velocity magnitude, and the
+// cap on that length. Deliberately independent of grid_resolution/cellSize:
+// tying arrow length to cellSize is what previously made every arrow -
+// including a learner's own freshly-drawn one - shrink into an
+// indistinguishable dot as the simulation grid got finer (cellSize = display
+// size / resolution, so a 128-cell grid on a 384px canvas gives a 3px cell
+// and a ~6px max arrow). A max-speed drag should always read as a clear
+// line, no matter how fine the underlying simulation grid is.
+export const ARROW_LENGTH_SCALE_PX = 12;
+export const ARROW_MAX_LENGTH_PX = 22;
+
+export function arrowLengthPx(vx: number, vy: number): number {
+  const magnitude = Math.hypot(vx, vy);
+  return Math.min(ARROW_MAX_LENGTH_PX, magnitude * ARROW_LENGTH_SCALE_PX);
+}
+
 export function computeDivergenceField(field: Float32Array, resolution: number): Float32Array {
   const divergence = new Float32Array(resolution * resolution);
   if (resolution <= 2) {

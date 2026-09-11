@@ -177,6 +177,79 @@ describe('VelocityFieldSimulator', () => {
     expect(tipAfterHugeDrag).toEqual(tipAfterModerateDrag);
   });
 
+  it('renders the committed arrow as a clearly visible line, not a near-invisible dot', () => {
+    resetStore();
+    const mockContext = stubCanvas();
+    render(<VelocityFieldSimulator moduleId={1} />);
+
+    const canvas = screen.getByTestId('velocity-canvas');
+    // anchor (10,10) -> release (10 + 5, 10): a full-speed horizontal drag
+    firePointer(canvas, 'pointerdown', { clientX: 30, clientY: 30, pointerId: 1 });
+    // the down-event's zero-length preview stub also draws a stroke at this
+    // same origin - clear the mock so only the final committed render's
+    // calls remain, isolating the actual committed arrow.
+    mockContext.moveTo.mockClear();
+    mockContext.lineTo.mockClear();
+    firePointer(canvas, 'pointerup', { clientX: 30 + 5 * 3, clientY: 30, pointerId: 1 });
+
+    // find the moveTo/lineTo pair whose origin is this cell's screen
+    // position ((10 + 0.5) * 3px cellSize) and measure its on-screen length
+    const originX = 10.5 * 3;
+    const originY = 10.5 * 3;
+    const moveToIndex = mockContext.moveTo.mock.calls.findIndex(
+      ([x, y]) => Math.abs(x - originX) < 0.01 && Math.abs(y - originY) < 0.01
+    );
+    expect(moveToIndex).toBeGreaterThanOrEqual(0);
+    const [tipX, tipY] = mockContext.lineTo.mock.calls[moveToIndex];
+    const length = Math.hypot(tipX - originX, tipY - originY);
+
+    // at grid_resolution 128 the old cellSize-scaled formula capped this at
+    // ~6px (cellSize * 2) - indistinguishable from a dot. It must now read
+    // as a real line.
+    expect(length).toBeGreaterThanOrEqual(16);
+  });
+
+  it('keeps the field from turning into a dot-matrix haze by not drawing one stroke per grid cell', () => {
+    resetStore();
+    const mockContext = stubCanvas();
+    render(<VelocityFieldSimulator moduleId={1} />);
+
+    // module 1's seed (solid-body rotation) gives nearly every one of the
+    // 128*128 cells a nonzero vector - drawing a full-length stroke for each
+    // one is what produced the dense grid of tiny dots the field was
+    // reported to look like. The mock accumulates strokes across every
+    // render this mount triggers (pre-seed, post-seed, ...), so the bound
+    // here is generous - the point is ruling out one-stroke-per-cell
+    // (16384), not pinning an exact count.
+    expect(mockContext.stroke.mock.calls.length).toBeLessThan(2000);
+  });
+
+  it('still draws a freshly-committed arrow even when it falls between the sparse sample points', () => {
+    const state = resetStore();
+    const mockContext = stubCanvas();
+    render(<VelocityFieldSimulator moduleId={1} />);
+
+    // grid cell (11, 11) - deliberately not aligned to the coarse sampling
+    // lattice used for the ambient field, to prove a learner's own edit is
+    // never silently dropped by that sampling.
+    const canvas = screen.getByTestId('velocity-canvas');
+    firePointer(canvas, 'pointerdown', { clientX: 11 * 3 + 1, clientY: 11 * 3 + 1, pointerId: 1 });
+    mockContext.moveTo.mockClear();
+    firePointer(canvas, 'pointerup', {
+      clientX: 11 * 3 + 1 + 5 * 3,
+      clientY: 11 * 3 + 1,
+      pointerId: 1,
+    });
+
+    expect(state.setVelocityField).toHaveBeenCalledTimes(2);
+    const originX = 11.5 * 3;
+    const originY = 11.5 * 3;
+    const drewEditedCell = mockContext.moveTo.mock.calls.some(
+      ([x, y]) => Math.abs(x - originX) < 0.01 && Math.abs(y - originY) < 0.01
+    );
+    expect(drewEditedCell).toBe(true);
+  });
+
   it('captures the pointer on drag start so touch dragging keeps tracking outside the canvas', () => {
     resetStore();
     render(<VelocityFieldSimulator moduleId={1} />);

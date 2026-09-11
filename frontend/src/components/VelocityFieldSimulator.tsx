@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSimulationStore } from '../store/simulation';
 import {
   addVelocityVector,
+  arrowLengthPx,
   clampVector,
   computeDivergence,
   computeDivergenceField,
@@ -64,17 +65,16 @@ function drawPreviewArrow(
   current: GridPoint,
   cellSize: number
 ): void {
-  // Render with the exact same clamp + scale formula drawVectors() uses for
+  // Render with the exact same clamp + length formula drawVectors() uses for
   // the committed field, so the preview can never show a longer arrow than
   // what will actually be saved - dragging far just caps the preview at its
   // final length instead of growing past it and snapping back on release.
   const raw = { vx: current.x - anchor.x, vy: current.y - anchor.y };
   const { vx, vy } = clampVector(raw.vx, raw.vy, MAX_DRAWN_SPEED);
-  const magnitude = Math.hypot(vx, vy);
 
   const originX = (anchor.x + 0.5) * cellSize;
   const originY = (anchor.y + 0.5) * cellSize;
-  const scale = Math.min(cellSize * 2, magnitude * cellSize);
+  const scale = arrowLengthPx(vx, vy);
   const angle = Math.atan2(vy, vx);
   const tipX = originX + Math.cos(angle) * scale;
   const tipY = originY + Math.sin(angle) * scale;
@@ -95,34 +95,59 @@ function drawPreviewArrow(
   ctx.restore();
 }
 
+// How many arrows to draw across each axis of the field, regardless of the
+// underlying simulation's grid_resolution. Drawing one arrow per simulation
+// cell (previously every cell, e.g. 128*128 = 16384 of them) packed them so
+// tightly - and, combined with arrow length used to be tied to cellSize,
+// so short - that the whole field read as a dense haze of dots rather than
+// a legible set of arrows.
+const VECTOR_SAMPLES_PER_AXIS = 16;
+
 function drawVectors(
   ctx: CanvasRenderingContext2D,
   field: Float32Array,
   resolution: number,
-  cellSize: number
+  cellSize: number,
+  mustInclude: GridPoint[]
 ): void {
   ctx.strokeStyle = '#2563eb';
   ctx.fillStyle = '#2563eb';
-  for (let y = 0; y < resolution; y++) {
-    for (let x = 0; x < resolution; x++) {
-      const idx = (y * resolution + x) * 2;
-      const vx = field[idx];
-      const vy = field[idx + 1];
-      const magnitude = Math.hypot(vx, vy);
-      if (magnitude < 0.05) continue;
 
-      const originX = (x + 0.5) * cellSize;
-      const originY = (y + 0.5) * cellSize;
-      const scale = Math.min(cellSize * 2, magnitude * cellSize);
-      const angle = Math.atan2(vy, vx);
-      const tipX = originX + Math.cos(angle) * scale;
-      const tipY = originY + Math.sin(angle) * scale;
+  const drawn = new Set<number>();
+  const drawArrowAt = (x: number, y: number): void => {
+    const key = y * resolution + x;
+    if (drawn.has(key)) return;
+    drawn.add(key);
 
-      ctx.beginPath();
-      ctx.moveTo(originX, originY);
-      ctx.lineTo(tipX, tipY);
-      ctx.stroke();
+    const idx = key * 2;
+    const vx = field[idx];
+    const vy = field[idx + 1];
+    if (Math.hypot(vx, vy) < 0.05) return;
+
+    const originX = (x + 0.5) * cellSize;
+    const originY = (y + 0.5) * cellSize;
+    const scale = arrowLengthPx(vx, vy);
+    const angle = Math.atan2(vy, vx);
+    const tipX = originX + Math.cos(angle) * scale;
+    const tipY = originY + Math.sin(angle) * scale;
+
+    ctx.beginPath();
+    ctx.moveTo(originX, originY);
+    ctx.lineTo(tipX, tipY);
+    ctx.stroke();
+  };
+
+  const stride = Math.max(1, Math.floor(resolution / VECTOR_SAMPLES_PER_AXIS));
+  for (let y = Math.floor(stride / 2); y < resolution; y += stride) {
+    for (let x = Math.floor(stride / 2); x < resolution; x += stride) {
+      drawArrowAt(x, y);
     }
+  }
+  // Cells a learner has actually drawn on must always render, even when
+  // they fall between the sparse sample points above - otherwise a real
+  // edit could silently vanish from view depending on where it landed.
+  for (const cell of mustInclude) {
+    drawArrowAt(cell.x, cell.y);
   }
 }
 
@@ -179,6 +204,10 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
   const [previewArrow, setPreviewArrow] = useState<{ anchor: GridPoint; current: GridPoint } | null>(
     null
   );
+  // Every cell the learner has committed an edit to since the last seed/
+  // reset, so drawVectors can guarantee each one renders regardless of its
+  // sparse sampling lattice - see the comment on VECTOR_SAMPLES_PER_AXIS.
+  const [editedCells, setEditedCells] = useState<GridPoint[]>([]);
 
   const cellSize = CANVAS_DISPLAY_SIZE / grid_resolution;
 
@@ -192,6 +221,7 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
       setVelocityField(seeded);
       setDivergence(computeDivergence(seeded, INTERACTIVE_GRID_RESOLUTION));
       setHasInteracted(false);
+      setEditedCells([]);
     },
     [setVelocityField, setDivergence]
   );
@@ -225,14 +255,14 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
     // aggregate number can't convey on its own.
     drawDivergenceHeatmap(ctx, field, grid_resolution, cellSize);
     if (mode === 'vectors') {
-      drawVectors(ctx, field, grid_resolution, cellSize);
+      drawVectors(ctx, field, grid_resolution, cellSize, editedCells);
     } else {
       drawStreamlines(ctx, field, grid_resolution, cellSize);
     }
     if (previewArrow) {
       drawPreviewArrow(ctx, previewArrow.anchor, previewArrow.current, cellSize);
     }
-  }, [velocity_field, grid_resolution, cellSize, mode, previewArrow]);
+  }, [velocity_field, grid_resolution, cellSize, mode, previewArrow, editedCells]);
 
   // Pointer Events unify mouse, touch and pen into one API, so dragging
   // works the same way on a phone as it does with a mouse. Pointer capture
@@ -289,6 +319,11 @@ export default function VelocityFieldSimulator({ moduleId }: VelocityFieldSimula
       const updated = addVelocityVector(field, grid_resolution, anchor.x, anchor.y, vx, vy);
       setVelocityField(updated);
       setDivergence(computeDivergence(updated, grid_resolution));
+      setEditedCells((cells) =>
+        cells.some((cell) => cell.x === anchor.x && cell.y === anchor.y)
+          ? cells
+          : [...cells, anchor]
+      );
     },
     [grid_resolution, velocity_field, setVelocityField, setDivergence]
   );
