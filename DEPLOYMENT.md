@@ -9,7 +9,7 @@
 
 > **Deploying from a Claude Code sandbox session (no browser, no local
 > machine)?** `gcloud auth login` device-code flow works fine there — see
-> [`GCLOUD_DEVICE_AUTH_TROUBLESHOOTING.md`](./GCLOUD_DEVICE_AUTH_TROUBLESHOOTING.md)
+> [`DEVICE_AUTH_TROUBLESHOOTING.md`](./DEVICE_AUTH_TROUBLESHOOTING.md)
 > for the exact recipe and the pitfalls that make it look broken if you don't
 > know about them (it is not a fundamental sandbox limitation, despite what
 > an earlier deployment attempt concluded).

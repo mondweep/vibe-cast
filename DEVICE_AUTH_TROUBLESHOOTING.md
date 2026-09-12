@@ -1,374 +1,182 @@
-# Device Authentication Troubleshooting Guide
+# gcloud Device Authentication in a Claude Code Sandbox
 
-**Date**: 2026-09-12  
-**Project**: vibe-cast (mondweep/vibe-cast)  
-**Sessions Affected**: Multiple Claude Code sessions  
-**Status**: RESOLVED with workarounds documented
+**Status: gcloud OAuth device-code login works fine in this sandbox.** An
+earlier version of this document concluded otherwise ("PKCE code verifier
+timing... fundamentally can't work in sandbox... use a service account key
+or a local machine instead"). That conclusion was **wrong**, and is
+corrected below — keep reading past "Problem 2" for what actually happened
+and why. In a later session, the exact same environment authenticated
+successfully with `gcloud auth login --no-launch-browser` **multiple times**
+in the same run, including re-authenticating from scratch after a token
+expired mid-session, and used that login to run real `gcloud run deploy`
+commands. No service-account key, no local machine.
 
----
-
-## Executive Summary
-
-Device authentication (gcloud OAuth flow) fails in **remote sandbox Claude Code environments** due to:
-1. **Dummy credential override** - Sandbox pre-sets a `CLOUDSDK_AUTH_ACCESS_TOKEN` env var
-2. **PKCE code verifier timing mismatch** - Each gcloud invocation generates new verifier
-3. **Non-interactive environment limitations** - Browser-based OAuth doesn't work in headless shells
-
-**Solution**: Run deployment from **local machine** or use **service account key** authentication.
+If you're reading this because auth is giving you trouble right now: skip
+to **"The recipe that actually works"** below.
 
 ---
 
-## Problem 1: "No Credentialed Accounts" Error
+## Problem 1: the sandbox's dummy token overrides your real login
 
-### Error Message
-```
-ERROR: (gcloud.auth.login) Your current Compute Engine instance service account [default] does not have permission to access the [e-vidhayak] project.
-```
-or
-```
-No credentialed accounts found even after gcloud auth login
-```
+### Symptom
+`gcloud auth list` shows no account, or gcloud behaves as if authenticated
+with the wrong identity, even after a login that appeared to succeed.
 
-### Root Cause
-The sandbox environment pre-sets a dummy `CLOUDSDK_AUTH_ACCESS_TOKEN` environment variable that **overrides any real credentials you provide**, preventing proper authentication.
+### Root cause
+This sandbox pre-sets `CLOUDSDK_AUTH_ACCESS_TOKEN=proxy-injected` (or
+similar) in the environment. gcloud treats that as a valid bearer token and
+uses it instead of your real credentials, silently.
 
-### Solution: Unset the Dummy Token
+### Fix
 ```bash
-# Check current token
-echo $CLOUDSDK_AUTH_ACCESS_TOKEN
-
-# Unset it
 unset CLOUDSDK_AUTH_ACCESS_TOKEN
-
-# Verify it's gone
-echo $CLOUDSDK_AUTH_ACCESS_TOKEN  # Should be empty
-
-# Make permanent for this session
-export CLOUDSDK_AUTH_ACCESS_TOKEN=""
 ```
+Run this **inside every Bash call that invokes `gcloud`**, including the
+login command itself. Environment variable changes don't persist between
+separate tool calls in this harness — a one-time `unset` earlier in the
+session, or an edit to `~/.bashrc`, will not stick for a later non-interactive
+call.
 
-### Why This Happened
-The sandbox is designed with default service account credentials for system operations. When you try to authenticate as a different user (e.g., your personal Google account), the dummy token prevents the real credentials from loading.
-
-### Verification
-```bash
-gcloud auth list
-# Should show your actual account, not a service account
-```
+This part of the original document was correct and still applies.
 
 ---
 
-## Problem 2: "Invalid code verifier" - PKCE Flow Failure
+## Problem 2 (corrected): "PKCE code verifier mismatch" — this was a test artifact, not a sandbox limitation
 
-### Error Message
-```
-ERROR: (gcloud.auth.login) (invalid_grant) Invalid code verifier
-```
-
-### What is PKCE?
-PKCE (Proof Key for Code Exchange) is an OAuth 2.0 security extension:
-
-1. **Client generates code_verifier**: Random string (43-128 chars)
-2. **Client creates code_challenge**: SHA-256(code_verifier), base64-URL-encoded
-3. **Authorization request**: Includes code_challenge
-4. **User grants permission**: Gets authorization code
-5. **Token exchange**: Must include original code_verifier
-6. **Server verification**: Confirms SHA-256(code_verifier) matches code_challenge
-
-### Root Cause: Verifier Mismatch
-**Each time you invoke gcloud, it generates a NEW code_verifier.**
-
-Timeline of failure:
-```
-Time 0: gcloud auth login generates code_verifier_A
-        → Opens browser with code_challenge_A
-        
-Time 1: User authenticates with Google
-        → Gets authorization code bound to code_challenge_A
-        
-Time 2: gcloud tries to exchange code
-        → But generates NEW code_verifier_B
-        → SHA-256(code_verifier_B) ≠ code_challenge_A
-        → Exchange fails: "Invalid code verifier"
-```
-
-### Why It Fails in Sandbox but Not Locally
-- **Local machine**: gcloud CLI keeps session open, verifier stays in memory
-- **Sandbox with piped input**: Each command invocation is separate, new verifier generated
-
-### Failed Solutions We Tried
+### What the earlier attempt did, and why it failed
+The earlier session tried things like:
 ```bash
-# ❌ Piping code to stdin (creates new gcloud invocation)
+# ❌ each of these starts a brand-new `gcloud auth login` process
 echo "4/0AT..." | gcloud auth login --no-launch-browser
-
-# ❌ File-based input (still new invocation)
-echo "4/0AT..." > /tmp/auth_code
-cat /tmp/auth_code | gcloud auth login --no-launch-browser
-
-# ❌ Combined in single shell script (multiple gcloud invocations)
 gcloud auth login --no-launch-browser <<< "4/0AT..."
 ```
+Every one of those launches a **new** `gcloud auth login` process, which
+generates a **new** PKCE `code_verifier` and prints a **new** URL with a new
+`code_challenge`. Feeding it a code that was authorized against a *previous*
+invocation's URL will always fail with "Invalid code verifier" — but that's
+because the code and the process are mismatched, not because the sandbox
+can't do OAuth. The same thing would fail identically on a local machine if
+you paste a code from one `gcloud auth login` run into a different, later
+run of the command.
 
-All failed because `gcloud auth login` as a command always generates a fresh code_verifier.
+### What actually works: keep ONE process alive and feed it later
+`gcloud auth login --no-launch-browser` blocks on **stdin**, waiting for you
+to type the code, and holds the code_verifier in that single process's
+memory the whole time — exactly like running it interactively on a local
+machine. The trick for a sandbox session is just: start that one process in
+the background, keep it alive, and write the code into its stdin once the
+user has it — possibly a full conversation turn later. Piping/heredoc-ing a
+code into a *new* invocation was never going to work; keeping the *original*
+process open and feeding it does.
 
----
+### The recipe that actually works
 
-## Problem 3: Why gcloud OAuth Can't Work in This Environment
-
-### The Fundamental Issue
-gcloud's OAuth implementation requires:
-1. **Stateful connection** - Same process keeps code_verifier in memory
-2. **Interactive user input** - User pastes authorization code back into same shell session
-3. **Browser redirection** - OAuth flow opens browser for user consent
-
-The sandbox breaks all three:
-- Commands are ephemeral (new processes each time)
-- Piped input doesn't create stateful connection
-- Non-interactive environment can't handle browser redirects
-
-### Why Local Machine Works
-```bash
-# On your local machine:
-gcloud auth login
-# 1. Opens your browser
-# 2. You authenticate with Google (same browser session)
-# 3. Browser redirects back to local callback
-# 4. Same gcloud process receives the redirect
-# 5. Verifier still in memory = successful exchange
-```
-
----
-
-## Proven Solutions
-
-### Solution 1: Deploy from Local Machine (RECOMMENDED ✅)
-
-**Why it works**: Handles OAuth interactively with proper browser flow
-
-**Steps**:
-```bash
-# On your local machine
-cd /path/to/vibe-cast
-git fetch origin
-git checkout claude/navier-stokes-orphan-branch-0gxmj0
-
-# This opens your browser automatically
-gcloud auth login
-
-# Set project
-gcloud config set project e-vidhayak
-
-# Deploy (no authentication needed, already logged in)
-./AUTHENTICATE_AND_DEPLOY.sh e-vidhayak us-central1
-```
-
-**Expected result**: ✅ Deploys successfully in 15-20 minutes
-
----
-
-### Solution 2: Service Account Key Authentication ✅
-
-**Why it works**: Doesn't use PKCE flow, directly exchanges JSON credentials for token
-
-**Steps**:
-
-1. **Get GCP service account key**:
-   - Go to: https://console.cloud.google.com/iam-admin/serviceaccounts?project=e-vidhayak
-   - Click service account (or create: `cloudbuild-sa`)
-   - Keys tab → Add key → Create new key → JSON
-   - Download `service-account-key.json`
-
-2. **Upload key to Claude Code**:
+1. **Start the login in the background via a read-write named pipe**, so the
+   single `gcloud auth login` process can block on stdin without blocking
+   the rest of the session:
    ```bash
-   # Create secure file in Claude Code environment
-   cat > /tmp/gcp-key.json << 'EOF'
-   {
-     "type": "service_account",
-     "project_id": "e-vidhayak",
-     ...paste entire JSON...
-   }
-   EOF
+   SCRATCH=/path/to/scratch   # session scratchpad directory
+   rm -f "$SCRATCH/gcloud_pipe" "$SCRATCH/gcloud_login.log"
+   mkfifo "$SCRATCH/gcloud_pipe"
+   nohup bash -c "exec 3<>$SCRATCH/gcloud_pipe; \
+     unset CLOUDSDK_AUTH_ACCESS_TOKEN; \
+     gcloud auth login --no-launch-browser --account=you@example.com \
+       <&3 > $SCRATCH/gcloud_login.log 2>&1" > /dev/null 2>&1 &
+   disown
    ```
+   Issue this via the Bash tool with **`run_in_background: true`** — that's
+   what keeps the process alive across separate tool calls and conversation
+   turns, rather than being reaped when the tool call returns. A bare
+   trailing `&` with no `run_in_background` is not reliable for surviving
+   past the end of the current tool call.
 
-3. **Deploy with key**:
+   Two details that matter:
+   - `exec 3<>pipe` opens the fifo **read-write**, in the *same* process that
+     then reads from it via `<&3`. A plain `< pipe` (read-only open) blocks
+     forever waiting for a writer, because nothing has written to it yet —
+     that's a deadlock, not a slow success.
+   - Read the printed URL with `cat "$SCRATCH/gcloud_login.log"` after a
+     couple of seconds and hand it to the user to open and complete.
+
+2. **Feed the verification code back through the same pipe** once the user
+   supplies it — this writes into the *original* process's stdin, the one
+   that still holds the matching code_verifier:
    ```bash
-   ./AUTHENTICATE_AND_DEPLOY.sh e-vidhayak us-central1 /tmp/gcp-key.json
+   echo "<the code the user pasted>" > "$SCRATCH/gcloud_pipe"
    ```
+   Check the log; you should see `You are now logged in as [...]`.
 
-**Expected result**: ✅ Deploys successfully without any browser interaction
-
-**Security note**: Service account keys should be treated like passwords. Delete the key file after deployment.
-
----
-
-### Solution 3: Python OAuth Handler (Alternative)
-
-We created a Python-based OAuth handler that bypasses gcloud's PKCE issues:
-
-**File**: `/tmp/oauth_handler.py`
-
-**How it works**:
-```bash
-# Generate OAuth URL (user opens in browser)
-# User gets authorization code, passes back to script
-python3 /tmp/oauth_handler.py "4/0AT..."
-
-# Script exchanges code directly, saves credentials
-# Credentials saved to: /root/.config/gcloud/application_default_credentials.json
-```
-
-**Pros**: Direct HTTP exchange, no PKCE timing issues  
-**Cons**: Requires manual token exchange, not as user-friendly
-
----
-
-## Quick Reference: Which Solution to Use
-
-| Scenario | Solution | Time | Complexity |
-|----------|----------|------|------------|
-| Deploying from local machine | Solution 1: `gcloud auth login` | 2 min | ⭐ Easy |
-| Remote Claude Code environment | Solution 2: Service account key | 5 min | ⭐ Easy |
-| No local gcloud installed | Solution 2: Service account key | 5 min | ⭐ Easy |
-| Need Python-only auth | Solution 3: Python handler | 10 min | ⭐⭐ Medium |
-
-**Recommendation**: Always use Solution 1 (local machine) or Solution 2 (service account key).
-
----
-
-## Checklist: Avoiding These Issues in Other Sessions
-
-When authenticating with Google Cloud in **any** Claude Code session:
-
-### Before Attempting Authentication
-- [ ] Check if this is a remote sandbox environment
-- [ ] If yes, plan to use service account key or deploy from local machine
-- [ ] Do NOT attempt gcloud OAuth in sandbox (will fail with PKCE errors)
-
-### For Service Account Key Method
-- [ ] Have GCP service account key JSON file ready
-- [ ] Upload to Claude Code: `cat > /tmp/gcp-key.json << 'EOF' ...`
-- [ ] Verify file exists: `cat /tmp/gcp-key.json | head -5`
-- [ ] Run deployment: `./AUTHENTICATE_AND_DEPLOY.sh project us-central1 /tmp/gcp-key.json`
-
-### For Local Machine Deployment
-- [ ] Ensure gcloud CLI installed: `gcloud --version`
-- [ ] Fetch latest code: `git fetch origin && git checkout branch-name`
-- [ ] Interactive login: `gcloud auth login` (opens browser)
-- [ ] Set project: `gcloud config set project your-project`
-- [ ] Run deployment script
-
-### If Things Still Fail
-- [ ] Check for dummy token: `echo $CLOUDSDK_AUTH_ACCESS_TOKEN`
-- [ ] If set, unset it: `unset CLOUDSDK_AUTH_ACCESS_TOKEN`
-- [ ] Verify auth: `gcloud auth list`
-- [ ] Check logs: `gcloud builds log BUILD_ID --stream`
-
----
-
-## Context for Other Claude Sessions
-
-When starting a new Claude session that needs GCP authentication, copy-paste this into the new session:
-
-```
-I need to authenticate with Google Cloud in a sandbox Claude Code environment. 
-I've learned that:
-
-1. DO NOT use gcloud OAuth in sandbox (PKCE code verifier mismatch)
-2. DO use service account key authentication OR deploy from local machine
-3. Service account key method:
-   - Create/download key from GCP console: https://console.cloud.google.com/iam-admin/serviceaccounts
-   - Upload: cat > /tmp/gcp-key.json << 'EOF' ...your JSON... EOF
-   - Deploy: ./AUTHENTICATE_AND_DEPLOY.sh project region /tmp/gcp-key.json
-4. If dummy token error: unset CLOUDSDK_AUTH_ACCESS_TOKEN
-
-My project details:
-- Project: e-vidhayak
-- Region: us-central1
-- Account: mondweep@dxsure.uk
-- Repo: mondweep/vibe-cast
-- Branch: claude/navier-stokes-orphan-branch-0gxmj0
-
-Please use the service account key method to deploy.
-```
-
----
-
-## Technical Deep Dive: Why PKCE Timing Fails
-
-### What gcloud Does Internally
-1. **gcloud init flow**:
+3. **If the process died while waiting, the code is genuinely stale —
+   restart from scratch, don't retry it.** This is the one case that really
+   does look like the old "PKCE timing" symptom, and it's worth
+   understanding precisely: if a long real-world delay passes between
+   printing the URL and the user supplying the code (they have to open a
+   browser, sign in, copy a code — this can take minutes), the backgrounded
+   process can die on its own in some sandbox configurations while it waits.
+   Once that process is gone, its code_verifier is gone with it — no code
+   generated against that URL can ever complete the exchange, no matter how
+   correct it looks. Check before feeding a code:
+   ```bash
+   ps aux | grep "gcloud auth login" | grep -v grep
    ```
-   random_code_verifier = generate_random_string(128)
-   code_challenge = base64_url_encode(sha256(code_verifier))
-   auth_url = build_auth_url(..., code_challenge=code_challenge)
+   If nothing is running, don't retry the same code — restart step 1
+   completely (new pipe, new process, new URL with a new `state=` and
+   `code_challenge=`) and ask the user for a fresh code from the fresh URL.
+
+4. **Expect to redo this later in a long session — that's normal.** gcloud's
+   own reauth policy can expire your credentials mid-session:
    ```
-
-2. **Opens browser** with auth_url
-
-3. **Waits for user to paste auth code**:
+   ERROR: ... Reauthentication failed: cannot prompt during non-interactive execution.
    ```
-   auth_code = input("Enter authorization code: ")
-   ```
+   When you see that, just repeat steps 1–2 for a new token. Nothing else is
+   wrong, and it is not evidence that OAuth "doesn't work here" — it worked
+   before and it will work again the same way.
 
-4. **Exchanges code for token**:
-   ```
-   response = POST /oauth2/token {
-     code: auth_code,
-     code_verifier: ??? (needs original from step 1)
-   }
-   ```
+### A sharp edge worth knowing about while doing this: self-matching `pkill`
 
-### The Problem in Sandbox
-When we do:
-```bash
-echo "4/0AT..." | gcloud auth login --no-launch-browser
-```
-
-This launches a **new process** for each gcloud invocation. The code_verifier from step 1 is lost when the process exits. A new process with a new verifier won't match.
-
-### Why It Works Locally
-`gcloud auth login` runs as **single interactive process**:
-- Step 1: Generate verifier (stored in process memory)
-- Step 2: Open browser
-- Step 3: User authenticates, gets redirected
-- Step 4: Still same process, verifier still in memory
-- Step 5: Exchange succeeds
+When cleaning up the background login process or its pipe, avoid
+`pkill -f "<literal string>"` (or `ps aux | grep "<string>" | xargs kill`)
+when `<string>` also appears in the *cleanup command's own command line* —
+which it usually will, since you're typically searching for the same text
+used to start the process. The shell running your `pkill` shows up in `ps`
+with that string in its own argv, matches its own pattern, and kills itself.
+You'll see a bare `Exit code 144` (or another 128+signal number) with no
+output, which looks alarming but is harmless — nothing you actually wanted
+killed was affected. Target a specific PID instead, or just re-run `ps aux`
+afterward to confirm the real target is gone.
 
 ---
 
-## Lessons Learned
+## When would a service-account key or local-machine deploy still make sense?
 
-1. **OAuth PKCE flow requires stateful session** - Can't work with piped input
-2. **Sandbox environments override credentials** - Dummy tokens block real auth
-3. **Service account keys bypass OAuth entirely** - Use them for automation
-4. **Local machine deployment is most reliable** - Browser OAuth works as designed
-5. **Document auth failures with root causes** - Prevents repeated troubleshooting
-
----
-
-## Files Referenced
-
-- `AUTHENTICATE_AND_DEPLOY.sh` - Main deployment script (supports multiple auth methods)
-- `QUICK_DEPLOY.sh` - Simple deployment (assumes pre-authentication)
-- `/tmp/oauth_handler.py` - Python OAuth handler (alternative method)
-- `RUN_DEPLOYMENT_LOCALLY.md` - Local machine deployment guide
-- `DEPLOY_FROM_CLAUDE_CODE.md` - Claude Code web environment guide
+The corrected finding above is specifically that **device-code OAuth login
+works in this sandbox** — it removes the *need* to fall back to a
+service-account key or a local machine *purely to work around a sandbox
+auth limitation*, because that limitation doesn't exist. There can be other,
+independent reasons to prefer a service account (e.g., a CI pipeline that
+shouldn't depend on any human's interactive login, or an org policy against
+personal OAuth credentials for automation) — those are legitimate calls to
+make on their own merits, just not ones this sandbox forces on you.
 
 ---
 
-## Summary
+## Quick reference
 
-**The core insight**: Don't fight the sandbox—work with it.
+| Symptom | Root cause | Fix |
+|---|---|---|
+| gcloud ignores your real login / wrong identity | `CLOUDSDK_AUTH_ACCESS_TOKEN` pre-set in sandbox env | `unset CLOUDSDK_AUTH_ACCESS_TOKEN` before every gcloud call |
+| "Invalid code verifier" after piping a code into `gcloud auth login <<< "$CODE"` or via a pipe | Each invocation is a *new* process with a *new* verifier/URL; the code was authorized against a different (earlier) invocation | Don't invoke `gcloud auth login` again to submit the code — keep the *original* backgrounded process alive and write the code into *its* stdin via a named pipe |
+| `gcloud auth login` hangs / times out in a normal tool call | It blocks on stdin waiting for a code that arrives in a later conversation turn | Run it backgrounded (`run_in_background: true`) via a named pipe |
+| Named-pipe login hangs immediately, before any code is entered | `< pipe` opened read-only blocks with no writer | Open read-write: `exec 3<>pipe`, then `<&3` |
+| Background process is gone by the time the user's code arrives | Long real-world delay between URL and code; process died while waiting | Check `ps aux` before feeding the code; if dead, restart the whole flow for a fresh URL/code |
+| gcloud commands suddenly need reauth deep into a session | Normal periodic reauth policy, not an error state | Redo the login recipe again |
+| Cleanup command exits with code 144 and does nothing visible | `pkill -f`/`grep -f` matched its own invocation's command line | Harmless; target a specific PID, or verify with a fresh `ps aux` |
 
-- ✅ **Use service account keys** for remote sandbox environments
-- ✅ **Use local machine** when you have gcloud CLI installed
-- ❌ **Avoid OAuth PKCE** in headless/non-interactive environments
-- ❌ **Never expect** browser-based OAuth in piped shells
+## Files referenced elsewhere in this repo
 
-With this knowledge, you can deploy to GCP from any Claude Code session without hitting PKCE verification errors again.
-
----
-
-**Version**: 1.0  
-**Last Updated**: 2026-09-12  
-**Status**: Ready for reuse in other sessions
+- `AUTHENTICATE_AND_DEPLOY.sh`, `QUICK_DEPLOY.sh` — deployment scripts that
+  support multiple auth methods, including service-account keys. They
+  remain valid options; just know that the "no interactive auth available in
+  this sandbox" premise some of their surrounding docs were written under is
+  not accurate — device-code login is also an option, and requires no key
+  file to create, store, or later delete.
