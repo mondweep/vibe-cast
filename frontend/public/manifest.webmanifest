@@ -1,0 +1,18 @@
+{
+  "name": "Somnus — snore monitoring",
+  "short_name": "Somnus",
+  "description": "Measure your snoring with the phone you already own. Audio never leaves your device.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1017",
+  "theme_color": "#0d1017",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

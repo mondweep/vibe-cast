@@ -1,0 +1,36 @@
+substitutions:
+  _REGION: europe-west2
+  _SERVICE: somnus
+  # Passed explicitly by `gcloud builds submit`; a trigger supplies $SHORT_SHA.
+  _SHA: manual
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/somnus/${_SERVICE}:${_SHA}
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/somnus/${_SERVICE}:latest
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args: [push, --all-tags, '${_REGION}-docker.pkg.dev/$PROJECT_ID/somnus/${_SERVICE}']
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/somnus/${_SERVICE}:${_SHA}
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --min-instances=0          # NFR-7: scale to zero when nobody is looking
+      - --max-instances=4
+      - --memory=512Mi
+      - --set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID
+
+options:
+  logging: CLOUD_LOGGING_ONLY
