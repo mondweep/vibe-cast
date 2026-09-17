@@ -1,0 +1,14 @@
+{
+  "name": "@somnus/domain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pure domain core. No I/O, no framework, no platform globals (ADR-004).",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "jest",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {}
+}

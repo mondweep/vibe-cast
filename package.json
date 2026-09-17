@@ -1,0 +1,20 @@
+{
+  "name": "somnus",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Phone-based snore monitoring, assessment and coaching PWA",
+  "workspaces": ["packages/domain", "backend", "frontend"],
+  "scripts": {
+    "build": "npm run build --workspace @somnus/domain && npm run build --workspace @somnus/backend && npm run build --workspace @somnus/frontend",
+    "test": "npm run test --workspace @somnus/domain && npm run test --workspace @somnus/backend",
+    "test:domain": "npm run test --workspace @somnus/domain",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.5",
+    "typescript": "^5.5.4"
+  }
+}
