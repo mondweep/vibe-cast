@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [claude/snore-detection]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # The backend typechecks against the domain's declarations, so build it
+      # first. tsc -b follows the project reference and does both in order.
+      - name: Build domain and backend
+        run: npx tsc -b backend/tsconfig.json
+
+      - name: Typecheck frontend
+        run: npx tsc --noEmit -p frontend/tsconfig.json
+
+      # Domain suite: no browser, no server, no emulator (ADR-004, ADR-008).
+      # Includes the architecture and privacy contracts, so a change that
+      # reintroduced a platform dependency or a path for audio to reach a
+      # payload fails here.
+      - name: Domain tests
+        run: npx jest --config packages/domain/jest.config.js --rootDir packages/domain
+
+      - name: Backend tests
+        run: npx jest --config backend/jest.config.js --rootDir backend
+
+      - name: Build PWA
+        run: npm run build --workspace @somnus/frontend
+
+  analyser-version-guard:
+    # ADR-009: a detection threshold cannot change without a version bump, or
+    # the user's historical numbers silently change meaning.
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require an ANALYSER_VERSION bump when thresholds change
+        run: |
+          BASE="origin/${{ github.base_ref }}"
+          git fetch origin "${{ github.base_ref }}" --depth=1
+
+          THRESHOLDS_CHANGED=$(git diff "$BASE"...HEAD -- \
+            packages/domain/src/analysis/classifier.ts \
+            packages/domain/src/capture/candidate.ts \
+            packages/domain/src/capture/ambient-baseline.ts | wc -l)
+
+          VERSION_CHANGED=$(git diff "$BASE"...HEAD -- \
+            packages/domain/src/analysis/night-analysis.ts \
+            | grep -c "ANALYSER_VERSION" || true)
+
+          if [ "$THRESHOLDS_CHANGED" -gt 0 ] && [ "$VERSION_CHANGED" -eq 0 ]; then
+            echo "Detection logic changed without an ANALYSER_VERSION bump."
+            echo "See ADR-009: historical numbers must not silently change meaning."
+            exit 1
+          fi
