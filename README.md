@@ -115,10 +115,23 @@ tens of megabytes.
 
 ## Status
 
-M1 and M2 are built and deployed: capture, detection, analysis, STOP-BANG,
-Red Flags, journal, associations, trials and coaching suppression. M3 and M4
-screens are partly in place. See the
-[epic](https://github.com/mondweep/vibe-cast/issues/65) for the backlog.
+**Live at https://somnus-276367410975.europe-west2.run.app** — open it on your
+phone and add it to your home screen.
+
+M1 and M2 are built and deployed: capture, detection, analysis, STOP-BANG, Red
+Flags, journal, associations, trials and coaching suppression. Sign-in is
+optional — everything works signed out, and an account only means your history
+survives clearing the browser's data.
+
+One manual step remains: Google sign-in needs to be toggled on in the Firebase
+console, because enabling it by API requires an OAuth client only the console
+creates. Email-link sign-in works now. See
+[DEPLOYMENT.md](docs/DEPLOYMENT.md#google-sign-in-still-needs-one-console-click).
+
+The unvalidated part is detection accuracy — the thresholds come from the
+literature and synthesised fixtures, not from your actual snoring. Issue
+[#57](https://github.com/mondweep/vibe-cast/issues/57) is the harness for that.
+See the [epic](https://github.com/mondweep/vibe-cast/issues/65) for the backlog.
 
 ## Licence
 

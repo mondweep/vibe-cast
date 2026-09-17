@@ -11,7 +11,8 @@ Implements [ADR-005](adr/ADR-005-cloud-run-firestore.md).
 | Service | Cloud Run `somnus`, min-instances 0, max 4, 512 MiB |
 | Storage | Firestore Native mode, europe-west2 |
 | Images | Artifact Registry `europe-west2-docker.pkg.dev/vibe-cast-projects/somnus` |
-| URL | `https://somnus-276367410975.europe-west2.run.app` |
+| URL | https://somnus-276367410975.europe-west2.run.app (public) |
+| Auth | Firebase Authentication — email link live, Google pending one console toggle |
 
 The PWA and the API are served from the same container and the same origin, so
 there is one deploy and no CORS.
@@ -59,39 +60,103 @@ The health handler is therefore mounted at **`/_health`** and
 `/api/v1/health` is registered before the authenticated router, so it stays
 public.
 
-### The service is not publicly reachable
+### Public access needed an org-policy exception
 
 The `dxsure.uk` organization enforces **Domain Restricted Sharing**
 (`constraints/iam.allowedPolicyMemberDomains`, allowing only customer
-`C00yemq36`). Granting `allUsers` the `run.invoker` role is refused:
+`C00yemq36`), which refuses `allUsers` on any IAM binding:
 
 ```
 FAILED_PRECONDITION: One or more users named in the policy do not belong to a
 permitted customer, perhaps due to an organization policy.
 ```
 
-This is a deliberate org-level guardrail, not a misconfiguration.
-
-**To reach the app from a laptop right now**, without changing anything:
+This was resolved with a **project-scoped exception**, leaving the org-wide
+policy untouched — only this project may grant public access:
 
 ```bash
-gcloud run services proxy somnus --region=europe-west2 --port=8080
-# then open http://127.0.0.1:8080
+cat > drs-exception.yaml <<'YAML'
+constraint: constraints/iam.allowedPolicyMemberDomains
+listPolicy:
+  allValues: ALLOW
+YAML
+gcloud resource-manager org-policies set-policy drs-exception.yaml \
+  --project=vibe-cast-projects
+
+gcloud run services add-iam-policy-binding somnus --region=europe-west2 \
+  --member=allUsers --role=roles/run.invoker
 ```
 
-**To reach it from a phone**, which is the actual use case, one of these has to
-happen:
+**The binding fails for several minutes after the policy is set.** The
+effective policy reads `allValues: ALLOW` immediately, but the IAM enforcement
+layer lags behind it. If `add-iam-policy-binding` still reports
+`FAILED_PRECONDITION`, wait and retry rather than assuming the policy did not
+apply.
 
-| Option | Effect | Cost |
-|---|---|---|
-| Project-scoped exception to the DRS policy for `vibe-cast-projects` | The URL becomes publicly reachable. The org-wide policy is untouched; only this project can grant public access. | free |
-| HTTPS load balancer + Identity-Aware Proxy | Public URL, but only permitted Google accounts can open it. Strongest option. | ~£18/month for the load balancer, which breaks NFR-7 |
-| Firebase Hosting in front of Cloud Run | May sidestep the constraint, but needs verifying | free tier |
+A public URL exposes an empty app rather than anyone's data: capture, detection
+and analysis all happen in the browser, and the API returns 401 for every path
+without a verified token.
 
-Because the app holds nothing server-side until a user signs in — all capture
-and analysis is local to the browser — a public URL exposes an empty app
-rather than anyone's data. That is the argument for the first option; the
-decision is still the org owner's.
+## Authentication
+
+Firebase Auth was set up through the Management and Identity Toolkit APIs. All
+of these need `-H "x-goog-user-project: vibe-cast-projects"`, or they fail with
+a confusing `SERVICE_DISABLED` error about quota projects even when the service
+is enabled.
+
+```bash
+TOKEN=$(gcloud auth print-access-token)
+H=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"
+   -H "x-goog-user-project: vibe-cast-projects")
+
+curl -X POST "${H[@]}" https://firebase.googleapis.com/v1beta1/projects/vibe-cast-projects:addFirebase -d '{}'
+curl -X POST "${H[@]}" https://firebase.googleapis.com/v1beta1/projects/vibe-cast-projects/webApps -d '{"displayName":"Somnus"}'
+curl -X POST "${H[@]}" https://identitytoolkit.googleapis.com/v2/projects/vibe-cast-projects/identityPlatform:initializeAuth -d '{}'
+
+# Passwordless email link — needs no OAuth client.
+curl -X PATCH "${H[@]}" \
+  "https://identitytoolkit.googleapis.com/admin/v2/projects/vibe-cast-projects/config?updateMask=signIn.email" \
+  -d '{"signIn":{"email":{"enabled":true,"passwordRequired":false}}}'
+
+# The Cloud Run host must be an authorized domain or sign-in is rejected.
+curl -X PATCH "${H[@]}" \
+  "https://identitytoolkit.googleapis.com/admin/v2/projects/vibe-cast-projects/config?updateMask=authorizedDomains" \
+  -d '{"authorizedDomains":["localhost","vibe-cast-projects.firebaseapp.com","vibe-cast-projects.web.app","somnus-276367410975.europe-west2.run.app"]}'
+```
+
+### Google sign-in still needs one console click
+
+Enabling the Google provider by API requires an OAuth client id and secret:
+
+```
+INVALID_CONFIG : client_id cannot be empty.
+```
+
+There is no public API that creates a web OAuth client, and the Firebase
+console provisions one automatically when the provider is toggled. So Google
+sign-in is the one step that cannot be scripted:
+
+> Firebase console → Authentication → Sign-in method → Google → Enable → Save
+
+Until then the app offers the email link instead, and says why. Nothing else
+depends on it.
+
+### Client config
+
+The Firebase web config is served at runtime from `GET /api/v1/config`, fed by
+Cloud Run environment variables, rather than compiled into the bundle:
+
+```bash
+gcloud run services update somnus --region=europe-west2 \
+  --update-env-vars=FIREBASE_API_KEY=...,FIREBASE_APP_ID=...,FIREBASE_AUTH_DOMAIN=...
+```
+
+Use `--update-env-vars`, not `--set-env-vars` — the latter replaces the whole
+environment and would drop `GOOGLE_CLOUD_PROJECT`. `cloudbuild.yaml` has the
+same flag for the same reason.
+
+With them unset the endpoint reports `syncAvailable: false` and the client runs
+local-only. That is a supported mode, not a degraded one.
 
 ## Verifying a deploy
 
