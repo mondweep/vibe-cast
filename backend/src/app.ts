@@ -38,9 +38,21 @@ export function createApp(deps: AppDependencies): Express {
   app.use(compression());
   app.use(express.json({ limit: '2mb' }));
 
-  app.get('/healthz', (_req, res) => {
+  /**
+   * Health check, exposed at several paths.
+   *
+   * `/healthz` is the conventional name, but it is not reliably reachable
+   * here: requests to it come back as a Google Frontend 404 that never
+   * reaches this process, while every other path is served normally. Rather
+   * than depend on a path something upstream is claiming, the same handler is
+   * mounted at two alternatives and monitoring uses those.
+   */
+  const health = (_req: Request, res: Response): void => {
     res.json({ status: 'ok', analyserVersion: ANALYSER_VERSION });
-  });
+  };
+  app.get('/healthz', health);
+  app.get('/_health', health);
+  app.get('/api/v1/health', health);
 
   const auth = requireAuth(deps.verifyToken);
   const api = express.Router();

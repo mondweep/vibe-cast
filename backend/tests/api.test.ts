@@ -47,12 +47,22 @@ const night = (over: Partial<NightAnalysis> = {}): NightAnalysis =>
   }) as NightAnalysis;
 
 describe('health', () => {
-  it('reports ok and the analyser version', async () => {
+  // Mounted at several paths: /healthz is not reliably reachable behind the
+  // Cloud Run frontend, so monitoring uses one of the alternatives.
+  it.each(['/healthz', '/_health', '/api/v1/health'])(
+    '%s reports ok and the analyser version',
+    async (path) => {
+      const { app } = build();
+      const res = await request(app).get(path);
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe('ok');
+      expect(res.body.analyserVersion).toBeDefined();
+    },
+  );
+
+  it('does not require a token for the health check', async () => {
     const { app } = build();
-    const res = await request(app).get('/healthz');
-    expect(res.status).toBe(200);
-    expect(res.body.status).toBe('ok');
-    expect(res.body.analyserVersion).toBeDefined();
+    expect((await request(app).get('/api/v1/health')).status).toBe(200);
   });
 });
 
