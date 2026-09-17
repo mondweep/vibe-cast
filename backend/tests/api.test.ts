@@ -66,6 +66,65 @@ describe('health', () => {
   });
 });
 
+describe('client config', () => {
+  const withEnv = async (env: Record<string, string | undefined>, fn: () => Promise<void>) => {
+    const saved = { ...process.env };
+    Object.assign(process.env, env);
+    try {
+      await fn();
+    } finally {
+      process.env = saved;
+    }
+  };
+
+  it('reports sync unavailable when Firebase is not configured', async () => {
+    await withEnv(
+      { FIREBASE_API_KEY: undefined, FIREBASE_APP_ID: undefined, FIREBASE_AUTH_DOMAIN: undefined },
+      async () => {
+        const { app } = build();
+        const res = await request(app).get('/api/v1/config');
+        expect(res.status).toBe(200);
+        expect(res.body.syncAvailable).toBe(false);
+        expect(res.body.firebase).toBeNull();
+      },
+    );
+  });
+
+  it('serves the client config when Firebase is configured', async () => {
+    await withEnv(
+      {
+        FIREBASE_API_KEY: 'key',
+        FIREBASE_APP_ID: 'app',
+        FIREBASE_AUTH_DOMAIN: 'example.firebaseapp.com',
+        GOOGLE_CLOUD_PROJECT: 'proj',
+      },
+      async () => {
+        const { app } = build();
+        const res = await request(app).get('/api/v1/config');
+        expect(res.body.syncAvailable).toBe(true);
+        expect(res.body.firebase.apiKey).toBe('key');
+      },
+    );
+  });
+
+  it('needs no token, so a signed-out client can discover how to sign in', async () => {
+    const { app } = build();
+    expect((await request(app).get('/api/v1/config')).status).toBe(200);
+  });
+
+  // The config route must never become a way to read a private value.
+  it('serves no secret-shaped field', async () => {
+    await withEnv(
+      { FIREBASE_API_KEY: 'key', FIREBASE_APP_ID: 'app', FIREBASE_AUTH_DOMAIN: 'd', GOOGLE_CLOUD_PROJECT: 'p' },
+      async () => {
+        const { app } = build();
+        const body = JSON.stringify((await request(app).get('/api/v1/config')).body);
+        expect(body).not.toMatch(/secret|private_key|credential|password/i);
+      },
+    );
+  });
+});
+
 describe('authentication (ADR-006)', () => {
   it('rejects a request with no token', async () => {
     const { app } = build();

@@ -17,6 +17,9 @@ import { JournalScreen } from './screens/JournalScreen';
 import { SnoreIndexCard, RedFlagBanner, BandBar, EpisodeTimeline } from './components';
 import { local, recoverInterruptedSessions } from './adapters/idb';
 import { systemClock } from './adapters/clock';
+import { Account } from './screens/Account';
+import { auth, loadClientConfig, type AuthSession, type ClientConfig } from './adapters/firebase-auth';
+import { syncAll } from './sync';
 
 type View = 'home' | 'consent' | 'screener' | 'night' | 'report' | 'journal' | 'trends';
 
@@ -37,6 +40,27 @@ export function App(): JSX.Element {
   const [lastNight, setLastNight] = useState<NightAnalysis | null>(null);
   const [recovered, setRecovered] = useState(0);
   const [sensitivity] = useState<Sensitivity>('normal');
+  const [config, setConfig] = useState<ClientConfig>({ firebase: null, syncAvailable: false });
+  const [session, setSession] = useState<AuthSession | null>(null);
+  const [syncState, setSyncState] = useState<string | null>(null);
+
+  /**
+   * Push anything not yet acknowledged by the server.
+   *
+   * Safe to call at any time and as often as we like: every push is
+   * idempotent on the client-generated night id (ADR-007).
+   */
+  const sync = async (token: string | null): Promise<void> => {
+    if (token === null) return;
+    const result = await syncAll(token);
+    setSyncState(
+      result.failed > 0
+        ? `${result.pushed} synced, ${result.failed} still to send`
+        : result.pushed > 0
+          ? `${result.pushed} night${result.pushed === 1 ? '' : 's'} synced`
+          : 'Everything is synced',
+    );
+  };
 
   useEffect(() => {
     void (async () => {
@@ -46,6 +70,17 @@ export function App(): JSX.Element {
       setAcknowledged((await local.getMeta<string[]>('acknowledgedFlags')) ?? []);
       setConsented((await local.getMeta<number>('consentVersion')) === CONSENT_VERSION);
       setRecovered((await recoverInterruptedSessions()).length);
+
+      // Sync is entirely optional, and its absence is not an error: without
+      // it the app is local-only and every feature still works.
+      const clientConfig = await loadClientConfig();
+      setConfig(clientConfig);
+      if (clientConfig.firebase !== null) {
+        const fromLink = await auth.completeEmailLinkIfPresent(clientConfig.firebase);
+        const existing = fromLink ?? (await auth.current(clientConfig.firebase));
+        setSession(existing);
+        if (existing !== null) await sync(existing.idToken);
+      }
     })();
   }, []);
 
@@ -135,6 +170,7 @@ export function App(): JSX.Element {
           setLastNight(analysis);
           setNights((n) => [analysis, ...n]);
           setView('report');
+          void sync(session?.idToken ?? null);
         }}
       />
     );
@@ -167,6 +203,7 @@ export function App(): JSX.Element {
           void local.putJournal(entry);
           setJournal((j) => [...j.filter((e) => e.date !== entry.date), entry]);
           setView('home');
+          void sync(session?.idToken ?? null);
         }}
       />
     );
@@ -262,6 +299,21 @@ export function App(): JSX.Element {
           </button>
         </>
       )}
+
+      <Account
+        config={config}
+        session={session}
+        syncState={syncState}
+        onSignedIn={(s) => {
+          setSession(s);
+          void sync(s.idToken);
+        }}
+        onSignedOut={() => {
+          setSession(null);
+          setSyncState(null);
+        }}
+        onSyncNow={() => void sync(session?.idToken ?? null)}
+      />
 
       {scored !== null && (
         <div className="card">

@@ -54,6 +54,34 @@ export function createApp(deps: AppDependencies): Express {
   app.get('/_health', health);
   app.get('/api/v1/health', health);
 
+  /**
+   * Client configuration, served at runtime rather than baked into the bundle.
+   *
+   * A Firebase web apiKey is a public project identifier, not a credential —
+   * it identifies which project a request is for, and security comes from
+   * Firebase rules and token verification, not from hiding it. Serving it
+   * here anyway keeps it out of the repository and lets the project change
+   * without a rebuild.
+   *
+   * When these are unset the client runs local-only: capture, detection and
+   * analysis all still work, because none of them need the network (ADR-007).
+   */
+  app.get('/api/v1/config', (_req, res) => {
+    const apiKey = process.env.FIREBASE_API_KEY;
+    const appId = process.env.FIREBASE_APP_ID;
+    const authDomain = process.env.FIREBASE_AUTH_DOMAIN;
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT;
+
+    if (!apiKey || !appId || !authDomain || !projectId) {
+      res.json({ firebase: null, syncAvailable: false });
+      return;
+    }
+    res.json({
+      firebase: { apiKey, appId, authDomain, projectId },
+      syncAvailable: true,
+    });
+  });
+
   const auth = requireAuth(deps.verifyToken);
   const api = express.Router();
   api.use(auth);

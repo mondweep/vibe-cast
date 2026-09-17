@@ -30,7 +30,9 @@ steps:
       - --min-instances=0          # NFR-7: scale to zero when nobody is looking
       - --max-instances=4
       - --memory=512Mi
-      - --set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID
+      # --update-env-vars merges; --set-env-vars would wipe the Firebase
+      # client config that is set on the service out of band.
+      - --update-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID
 
 options:
   logging: CLOUD_LOGGING_ONLY
