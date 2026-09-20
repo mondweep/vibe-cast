@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "agentic-qe": {
+      "command": "aqe-mcp",
+      "args": [],
+      "env": {
+        "AQE_LEARNING_ENABLED": "true",
+        "AQE_WORKERS_ENABLED": "true",
+        "NODE_ENV": "production"
+      }
+    },
+    "codex": {
+      "type": "stdio",
+      "command": "codex",
+      "args": [
+        "mcp-server"
+      ],
+      "env": {}
+    }
+  }
+}
