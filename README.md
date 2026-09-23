@@ -24,7 +24,7 @@ datasheet.** Everything in the table below was read off the device itself.
 | Radios | Wi-Fi 6 (802.11ax), BT 5 LE, **IEEE 802.15.4** | esptool feature bits |
 | USB | USB-Serial/JTAG (native, **no OTG**) | esptool |
 | Base MAC | `40:4c:ca:51:64:88` | esptool |
-| Port | `/dev/cu.usbmodem2101` | macOS |
+| Port | `/dev/cu.usbmodem*` — **varies per replug** (seen as `2101`, `101`) | macOS |
 
 Vendor specs (from Unexpected Maker docs, not device-verified): 35 x 17.8 mm,
 USB-C with reverse back-feed protection, 700 mA 3.3 V LDO, LiPo charging via JST
@@ -115,12 +115,15 @@ ESP-IDF is a multi-GB install; check free disk before starting Tier 2.
 ## Working with the board
 
 ```bash
+# resolve the port first — the number changes between replugs
+PORT=$(ls /dev/cu.usbmodem* | head -1)
+
 # identify chip / flash
-esptool --port /dev/cu.usbmodem2101 chip-id
-esptool --port /dev/cu.usbmodem2101 flash-id
+esptool --port "$PORT" chip-id
+esptool --port "$PORT" flash-id
 
 # serial REPL (Ctrl-C to interrupt, Ctrl-D to reload)
-screen /dev/cu.usbmodem2101 115200
+screen "$PORT" 115200
 ```
 
 Note: if a serial open returns `Errno 6: Device not configured`, toggle DTR and retry —
@@ -128,6 +131,18 @@ the CDC endpoint sometimes needs a settle on first open.
 
 **Back up `code.py` and `tinyc6.py` into this repo before overwriting them** — with no
 USB drive, the factory demo is only recoverable over serial.
+
+## Repo layout
+
+| Path | Contents |
+|---|---|
+| `README.md` | this file — hardware, constraints, project catalogue |
+| `usecase.md` | session record: findings, corrections, unresolved items |
+| `firmware/factory/` | **byte-exact backup of the as-shipped board** (`code.py`, `tinyc6.py`) — restore point, since there is no USB drive to copy them off |
+| `firmware/stage1_blink/` | NeoPixel blink — GPIO + the switched `NEOPIXEL_POWER` rail |
+| `firmware/stage2_web_control/` | board runs its own Wi-Fi AP (`TinyC6`), phone browser controls the LED at `http://192.168.4.1` — no home network needed |
+| `firmware/stage3_ble/` | BLE service: advertise, connect, read/write blink period (nRF Connect) |
+| `scripts/cp_repl.py` | raw-REPL client (`exec`/`get`/`put`/`ls`) — the file-transfer workaround for having no `CIRCUITPY` drive |
 
 ## Repo tooling
 
