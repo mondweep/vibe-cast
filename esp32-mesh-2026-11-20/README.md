@@ -123,7 +123,7 @@ office hours. Despite that, contrast is strong: per‑node ratio 1–3× with th
 area empty vs **30–60× with a person at the desk**, all three nodes agreeing.
 
 ### Live dashboard
-`seed-dashboard.js` — paste into the DevTools console on `http://169.254.42.1/guide`
+`seed-dashboard-bookmarklet.html` — open it, drag the button to the bookmarks bar, then click it on any Seed page (one‑click dashboard). Or: `seed-dashboard.js` — paste into the DevTools console on `http://169.254.42.1/guide`
 (same origin, so no CORS). Polls the cogs' log endpoints every 2 s and shows
 presence, per‑node movement vs threshold, breathing (headline = rolling 60 s median, with IQR and SNR), heart rate
 (flagged unreliable), air quality (flagged simulated), a 60 s breathing‑count
