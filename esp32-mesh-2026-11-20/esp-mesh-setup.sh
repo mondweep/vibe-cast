@@ -104,6 +104,11 @@ if [ ! -s "$PASSFILE" ]; then
 fi
 
 TOKFILE="$STATE/seed-token"
+if [ ! -f "$TOKFILE" ] && command -v security >/dev/null 2>&1 && \
+   T=$(security find-generic-password -s cognitum-seed-token -w 2>/dev/null) && [ -n "$T" ]; then
+  ( umask 077; printf '%s' "$T" > "$TOKFILE" ); unset T
+  echo "Seed token restored from the macOS Keychain (cognitum-seed-token)."
+fi
 if [ ! -f "$TOKFILE" ]; then
   read -r -s -p "Seed pairing token for the swarm bridge (hidden; Enter to skip): " T; echo
   ( umask 077; printf '%s' "$T" > "$TOKFILE" ); unset T
