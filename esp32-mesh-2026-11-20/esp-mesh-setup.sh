@@ -3,12 +3,15 @@
 # on the Galaxy hotspot, streaming to the Cognitum Seed, as part of a 3-node TDM mesh.
 #
 # Usage (one board plugged into the Mac at a time):
-#   ./esp-mesh-setup.sh 1        # existing board
-#   ./esp-mesh-setup.sh 2        # new board A
-#   ./esp-mesh-setup.sh 3        # new board B
+#   ./esp-mesh-setup.sh 1        # node 1 ... up to node 16
+#   ./esp-mesh-setup.sh 2
+# Every node must use the same "boards in mesh" total; if you add boards,
+# re-run the existing ones with --no-flash so they learn the new total.
 # Options:
 #   --no-flash    only re-provision Wi-Fi/mesh settings (board already on 0.8.8)
 #   --monitor     only show the board's serial log for 25 s
+#   --flash-only  install firmware but leave the board unprovisioned (spares);
+#                 the node number is ignored. Provision later with --no-flash.
 #
 # Asks for the hotspot password (hidden) on the first run and keeps it in an
 # owner-only file in ~/.cognitum-mesh/. Nothing secret is written into this folder.
@@ -16,18 +19,16 @@
 set -euo pipefail
 
 NODE="${1:-}"; shift || true
-DO_FLASH=1; ONLY_MONITOR=0
+DO_FLASH=1; ONLY_MONITOR=0; FLASH_ONLY=0
 for a in "$@"; do
   case "$a" in
     --no-flash) DO_FLASH=0 ;;
     --monitor)  ONLY_MONITOR=1 ;;
+    --flash-only) FLASH_ONLY=1 ;;
     *) echo "Unknown option: $a"; exit 1 ;;
   esac
 done
-case "$NODE" in 1|2|3) ;; *) echo "Usage: $0 <1|2|3> [--no-flash|--monitor]"; exit 1 ;; esac
-
-TOTAL=3
-SLOT=$((NODE - 1))
+case "$NODE" in [1-9]|1[0-6]) ;; *) echo "Usage: $0 <node 1-16> [--no-flash|--monitor]"; exit 1 ;; esac
 UDP_PORT=5006
 FW_TAG="v0.8.8-esp32"
 # Headless (no-display) build. The 8 MB release enables display support, which
@@ -81,6 +82,7 @@ PY
 if [ "$ONLY_MONITOR" -eq 1 ]; then monitor; exit 0; fi
 
 # ---- settings (asked once, remembered) -----------------------------------
+if [ "$FLASH_ONLY" -eq 0 ]; then
 ask() { # var prompt default
   local cur="${!1:-$3}" v
   read -r -p "$2 [${cur}]: " v; v="${v:-$cur}"; [ -n "$v" ] || die "$2 is required"
@@ -88,7 +90,11 @@ ask() { # var prompt default
 }
 ask HOTSPOT_SSID "Galaxy hotspot name" "${HOTSPOT_SSID:-}"
 ask SEED_IP     "Seed's IP on the hotspot (Galaxy > Hotspot > Connected devices)" "${SEED_IP:-}"
-printf 'HOTSPOT_SSID=%q\nSEED_IP=%q\n' "$HOTSPOT_SSID" "$SEED_IP" > "$CONF"; chmod 600 "$CONF"
+ask TOTAL       "Total boards in the mesh (same on every board)" "${TOTAL:-3}"
+case "$TOTAL" in [1-9]|1[0-6]) ;; *) die "Total must be 1-16" ;; esac
+[ "$NODE" -le "$TOTAL" ] || die "Node $NODE is higher than the total of $TOTAL"
+SLOT=$((NODE - 1))
+printf 'HOTSPOT_SSID=%q\nSEED_IP=%q\nTOTAL=%q\n' "$HOTSPOT_SSID" "$SEED_IP" "$TOTAL" > "$CONF"; chmod 600 "$CONF"
 
 PASSFILE="$STATE/hotspot-pass"
 if [ ! -s "$PASSFILE" ]; then
@@ -103,11 +109,41 @@ if [ ! -f "$TOKFILE" ]; then
   ( umask 077; printf '%s' "$T" > "$TOKFILE" ); unset T
 fi
 SEED_TOKEN="$(cat "$TOKFILE")"
+fi
 
 # ---- check the chip ------------------------------------------------------
 say "Checking chip"
 INFO=$("${ESPTOOL[@]}" --port "$PORT" flash_id 2>&1) || { echo "$INFO" | tail -5; die "Can't talk to the board. Hold BOOT, tap RESET, release BOOT, and run again."; }
 echo "$INFO" | grep -E "Chip type|Chip is|flash size|MAC:" || true
+# ---- which board is this? -------------------------------------------------
+# Boards are identified by MAC. Our own register (~/.cognitum-mesh/boards.tsv)
+# records every run; RuView's provisioning state (one JSON per MAC) is the
+# fallback for boards provisioned before the register existed.
+REG="$STATE/boards.tsv"; touch "$REG"; chmod 600 "$REG"
+MACS=$(echo "$INFO" | awk '/^(BASE )?MAC:/{print tolower($NF)}')
+MAC=$(echo "$MACS" | head -1)
+KNOWN=""
+for m in $MACS; do
+  r=$(awk -F'\t' -v m="$m" '$1==m{l=$0} END{print l}' "$REG")
+  if [ -n "$r" ]; then KNOWN=$(echo "$r" | awk -F'\t' '{printf "node %s (%s, %s)", $2, $3, $4}'); break; fi
+  j="$HOME/.config/wifi-densepose/esp32-provision-state/mac-$(echo "$m" | tr -d :).json"
+  if [ -f "$j" ]; then
+    n=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("node_id",""))' "$j" 2>/dev/null || true)
+    [ -n "$n" ] && { KNOWN="node $n (from RuView provisioning record)"; break; }
+  fi
+done
+if [ -n "$KNOWN" ]; then echo "This board was last set up as: $KNOWN"
+else echo "This board isn't in the register yet (new or unrecorded board)."; fi
+PREV_NODE=$(echo "$KNOWN" | awk '{print $2}')
+if [ "$ONLY_MONITOR" -eq 0 ] && [ "$FLASH_ONLY" -eq 0 ] && [ -n "$PREV_NODE" ] && [ "$PREV_NODE" != "$NODE" ]; then
+  read -r -p "You asked for node $NODE but this board was node $PREV_NODE. Continue as node $NODE? [y/N] " yn
+  case "$yn" in y|Y) ;; *) die "Stopped. Re-run with: $0 $PREV_NODE ..." ;; esac
+fi
+record() { # mode
+  awk -F'\t' -v m="$MAC" '$1!=m' "$REG" > "$REG.tmp" && mv "$REG.tmp" "$REG"
+  printf '%s\t%s\t%s\t%s\n' "$MAC" "$NODE" "$1" "$(date '+%Y-%m-%d %H:%M')" >> "$REG"; chmod 600 "$REG"
+}
+
 if   echo "$INFO" | grep -qi "ESP32-S3"; then CHIP=esp32s3; FW_ZIP="$S3_ZIP"; FW_ZIP_SHA="$S3_SHA"; KIND=s3
 elif echo "$INFO" | grep -qi "ESP32-C6"; then CHIP=esp32c6; FW_ZIP="$C6_ZIP"; FW_ZIP_SHA="$C6_SHA"; KIND=c6
 else die "Chip is neither ESP32-S3 nor ESP32-C6. Tell Claude the chip type shown above."; fi
@@ -130,6 +166,14 @@ if [ "$DO_FLASH" -eq 1 ]; then
       0x0 bootloader.bin 0x8000 partition-table.bin 0xf000 ota_data_initial.bin 0x20000 esp32-csi-node.bin )
 fi
 
+if [ "$FLASH_ONLY" -eq 1 ]; then
+  record "spare, firmware only"
+  say "Firmware installed. No Wi-Fi or node settings were written (the node number $NODE is not stored)."
+  echo "Tip: put a sticker on the board (e.g. \"$NODE\") so you know which spare it is."
+  echo "When you deploy it, give it its node number with:  $0 $NODE --no-flash"
+  exit 0
+fi
+
 # ---- provision -----------------------------------------------------------
 PROV="$STATE/provision.py"
 [ -f "$PROV" ] || curl -fsSL -o "$PROV" "$PROV_URL"
@@ -142,6 +186,7 @@ python3 "$PROV" --port "$PORT" \
   --node-id "$NODE" --tdm-slot "$SLOT" --tdm-total "$TOTAL" \
   --edge-tier 2 --zone "node-$NODE" ${EXTRA[@]+"${EXTRA[@]}"}
 
+record "provisioned, total $TOTAL"
 say "Boot log (25 s) — look for 'connected', 'Got IP' and 'CSI streaming active'"
 sleep 2; monitor
 say "Node $NODE done. Unplug it, power it from any USB charger, and plug in the next board."

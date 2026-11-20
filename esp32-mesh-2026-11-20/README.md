@@ -21,7 +21,8 @@ script asks for them at a hidden prompt and keeps them in `~/.cognitum-mesh/`
 |------|-------|------|-------|-------|
 | 1 | Original board (set up 19 Nov) | ESP32‑S3 (QFN56) rev 0.2, 8 MB PSRAM | 16 MB | Was on RuView CSI firmware 0.6.2 |
 | 2 | New board | ESP32‑S3 (QFN56) rev 0.2, 8 MB PSRAM | 16 MB | Blank |
-| 3 | New board, TinyC6 | ESP32‑C6 (QFN40) rev 0.0 | 8 MB | Blank |
+| 3 | New board, TinyC6 | ESP32‑C6 (QFN40) rev 0.0 | 8 MB | Blank → RuView 0.8.8 C6 build |
+| spares 4–7 | ESP32‑S3‑N16R8 ×4 | ESP32‑S3, 8 MB PSRAM | 16 MB | Firmware only (`--flash-only`), unprovisioned |
 | — | Cognitum Seed | — | — | Firmware 0.24.2, device `60faaf58…` |
 
 ## Network layout
@@ -31,7 +32,7 @@ Galaxy phone hotspot (2.4 GHz, channel 13, private 172.18.49.0/24)
  ├── Cognitum Seed      172.18.49.239   (also USB to the Mac at 169.254.42.1)
  ├── Node 1 (S3)        172.18.49.43    TDM slot 0/3, ESP‑NOW clock leader
  ├── Node 2 (S3)        172.18.49.153   TDM slot 1/3, follows node 1's clock
- └── Node 3 (C6)        pending         TDM slot 2/3
+ └── Node 3 (C6)        on hotspot      TDM slot 2/3
 Each node: CSI + vitals UDP → Seed:5006, swarm bridge → http://<seed>/api/v1/store/ingest
 ```
 
@@ -68,8 +69,83 @@ boards must be re‑provisioned to move between home and away.
    received from node 1 (197 of ~200 beacons in 20 s), now following node 1's
    clock — the first two mesh members are synchronised.
 6. **Node 3** (TinyC6): the chip check stopped the S3 bundle from being
-   written. Script extended to pick the C6 bundle automatically. Flashing
-   pending at the time of writing.
+   written. Script extended to pick the C6 bundle automatically; node 3 then
+   flashed, provisioned, and joined the ESP‑NOW sync (402/402 beacons matched).
+7. **Four spare ESP32‑S3‑N16R8 boards** flashed with `--flash-only` (firmware,
+   no settings) so they can be provisioned later for any Seed / network / group.
+   The script now keeps a per‑MAC board register (`~/.cognitum-mesh/boards.tsv`)
+   and warns if a board is given a different node number than last time.
+
+## Afternoon: getting data into the Seed
+
+### Seed lost the hotspot
+After an accidental unplug/replug the Seed's Wi‑Fi showed *disconnected*, and a
+scan from the Seed could not see the hotspot (the phone had also been moved
+away). Restarting the hotspot moved it from channel 13 to channel 11; the Seed
+saw it at full signal and auto‑rejoined with the **same IP** (172.18.49.239), so
+no board re‑provisioning was needed.
+
+### `503 store_busy` — the real write blocker
+Replaying a board's exact registration POST from the Seed's own origin returned
+`503 {"reason":"store_busy","detail":"store write-locked (indexing/compaction)"}`.
+Diagnosis over SSH:
+
+- `cognitum-agent` at ~92 % of one core for its entire 87‑minute uptime.
+- The store held **968,968** vectors but the kNN graph covered only ~41k —
+  an index rebuild that would take roughly a day, locking writes throughout.
+- A May-era `csi-bridge.service` was writing every UDP CSI frame from the
+  boards into the store (~70 vectors/s ≈ 6 M/day) — the cause of the bloat.
+- `csi-supabase-pusher.service` was failing with HTTP 401.
+
+**Fix:** stopped `cognitum-agent`, moved `memopt.rvf` and the May
+`memopt.rvf.bak` to `/var/lib/cognitum/rvf-store-archive-20261120/`
+(reversible; identity/keys/pairing live outside the store directory), started
+the agent → fresh store, `writes_gated:false`, writes accepted immediately.
+Then disabled `csi-bridge` and `csi-supabase-pusher` (`systemctl disable --now`)
+so the store can't balloon again and UDP 5006 is free.
+
+### Cogs
+| Cog | State | Notes |
+|-----|-------|-------|
+| `presence-field` 0.1.1 | **Installed, running**, `thresh=4 quorum=2 modes=8 hold=5` | Owns UDP 5006; relays vitals/feature packets to loopback :5106, which makes the `esp32-udp` data source available to other cogs |
+| `health-monitor` 1.2.4 | Running, data source switched `synthetic → esp32-udp` | Output not credible: 1 s window (`window_ms=1000`) gives quantised 50/100 bpm and false TACHYPNEA alerts; window not configurable |
+| `air-quality-index` 1.2.0 | Installed by owner, running | **Synthetic** — the Seed has no CO₂/PM sensor attached |
+| `neural-trader`, `ruview-densepose` | Stopped | Not relevant / pose has no trained model |
+
+Note: `PUT /api/v1/apps/{id}/config` **replaces** the whole config — send every key.
+
+### Calibration (open-plan office)
+`cog-presence-field-arm --calibrate 60 --modes 8` learned an empty baseline for
+all three nodes (~2,000–2,300 frames each, ≈35 fps per node). All three nodes
+flagged a respiration band in the "empty" baseline: colleagues outside the
+triangle are within RF range, so a truly empty baseline isn't possible during
+office hours. Despite that, contrast is strong: per‑node ratio 1–3× with the
+area empty vs **30–60× with a person at the desk**, all three nodes agreeing.
+
+### Live dashboard
+`seed-dashboard.js` — paste into the DevTools console on `http://169.254.42.1/guide`
+(same origin, so no CORS). Polls the cogs' log endpoints every 2 s and shows
+presence, per‑node movement vs threshold, breathing (with SNR), heart rate
+(flagged unreliable), air quality (flagged simulated), a 60 s breathing‑count
+test and a paced‑breathing validator. The token is read from
+`window.SEED_TOKEN` / `localStorage` or prompted once; it is not in the file.
+
+### Breathing validation
+Natural breathing, own count 12 bpm → `presence-field` median **22.8** (61/61
+samples "good" SNR; values bimodal at ~2× and ~½× the true rate).
+
+Paced breathing (visual pacer, 20 s settle + 60 s measured, ~1 m from a board):
+
+| Paced (bpm) | Median | Ratio | IQR | Within ±2 bpm | Presence |
+|---|---|---|---|---|---|
+| 8 | 6.9 | 0.86× | 6.6–7.8 | 76 % | 100 % |
+| 12 | 11.7 | 0.97× | 11.4–12.3 | 59 % | 100 % |
+| 18 | 17.7 | 0.98× | 11.7–26.7 | 12 % | 100 % |
+
+**Reading:** no systematic doubling. Slow, deliberate breathing (8–12 bpm) is
+tracked when taken as a 30–60 s median; shallow natural breathing and faster
+rates (≥15–18 bpm) are not reliable. SNR reflects a strong periodic component,
+not that it's the right one. Heart rate is not usable with the current cog.
 
 ## Problems hit and fixes
 
@@ -79,14 +155,21 @@ boards must be re‑provisioned to move between home and away.
 | Script stopped: "Flash isn't 8 MB" (board has 16 MB) | Script only accepted 8 MB | Accept 4 MB and larger |
 | 8 MB release bundle unsuitable | It compiles in display support; on boards with no screen the panel probe false‑positives and CSI drops to 0 pps (per RuView README) | Use the headless 4 MB‑layout bundle. NVS is at `0x9000` in both layouts, so provisioning is unaffected; the rest of the flash is simply unused |
 | Script stopped: "not an ESP32‑S3" on board 3 | It's a TinyC6 (ESP32‑C6) | Auto‑select the C6 bundle by detected chip |
-| Boards log `swarm: HTTP POST status 503`, Seed lists no peers, vector count and epoch unchanged | The Seed is refusing writes to `/api/v1/store/ingest`. Likely the storage write lock seen in May (witness‑chain damage); not yet confirmed | **Open.** Owner approved clearing the lock (past Seed data is experimental only). The Seed was power‑cycled mid‑investigation, which may itself have changed the state |
+| Boards log `swarm: HTTP POST status 503`, Seed lists no peers, vector count and epoch unchanged | Seed refusing writes to `/api/v1/store/ingest` | **Fixed** — see "Afternoon" below: index rebuild over 969k vectors (fed by `csi-bridge`) held a write lock; store archived and reset, `csi-bridge` disabled |
 
 ## Open items
 
-- [ ] Flash and provision node 3 (ESP32‑C6); confirm it joins the ESP‑NOW sync.
-- [ ] Confirm whether the Seed still returns 503 after its restart; if so, clear
-      the write lock and confirm the three nodes register and data arrives.
-- [ ] Confirm the Seed actually consumes the UDP stream on port 5006.
+- [x] Node 3 (ESP32‑C6) flashed, provisioned, in ESP‑NOW sync.
+- [x] Seed write lock cleared; `presence-field` consuming UDP 5006 from all 3 nodes.
+- [ ] Recalibrate `presence-field` when the floor is empty (early/late).
+- [ ] Dashboard: show a rolling 60 s breathing median instead of raw 1 s values.
+- [ ] Repeat paced test < 1 m from a board; check whether 15–18 bpm improves.
+- [ ] `health-monitor`: find a way to lengthen its 1 s window (or replace it) before
+      trusting heart rate; stop it if its false alerts become noise.
+- [ ] Air quality: attach a real CO₂ / PM sensor (e.g. SCD40, PMS5003) or ignore the cog.
+- [ ] Boards' one‑shot swarm registration happened while the Seed was locked;
+      power‑cycle each board once to re‑register.
+- [ ] Re‑enable or retire the Supabase pusher (currently disabled; key returned 401).
 - [ ] The Seed's hotspot address can change. If it does, re‑run
       `./esp-mesh-setup.sh N --no-flash` on each board with the new IP.
 - [ ] Turn off the Seed's open setup AP (`Cognitum-Setup-XXXX`, still on the
@@ -104,7 +187,11 @@ boards must be re‑provisioned to move between home and away.
 ./esp-mesh-setup.sh 3
 ./esp-mesh-setup.sh 2 --no-flash # change Wi-Fi / Seed IP only
 ./esp-mesh-setup.sh 2 --monitor  # just show the boot log
+./esp-mesh-setup.sh 5 --flash-only  # spare: firmware only, no settings
 ```
+
+The script asks for the total number of boards in the mesh (same value on every
+board in a group); the TDM slot is `node − 1`.
 
 Plug in **one** board at a time and use a different node number for each.
 If a board won't respond: hold BOOT, tap RESET, release BOOT, run again.
