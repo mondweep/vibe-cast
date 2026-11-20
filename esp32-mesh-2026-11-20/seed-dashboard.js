@@ -4,6 +4,10 @@
  * paste this whole file, press Enter. It replaces the page with the dashboard and polls the
  * Seed's cog logs every 2 s. Reload the page to get the guide back.
  *
+ * Panels: presence, per-node movement, breathing (headline = rolling 60 s median),
+ * heart rate (flagged unreliable), air quality (flagged simulated), a 60 s
+ * breathing-count test, and a paced-breathing validator.
+ *
  * Auth: uses window.SEED_TOKEN, else localStorage.seedToken, else asks once (stored locally).
  */
 (function () {
@@ -11,8 +15,9 @@
     (function () { const t = prompt('Seed pairing token'); if (t) localStorage.setItem('seedToken', t); return t; })();
   const POLL_MS = 2000, KEEP_S = 600; // keep 10 minutes of history
   const H = { pf: new Map(), hm: new Map(), aq: new Map() }; // timestamp -> record
-  const COL = { n1: '#4f8cff', n2: '#f59e0b', n3: '#10b981', br: '#e11d48', hm: '#9ca3af', hr: '#a855f7', th: '#ef4444' };
+  const COL = { n1: '#4f8cff', n2: '#f59e0b', n3: '#10b981', br: '#e11d48', hm: '#9ca3af', hr: '#a855f7', th: '#ef4444', med: '#fbbf24' };
   let test = null; // breathing test state
+  let pace = null; // paced-breathing run state
 
   document.title = 'Seed — RuView live';
   document.head.innerHTML = '<meta charset="utf-8"><title>Seed — RuView live</title>';
@@ -39,7 +44,7 @@
 <header><h1>Cognitum Seed · RuView live</h1><span id="conn">connecting…</span></header>
 <main>
   <div class="card s3"><h2>Presence</h2><div id="pres" class="big">—</div><div id="presSub" class="sub"></div></div>
-  <div class="card s3"><h2>Breathing (presence-field)</h2><div id="br" class="big">—</div><div id="brSub" class="sub"></div></div>
+  <div class="card s3"><h2>Breathing · 60 s median (presence-field)</h2><div id="br" class="big">—</div><div id="brSub" class="sub"></div></div>
   <div class="card s3"><h2>Heart rate (health-monitor)</h2><div id="hr" class="big">—</div><div class="sub"><span class="pill warn">unreliable · 1 s window</span></div></div>
   <div class="card s3"><h2>Air quality</h2><div id="aq" class="big">—</div><div id="aqSub" class="sub"></div></div>
 
@@ -53,11 +58,21 @@
     <table style="margin-top:10px"><tbody id="tRes"></tbody></table></div>
 
   <div class="card s6"><h2>Breathing rate (bpm)</h2>
-    <div class="legend"><span><i style="background:${COL.br}"></i>presence-field (dot size = SNR)</span><span><i style="background:${COL.hm}"></i>health-monitor (unreliable)</span></div>
+    <div class="legend"><span><i style="background:${COL.br}"></i>presence-field (dot size = SNR)</span><span><i style="background:${COL.med}"></i>60 s median</span><span><i style="background:${COL.hm}"></i>health-monitor (unreliable)</span></div>
     <canvas id="cBr"></canvas></div>
   <div class="card s6"><h2>Heart rate (bpm) — experimental</h2>
     <div class="legend"><span><i style="background:${COL.hr}"></i>health-monitor</span></div>
     <canvas id="cHr"></canvas></div>
+  <div class="card s12" id="pacerCard"><h2>Paced-breathing validation</h2>
+    <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+      <div style="width:220px;height:220px;display:flex;align-items:center;justify-content:center">
+        <div id="pBall" style="width:60px;height:60px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px">ready</div></div>
+      <div style="flex:1;min-width:320px">
+        <div class="sub" style="margin-bottom:8px">Sit still ~1 m from one board. Breathe <b>in while the circle grows</b>, <b>out while it shrinks</b>. Each rate: 20 s settle + 60 s measured. The cog's band is 6–30 bpm, so avoid rates at the edges.</div>
+        <div>Rates (bpm): <input id="pRates" value="8,12,18" style="width:110px"> <button id="pGo">Start sequence</button> <button id="pStop" disabled>Stop</button></div>
+        <div id="pState" class="big" style="font-size:22px;margin-top:10px">—</div>
+        <table style="margin-top:10px"><thead><tr><td>Paced</td><td>Median</td><td>Ratio</td><td>IQR</td><td>Within ±2</td><td>Samples / SNR≥4</td><td>Presence</td></tr></thead><tbody id="pRes"></tbody></table>
+      </div></div></div>
 </main>`;
 
   const $ = id => document.getElementById(id);
@@ -74,6 +89,8 @@
     for (const k of map.keys()) if (k < cut) map.delete(k);
   }
   const sorted = m => [...m.values()].sort((a, b) => a.timestamp - b.timestamp);
+  const quant = (arr, q) => { if (!arr.length) return NaN; const s = [...arr].sort((x, y) => x - y); return s[Math.floor(q * (s.length - 1))]; };
+  const median = arr => quant(arr, 0.5);
   const last = m => { const s = sorted(m); return s[s.length - 1]; };
 
   function chart(cv, series, opt) {
@@ -101,8 +118,15 @@
     if (p) {
       $('pres').innerHTML = p.presence_detected ? '<span class="pill on" style="font-size:22px">PRESENT</span>' : '<span class="pill off" style="font-size:22px">empty</span>';
       $('presSub').textContent = `${p.nodes_over_thresh}/${p.nodes} nodes over ${p.threshold}× · quorum ${p.quorum} · score ${p.score.toFixed(1)} · ${p.method}`;
-      $('br').textContent = p.breathing_bpm ? p.breathing_bpm.toFixed(1) + ' bpm' : '—';
-      $('brSub').textContent = 'SNR ' + (p.breathing_snr || 0).toFixed(1) + (p.breathing_snr >= 4 ? ' · usable' : ' · weak signal');
+      // Headline = rolling 60 s median (SNR>=4 samples if any, else all); raw value shown below.
+      const w60 = pf.filter(r => r.timestamp >= p.timestamp - 60 && r.breathing_bpm > 0);
+      const g60 = w60.filter(r => r.breathing_snr >= 4), use = g60.length >= 10 ? g60 : w60;
+      const m60 = median(use.map(r => r.breathing_bpm));
+      const iq = quant(use.map(r => r.breathing_bpm), .25), iq3 = quant(use.map(r => r.breathing_bpm), .75);
+      $('br').textContent = isNaN(m60) ? '—' : m60.toFixed(1) + ' bpm';
+      $('brSub').textContent = `60 s median of ${use.length} samples${use === g60 ? ' (SNR≥4)' : ' (all)'} · IQR ${isNaN(iq) ? '—' : iq.toFixed(1) + '–' + iq3.toFixed(1)}` +
+        ` · now ${p.breathing_bpm ? p.breathing_bpm.toFixed(1) : '—'} (SNR ${(p.breathing_snr || 0).toFixed(1)})` +
+        (use.length && iq3 - iq > 6 ? ' · unstable' : '');
     }
     if (m) $('hr').textContent = m.heart_rate_bpm.toFixed(0) + ' bpm';
     if (a) { $('aq').textContent = 'AQI ' + a.aqi.toFixed(0); $('aqSub').innerHTML = `${a.aqi_category} · CO₂ ${a.co2_proxy.toFixed(0)} ppm · PM2.5 ${a.pm25_proxy.toFixed(1)} <span class="pill warn">simulated — no sensor</span>`; }
@@ -110,7 +134,9 @@
     chart($('cMove'), [{ c: COL.n1, pts: node('node1') }, { c: COL.n2, pts: node('node2') }, { c: COL.n3, pts: node('node3') }], { hline: pf.length ? pf[pf.length - 1].threshold : 4, min: 0, maxAuto: 8 });
     chart($('cBr'), [
       { c: COL.br, dots: true, pts: pf.filter(r => r.breathing_bpm > 0).map(r => [r.timestamp, r.breathing_bpm, r.breathing_snr]) },
-      { c: COL.hm, pts: hm.map(r => [r.timestamp, r.breathing_bpm]) }], { min: 0, max: 40, band: test && [test.t0, test.t1 || Date.now() / 1000] });
+      { c: COL.hm, pts: hm.map(r => [r.timestamp, r.breathing_bpm]) },
+      { c: COL.med, pts: pf.filter(r => r.breathing_bpm > 0).map(r => { const w = pf.filter(x => x.timestamp > r.timestamp - 60 && x.timestamp <= r.timestamp && x.breathing_bpm > 0); const g = w.filter(x => x.breathing_snr >= 4); return [r.timestamp, median((g.length >= 10 ? g : w).map(x => x.breathing_bpm))]; }) }],
+      { min: 0, max: 40, band: (pace && pace.band) || (test && [test.t0, test.t1 || Date.now() / 1000]) });
     chart($('cHr'), [{ c: COL.hr, pts: hm.map(r => [r.timestamp, r.heart_rate_bpm]) }], { min: 40, max: 130 });
   }
 
@@ -147,5 +173,47 @@
     console.log('[breathing-test]', { mine, pfMed, hmMed, samples: pfw.length, good: good.length, presencePct: pres, t0: test.t0 });
   };
 
+  // Paced-breathing validation: visual pacer at known rates, then compare presence-field's median.
+  window.__pacedResults = window.__pacedResults || [];
+  function pacedAnalyse(rate, t0, t1) {
+    const rows = sorted(H.pf).filter(r => r.timestamp >= t0 && r.timestamp <= t1 + 2);
+    const good = rows.filter(r => r.breathing_snr >= 4 && r.breathing_bpm > 0);
+    const v = (good.length ? good : rows).map(r => r.breathing_bpm);
+    const med = median(v), q1 = quant(v, .25), q3 = quant(v, .75);
+    const within = v.length ? Math.round(100 * v.filter(x => Math.abs(x - rate) <= 2).length / v.length) : 0;
+    const pres = rows.length ? Math.round(100 * rows.filter(r => r.presence_detected).length / rows.length) : 0;
+    window.__pacedResults.push({ rate, med, ratio: med / rate, iqr: [q1, q3], within, n: rows.length, good: good.length, pres, t0 });
+    $('pRes').insertAdjacentHTML('beforeend', `<tr><td>${rate}</td><td>${isNaN(med) ? 'no data' : med.toFixed(1)}</td><td>${isNaN(med) ? '—' : (med / rate).toFixed(2) + '×'}</td>` +
+      `<td>${isNaN(q1) ? '—' : q1.toFixed(1) + '–' + q3.toFixed(1)}</td><td>${within}%</td><td>${rows.length} / ${good.length}</td><td>${pres}%</td></tr>`);
+    console.log('[paced]', JSON.stringify(window.__pacedResults[window.__pacedResults.length - 1]));
+  }
+  function pacedStop(msg) {
+    if (pace) clearInterval(pace.timer); pace = null;
+    $('pGo').disabled = false; $('pStop').disabled = true; $('pState').textContent = msg || 'stopped';
+    const b = $('pBall'); b.style.width = b.style.height = '60px'; b.textContent = 'ready'; b.style.background = '#2563eb';
+  }
+  $('pStop').onclick = () => pacedStop();
+  $('pGo').onclick = () => {
+    const rates = $('pRates').value.split(',').map(Number).filter(x => x > 0 && x <= 40); if (!rates.length) return;
+    $('pGo').disabled = true; $('pStop').disabled = false;
+    const SETTLE = 20, MEAS = 60;
+    pace = { i: 0, start: Date.now() / 1000, band: null };
+    pace.timer = setInterval(() => {
+      const now = Date.now() / 1000, rate = rates[pace.i], el = now - pace.start, period = 60 / rate;
+      const ph = (el % period) / period, inhale = ph < 0.5, f = inhale ? ph * 2 : (1 - ph) * 2;
+      const b = $('pBall'), size = 60 + 150 * (0.5 - 0.5 * Math.cos(Math.PI * f));
+      b.style.width = b.style.height = size + 'px'; b.textContent = inhale ? 'in' : 'out'; b.style.background = inhale ? '#2563eb' : '#0891b2';
+      if (el < SETTLE) { $('pState').textContent = `${rate} bpm — settle in… ${Math.ceil(SETTLE - el)}s`; return; }
+      pace.band = [pace.start + SETTLE, now];
+      $('pState').textContent = `${rate} bpm — MEASURING ${Math.ceil(SETTLE + MEAS - el)}s (${pace.i + 1}/${rates.length})`;
+      if (el >= SETTLE + MEAS) {
+        pacedAnalyse(rate, pace.start + SETTLE, pace.start + SETTLE + MEAS);
+        pace.i++; pace.start = now; pace.band = null;
+        if (pace.i >= rates.length) pacedStop('done — results below');
+      }
+    }, 50);
+  };
+
+  window.__seedDash = { H, get test() { return test; }, get pace() { return pace; } };
   poll(); setInterval(poll, POLL_MS); addEventListener('resize', render);
 })();

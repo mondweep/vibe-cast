@@ -125,7 +125,7 @@ area empty vs **30–60× with a person at the desk**, all three nodes agreeing.
 ### Live dashboard
 `seed-dashboard.js` — paste into the DevTools console on `http://169.254.42.1/guide`
 (same origin, so no CORS). Polls the cogs' log endpoints every 2 s and shows
-presence, per‑node movement vs threshold, breathing (with SNR), heart rate
+presence, per‑node movement vs threshold, breathing (headline = rolling 60 s median, with IQR and SNR), heart rate
 (flagged unreliable), air quality (flagged simulated), a 60 s breathing‑count
 test and a paced‑breathing validator. The token is read from
 `window.SEED_TOKEN` / `localStorage` or prompted once; it is not in the file.
@@ -162,7 +162,7 @@ not that it's the right one. Heart rate is not usable with the current cog.
 - [x] Node 3 (ESP32‑C6) flashed, provisioned, in ESP‑NOW sync.
 - [x] Seed write lock cleared; `presence-field` consuming UDP 5006 from all 3 nodes.
 - [ ] Recalibrate `presence-field` when the floor is empty (early/late).
-- [ ] Dashboard: show a rolling 60 s breathing median instead of raw 1 s values.
+- [x] Dashboard: headline breathing is a rolling 60 s median (SNR≥4 samples, IQR shown, flagged "unstable" when IQR > 6 bpm); paced-breathing validator built in.
 - [ ] Repeat paced test < 1 m from a board; check whether 15–18 bpm improves.
 - [ ] `health-monitor`: find a way to lengthen its 1 s window (or replace it) before
       trusting heart rate; stop it if its false alerts become noise.
